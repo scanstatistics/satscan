@@ -470,7 +470,7 @@ class CParameters {
     void                                setLaunchMapViewer(bool b) {_launch_map_viewer = b;}
     const std::string                 & getLinelistIndividualsCacheFileName() const { return _linelist_individuals_cache_name; }
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
-    bool                                GetLogLikelihoodRatioIsTestStatistic() const;
+    bool                                IsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     double                              GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     double                              GetMaximumTemporalClusterSize() const {return gdMaxTemporalClusterSize;}

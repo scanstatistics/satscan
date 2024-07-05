@@ -43,7 +43,7 @@ void LoglikelihoodRatioWriter::DefineFields() {
   unsigned short uwOffset=0;
 
   try {
-    CreateField(vFieldDefinitions, (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
+    CreateField(vFieldDefinitions, (gParameters.IsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
   }
   catch (prg_exception& x) {
     x.addTrace("DefineFields()","LoglikelihoodRatioWriter");

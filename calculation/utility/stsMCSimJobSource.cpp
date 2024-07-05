@@ -34,7 +34,7 @@ stsMCSimJobSource::stsMCSimJobSource(
 
   if (rParameters.GetOutputSimLoglikeliRatiosFiles())
     gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, iteration > 1, isPowerStep));
-  if (rParameters.GetLogLikelihoodRatioIsTestStatistic())
+  if (rParameters.IsTestStatistic())
     gszReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
   else
     gszReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";

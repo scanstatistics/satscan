@@ -1135,7 +1135,7 @@ void AnalysisExecution::printCriticalValuesStatus(FILE* fp) {
         fprintf(fp, "\n");
         printString(buffer, "A cluster is statistically significant when its %s "
             "is greater than the critical value, which is, for significance level:",
-            (_parameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
+            (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"));
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
         bool printSelectiveGumbel = _parameters.GetPValueReportingType() == DEFAULT_PVALUE;
@@ -1354,7 +1354,7 @@ void AnalysisExecution::printRetainedClustersStatus(FILE* fp, bool bClusterRepor
         for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end() && !anyClusters; ++itrMLC)
             anyClusters = itrMLC->GetNumClustersRetained() && itrMLC->GetTopRankedCluster().GetRatio() < MIN_CLUSTER_LLR_REPORT;
         if (!anyClusters)
-            printString(buffer, "All clusters had a %s less than %g.", (_parameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"), MIN_CLUSTER_LLR_REPORT);
+            printString(buffer, "All clusters had a %s less than %g.", (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"), MIN_CLUSTER_LLR_REPORT);
         else
             printString(buffer, "All clusters had a rank greater than %i.", _parameters.GetNumReplicationsRequested());
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -1367,7 +1367,7 @@ void AnalysisExecution::printTopClusterLogLikelihood(const MostLikelyClustersCon
     //if any clusters were retained, display either loglikelihood or test statistic
     if (mlc.GetNumClustersRetained())
         _print_direction.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT,
-            _parameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio",
+            _parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio",
             mlc.GetTopRankedCluster().m_nRatio);
     else
         _print_direction.Printf("No clusters retained.\n", BasePrint::P_STDOUT);

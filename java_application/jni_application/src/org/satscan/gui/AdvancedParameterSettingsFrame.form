@@ -772,7 +772,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_specifiyNeighborsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify neighbors through a non-Euclidean neighbors file" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Specify neighbors through a non-Euclidean neighbors file." noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -802,7 +802,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_specifiyMetaLocationsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify a meta location file" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Specify a meta location file." noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1110,7 +1110,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)." noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_spatialPopulationFileCheckBox">
@@ -1182,7 +1182,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="kilometer radius." noResource="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -1464,7 +1464,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfStudyPeriodLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the study period (&lt;= 90%, default = 50%)" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="percent of the study period (&lt;= 90%, default = 50%)." noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxTemporalClusterSizeUnitsTextField">
@@ -1477,7 +1477,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxTemporalTimeUnitsLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="years (&lt;=90% of the study period)" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="years (&lt;=90% of the study period)." noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_includePureSpacClustCheckBox">
@@ -1539,7 +1539,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_restrictTemporalRangeCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include only windows with:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Include Only Windows With:" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1611,7 +1611,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="191" max="32767" attributes="0"/>
+                                  <EmptySpace pref="192" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1648,7 +1648,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="_startWindowRangeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Start time in range:" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="Start Time in Range:" noResource="true"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartYearTextField">
@@ -1723,7 +1723,7 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="End time in range:" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="End Time in Range:" noResource="true"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -2047,7 +2047,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinear">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear trend with" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log Linear Trend with" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2063,7 +2063,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearCalc">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear with automatically calculated trend" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log Linear with Automatically Calculated Trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2087,12 +2087,12 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_logLinearLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="%  per Year" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalc">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log quadratic with automatically calculated trend" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log Quadratic with Automatically Calculated Trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2234,7 +2234,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_adjustForKnownRelativeRisksCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjust for known relative risks" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Adjust for Known Relative Risks" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2271,7 +2271,7 @@
             </Container>
             <Component class="javax.swing.JCheckBox" name="_adjustDayOfWeek">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Adjust for day-of-week "/>
+                <Property name="text" type="java.lang.String" value="Adjust for Day-of-Week "/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
@@ -2395,7 +2395,7 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="_pValueButtonGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early termination cutoff:"/>
+                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early Termination Cutoff:"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xd;&#xa;            enablePValueOptionsGroup();&#xd;&#xa;            enableSetDefaultsButton();&#xd;&#xa;            updateMonteCarloTextCaptions();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});"/>
@@ -2425,7 +2425,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_checkReportGumbel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Also report Gumbel based p-values"/>
+                    <Property name="text" type="java.lang.String" value="Also Report Gumbel Based P-values"/>
                     <Property name="horizontalAlignment" type="int" value="4"/>
                   </Properties>
                 </Component>
@@ -2509,7 +2509,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxIterativeScansLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Maximum number of iterations:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Maximum Number of Iterations:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numIterativeScansTextField">
@@ -2522,7 +2522,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_iterativeCutoffLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Stop when the p-value is greater than:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Stop When the P-value is Greater Than:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_iterativeScanCutoffTextField">
@@ -2575,7 +2575,7 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_labelMonteCarloReplications">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Number of replications (0, 9, 999, or value ending in 999):" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Number of Replications (0, 9, 999, or value ending in 999):" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_montCarloReplicationsTextField">
@@ -2690,7 +2690,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_createCompressedKMZ">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Create compressed KMZ file"/>
+                    <Property name="text" type="java.lang.String" value="Create Compressed KMZ File"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_createCompressedKMZ.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -2698,7 +2698,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_launch_map_viewer">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Automatically launch requested maps"/>
+                    <Property name="text" type="java.lang.String" value="Automatically Launch Requested Maps"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -2783,7 +2783,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_checkboxReportIndexCoefficients">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report Gini indexes in results file"/>
+                    <Property name="text" type="java.lang.String" value="Report Gini Indexes in Results File"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
@@ -2917,7 +2917,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)." noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialPopulationFileCheckBox">
@@ -2945,7 +2945,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentageOfPopFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)." noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialDistanceCheckBox">
@@ -2978,7 +2978,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxReportedRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="kilometer radius." noResource="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -3065,7 +3065,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_reportCriticalValuesCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report critical values for an observed cluster to be significant" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Report critical values for an observed cluster to be significant." noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -3169,7 +3169,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_printAsciiColumnHeaders">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Print column headers in ASCII output files" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Print Column Headers in ASCII Output Files" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -4376,7 +4376,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_locations_network">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify locations through a network file"/>
+                    <Property name="text" type="java.lang.String" value="Specify locations through a network file:"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_locations_network.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>

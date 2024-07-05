@@ -717,9 +717,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enable &= !Utils.selected(_temporalTrendAdjNonparametric);
         _adjustDayOfWeek.setEnabled(enable);
         if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
-            _adjustDayOfWeek.setText("Adjust for day-of-week by space interaction");
+            _adjustDayOfWeek.setText("Adjust for Day-of-Week by Space Interaction");
         } else {
-            _adjustDayOfWeek.setText("Adjust for day-of-week");
+            _adjustDayOfWeek.setText("Adjust for Day-of-Week");
         }
     }
 
@@ -738,13 +738,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedMaxDistanceLabel.setText(sRadioCaption);
         switch (_settings_window.getCoordinatesType()) {
             case CARTESIAN:
-                sLabelCaption = String.format("Cartesian units %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
+                sLabelCaption = String.format("Cartesian units %1$s.", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
             case LATLON:
                 if (Utils.selected(_locations_network))
                     sLabelCaption = "kilometers";
                 else
-                    sLabelCaption = String.format("kilometer %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
+                    sLabelCaption = String.format("kilometer %1$s.", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
         }
         _maxRadiusLabel.setText(sLabelCaption);
@@ -788,13 +788,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case EXPONENTIAL:
                 // Skip for purely temporal analysis or applying spatial adjustment.
                 if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
-                    _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
-                    _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=90% of the study period)");
+                    _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%).");
+                    _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=90% of the study period).");
                     break;
                 }
             case SPACETIMEPERMUTATION:
-                _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 50%, default = 50%)");
-                _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=50% of the study period)");
+                _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 50%, default = 50%).");
+                _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=50% of the study period).");
                 break;
         }
     }
@@ -3741,7 +3741,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
 
-            _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file"); // NOI18N
+            _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidean neighbors file."); // NOI18N
             _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3768,7 +3768,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _specifiyMetaLocationsFileCheckBox.setText("Specify a meta location file"); // NOI18N
+            _specifiyMetaLocationsFileCheckBox.setText("Specify a meta location file."); // NOI18N
             _specifiyMetaLocationsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _specifiyMetaLocationsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _specifiyMetaLocationsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3980,7 +3980,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+            _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)."); // NOI18N
 
             _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4061,7 +4061,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _maxRadiusLabel.setText("kilometer radius"); // NOI18N
+            _maxRadiusLabel.setText("kilometer radius."); // NOI18N
 
             javax.swing.GroupLayout _spatialOptionsGroupLayout = new javax.swing.GroupLayout(_spatialOptionsGroup);
             _spatialOptionsGroup.setLayout(_spatialOptionsGroupLayout);
@@ -4297,7 +4297,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)"); // NOI18N
+            _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)."); // NOI18N
 
             _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
             _maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -4319,7 +4319,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)"); // NOI18N
+            _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)."); // NOI18N
 
             _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)"); // NOI18N
             _includePureSpacClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4372,7 +4372,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
 
-            _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
+            _restrictTemporalRangeCheckBox.setText("Include Only Windows With:"); // NOI18N
             _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _restrictTemporalRangeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -4386,7 +4386,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _flexible_window_cards.setLayout(new java.awt.CardLayout());
 
-            _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
+            _startWindowRangeLabel.setText("Start Time in Range:"); // NOI18N
 
             _startRangeStartYearTextField.setText("2000"); // NOI18N
 
@@ -4416,7 +4416,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _endRangeStartYearTextField.setText("2000"); // NOI18N
 
-            _endWindowRangeLabel.setText("End time in range:"); // NOI18N
+            _endWindowRangeLabel.setText("End Time in Range:"); // NOI18N
 
             javax.swing.GroupLayout _windowCompletePanelLayout = new javax.swing.GroupLayout(_windowCompletePanel);
             _windowCompletePanel.setLayout(_windowCompletePanelLayout);
@@ -4457,7 +4457,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addContainerGap(191, Short.MAX_VALUE))
+                    .addContainerGap(192, Short.MAX_VALUE))
             );
             _windowCompletePanelLayout.setVerticalGroup(
                 _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4706,7 +4706,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _temporalTrendAdjLogLinear.setText("Log linear trend with"); // NOI18N
+            _temporalTrendAdjLogLinear.setText("Log Linear Trend with"); // NOI18N
             _temporalTrendAdjLogLinear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _temporalTrendAdjLogLinear.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {
@@ -4719,7 +4719,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _temporalTrendAdjLogLinearCalc.setText("Log linear with automatically calculated trend"); // NOI18N
+            _temporalTrendAdjLogLinearCalc.setText("Log Linear with Automatically Calculated Trend"); // NOI18N
             _temporalTrendAdjLogLinearCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _temporalTrendAdjLogLinearCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _temporalTrendAdjLogLinearCalc.addItemListener(new java.awt.event.ItemListener() {
@@ -4749,9 +4749,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _logLinearLabel.setText("%  per year"); // NOI18N
+            _logLinearLabel.setText("%  per Year"); // NOI18N
 
-            _temporalTrendAdjQuadCalc.setText("Log quadratic with automatically calculated trend"); // NOI18N
+            _temporalTrendAdjQuadCalc.setText("Log Quadratic with Automatically Calculated Trend"); // NOI18N
             _temporalTrendAdjQuadCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _temporalTrendAdjQuadCalc.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {
@@ -4849,7 +4849,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
 
-            _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
+            _adjustForKnownRelativeRisksCheckBox.setText("Adjust for Known Relative Risks"); // NOI18N
             _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _adjustForKnownRelativeRisksCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -4916,7 +4916,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
-            _adjustDayOfWeek.setText("Adjust for day-of-week ");
+            _adjustDayOfWeek.setText("Adjust for Day-of-Week ");
             _adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
@@ -4969,7 +4969,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             });
 
             _pValueButtonGroup.add(_radioEarlyTerminationPValues);
-            _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff:");
+            _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early Termination Cutoff:");
             _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -5004,7 +5004,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _checkReportGumbel.setText("Also report Gumbel based p-values");
+            _checkReportGumbel.setText("Also Report Gumbel Based P-values");
             _checkReportGumbel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
             _earlyTerminationThreshold.setText("50");
@@ -5075,7 +5075,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
+            _maxIterativeScansLabel.setText("Maximum Number of Iterations:"); // NOI18N
 
             _numIterativeScansTextField.setText("10"); // NOI18N
             _numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -5099,7 +5099,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _iterativeCutoffLabel.setText("Stop when the p-value is greater than:"); // NOI18N
+            _iterativeCutoffLabel.setText("Stop When the P-value is Greater Than:"); // NOI18N
 
             _iterativeScanCutoffTextField.setText("0.05"); // NOI18N
             _iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -5156,7 +5156,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
-            _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
+            _labelMonteCarloReplications.setText("Number of Replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
             _montCarloReplicationsTextField.setText("999"); // NOI18N
             _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -5233,14 +5233,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _createCompressedKMZ.setText("Create compressed KMZ file");
+            _createCompressedKMZ.setText("Create Compressed KMZ File");
             _createCompressedKMZ.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
                 }
             });
 
-            _launch_map_viewer.setText("Automatically launch requested maps");
+            _launch_map_viewer.setText("Automatically Launch Requested Maps");
             _launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
@@ -5295,7 +5295,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
 
-            _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
+            _checkboxReportIndexCoefficients.setText("Report Gini Indexes in Results File");
             _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSetDefaultsButton();
@@ -5386,7 +5386,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
+            _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)."); // NOI18N
 
             _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -5417,7 +5417,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
+            _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)."); // NOI18N
 
             _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -5450,7 +5450,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
+            _maxReportedRadiusLabel.setText("kilometer radius."); // NOI18N
 
             javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
             _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
@@ -5536,7 +5536,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
 
-            _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
+            _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant."); // NOI18N
             _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -5592,7 +5592,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers"));
 
-            _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
+            _printAsciiColumnHeaders.setText("Print Column Headers in ASCII Output Files"); // NOI18N
             _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _printAsciiColumnHeaders.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -6510,7 +6510,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _network_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Locations Network"));
 
-            _locations_network.setText("Specify locations through a network file");
+            _locations_network.setText("Specify locations through a network file:");
             _locations_network.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSettingsForAnalysisModelCombination();

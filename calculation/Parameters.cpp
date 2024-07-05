@@ -538,7 +538,7 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 }
 
 /** Returns description for LLR. */
-bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
+bool CParameters::IsTestStatistic() const {
     return (
         geProbabilityModelType == SPACETIMEPERMUTATION || 
           geProbabilityModelType == RANK || 

@@ -11,9 +11,10 @@ class DataSetHandler; /* forward class declaration */
     file of an analysis. */
 class ParametersPrint {
   private:
-    typedef std::vector< std::pair<std::string, std::string> > SettingContainer_t;
-    const CParameters & gParameters;
+    typedef std::vector<std::pair<std::string,std::string>> SettingContainer_t;
+    const CParameters & _parameters;
 
+    void                PrintAdditionalOutputFiles(FILE* fp) const;
     void                PrintAnalysisParameters(FILE* fp) const;
     void                PrintMiscellaneousAnalysisParameters(FILE* fp) const;
     void                PrintSpatialOutputParameters(FILE* fp) const;
@@ -24,7 +25,6 @@ class ParametersPrint {
     void                PrintClusterRestrictionsParameters(FILE* fp) const;
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
-    void                PrintLinelistParameters(FILE* fp) const;
     void                PrintMultipleDataSetParameters(FILE* fp) const;
     void                PrintOtherOutputParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;
@@ -40,10 +40,10 @@ class ParametersPrint {
     void                PrintTemporalWindowParameters(FILE* fp) const;
     void                PrintTemporalOutputParameters(FILE* fp) const;
 
-    void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp) const;
+    void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp, unsigned int margin=2) const;
 
   public:
-    ParametersPrint(const CParameters& Parameters) : gParameters(Parameters) {}
+    ParametersPrint(const CParameters& Parameters) : _parameters(Parameters) {}
     ~ParametersPrint() {}
 
     const char        * GetAnalysisTypeAsString() const;

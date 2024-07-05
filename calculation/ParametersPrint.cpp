@@ -16,7 +16,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
     const char * sAnalysisType;
 
     try {
-        switch (gParameters.GetAnalysisType()) {
+        switch (_parameters.GetAnalysisType()) {
             case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
             case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
             case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
@@ -24,7 +24,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
             case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
             case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
             case SEASONALTEMPORAL          : sAnalysisType = "Seasonal Temporal"; break;
-            default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
+            default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", _parameters.GetAnalysisType());
         }
     } catch (prg_exception& x) {
         x.addTrace("GetAnalysisTypeAsString()","ParametersPrint");
@@ -35,27 +35,27 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
 
 /* Returns time aggregation type as string. */
 const char * ParametersPrint::GetTimeAggregationTypeAsString() const {
-    switch (gParameters.GetTimeAggregationLength()) {
+    switch (_parameters.GetTimeAggregationLength()) {
         case GENERIC:
         case YEAR  : return "annually";
         case MONTH : return "monthly";
         case DAY   : return "daily";
         case NONE  :
-        default: throw prg_error("Unknown time aggregation type '%d'.\n", "GetTimeAggregationTypeAsString()", gParameters.GetTimeAggregationLength());
+        default: throw prg_error("Unknown time aggregation type '%d'.\n", "GetTimeAggregationTypeAsString()", _parameters.GetTimeAggregationLength());
     }
 }
 
 /** Returns area scan type as string based upon probability model type. */
 const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
     try {
-        switch (gParameters.GetProbabilityModelType()) {
+        switch (_parameters.GetProbabilityModelType()) {
             case POISSON :
-                if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-                    switch (gParameters.GetAreaScanRateType()) {
+                if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+                    switch (_parameters.GetAreaScanRateType()) {
                         case HIGH       : return "More Increasing or Less Decreasing Rates";
                         case LOW        : return "More Decreasing or Less Increasing Rates";
                         case HIGHANDLOW : return "Increasing or Decreasing Rates";
-                        default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                        default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", _parameters.GetAreaScanRateType());
                     }
                 }
             case RANK:
@@ -63,29 +63,29 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             case BERNOULLI :
             case SPACETIMEPERMUTATION :
             case UNIFORMTIME :
-                switch (gParameters.GetAreaScanRateType()) {
+                switch (_parameters.GetAreaScanRateType()) {
                     case HIGH       : return "High Rates";
                     case LOW        : return "Low Rates";
                     case HIGHANDLOW : return "High or Low Rates";
-                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", _parameters.GetAreaScanRateType());
                 }
             case CATEGORICAL : return "All Values";
             case ORDINAL :
             case NORMAL :
-                switch (gParameters.GetAreaScanRateType()) {
+                switch (_parameters.GetAreaScanRateType()) {
                     case HIGH       : return "High Values";
                     case LOW        : return "Low Values";
                     case HIGHANDLOW : return "High or Low Values";
-                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", _parameters.GetAreaScanRateType());
                 }
             case EXPONENTIAL :
-                switch (gParameters.GetAreaScanRateType()) {
+                switch (_parameters.GetAreaScanRateType()) {
                     case HIGH       : return "Short Survival";
                     case LOW        : return "Long Survival";
                     case HIGHANDLOW : return "Short or Long Survival";
-                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                    default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", _parameters.GetAreaScanRateType());
                 }
-            default : throw prg_error("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", gParameters.GetProbabilityModelType());
+            default : throw prg_error("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", _parameters.GetProbabilityModelType());
         }
     } catch (prg_exception& x) {
         x.addTrace("GetAreaScanRateTypeAsString()","ParametersPrint");
@@ -98,7 +98,7 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
     const char * sProbabilityModel;
 
     try {
-        switch (gParameters.GetProbabilityModelType()) {
+        switch (_parameters.GetProbabilityModelType()) {
             case POISSON              : sProbabilityModel = "Discrete Poisson"; break;
             case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
             case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
@@ -109,7 +109,7 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
             case RANK                 : sProbabilityModel = "Rank"; break;
             case UNIFORMTIME          : sProbabilityModel = "Uniform Time"; break;
             case HOMOGENEOUSPOISSON   : sProbabilityModel = "Continuous Poisson"; break;
-            default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
+            default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", _parameters.GetProbabilityModelType());
         }
     } catch (prg_exception& x) {
         x.addTrace("GetProbabilityModelTypeAsString()","ParametersPrint");
@@ -122,11 +122,11 @@ const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
     const char * sProbabilityModel;
 
     try {
-        switch (gParameters.getPowerEvaluationMethod()) {
+        switch (_parameters.getPowerEvaluationMethod()) {
             case PE_WITH_ANALYSIS        : return "power evaluation with analysis";
             case PE_ONLY_CASEFILE        : return "only power evaluation using case file";
             case PE_ONLY_SPECIFIED_CASES : return "only power evaluation using specified total cases";
-            default : throw prg_error("Unknown power evaluation method '%d'.\n", "getPowerEvaluationMethodAsString()", gParameters.getPowerEvaluationMethod());
+            default : throw prg_error("Unknown power evaluation method '%d'.\n", "getPowerEvaluationMethodAsString()", _parameters.getPowerEvaluationMethod());
         }
     } catch (prg_exception& x) {
         x.addTrace("getPowerEvaluationMethodAsString()","ParametersPrint");
@@ -138,9 +138,9 @@ const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(FILE* fp) const {
     try {
+        PrintAdditionalOutputFiles(fp);
         AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
         fprintf(fp, "PARAMETER SETTINGS\n");
-
         PrintInputParameters(fp);
         PrintAnalysisParameters(fp);
         PrintOutputParameters(fp);
@@ -160,7 +160,6 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintSpatialOutputParameters(fp);
         PrintTemporalOutputParameters(fp);
         PrintOtherOutputParameters(fp);
-        PrintLinelistParameters(fp);
         PrintNotificationsParameters(fp);
         PrintEllipticScanParameters(fp);
         PrintPowerSimulationsParameters(fp);
@@ -173,32 +172,92 @@ void ParametersPrint::Print(FILE* fp) const {
     }
 }
 
+/** Prints 'ADDITIONAL RESULTS FILES' section to file stream. */
+void ParametersPrint::PrintAdditionalOutputFiles(FILE* fp) const {
+    FileName filename(_parameters.GetOutputFileName().c_str());
+    SettingContainer_t files;
+    std::string buffer;
+    bool canReportClusterFiles = (!_parameters.getPerformPowerEvaluation() || (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
+
+    try {
+        auto addByExtension = [&](const std::string& file_label, const std::string& extension) {
+            files.push_back(std::make_pair(file_label, filename.setExtension(extension.c_str()).getFullPath(buffer)));
+        };
+        auto addByFullpath= [&](const std::string& file_label, const std::string& full_path) {
+            files.push_back(std::make_pair(file_label, full_path));
+            filename.setFullPath(_parameters.GetOutputFileName().c_str()); // reset
+        };
+        if (_parameters.GetCoordinatesType() == LATLON && _parameters.getOutputKMLFile())
+            addByExtension("Google Earth", _parameters.getCompressClusterKML() ? ".kmz" : ".kml");
+        if (_parameters.GetCoordinatesType() == LATLON && _parameters.getOutputGoogleMapsFile())
+            addByFullpath("Google Maps", ClusterMap::getFilename(filename).getFullPath(buffer));
+        if (_parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles() && _parameters.getUseLocationsNetworkFile())
+            addByExtension("Shapefile", ".col.edges.shp");
+        if (_parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles())
+            addByExtension("Shapefile", ".col.shp");
+        if (_parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles())
+            addByExtension("Shapefile", ".gis.shp");
+        if (_parameters.getOutputCartesianGraph())
+            addByFullpath("Cartesian Map", CartesianGraph::getFilename(filename).getFullPath(buffer));
+        if (canReportClusterFiles && _parameters.GetOutputClusterLevelAscii())
+            addByExtension("Cluster Information", ".col.txt");
+        if (canReportClusterFiles && _parameters.GetOutputClusterLevelDBase())
+            addByExtension("Cluster Information", ".col.dbf");
+        if (canReportClusterFiles && _parameters.GetOutputClusterCaseAscii())
+            addByExtension("Stratified Cluster Information", ".sci.txt");
+        if (canReportClusterFiles && _parameters.GetOutputClusterCaseDBase())
+            addByExtension("Stratified Cluster File", ".sci.dbf");
+        if (canReportClusterFiles && _parameters.GetOutputAreaSpecificAscii())
+            addByExtension("Location Information", ".gis.txt");
+        if (canReportClusterFiles && _parameters.GetOutputAreaSpecificDBase())
+            addByExtension("Location Information", ".gis.dbf");
+        if (_parameters.GetOutputRelativeRisksAscii())
+            addByExtension("Risk Estimates for Each Location", ".rr.txt");
+        if (_parameters.GetOutputRelativeRisksDBase())
+            addByExtension("Risk Estimates for Each Location", ".rr.dbf");
+        if (_parameters.GetOutputSimLoglikeliRatiosAscii())
+            addByExtension(_parameters.IsTestStatistic() ? "Simulated Test Statistics" : "Simulated Log Likelihood Ratios", ".llr.txt");
+        if (_parameters.GetOutputSimLoglikeliRatiosDBase())
+            addByExtension("Simulated Log Likelihood Ratios", ".llr.dbf");
+        if (_parameters.getOutputTemporalGraphFile())
+            addByFullpath("Temporal Graph", TemporalChartGenerator::getFilename(filename).getFullPath(buffer));
+        if (_parameters.getReadingLineDataFromCasefile()) {
+            for (unsigned int idx=1; idx <= _parameters.getNumFileSets(); ++idx) {
+                if (_parameters.getNumFileSets() == 1)
+                    addByExtension("Cluster Linelist", ".linelist.csv");
+                else
+                    addByExtension("Cluster Linelist", printString(buffer, ".linelist.dataset%u.csv", idx));
+            }
+            if (_parameters.getLinelistIndividualsCacheFileName().size())
+                addByFullpath("Individuals Cache", _parameters.getLinelistIndividualsCacheFileName());
+        }
+        for (auto& const file: _parameters.getDrilldownResultFilename())
+            addByFullpath("Drilldown Results", file);
+        if (files.size()) {
+            AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
+            fprintf(fp, "ADDITIONAL RESULTS FILES\n\n");
+            WriteSettingsContainer(files, "", fp, 0);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("PrintAdditionalOutputFiles()", "ParametersPrint");
+        throw;
+    }
+}
+
 /** Print parameters of 'Other Output' tab/section. */
 void ParametersPrint::PrintOtherOutputParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
 
     try {
-        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
-            settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
+        if (!_parameters.getPerformPowerEvaluation() || (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
+            settings.push_back(std::make_pair("Report Critical Values",(_parameters.GetReportCriticalValues() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Report Monte Carlo Rank",(_parameters.getReportClusterRank() ? "Yes" : "No")));
         }
-        if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
-            gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
-            settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
-        settings.push_back(std::make_pair("User Defined Title",gParameters.GetTitleName()));
-        if (gParameters.getReadingLineDataFromCasefile()) {
-            settings.push_back(std::make_pair("Cluster Linelist CSV Cutoff Value", printString(buffer, "%g", gParameters.getCutoffLineListCSV())));
-            FileName linelist(gParameters.GetOutputFileName().c_str());
-            for (unsigned int idx = 1; idx <= gParameters.getNumFileSets(); ++idx) {
-                if (gParameters.getNumFileSets() == 1) {
-                    linelist.setExtension(".linelist.csv");
-                }
-                else
-                    linelist.setExtension(printString(buffer, ".linelist.dataset%u.csv", idx).c_str());
-                settings.push_back(std::make_pair("Cluster Linelist File", linelist.getFullPath(buffer)));
-            }
-        }
+        if (_parameters.GetOutputAreaSpecificAscii() || _parameters.GetOutputClusterCaseAscii() ||
+            _parameters.GetOutputClusterLevelAscii() || _parameters.GetOutputRelativeRisksAscii() || _parameters.GetOutputSimLoglikeliRatiosAscii())
+            settings.push_back(std::make_pair("Print ASCII Column Headers",(_parameters.getPrintAsciiHeaders() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("User Defined Title",_parameters.GetTitleName()));
         WriteSettingsContainer(settings, "Other Output", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintOtherOutputParameters()","ParametersPrint");
@@ -211,35 +270,35 @@ void ParametersPrint::PrintMiscellaneousAnalysisParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
 
-    if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() == PURELYSPATIAL) {
-        settings.push_back(std::make_pair("Report Oliveira's F", (gParameters.getCalculateOliveirasF() ? "Yes" : "No")));
-        if (gParameters.getCalculateOliveirasF())
-            settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", gParameters.getNumRequestedOliveiraSets())));
+    if (_parameters.GetProbabilityModelType() == POISSON && _parameters.GetAnalysisType() == PURELYSPATIAL) {
+        settings.push_back(std::make_pair("Report Oliveira's F", (_parameters.getCalculateOliveirasF() ? "Yes" : "No")));
+        if (_parameters.getCalculateOliveirasF())
+            settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", _parameters.getNumRequestedOliveiraSets())));
     }
-    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetTimeAggregationUnitsType() != GENERIC) {
-        switch (gParameters.getProspectiveFrequencyType()) {
+    if (_parameters.GetIsProspectiveAnalysis() && _parameters.GetTimeAggregationUnitsType() != GENERIC) {
+        switch (_parameters.getProspectiveFrequencyType()) {
         case SAME_TIMEAGGREGATION: buffer = "Same As Time Aggregation"; break;
         case DAILY:
-            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", gParameters.getProspectiveFrequency());
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", _parameters.getProspectiveFrequency());
             else buffer = "Daily";
             break;
         case WEEKLY:
-            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", gParameters.getProspectiveFrequency());
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", _parameters.getProspectiveFrequency());
             else buffer = "Weekly";
             break;
         case MONTHLY:
-            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", gParameters.getProspectiveFrequency());
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", _parameters.getProspectiveFrequency());
             else buffer = "Monthly";
             break;
         case QUARTERLY:
-            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", gParameters.getProspectiveFrequency());
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", _parameters.getProspectiveFrequency());
             else buffer = "Quarterly";
             break;
         case YEARLY:
-            if (gParameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", gParameters.getProspectiveFrequency());
+            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", _parameters.getProspectiveFrequency());
             else buffer = "Yearly";
             break;
-        default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", gParameters.getProspectiveFrequencyType());
+        default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
         }
         settings.push_back(std::make_pair("Prospective Analysis Frequency", buffer));
     }
@@ -248,24 +307,24 @@ void ParametersPrint::PrintMiscellaneousAnalysisParameters(FILE* fp) const {
 
 /** Prints 'Analysis' tab parameters to file stream. */
 void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
-    AnalysisType eAnalysisType = gParameters.GetAnalysisType();
+    AnalysisType eAnalysisType = _parameters.GetAnalysisType();
     SettingContainer_t settings;
     std::string buffer;
 
     try {
         settings.push_back(std::make_pair("Type of Analysis",GetAnalysisTypeAsString()));
         settings.push_back(std::make_pair("Probability Model",GetProbabilityModelTypeAsString()));
-        settings.push_back(std::make_pair("Scan for Areas with",GetAreaScanRateTypeAsString()));
+        settings.push_back(std::make_pair("Scan For Areas With",GetAreaScanRateTypeAsString()));
         if (eAnalysisType != PURELYSPATIAL) {
             buffer = "Time Aggregation Units";
-            switch (gParameters.GetTimeAggregationUnitsType()) {
+            switch (_parameters.GetTimeAggregationUnitsType()) {
                 case YEAR  : settings.push_back(std::make_pair(buffer,"Year")); break;
                 case MONTH : settings.push_back(std::make_pair(buffer,"Month")); break;
                 case DAY   : settings.push_back(std::make_pair(buffer,"Day")); break;
                 case GENERIC : settings.push_back(std::make_pair(buffer,"Generic"));  break;
-                default : throw prg_error("Unknown date precision type '%d'.\n","PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
+                default : throw prg_error("Unknown date precision type '%d'.\n","PrintAnalysisParameters()", _parameters.GetTimeAggregationUnitsType());
             }
-            printString(buffer, "%i", gParameters.GetTimeAggregationLength());
+            printString(buffer, "%i", _parameters.GetTimeAggregationLength());
             settings.push_back(std::make_pair("Time Aggregation Length",buffer));
         }
         WriteSettingsContainer(settings, "Analysis", fp);
@@ -280,7 +339,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
     try {
         std::string buffer;
         std::vector<std::string> statements;
-        switch (gParameters.GetAnalysisType()) {
+        switch (_parameters.GetAnalysisType()) {
             case PURELYSPATIAL             : statements.push_back("Purely Spatial"); break;
             case PURELYTEMPORAL            : statements.push_back("Retrospective Purely Temporal"); break;
             case SPACETIME                 : statements.push_back("Retrospective Space-Time"); break;
@@ -288,19 +347,19 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
             case SPATIALVARTEMPTREND       : statements.push_back("Spatial Variation in Temporal Trends"); break;
             case PROSPECTIVEPURELYTEMPORAL : statements.push_back("Prospective Purely Temporal"); break;
             case SEASONALTEMPORAL          : statements.push_back("Seasonal Temporal"); break;
-            default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", gParameters.GetAnalysisType());
+            default : throw prg_error("Unknown analysis type '%d'.\n","PrintAnalysisSummary()", _parameters.GetAnalysisType());
         }
-        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)
+        if (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)
             statements.back() += " analysis and power evaluation";
         else
-            statements.back() += gParameters.getPerformPowerEvaluation() ? " power evaluation" : " analysis";
+            statements.back() += _parameters.getPerformPowerEvaluation() ? " power evaluation" : " analysis";
         statements.push_back("scanning for ");
-        if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
+        if (_parameters.GetAnalysisType() == PURELYSPATIAL && _parameters.GetRiskType() == MONOTONERISK)
             statements.back() += "monotone ";
         std::string s(GetAreaScanRateTypeAsString());
         std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
         statements.back() += printString(buffer, "clusters with %s", s.c_str());
-        switch (gParameters.GetProbabilityModelType()) {
+        switch (_parameters.GetProbabilityModelType()) {
             case POISSON              : statements.push_back("using the Discrete Poisson model"); break;
             case BERNOULLI            : statements.push_back("using the Bernoulli model"); break;
             case SPACETIMEPERMUTATION : statements.push_back("using the Space-Time Permutation model"); break;
@@ -311,45 +370,45 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
             case RANK                 : statements.push_back("using the Rank model"); break;
             case UNIFORMTIME          : statements.push_back("using the Uniform Time model"); break;
             case HOMOGENEOUSPOISSON   : statements.push_back("using the Continuous Poisson model"); break;
-            default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
+            default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetProbabilityModelType());
         }
-        if (gParameters.getNumFileSets() > 1) {
-            switch (gParameters.GetMultipleDataSetPurposeType()) {
-                case MULTIVARIATE : statements.push_back(printString(buffer, "with multivariate scan using %u data sets", gParameters.getNumFileSets())); break;
-                case ADJUSTMENT   : statements.push_back(printString(buffer, "with adjustment using %u data sets", gParameters.getNumFileSets())); break;
-                default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
+        if (_parameters.getNumFileSets() > 1) {
+            switch (_parameters.GetMultipleDataSetPurposeType()) {
+                case MULTIVARIATE : statements.push_back(printString(buffer, "with multivariate scan using %u data sets", _parameters.getNumFileSets())); break;
+                case ADJUSTMENT   : statements.push_back(printString(buffer, "with adjustment using %u data sets", _parameters.getNumFileSets())); break;
+                default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetMultipleDataSetPurposeType());
             }
         }
-        if (gParameters.GetIsSpaceTimeAnalysis()) {
-            if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
+        if (_parameters.GetIsSpaceTimeAnalysis()) {
+            if (_parameters.GetIncludePurelySpatialClusters() && _parameters.GetIncludePurelyTemporalClusters())
                 statements.push_back("including purely spatial and purely temporal clusters");
-            else if (gParameters.GetIncludePurelySpatialClusters())
+            else if (_parameters.GetIncludePurelySpatialClusters())
                 statements.push_back("including purely spatial clusters");
-            else if (gParameters.GetIncludePurelyTemporalClusters())
+            else if (_parameters.GetIncludePurelyTemporalClusters())
                 statements.push_back("including purely temporal clusters");
         }
-        if (gParameters.GetIsIterativeScanning() && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
+        if (_parameters.GetIsIterativeScanning() && _parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
             statements.push_back("with iterative analyses for secondary clusters");
-        switch (gParameters.GetTimeTrendAdjustmentType()) {
+        switch (_parameters.GetTimeTrendAdjustmentType()) {
             case TEMPORAL_NOTADJUSTED: break;
             case TEMPORAL_NONPARAMETRIC: statements.push_back("adjusting for time nonparametrically"); break;
             case LOGLINEAR_PERC: statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
             case CALCULATED_LOGLINEAR_PERC: statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
             case TEMPORAL_STRATIFIED_RANDOMIZATION: statements.push_back("adjusting for time with stratified randomization"); break;
             case CALCULATED_QUADRATIC:statements.push_back(getCalculatedTimeTrendAsString(SetHandler)); break;
-            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", _parameters.GetTimeTrendAdjustmentType());
         }
-        switch (gParameters.GetSpatialAdjustmentType()) {
+        switch (_parameters.GetSpatialAdjustmentType()) {
             case SPATIAL_NOTADJUSTED: break;
             case SPATIAL_STRATIFIED_RANDOMIZATION:
                 statements.push_back("adjusting for purely spatial clusters with stratified randomization"); break;
             case SPATIAL_NONPARAMETRIC:
                 statements.push_back("adjusting for purely spatial clusters nonparametrically"); break;
-            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+            default: throw prg_error("Unknown time trend adjustment type '%d'.\n", "PrintAdjustments()", _parameters.GetSpatialAdjustmentType());
         }
-        if (gParameters.getAdjustForWeeklyTrends())
+        if (_parameters.getAdjustForWeeklyTrends())
             statements.push_back("adjusting for weekly trends nonparametrically");
-        if (gParameters.UseAdjustmentForRelativeRisksFile()) 
+        if (_parameters.UseAdjustmentForRelativeRisksFile()) 
             statements.push_back("adjusting for known relative risks");
         statements.back() += ".";
 
@@ -370,26 +429,26 @@ std::string ParametersPrint::getCalculatedTimeTrendAsString(const DataSetHandler
     std::stringstream        strBuffer;
     std::deque<unsigned int> TrendIncrease, TrendDecrease;
 
-    if (!(gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
-          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
-          gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC))
+    if (!(_parameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC ||
+          _parameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || 
+          _parameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC))
         return work;
 
     //NOTE: Each dataset has own calculated time trend.
-    if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC) {
+    if (_parameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC) {
         strBuffer << "adjusting for log quadratic time trend with:";
         for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
             strBuffer << std::endl << SetHandler.GetDataSet(t).getCalculatedQuadraticTimeTrend().c_str();
             if (SetHandler.GetNumDataSets() > 1) strBuffer << " for data set " << (t + 1);
         }
     } else {
-        switch (gParameters.GetTimeAggregationUnitsType()) {
+        switch (_parameters.GetTimeAggregationUnitsType()) {
             case GENERIC:
             case YEAR: trend_label = "an annual"; break;
             case MONTH: trend_label = "a monthly"; break;
             case DAY: trend_label = "a daily"; break;
             case NONE:
-            default: throw prg_error("Unknown time aggregation type '%d'.\n", "getCalculatedTimeTrendAsString()", gParameters.GetTimeAggregationUnitsType());
+            default: throw prg_error("Unknown time aggregation type '%d'.\n", "getCalculatedTimeTrendAsString()", _parameters.GetTimeAggregationUnitsType());
          }
          if (SetHandler.GetNumDataSets() == 1) {
              strBuffer << "adjusting for time trend with " << trend_label.c_str();
@@ -445,25 +504,25 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
 
     try {
         // skip these settings for purely temporal analysis
-        if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+        if (_parameters.GetIsPurelyTemporalAnalysis()) return;
 
         // skip these settings when performing power evaluations without running an analysis
-        if ((gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
+        if ((_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() != PE_WITH_ANALYSIS)) return;
 
-        if (gParameters.getOutputKMLFile() || gParameters.getOutputCartesianGraph() || gParameters.getOutputGoogleMapsFile())
-            settings.push_back(std::make_pair("Automatically Launch Map", (gParameters.getLaunchMapViewer() ? "Yes" : "No")));
+        if (_parameters.getOutputKMLFile() || _parameters.getOutputCartesianGraph() || _parameters.getOutputGoogleMapsFile())
+            settings.push_back(std::make_pair("Automatically Launch Map", (_parameters.getLaunchMapViewer() ? "Yes" : "No")));
 
-        if (gParameters.getOutputKMLFile()) {
-            settings.push_back(std::make_pair("Compress KML File into KMZ File",(gParameters.getCompressClusterKML() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(gParameters.getIncludeLocationsKML() ? "Yes" : "No")));
-            printString(buffer, "%u", gParameters.getLocationsThresholdKML());
+        if (_parameters.getOutputKMLFile()) {
+            settings.push_back(std::make_pair("Compress KML File into KMZ File",(_parameters.getCompressClusterKML() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include All Location IDs in the Clusters",(_parameters.getIncludeLocationsKML() ? "Yes" : "No")));
+            printString(buffer, "%u", _parameters.getLocationsThresholdKML());
             settings.push_back(std::make_pair("Cluster Location Threshold - Separate KML",buffer));
         }
 
-        settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
-        if (gParameters.getReportHierarchicalClusters()) {
+        settings.push_back(std::make_pair("Report Hierarchical Clusters", (_parameters.getReportHierarchicalClusters() ? "Yes" : "No")));
+        if (_parameters.getReportHierarchicalClusters()) {
             buffer = "Criteria for Reporting Secondary Clusters";
-            switch (gParameters.GetCriteriaSecondClustersType()) {
+            switch (_parameters.GetCriteriaSecondClustersType()) {
             case NOGEOOVERLAP:
                 settings.push_back(std::make_pair(buffer, "No Geographical Overlap")); break;
             case NOCENTROIDSINOTHER:
@@ -476,40 +535,40 @@ void ParametersPrint::PrintSpatialOutputParameters(FILE* fp) const {
                 settings.push_back(std::make_pair(buffer, "No Pairs of Centroids Both in Each Others Clusters")); break;
             case NORESTRICTIONS:
                 settings.push_back(std::make_pair(buffer, "No Restrictions = Most Likely Cluster for Each Centroid")); break;
-            default: throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintSpatialClustersParameters()", gParameters.GetCriteriaSecondClustersType());
+            default: throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintSpatialClustersParameters()", _parameters.GetCriteriaSecondClustersType());
             }
         }
-        if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
-            settings.push_back(std::make_pair("Report Gini Optimized Cluster Collection", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
-            if (gParameters.getReportGiniOptimizedClusters()) {
+        if (_parameters.GetAnalysisType() == PURELYSPATIAL) {
+            settings.push_back(std::make_pair("Report Gini Optimized Cluster Collection", (_parameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
+            if (_parameters.getReportGiniOptimizedClusters()) {
                 buffer = "Gini Index Based Collection Reporting";
-                switch (gParameters.getGiniIndexReportType()) {
+                switch (_parameters.getGiniIndexReportType()) {
                 case OPTIMAL_ONLY: settings.push_back(std::make_pair(buffer, "Optimal Only")); break;
                 case ALL_VALUES: settings.push_back(std::make_pair(buffer, "All Values")); break;
-                default: throw prg_error("Unknown index based cluster reporting type '%d'.\n", "PrintSpatialClustersParameters()", gParameters.getGiniIndexReportType());
+                default: throw prg_error("Unknown index based cluster reporting type '%d'.\n", "PrintSpatialClustersParameters()", _parameters.getGiniIndexReportType());
                 }
-                settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (gParameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
-                /*printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
-                for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
-                printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
+                settings.push_back(std::make_pair("Report Gini Index Cluster Coefficents", (_parameters.getReportGiniIndexCoefficents() ? "Yes" : "No")));
+                /*printString(buffer, "%g", _parameters.getExecuteSpatialWindowStops()[0]);
+                for (size_t i=1; i < _parameters.getExecuteSpatialWindowStops().size(); ++i) {
+                printString(worker, ", %g", _parameters.getExecuteSpatialWindowStops()[i]);
                 buffer += worker;
                 }
                 settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));*/
             }
         }
-        settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
-        if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
-            if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
-                printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+        settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (_parameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
+        if (_parameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+            if (!(_parameters.GetAnalysisType() == PROSPECTIVESPACETIME && _parameters.GetAdjustForEarlierAnalyses())) {
+                printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
                 settings.push_back(std::make_pair("Reported Clusters", buffer));
             }
-            if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
-                printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
+            if (_parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+                printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", _parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
                 settings.push_back(std::make_pair("Reported Clusters", buffer));
             }
-            if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+            if (_parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
                 printString(buffer, "Only clusters smaller than %g%s reported.",
-                    gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
+                    _parameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (_parameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
                 settings.push_back(std::make_pair("Reported Clusters", buffer));
             }
         }
@@ -527,27 +586,27 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
             buffer = "Temporal Data Check";
-            switch (gParameters.GetStudyPeriodDataCheckingType()) {
+            switch (_parameters.GetStudyPeriodDataCheckingType()) {
                 case STRICTBOUNDS     :
                     settings.push_back(std::make_pair(buffer,"Check to ensure that all cases and controls are within the specified temporal study period.")); 
                     break;
                 case RELAXEDBOUNDS    : settings.push_back(std::make_pair(buffer,"Ignore cases and controls that are outside the specified temporal study period.")); 
                     break;
-                default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
+                default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", _parameters.GetStudyPeriodDataCheckingType());
             }
         }
-        if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+        if (!_parameters.GetIsPurelyTemporalAnalysis()) {
             buffer = "Geographical Data Check";
-            switch (gParameters.GetCoordinatesDataCheckingType()) {
+            switch (_parameters.GetCoordinatesDataCheckingType()) {
                 case STRICTCOORDINATES  :
                     settings.push_back(std::make_pair(buffer,"Check to ensure that all observations (cases, controls and populations) are within the specified geographical area."));
                     break;
                 case RELAXEDCOORDINATES :
                     settings.push_back(std::make_pair(buffer,"Ignore observations that are outside the specified geographical area."));
                     break;
-                default : throw prg_error("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
+                default : throw prg_error("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", _parameters.GetCoordinatesDataCheckingType());
             }
         }
         WriteSettingsContainer(settings, "Data Checking", fp);
@@ -562,33 +621,26 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        bool permitsStandard = gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND;
-        permitsStandard &= !gParameters.UseMetaLocationsFile();
-        bool permitsBernoulli = gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
-        permitsBernoulli &= !gParameters.UseMetaLocationsFile();
+        bool permitsStandard = _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == PURELYSPATIAL || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND;
+        permitsStandard &= !_parameters.UseMetaLocationsFile();
+        bool permitsBernoulli = _parameters.GetIsSpaceTimeAnalysis() && (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+        permitsBernoulli &= !_parameters.UseMetaLocationsFile();
         if (permitsStandard || permitsBernoulli) {
             if (permitsStandard)
-                settings.push_back(std::make_pair("Standard Drilldown on Detected Clusters", (gParameters.getPerformStandardDrilldown() ? "Yes" : "No")));
-            if (permitsBernoulli)
-                settings.push_back(std::make_pair("Bernoulli Drilldown on Detected Clusters", (gParameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
-            if (gParameters.getPerformStandardDrilldown() || gParameters.getPerformBernoulliDrilldown()) {
-                settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumLocationsCluster())));
-                settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", gParameters.getDrilldownMinimumCasesCluster())));
-                settings.push_back(std::make_pair("Cutoff of Deteted Cluster", printString(buffer, "%g", gParameters.getDrilldownCutoff())));
-                if (permitsBernoulli && gParameters.getPerformBernoulliDrilldown()) {
-                    settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (gParameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
-                }
-                if (gParameters.getDrilldownResultFilename().size()) {
-                    for (std::vector<std::string>::const_iterator itr = gParameters.getDrilldownResultFilename().begin(); itr != gParameters.getDrilldownResultFilename().end(); ++itr)
-                        settings.push_back(std::make_pair("Drilldown Results File", *itr));
-                } else {
-                    settings.push_back(std::make_pair("Drilldown Results File", "None"));
-                }
+                settings.push_back(std::make_pair("Same Design as Main Analysis", (_parameters.getPerformStandardDrilldown() ? "Yes" : "No")));
+            if (permitsBernoulli) {
+                settings.push_back(std::make_pair("Purely Spatial Bernoulli", (_parameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
+                if (_parameters.getPerformBernoulliDrilldown())
+                    settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (_parameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
+            }
+            if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
+                settings.push_back(std::make_pair("Cutoff of Deteted Cluster", printString(buffer, "%g", _parameters.getDrilldownCutoff())));
+                settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumLocationsCluster())));
+                settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumCasesCluster())));
             }
         }
-        WriteSettingsContainer(settings, "Cluster Drilldown", fp);
-    }
-    catch (prg_exception& x) {
+        WriteSettingsContainer(settings, "Drilldown", fp);
+    } catch (prg_exception& x) {
         x.addTrace("PrintDrilldownParameters()", "ParametersPrint");
         throw;
     }
@@ -601,16 +653,16 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
     std::string buffer, worker;
 
     try {
-        if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile() && gParameters.GetSpatialWindowType() == ELLIPTIC) {
-            printString(buffer, "%g", gParameters.GetEllipseShapes()[0]);
-            for (size_t i=1; i < gParameters.GetEllipseShapes().size(); ++i) {
-                printString(worker, ", %g", gParameters.GetEllipseShapes()[i]);
+        if (!_parameters.GetIsPurelyTemporalAnalysis() && !_parameters.UseLocationNeighborsFile() && _parameters.GetSpatialWindowType() == ELLIPTIC) {
+            printString(buffer, "%g", _parameters.GetEllipseShapes()[0]);
+            for (size_t i=1; i < _parameters.GetEllipseShapes().size(); ++i) {
+                printString(worker, ", %g", _parameters.GetEllipseShapes()[i]);
                 buffer += worker;
             }
             settings.push_back(std::make_pair("Ellipse Shapes",buffer));
-            printString(buffer, "%i", gParameters.GetEllipseRotations()[0]);
-            for (size_t i=1; i < gParameters.GetEllipseRotations().size(); ++i) {
-                printString(worker, ", %i", gParameters.GetEllipseRotations()[i]);
+            printString(buffer, "%i", _parameters.GetEllipseRotations()[0]);
+            for (size_t i=1; i < _parameters.GetEllipseRotations().size(); ++i) {
+                printString(worker, ", %i", _parameters.GetEllipseRotations()[i]);
                 buffer += worker;
             }
             settings.push_back(std::make_pair("Number of Angles for Each Ellipse Shape",buffer));
@@ -628,18 +680,18 @@ void ParametersPrint::PrintNotificationsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        settings.push_back(std::make_pair("Always Send Email", (gParameters.getAlwaysEmailSummary() ? "Yes" : "No")));
-        if (gParameters.getAlwaysEmailSummary())
-            settings.push_back(std::make_pair("Always Notify Recipients", gParameters.getEmailAlwaysRecipients()));
-        settings.push_back(std::make_pair("Send Email With Results Meeting Cutoff", (gParameters.getCutoffEmailSummary() ? "Yes" : "No")));
-        if (gParameters.getCutoffEmailSummary()) {
-            settings.push_back(std::make_pair("Cutoff Notify Recipients", gParameters.getEmailCutoffRecipients()));
-            settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, "%g", gParameters.getCutoffEmailValue())));
+        settings.push_back(std::make_pair("Always Send Email", (_parameters.getAlwaysEmailSummary() ? "Yes" : "No")));
+        if (_parameters.getAlwaysEmailSummary())
+            settings.push_back(std::make_pair("Always Notify Recipients", _parameters.getEmailAlwaysRecipients()));
+        settings.push_back(std::make_pair("Send Email with Results Meeting Cutoff", (_parameters.getCutoffEmailSummary() ? "Yes" : "No")));
+        if (_parameters.getCutoffEmailSummary()) {
+            settings.push_back(std::make_pair("Cutoff Notify Recipients", _parameters.getEmailCutoffRecipients()));
+            settings.push_back(std::make_pair("Email Cutoff Value", printString(buffer, "%g", _parameters.getCutoffEmailValue())));
         }
-        if (gParameters.getAlwaysEmailSummary() || gParameters.getCutoffEmailSummary()) {
-            settings.push_back(std::make_pair("Attach Primary Results File", (gParameters.getEmailAttachResults() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Include Results File and Directory", (gParameters.getEmailIncludeResultsDirectory() ? "Yes" : "No")));
-            settings.push_back(std::make_pair("Custom Email", (gParameters.getEmailCustom() ? "Yes" : "No")));
+        if (_parameters.getAlwaysEmailSummary() || _parameters.getCutoffEmailSummary()) {
+            settings.push_back(std::make_pair("Attach Primary Results File", (_parameters.getEmailAttachResults() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Include Results File and Directory", (_parameters.getEmailIncludeResultsDirectory() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Create Custom Email", (_parameters.getEmailCustom() ? "Yes" : "No")));
         }
         WriteSettingsContainer(settings, "Notifications", fp);
     } catch (prg_exception& x) {
@@ -654,45 +706,45 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!(gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
-            if (gParameters.getIsWeightedNormalCovariates() && gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+        if (!(_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL)) {
+            if (_parameters.getIsWeightedNormalCovariates() && _parameters.GetAreaScanRateType() == HIGHANDLOW) {
                 // There is a special situation with the weighted normal model with covariates and scanning for low and high rates together.
-                unsigned int minimum = std::max(gParameters.getMinimumCasesLowRateClusters(), gParameters.getMinimumCasesHighRateClusters());
+                unsigned int minimum = std::max(_parameters.getMinimumCasesLowRateClusters(), _parameters.getMinimumCasesHighRateClusters());
                 settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", minimum)));
                 settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", minimum)));
             } else {
-                if ((gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) && gParameters.getMinimumCasesLowRateClusters() != 0)
-                    settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", gParameters.getMinimumCasesLowRateClusters())));
-                if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW)
-                    settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", gParameters.getMinimumCasesHighRateClusters())));
+                if ((_parameters.GetAreaScanRateType() == LOW || _parameters.GetAreaScanRateType() == HIGHANDLOW) && _parameters.getMinimumCasesLowRateClusters() != 0)
+                    settings.push_back(std::make_pair("Minimum Cases in Cluster for Low Rates", printString(buffer, "%u", _parameters.getMinimumCasesLowRateClusters())));
+                if (_parameters.GetAreaScanRateType() == HIGH || _parameters.GetAreaScanRateType() == HIGHANDLOW)
+                    settings.push_back(std::make_pair("Minimum Cases in Cluster for High Rates", printString(buffer, "%u", _parameters.getMinimumCasesHighRateClusters())));
             }
         }
 
-        switch (gParameters.GetProbabilityModelType()) {
+        switch (_parameters.GetProbabilityModelType()) {
         case EXPONENTIAL:
-            if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
-                settings.push_back(std::make_pair("Restrict Short Survival Clusters", (gParameters.getRiskLimitHighClusters() ? "Yes" : "No")));
-                if (gParameters.getRiskLimitHighClusters())
-                    settings.push_back(std::make_pair("Risk Threshold Short Survival Clusters", printString(buffer, "%g", gParameters.getRiskThresholdHighClusters())));
+            if (_parameters.GetAreaScanRateType() == HIGH || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
+                settings.push_back(std::make_pair("Restrict Short Survival Clusters", (_parameters.getRiskLimitHighClusters() ? "Yes" : "No")));
+                if (_parameters.getRiskLimitHighClusters())
+                    settings.push_back(std::make_pair("Risk Threshold Short Survival Clusters", printString(buffer, "%g", _parameters.getRiskThresholdHighClusters())));
             }
-            if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
-                settings.push_back(std::make_pair("Restrict Long Survival Clusters", (gParameters.getRiskLimitLowClusters() ? "Yes" : "No")));
-                if (gParameters.getRiskLimitLowClusters())
-                    settings.push_back(std::make_pair("Risk Threshold Long Survival Clusters", printString(buffer, "%g", gParameters.getRiskThresholdLowClusters())));
+            if (_parameters.GetAreaScanRateType() == LOW || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
+                settings.push_back(std::make_pair("Restrict Long Survival Clusters", (_parameters.getRiskLimitLowClusters() ? "Yes" : "No")));
+                if (_parameters.getRiskLimitLowClusters())
+                    settings.push_back(std::make_pair("Risk Threshold Long Survival Clusters", printString(buffer, "%g", _parameters.getRiskThresholdLowClusters())));
             } break;
         case SPACETIMEPERMUTATION:
         case POISSON:
         case HOMOGENEOUSPOISSON:
         case BERNOULLI:
-            if (gParameters.GetAreaScanRateType() == HIGH || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
-                settings.push_back(std::make_pair("Restrict High Rate Clusters", (gParameters.getRiskLimitHighClusters() ? "Yes" : "No")));
-                if (gParameters.getRiskLimitHighClusters())
-                    settings.push_back(std::make_pair("Risk Threshold High Rate Clusters", printString(buffer, "%g", gParameters.getRiskThresholdHighClusters())));
+            if (_parameters.GetAreaScanRateType() == HIGH || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
+                settings.push_back(std::make_pair("Restrict High Rate Clusters", (_parameters.getRiskLimitHighClusters() ? "Yes" : "No")));
+                if (_parameters.getRiskLimitHighClusters())
+                    settings.push_back(std::make_pair("Risk Threshold High Rate Clusters", printString(buffer, "%g", _parameters.getRiskThresholdHighClusters())));
             }
-            if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
-                settings.push_back(std::make_pair("Restrict Low Rate Clusters", (gParameters.getRiskLimitLowClusters() ? "Yes" : "No")));
-                if (gParameters.getRiskLimitLowClusters())
-                    settings.push_back(std::make_pair("Risk Threshold Low Rate Clusters", printString(buffer, "%g", gParameters.getRiskThresholdLowClusters())));
+            if (_parameters.GetAreaScanRateType() == LOW || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
+                settings.push_back(std::make_pair("Restrict Low Rate Clusters", (_parameters.getRiskLimitLowClusters() ? "Yes" : "No")));
+                if (_parameters.getRiskLimitLowClusters())
+                    settings.push_back(std::make_pair("Risk Threshold Low Rate Clusters", printString(buffer, "%g", _parameters.getRiskThresholdLowClusters())));
             } break;
         default: break;
         }
@@ -711,37 +763,37 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
 
     try {
         buffer = "P-Value Reporting";
-        switch (gParameters.GetPValueReportingType()) {
+        switch (_parameters.GetPValueReportingType()) {
             case DEFAULT_PVALUE :
                 settings.push_back(std::make_pair(buffer,"Default Combination"));
                 break;
             case STANDARD_PVALUE :
                 settings.push_back(std::make_pair(buffer,"Standard Monte Carlo"));
-                settings.push_back(std::make_pair("Report Gumbel Based P-Values",(gParameters.GetReportGumbelPValue() ? "Yes" : "No")));
+                settings.push_back(std::make_pair("Report Gumbel Based P-Values",(_parameters.GetReportGumbelPValue() ? "Yes" : "No")));
                 break;
             case TERMINATION_PVALUE :
                 settings.push_back(std::make_pair(buffer,"Sequential Monte Carlo Early Termination"));
-                printString(buffer, "%u", gParameters.GetEarlyTermThreshold());
+                printString(buffer, "%u", _parameters.GetEarlyTermThreshold());
                 settings.push_back(std::make_pair("Termination Cutoff",buffer));
-                settings.push_back(std::make_pair("Report Gumbel Based P-Values",(gParameters.GetReportGumbelPValue() ? "Yes" : "No")));
+                settings.push_back(std::make_pair("Report Gumbel Based P-Values",(_parameters.GetReportGumbelPValue() ? "Yes" : "No")));
                 break;
             case GUMBEL_PVALUE :
                 settings.push_back(std::make_pair(buffer,"Gumbel Approximation"));
                 break;
         }
-        printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
+        printString(buffer, "%u", _parameters.GetNumReplicationsRequested());
         settings.push_back(std::make_pair("Number of Replications",buffer));
-        if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses()) {
+        if (_parameters.GetIsProspectiveAnalysis() && _parameters.GetAdjustForEarlierAnalyses()) {
             settings.push_back(std::make_pair("Adjusted for Earlier Analyses", "Yes"));
-            settings.push_back(std::make_pair("Prospective Start Time",gParameters.GetProspectiveStartDate()));
+            settings.push_back(std::make_pair("Prospective Start Date",_parameters.GetProspectiveStartDate()));
         }
-        if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON && !gParameters.getPerformPowerEvaluation()) {
-            settings.push_back(std::make_pair("Adjusting for More Likely Clusters",(gParameters.GetIsIterativeScanning() ? "Yes" : "No")));
-            if (gParameters.GetIsIterativeScanning()) {
-                printString(buffer, "%u", gParameters.GetNumIterativeScansRequested());
-                settings.push_back(std::make_pair("Maximum number of iterations",buffer));
-                printString(buffer, "%g", gParameters.GetIterativeCutOffPValue());
-                settings.push_back(std::make_pair("Stop when p-value greater",buffer));
+        if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON && !_parameters.getPerformPowerEvaluation()) {
+            settings.push_back(std::make_pair("Adjusting for More Likely Clusters",(_parameters.GetIsIterativeScanning() ? "Yes" : "No")));
+            if (_parameters.GetIsIterativeScanning()) {
+                printString(buffer, "%u", _parameters.GetNumIterativeScansRequested());
+                settings.push_back(std::make_pair("Maximum Number of Iterations",buffer));
+                printString(buffer, "%g", _parameters.GetIterativeCutOffPValue());
+                settings.push_back(std::make_pair("Stop When P-value Greater",buffer));
             }
         }
         WriteSettingsContainer(settings, "Inference", fp);
@@ -754,24 +806,24 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
 /** Prints 'Input' tab parameters to file stream. */
 void ParametersPrint::PrintInputParameters(FILE* fp) const {
     DatePrecisionType ePrecision;
-    const char * sDataSetLabel = (gParameters.getNumFileSets() == 1 ? "" : " (data set 1)");
-    const char * sBlankDataSetLabel = (gParameters.getNumFileSets() == 1 ? "" : "            ");
+    const char * sDataSetLabel = (_parameters.getNumFileSets() == 1 ? "" : " (data set 1)");
+    const char * sBlankDataSetLabel = (_parameters.getNumFileSets() == 1 ? "" : "            ");
     SettingContainer_t settings;
     std::string buffer;
 
     try {
-        if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
-            (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
-            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(gParameters.GetCaseFileName(1), gParameters.getTimestamp())));
+        if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
+            (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
+            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(1), _parameters.getTimestamp())));
             settings.back().first += sDataSetLabel;
         }
-        switch (gParameters.GetProbabilityModelType()) {
+        switch (_parameters.GetProbabilityModelType()) {
             case POISSON :
-                if (!gParameters.UsePopulationFile()) break;
-                settings.push_back(std::make_pair("Population File", getFilenameFormatTime(gParameters.GetPopulationFileName(1), gParameters.getTimestamp())));
+                if (!_parameters.UsePopulationFile()) break;
+                settings.push_back(std::make_pair("Population File", getFilenameFormatTime(_parameters.GetPopulationFileName(1), _parameters.getTimestamp())));
                 settings.back().first += sDataSetLabel; break;
             case BERNOULLI :
-                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(gParameters.GetControlFileName(1), gParameters.getTimestamp())));
+                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(1), _parameters.getTimestamp())));
                 settings.back().first += sDataSetLabel; break;
             case SPACETIMEPERMUTATION :
             case CATEGORICAL          :
@@ -782,16 +834,16 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
             case UNIFORMTIME          :
             case HOMOGENEOUSPOISSON   :  break;
             default : 
-                throw prg_error("Unknown probability model type '%d'.\n", "PrintInputParameters()", gParameters.GetProbabilityModelType());
+                throw prg_error("Unknown probability model type '%d'.\n", "PrintInputParameters()", _parameters.GetProbabilityModelType());
         }
-        if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
             //Display precision, keeping in mind the v4 behavior.
-            if (gParameters.GetPrecisionOfTimesType() == NONE)
+            if (_parameters.GetPrecisionOfTimesType() == NONE)
                 ePrecision = NONE;
-            else if (gParameters.GetCreationVersion().iMajor == 4)
-                ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
+            else if (_parameters.GetCreationVersion().iMajor == 4)
+                ePrecision = (_parameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : _parameters.GetTimeAggregationUnitsType());
             else
-                ePrecision =  gParameters.GetPrecisionOfTimesType();
+                ePrecision =  _parameters.GetPrecisionOfTimesType();
             buffer = "Time Precision";
             switch (ePrecision) {
                 case YEAR    : settings.push_back(std::make_pair(buffer,"Year")); break;
@@ -800,41 +852,26 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
                 case GENERIC : settings.push_back(std::make_pair(buffer,"Generic")); break;
                 default      : settings.push_back(std::make_pair(buffer,"None")); break;
             }
-            settings.push_back(std::make_pair("Start Time",gParameters.GetStudyPeriodStartDate()));
-            settings.push_back(std::make_pair("End Time",gParameters.GetStudyPeriodEndDate()));
+            settings.push_back(std::make_pair("Start Date",_parameters.GetStudyPeriodStartDate()));
+            settings.push_back(std::make_pair("End Date",_parameters.GetStudyPeriodEndDate()));
         }
-        if (gParameters.UseCoordinatesFile())
-            settings.push_back(std::make_pair("Coordinates File", getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp())));
-        if (gParameters.UseSpecialGrid())
-            settings.push_back(std::make_pair("Grid File", getFilenameFormatTime(gParameters.GetSpecialGridFileName(), gParameters.getTimestamp())));
-        if (gParameters.GetSimulationType() == FILESOURCE)
-            settings.push_back(std::make_pair("Simulated Data Import File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp())));
-        if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid())) {
+        if (_parameters.UseCoordinatesFile())
+            settings.push_back(std::make_pair("Coordinates File", getFilenameFormatTime(_parameters.GetCoordinatesFileName(), _parameters.getTimestamp())));
+        if (_parameters.UseSpecialGrid())
+            settings.push_back(std::make_pair("Grid File", getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp())));
+        if (_parameters.GetSimulationType() == FILESOURCE)
+            settings.push_back(std::make_pair("Simulated Data Import File", getFilenameFormatTime(_parameters.GetSimulationDataSourceFilename(), _parameters.getTimestamp())));
+        if ((_parameters.UseCoordinatesFile() || _parameters.UseSpecialGrid())) {
             buffer = "Coordinates";
-            switch (gParameters.GetCoordinatesType()) {
+            switch (_parameters.GetCoordinatesType()) {
                 case CARTESIAN : settings.push_back(std::make_pair(buffer,"Cartesian")); break;
                 case LATLON    : settings.push_back(std::make_pair(buffer,"Latitude/Longitude")); break;
-                default : throw prg_error("Unknown coordinated type '%d'.\n", "PrintInputParameters()", gParameters.GetCoordinatesType());
+                default : throw prg_error("Unknown coordinated type '%d'.\n", "PrintInputParameters()", _parameters.GetCoordinatesType());
             }
         }
         WriteSettingsContainer(settings, "Input", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintInputParameters()","ParametersPrint");
-        throw;
-    }
-}
-
-/** Prints 'Line List' related parameters to file stream. */
-void ParametersPrint::PrintLinelistParameters(FILE* fp) const {
-    SettingContainer_t settings;
-    try {
-        if (gParameters.getReadingLineDataFromCasefile()) {
-            if (gParameters.getLinelistIndividualsCacheFileName().size())
-                settings.push_back(std::make_pair("Line List Individuals Cache File", gParameters.getLinelistIndividualsCacheFileName()));
-            WriteSettingsContainer(settings, "Line List", fp);
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("PrintLinelistParameters()", "ParametersPrint");
         throw;
     }
 }
@@ -845,18 +882,18 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.getNumFileSets() == 1) return;
-        for (unsigned int t=1; t < gParameters.getNumFileSets(); ++t) {
+        if (_parameters.getNumFileSets() == 1) return;
+        for (unsigned int t=1; t < _parameters.getNumFileSets(); ++t) {
             printString(buffer, "Case File (data set %i)", t + 1);
-            settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetCaseFileName(t + 1), gParameters.getTimestamp())));
-            switch (gParameters.GetProbabilityModelType()) {
+            settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetCaseFileName(t + 1), _parameters.getTimestamp())));
+            switch (_parameters.GetProbabilityModelType()) {
                 case POISSON :
-                    if (!gParameters.UsePopulationFile()) break;
+                    if (!_parameters.UsePopulationFile()) break;
                     printString(buffer, "Population File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetPopulationFileName(t + 1), gParameters.getTimestamp()))); break;
+                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetPopulationFileName(t + 1), _parameters.getTimestamp()))); break;
                 case BERNOULLI :
                     printString(buffer, "Control File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(gParameters.GetControlFileName(t + 1), gParameters.getTimestamp()))); break;
+                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetControlFileName(t + 1), _parameters.getTimestamp()))); break;
                 case SPACETIMEPERMUTATION :
                 case CATEGORICAL          :
                 case ORDINAL              :
@@ -866,13 +903,13 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
                 case UNIFORMTIME          :
                 case HOMOGENEOUSPOISSON   : break;
                 default : 
-                    throw prg_error("Unknown probability model type '%d'.\n", "PrintMultipleDataSetParameters()", gParameters.GetProbabilityModelType());
+                    throw prg_error("Unknown probability model type '%d'.\n", "PrintMultipleDataSetParameters()", _parameters.GetProbabilityModelType());
             }
         }
-        switch (gParameters.GetMultipleDataSetPurposeType()) {
+        switch (_parameters.GetMultipleDataSetPurposeType()) {
             case MULTIVARIATE : settings.push_back(std::make_pair("Purpose of Multiple Data Sets","Multivariate Analysis")); break;
             case ADJUSTMENT    : settings.push_back(std::make_pair("Purpose of Multiple Data Sets","Adjustment")); break;
-            default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintMultipleDataSetParameters()", gParameters.GetMultipleDataSetPurposeType());
+            default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintMultipleDataSetParameters()", _parameters.GetMultipleDataSetPurposeType());
         }
         WriteSettingsContainer(settings, "Multiple Data Sets", fp);
     } catch (prg_exception& x) {
@@ -883,87 +920,40 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
 
 /** Prints 'Output' tab parameters to file stream. */
 void ParametersPrint::PrintOutputParameters(FILE* fp) const {
-    FileName AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
     SettingContainer_t settings;
     std::string buffer;
-    bool canReportClusterFiles = (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS));
+    bool canReportClusterFiles = (
+        !_parameters.getPerformPowerEvaluation() || 
+        (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)
+    );
 
     try {
-        settings.push_back(std::make_pair("Main Results File", gParameters.GetOutputFileName()));
-        if (canReportClusterFiles && gParameters.GetOutputClusterLevelAscii()) {
-            AdditionalOutputFile.setExtension(".col.txt");
-            settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
-            AdditionalOutputFile.setExtension(gParameters.getCompressClusterKML() ? ".kmz" : ".kml");
-            settings.push_back(std::make_pair("Google Earth File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputGoogleMapsFile()) {
-            ClusterMap::getFilename(AdditionalOutputFile);
-            settings.push_back(std::make_pair("Google Maps File", AdditionalOutputFile.getFullPath(buffer)));
-        }
-        AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str()); // reset
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
-            AdditionalOutputFile.setExtension(".col.shp");
-            settings.push_back(std::make_pair("Shapefile (Cluster)",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles() && gParameters.getUseLocationsNetworkFile()) {
-            AdditionalOutputFile.setExtension(".col.edges.shp");
-            settings.push_back(std::make_pair("Shapefile (Network)", AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.getOutputCartesianGraph()) {
-            CartesianGraph::getFilename(AdditionalOutputFile);
-            settings.push_back(std::make_pair("Cartesian Graph File", AdditionalOutputFile.getFullPath(buffer)));
-        }
-        AdditionalOutputFile.setFullPath(gParameters.GetOutputFileName().c_str()); // reset
-        if (canReportClusterFiles && gParameters.GetOutputClusterLevelDBase()) {
-            AdditionalOutputFile.setExtension(".col.dbf");
-            settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        // cluster case information files
-        if (canReportClusterFiles && gParameters.GetOutputClusterCaseAscii()) {
-            AdditionalOutputFile.setExtension(".sci.txt");
-            settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (canReportClusterFiles && gParameters.GetOutputClusterCaseDBase()) {
-            AdditionalOutputFile.setExtension(".sci.dbf");
-            settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        // area specific files
-        if (canReportClusterFiles && gParameters.GetOutputAreaSpecificAscii()) {
-            AdditionalOutputFile.setExtension(".gis.txt");
-            settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (canReportClusterFiles && gParameters.GetOutputAreaSpecificDBase()) {
-            AdditionalOutputFile.setExtension(".gis.dbf");
-            settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputShapeFiles()) {
-            AdditionalOutputFile.setExtension(".gis.shp");
-            settings.push_back(std::make_pair("Shapefile (Locations)", AdditionalOutputFile.getFullPath(buffer)));
-        }
-        // relative risk files
-        if (gParameters.GetOutputRelativeRisksAscii()) {
-            AdditionalOutputFile.setExtension(".rr.txt");
-            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetOutputRelativeRisksDBase()) {
-            AdditionalOutputFile.setExtension(".rr.dbf");
-            settings.push_back(std::make_pair("Risk Estimates File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        // loglikelihood ratio files
-        if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
-            AdditionalOutputFile.setExtension(".llr.txt");
-            settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
-            AdditionalOutputFile.setExtension(".llr.dbf");
-            settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
-        }
-        if (gParameters.getOutputTemporalGraphFile() && (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
-            TemporalChartGenerator::getFilename(AdditionalOutputFile);
-            settings.push_back(std::make_pair("Temporal Graph File",AdditionalOutputFile.getFullPath(buffer)));
-        }
+        settings.push_back(std::make_pair("Main Results File", _parameters.GetOutputFileName()));
+        settings.push_back(std::make_pair("HTML file for Google Map", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputKMLFile() ? "Yes" : "No"));
+        settings.push_back(std::make_pair("KML file for Google Earth", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputGoogleMapsFile() ? "Yes" : "No"));
+        settings.push_back(std::make_pair("Shapefile for GIS software", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles() ? "Yes" : "No"));
+        settings.push_back(std::make_pair("HTML file for Cartesian map", _parameters.getOutputCartesianGraph() ? "Yes" : "No"));
+        settings.push_back(std::make_pair("Cluster Information", printString(buffer, "%s (ASCII), %s (dBase)",
+            canReportClusterFiles && _parameters.GetOutputClusterLevelAscii() ? "Yes" : "No",
+            canReportClusterFiles && _parameters.GetOutputClusterLevelDBase() ? "Yes" : "No"
+        )));
+        settings.push_back(std::make_pair("Stratified Cluster Information", printString(buffer, "%s (ASCII), %s (dBase)",
+            canReportClusterFiles && _parameters.GetOutputClusterCaseAscii() ? "Yes" : "No",
+            canReportClusterFiles && _parameters.GetOutputClusterCaseDBase() ? "Yes" : "No"
+        )));
+        settings.push_back(std::make_pair("Location Information", printString(buffer, "%s (ASCII), %s (dBase)",
+            canReportClusterFiles && _parameters.GetOutputAreaSpecificAscii() ? "Yes" : "No",
+            canReportClusterFiles && _parameters.GetOutputAreaSpecificDBase() ? "Yes" : "No"
+        )));
+        settings.push_back(std::make_pair("Risk Estimates for Each Location", printString(buffer, "%s (ASCII), %s (dBase)",
+            _parameters.GetOutputRelativeRisksAscii() ? "Yes" : "No",
+            _parameters.GetOutputRelativeRisksDBase() ? "Yes" : "No"
+        )));
+        settings.push_back(std::make_pair(_parameters.IsTestStatistic() ? "Simulated Test Statistics" : "Simulated Log Likelihood Ratios", 
+            printString(buffer, "%s (ASCII), %s (dBase)",
+                _parameters.GetOutputSimLoglikeliRatiosAscii() ? "Yes" : "No",
+                _parameters.GetOutputSimLoglikeliRatiosDBase() ? "Yes" : "No"
+        )));
         WriteSettingsContainer(settings, "Output", fp);
     } catch (prg_exception& x) {
         x.addTrace("PrintOutputParameters()","ParametersPrint");
@@ -975,75 +965,75 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 void ParametersPrint::PrintPowerEvaluationsParameters(FILE* fp) const {
     SettingContainer_t settings;
     std::string buffer;
-    FileName AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
+    FileName AdditionalOutputFile(_parameters.GetOutputFileName().c_str());
 
     try {
-        if (gParameters.GetProbabilityModelType() == POISSON && gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
-            settings.push_back(std::make_pair("Perform Power Evaluations", (gParameters.getPerformPowerEvaluation() ? "Yes" : "No")));
-            if (!gParameters.getPerformPowerEvaluation()) return;
+        if (_parameters.GetProbabilityModelType() == POISSON && _parameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
+            settings.push_back(std::make_pair("Perform Power Evaluations", (_parameters.getPerformPowerEvaluation() ? "Yes" : "No")));
+            if (!_parameters.getPerformPowerEvaluation()) return;
             buffer = "Power Method";
-            switch (gParameters.getPowerEvaluationMethod()) {
+            switch (_parameters.getPowerEvaluationMethod()) {
                 case PE_WITH_ANALYSIS: 
                     settings.push_back(std::make_pair(buffer,"Standard Analysis and Power Evaluation Together")); break;
                 case PE_ONLY_CASEFILE: 
                     settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Total Cases from Case File")); break;
                 case PE_ONLY_SPECIFIED_CASES: 
                     settings.push_back(std::make_pair(buffer,"Only Power Evaluation, Using Defined Total Cases")); 
-                    printString(buffer, "%i", gParameters.getPowerEvaluationCaseCount());
+                    printString(buffer, "%i", _parameters.getPowerEvaluationCaseCount());
                     settings.push_back(std::make_pair("Power Evaluation Total Cases",buffer)); 
                     break;
-                default: throw prg_error("Unknown power evaluation method type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEvaluationMethod());
+                default: throw prg_error("Unknown power evaluation method type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getPowerEvaluationMethod());
             }
             buffer = "Critical Values";
-            switch (gParameters.getPowerEvaluationCriticalValueType()) {
+            switch (_parameters.getPowerEvaluationCriticalValueType()) {
                 case CV_MONTECARLO: 
                     settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
                 case CV_GUMBEL: 
                     settings.push_back(std::make_pair(buffer,"Gumbel")); break;
                 case CV_POWER_VALUES: 
                     settings.push_back(std::make_pair(buffer,"User Defined"));
-                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue05());
+                    printString(buffer, "%lf", _parameters.getPowerEvaluationCriticalValue05());
                     settings.push_back(std::make_pair("Critical Value .05",buffer));
-                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue01());
+                    printString(buffer, "%lf", _parameters.getPowerEvaluationCriticalValue01());
                     settings.push_back(std::make_pair("Critical Value .01",buffer));
-                    printString(buffer, "%lf", gParameters.getPowerEvaluationCriticalValue001());
+                    printString(buffer, "%lf", _parameters.getPowerEvaluationCriticalValue001());
                     settings.push_back(std::make_pair("Critical Value .001",buffer));
                     break;
-                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEvaluationCriticalValueType());
+                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getPowerEvaluationCriticalValueType());
             }
             buffer = "Power Estimation";
-            switch (gParameters.getPowerEstimationType()) {
+            switch (_parameters.getPowerEstimationType()) {
                 case PE_MONTECARLO: 
                     settings.push_back(std::make_pair(buffer,"Monte Carlo")); break;
                 case PE_GUMBEL: 
                     settings.push_back(std::make_pair(buffer,"Gumbel")); break;
-                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.getPowerEstimationType());
+                default: throw prg_error("Unknown critical values type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.getPowerEstimationType());
             }
-            printString(buffer, "%u", gParameters.getNumPowerEvalReplicaPowerStep());
+            printString(buffer, "%u", _parameters.getNumPowerEvalReplicaPowerStep());
             settings.push_back(std::make_pair("Number of Replications",buffer));
-            switch (gParameters.GetPowerEvaluationSimulationType()) {
+            switch (_parameters.GetPowerEvaluationSimulationType()) {
                 case STANDARD         : 
-                    settings.push_back(std::make_pair("Alternative Hypothesis File", getFilenameFormatTime(gParameters.getPowerEvaluationAltHypothesisFilename(), gParameters.getTimestamp())));
+                    settings.push_back(std::make_pair("Alternative Hypothesis File", getFilenameFormatTime(_parameters.getPowerEvaluationAltHypothesisFilename(), _parameters.getTimestamp())));
                     break;
                 case FILESOURCE       :
                     settings.push_back(std::make_pair("Power Step Randomization Method","File Source"));
-                    settings.push_back(std::make_pair("Randomization Source File", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataSourceFilename(), gParameters.getTimestamp()))); break;
+                    settings.push_back(std::make_pair("Randomization Source File", getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp()))); break;
                 case HA_RANDOMIZATION :
-                default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerEvaluationsParameters()", gParameters.GetPowerEvaluationSimulationType());
+                default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerEvaluationsParameters()", _parameters.GetPowerEvaluationSimulationType());
             }
             // Since reporting the power evaluations' simulation data is not settable in the gui, only report if toggled on.
-            if (gParameters.getOutputPowerEvaluationSimulationData()) {
+            if (_parameters.getOutputPowerEvaluationSimulationData()) {
                 settings.push_back(std::make_pair("Output Power Step Simulation Data","Yes"));
-                if (gParameters.getOutputPowerEvaluationSimulationData()) {
-                    settings.push_back(std::make_pair("Power Step Simulation Data Filename", getFilenameFormatTime(gParameters.getPowerEvaluationSimulationDataOutputFilename(), gParameters.getTimestamp())));
+                if (_parameters.getOutputPowerEvaluationSimulationData()) {
+                    settings.push_back(std::make_pair("Power Step Simulation Data Filename", getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataOutputFilename(), _parameters.getTimestamp())));
                 }
             }
             // loglikelihood ratio files for power evaluations
-            if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
+            if (_parameters.GetOutputSimLoglikeliRatiosAscii()) {
                 AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
                 settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
             }
-            if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
+            if (_parameters.GetOutputSimLoglikeliRatiosDBase()) {
                 AdditionalOutputFile.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, DBaseDataFileWriter::DBASE_FILE_EXT).c_str());
                 settings.push_back(std::make_pair("Power Evaluations Simulated LLRs File", AdditionalOutputFile.getFullPath(buffer)));
             }
@@ -1062,18 +1052,18 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
 
     try {
         buffer = "Simulation Method";
-        switch (gParameters.GetSimulationType()) {
+        switch (_parameters.GetSimulationType()) {
             case STANDARD         : break;
             case FILESOURCE       :
                 settings.push_back(std::make_pair(buffer,"File Source")); break;
-                settings.push_back(std::make_pair("Randomization File", getFilenameFormatTime(gParameters.GetSimulationDataSourceFilename(), gParameters.getTimestamp()))); break;
+                settings.push_back(std::make_pair("Randomization File", getFilenameFormatTime(_parameters.GetSimulationDataSourceFilename(), _parameters.getTimestamp()))); break;
                 break;
             case HA_RANDOMIZATION :
-            default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
+            default : throw prg_error("Unknown simulation type '%d'.\n", "PrintPowerSimulationsParameters()", _parameters.GetSimulationType());
         };
-        if (gParameters.GetOutputSimulationData()) {
+        if (_parameters.GetOutputSimulationData()) {
             settings.push_back(std::make_pair("Output Simulation Data","Yes"));
-            settings.push_back(std::make_pair("Simulation Data Output", getFilenameFormatTime(gParameters.GetSimulationDataOutputFilename(), gParameters.getTimestamp())));
+            settings.push_back(std::make_pair("Simulation Data Output", getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp())));
         }
         WriteSettingsContainer(settings, "Power Simulations", fp);
     } catch (prg_exception& x) {
@@ -1088,11 +1078,11 @@ void ParametersPrint::PrintPolygonParameters(FILE* fp) const {
     std::string buffer, worker;
 
     try {
-        if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
-            for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
+        if (_parameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+            for (size_t t=0; t < _parameters.getObservableRegions().size(); ++t) {
                 printString(buffer, "Polygon %i", t + 1);
                 settings.push_back(std::make_pair(buffer,""));
-                InequalityContainer_t list = ConvexPolygonBuilder::parse(gParameters.getObservableRegions().at(t));
+                InequalityContainer_t list = ConvexPolygonBuilder::parse(_parameters.getObservableRegions().at(t));
                 for (size_t y=0; y < list.size(); ++y) {
                     printString(worker, "%s%s", list.at(y).toString().c_str(), (y < list.size() - 1 ? ", " : ""));
                     settings.back().second += worker;
@@ -1112,28 +1102,28 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (gParameters.GetNumRequestedParallelProcesses() == 0)
+        if (_parameters.GetNumRequestedParallelProcesses() == 0)
             settings.push_back(std::make_pair("Processor Usage","All Available Processors"));
         else {
-            printString(buffer, "At Most %u Processors", gParameters.GetNumRequestedParallelProcesses());
+            printString(buffer, "At Most %u Processors", _parameters.GetNumRequestedParallelProcesses());
             settings.push_back(std::make_pair("Processor Usage",buffer));
         }
-        settings.push_back(std::make_pair("Suppress Warnings", (gParameters.GetSuppressingWarnings() ? "Yes" : "No")));
-        settings.push_back(std::make_pair("Logging Analysis", (gParameters.GetIsLoggingHistory() ? "Yes" : "No")));
-        if (gParameters.GetIsRandomlyGeneratingSeed())
-            settings.push_back(std::make_pair("Use Random Seed",(gParameters.GetIsRandomlyGeneratingSeed() ? "Yes" : "No")));
-        if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed) {
-            printString(buffer, "%ld\n", gParameters.GetRandomizationSeed());
+        settings.push_back(std::make_pair("Suppress Warnings", (_parameters.GetSuppressingWarnings() ? "Yes" : "No")));
+        settings.push_back(std::make_pair("Logging Analysis", (_parameters.GetIsLoggingHistory() ? "Yes" : "No")));
+        if (_parameters.GetIsRandomlyGeneratingSeed())
+            settings.push_back(std::make_pair("Use Random Seed",(_parameters.GetIsRandomlyGeneratingSeed() ? "Yes" : "No")));
+        if (_parameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed) {
+            printString(buffer, "%ld\n", _parameters.GetRandomizationSeed());
             settings.push_back(std::make_pair("Randomization Seed",buffer));
         }
-        if (gParameters.GetExecutionType() != AUTOMATIC) {
+        if (_parameters.GetExecutionType() != AUTOMATIC) {
             buffer = "Execution Type";
-            switch (gParameters.GetExecutionType()) {
+            switch (_parameters.GetExecutionType()) {
                 case AUTOMATIC    : settings.push_back(std::make_pair(buffer,"Automatic Determination")); break;
                 case SUCCESSIVELY : settings.push_back(std::make_pair(buffer,"Successively")); break;
                 case CENTRICALLY  : settings.push_back(std::make_pair(buffer,"Centrically")); break;
                 default : throw prg_error("Unknown execution type '%d'.\n",
-                                          "PrintRunOptionsParameters()", gParameters.GetExecutionType());
+                                          "PrintRunOptionsParameters()", _parameters.GetExecutionType());
             }
         }
         WriteSettingsContainer(settings, "Run Options", fp);
@@ -1149,31 +1139,31 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
-            settings.push_back(std::make_pair("Use Non-Euclidean Neighbors file",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
-            if (gParameters.UseLocationNeighborsFile())
-                settings.push_back(std::make_pair("Non-Euclidean Neighbors file", getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp())));
-            settings.push_back(std::make_pair("Use Meta Locations File",(gParameters.UseLocationNeighborsFile() ? "Yes" : "No")));
-            if (gParameters.UseMetaLocationsFile())
-                settings.push_back(std::make_pair("Meta Locations File", getFilenameFormatTime(gParameters.getMetaLocationsFilename(), gParameters.getTimestamp())));
+        if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+            settings.push_back(std::make_pair("Specify neighbors through a non-Euclidean neighbors file",(_parameters.UseLocationNeighborsFile() ? "Yes" : "No")));
+            if (_parameters.UseLocationNeighborsFile())
+                settings.push_back(std::make_pair("Non-Euclidean Neighbors file", getFilenameFormatTime(_parameters.GetLocationNeighborsFileName(), _parameters.getTimestamp())));
+            settings.push_back(std::make_pair("Specify a meta location file",(_parameters.UseLocationNeighborsFile() ? "Yes" : "No")));
+            if (_parameters.UseMetaLocationsFile())
+                settings.push_back(std::make_pair("Meta Locations File", getFilenameFormatTime(_parameters.getMetaLocationsFilename(), _parameters.getTimestamp())));
         }
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() || 
-              gParameters.UseLocationNeighborsFile() || 
-              gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+        if (!(_parameters.GetIsPurelyTemporalAnalysis() || 
+              _parameters.UseLocationNeighborsFile() || 
+              _parameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
             buffer = "Observations with Multiple Locations";
-            switch (gParameters.GetMultipleCoordinatesType()) {
+            switch (_parameters.GetMultipleCoordinatesType()) {
                 case ONEPERLOCATION :
                     settings.push_back(std::make_pair(buffer,"One location per observation."));
                     break;
                 case ATLEASTONELOCATION :
                     settings.push_back(std::make_pair(buffer,"Include observation if at least one of its locations is in the window."));
-                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(gParameters.getMultipleLocationsFile(), gParameters.getTimestamp())));
+                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(_parameters.getMultipleLocationsFile(), _parameters.getTimestamp())));
                     break;
                 case ALLLOCATIONS :
                     settings.push_back(std::make_pair(buffer,"Include observation only if all its locations are in the window."));
-                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(gParameters.getMultipleLocationsFile(), gParameters.getTimestamp())));
+                    settings.push_back(std::make_pair("Multiple Locations Per Observation File", getFilenameFormatTime(_parameters.getMultipleLocationsFile(), _parameters.getTimestamp())));
                     break;
-                default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialNeighborsParameters()", gParameters.GetMultipleCoordinatesType());
+                default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialNeighborsParameters()", _parameters.GetMultipleCoordinatesType());
             }
         }
         WriteSettingsContainer(settings, "Spatial Neighbors", fp);
@@ -1189,10 +1179,10 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
     std::string buffer;
 
     try {
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
-            settings.push_back(std::make_pair("Use Locations Network File", (gParameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
-            if (gParameters.getUseLocationsNetworkFile())
-                settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp())));
+        if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+            settings.push_back(std::make_pair("Use Locations Network File", (_parameters.getUseLocationsNetworkFile() ? "Yes" : "No")));
+            if (_parameters.getUseLocationsNetworkFile())
+                settings.push_back(std::make_pair("Locations Network File", getFilenameFormatTime(_parameters.getLocationsNetworkFilename(), _parameters.getTimestamp())));
             WriteSettingsContainer(settings, "Locations Network", fp);
         }
     } catch (prg_exception& x) {
@@ -1203,58 +1193,58 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
 
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */
 void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
-    bool bPrintingTemporalAdjustment = (gParameters.GetAnalysisType() == PURELYTEMPORAL ||
-                                        gParameters.GetAnalysisType() == SPACETIME ||
-                                        gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL ||
-                                        gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ||
-                                        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) &&
-                                        (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI);
-    bool bPrintingSpatialAdjustment =  (gParameters.GetAnalysisType() == SPACETIME ||
-                                        gParameters.GetAnalysisType() == PROSPECTIVESPACETIME) &&
-                                        gParameters.GetProbabilityModelType() == POISSON;
+    bool bPrintingTemporalAdjustment = (_parameters.GetAnalysisType() == PURELYTEMPORAL ||
+                                        _parameters.GetAnalysisType() == SPACETIME ||
+                                        _parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL ||
+                                        _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ||
+                                        _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) &&
+                                        (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI);
+    bool bPrintingSpatialAdjustment =  (_parameters.GetAnalysisType() == SPACETIME ||
+                                        _parameters.GetAnalysisType() == PROSPECTIVESPACETIME) &&
+                                        _parameters.GetProbabilityModelType() == POISSON;
 
     SettingContainer_t settings;
     std::string buffer, worker;
     try {
         if (bPrintingTemporalAdjustment) {
-            switch (gParameters.GetTimeTrendAdjustmentType()) {
+            switch (_parameters.GetTimeTrendAdjustmentType()) {
                 case TEMPORAL_NOTADJUSTED:
                     settings.push_back(std::make_pair("Temporal Adjustment","None"));break;
                 case TEMPORAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
-                    printString(buffer, "Log linear with %g percent per year", gParameters.GetTimeTrendAdjustmentPercentage());
+                    printString(buffer, "Log Linear with %g Percent per Year", _parameters.GetTimeTrendAdjustmentPercentage());
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
-                    settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
+                    settings.push_back(std::make_pair("Temporal Adjustment","Log Linear with Automatically Calculated Trend"));break;
                 case TEMPORAL_STRATIFIED_RANDOMIZATION:
-                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
+                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with Time Stratified Randomization"));break;
                 case CALCULATED_QUADRATIC:
-                    settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
+                    settings.push_back(std::make_pair("Temporal Adjustment", "Log Quadratic with Automatically Calculated Trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
-                                          "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
+                                          "PrintSpaceAndTimeAdjustmentsParameters()", _parameters.GetTimeTrendAdjustmentType());
             }
         }
-        if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
-            settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric",(gParameters.getAdjustForWeeklyTrends() ? "Yes" : "No")));
+        if (_parameters.GetAnalysisType() != PURELYSPATIAL) {
+            settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric",(_parameters.getAdjustForWeeklyTrends() ? "Yes" : "No")));
         }
         if (bPrintingSpatialAdjustment) {
-            switch (gParameters.GetSpatialAdjustmentType()) {
+            switch (_parameters.GetSpatialAdjustmentType()) {
                 case SPATIAL_NOTADJUSTED               :
                     settings.push_back(std::make_pair("Spatial Adjustment","None")); break;
                 case SPATIAL_STRATIFIED_RANDOMIZATION:
-                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with spatial stratified randomization")); break;
+                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with Spatial Stratified Randomization")); break;
                 case SPATIAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Spatial Adjustment", "Nonparametric")); break;
-                default : throw prg_error("Unknown spatial adjustment type '%d'.\n", "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
+                default : throw prg_error("Unknown spatial adjustment type '%d'.\n", "PrintSpaceAndTimeAdjustmentsParameters()", _parameters.GetSpatialAdjustmentType());
             }
         }
-        if (gParameters.GetProbabilityModelType() == POISSON) {
-            settings.push_back(std::make_pair("Adjust for known relative risks",(gParameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
-            if (gParameters.UseAdjustmentForRelativeRisksFile())
-                settings.push_back(std::make_pair("Adjustments File", getFilenameFormatTime(gParameters.GetAdjustmentsByRelativeRisksFilename(), gParameters.getTimestamp())));
+        if (_parameters.GetProbabilityModelType() == POISSON) {
+            settings.push_back(std::make_pair("Adjust for Known Relative Risks",(_parameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
+            if (_parameters.UseAdjustmentForRelativeRisksFile())
+                settings.push_back(std::make_pair("Adjustments File", getFilenameFormatTime(_parameters.GetAdjustmentsByRelativeRisksFilename(), _parameters.getTimestamp())));
             //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
-            if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC)
+            if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND && _parameters.getTimeTrendType() == QUADRATIC)
                 settings.push_back(std::make_pair("Time Trend Type (SVTT)","Quadratic"));
         }
         WriteSettingsContainer(settings, "Space And Time Adjustments", fp);
@@ -1270,44 +1260,44 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     std::string buffer, worker;
 
     try {
-        if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+        if (_parameters.GetIsPurelyTemporalAnalysis()) return;
 
-        if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
-            printString(buffer, "%g percent of population at risk", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
+        if (!(_parameters.GetAnalysisType() == PROSPECTIVESPACETIME && _parameters.GetAdjustForEarlierAnalyses())) {
+            printString(buffer, "%g percent of population at risk", _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
             settings.push_back(std::make_pair("Maximum Spatial Cluster Size",buffer));
         }
-        if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
-            printString(buffer, "%g percent of population defined in max circle file", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
+        if (_parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
+            printString(buffer, "%g percent of population defined in max circle file", _parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
             settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
         }
-        if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
-            settings.push_back(std::make_pair("Max Circle Size File", getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName(), gParameters.getTimestamp())));
-        if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
-            printString(buffer, "%g%s", gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
+        if (_parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || _parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
+            settings.push_back(std::make_pair("Max Circle Size File", getFilenameFormatTime(_parameters.GetMaxCirclePopulationFileName(), _parameters.getTimestamp())));
+        if (_parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+            printString(buffer, "%g%s", _parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), (_parameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
             settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
         }
-        if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
-            settings.push_back(std::make_pair("Include Purely Temporal Clusters", (gParameters.GetIncludePurelyTemporalClusters() ? "Yes" : "No")));
+        if (_parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && _parameters.GetIsSpaceTimeAnalysis()) {
+            settings.push_back(std::make_pair("Include Purely Temporal Clusters", (_parameters.GetIncludePurelyTemporalClusters() ? "Yes" : "No")));
         }
-        if (!gParameters.UseLocationNeighborsFile()) {
-            switch (gParameters.GetSpatialWindowType()) {
+        if (!_parameters.UseLocationNeighborsFile()) {
+            switch (_parameters.GetSpatialWindowType()) {
                 case CIRCULAR : settings.push_back(std::make_pair("Window Shape", "Circular")); break;
                 case ELLIPTIC :
                     settings.push_back(std::make_pair("Window Shape", "Elliptic"));
-                    switch (gParameters.GetNonCompactnessPenaltyType()) {
+                    switch (_parameters.GetNonCompactnessPenaltyType()) {
                         case NOPENALTY     : settings.push_back(std::make_pair("Non-Compactness Penalty", "None")); break;
                         case MEDIUMPENALTY : settings.push_back(std::make_pair("Non-Compactness Penalty", "Meduim")); break;
                         case STRONGPENALTY : settings.push_back(std::make_pair("Non-Compactness Penalty", "Strong")); break;
                         default : 
-                            throw prg_error("Unknown non-compactness penalty type '%d'.\n", "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
+                            throw prg_error("Unknown non-compactness penalty type '%d'.\n", "PrintSpatialWindowParameters()", _parameters.GetNonCompactnessPenaltyType());
                     }
                     break;
-                    default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
+                    default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", _parameters.GetSpatialWindowType());
             }
         }
-        if (!gParameters.getPerformPowerEvaluation() &&  gParameters.GetAnalysisType() == PURELYSPATIAL &&
-            (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
-            settings.push_back(std::make_pair("Isotonic Scan", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No")));
+        if (!_parameters.getPerformPowerEvaluation() &&  _parameters.GetAnalysisType() == PURELYSPATIAL &&
+            (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI)) {
+            settings.push_back(std::make_pair("Isotonic Scan", (_parameters.GetRiskType() == MONOTONERISK ? "Yes" : "No")));
         }
         WriteSettingsContainer(settings, "Spatial Window", fp);
     } catch (prg_exception& x) {
@@ -1318,7 +1308,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
 
 /** Prints 'System' parameters to file stream. */
 void ParametersPrint::PrintSystemParameters(FILE* fp) const {
-    const CParameters::CreationVersion & IniVersion = gParameters.GetCreationVersion();
+    const CParameters::CreationVersion & IniVersion = _parameters.GetCreationVersion();
     CParameters::CreationVersion Current;
     SettingContainer_t settings;
     std::string buffer;
@@ -1339,29 +1329,24 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
 
     try {
         // The temporal graph is option for purely temporal/space-time analyses with Poisson, Bernoulli, STP and Exponential.
-        if (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis()) ||
-            !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
-              gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL ||
-              gParameters.GetProbabilityModelType() == UNIFORMTIME)) return;
+        if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis()) ||
+            !(_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI || 
+              _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || _parameters.GetProbabilityModelType() == EXPONENTIAL ||
+              _parameters.GetProbabilityModelType() == UNIFORMTIME)) return;
 
-        settings.push_back(std::make_pair("Produce Temporal Graphs",(gParameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
-        if (gParameters.getOutputTemporalGraphFile()) {
+        settings.push_back(std::make_pair("Produce Temporal Graphs",(_parameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
+        if (_parameters.getOutputTemporalGraphFile()) {
             buffer = "Cluster Graphing";
-            switch (gParameters.getTemporalGraphReportType()) {
+            switch (_parameters.getTemporalGraphReportType()) {
                 case MLC_ONLY: settings.push_back(std::make_pair(buffer, "Most likely cluster only")); break;
                 case X_MCL_ONLY: 
-                    printString(buffer2, "%d most likely clusters, one graph for each", gParameters.getTemporalGraphMostLikelyCount());
+                    printString(buffer2, "%d most likely clusters, one graph for each", _parameters.getTemporalGraphMostLikelyCount());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
                 case SIGNIFICANT_ONLY:
-                    printString(buffer2, "All clusters, one graph for each, meeting cutoff %g", gParameters.getTemporalGraphSignificantCutoff());
+                    printString(buffer2, "All clusters, one graph for each, meeting cutoff %g", _parameters.getTemporalGraphSignificantCutoff());
                     settings.push_back(std::make_pair(buffer, buffer2)); break;
-                default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", gParameters.getOutputTemporalGraphFile());
+                default : throw prg_error("Unknown temporal graph type %d.\n", "PrintTemporalOutputParameters()", _parameters.getOutputTemporalGraphFile());
             }
-
-            FileName outputFile(gParameters.GetOutputFileName().c_str());
-            outputFile.setFullPath(gParameters.GetOutputFileName().c_str());
-            TemporalChartGenerator::getFilename(outputFile);
-            settings.push_back(std::make_pair("Temporal Graph File", outputFile.getFullPath(buffer)));
         }
         WriteSettingsContainer(settings, "Temporal Graphs", fp);
     } catch (prg_exception& x) {
@@ -1377,31 +1362,32 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
 
     try {
         // skip this section if purely spatial or svtt analyses, these settings are not relevant
-        if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) return;
+        if (_parameters.GetAnalysisType() == PURELYSPATIAL || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) return;
 
-        printString(buffer, "%i %s",
-                    gParameters.getMinimumTemporalClusterSize(),
-                    GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.getMinimumTemporalClusterSize() != 1, true));
+        printString(
+            buffer, "%i %s", _parameters.getMinimumTemporalClusterSize(),
+            GetDatePrecisionAsString(_parameters.GetTimeAggregationUnitsType(), worker, _parameters.getMinimumTemporalClusterSize() != 1, true)
+        );
         settings.push_back(std::make_pair("Minimum Temporal Cluster Size", buffer)); 
-        switch (gParameters.GetMaximumTemporalClusterSizeType()) {
+        switch (_parameters.GetMaximumTemporalClusterSizeType()) {
             case PERCENTAGETYPE :
-                printString(buffer, "%g percent of study period", gParameters.GetMaximumTemporalClusterSize());
+                printString(buffer, "%g percent of study period", _parameters.GetMaximumTemporalClusterSize());
                 settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); 
                 break;
             case TIMETYPE       :
                 printString(buffer, "%g %s",
-                            gParameters.GetMaximumTemporalClusterSize(),
-                            GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.GetMaximumTemporalClusterSize() != 1, true));
+                            _parameters.GetMaximumTemporalClusterSize(),
+                            GetDatePrecisionAsString(_parameters.GetTimeAggregationUnitsType(), worker, _parameters.GetMaximumTemporalClusterSize() != 1, true));
                 settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); break;
                 break;
             default : throw prg_error("Unknown maximum temporal cluster size type '%d'.\n",
-                                      "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());
+                                      "PrintTemporalWindowParameters()", _parameters.GetMaximumTemporalClusterSizeType());
         }
-        if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
-            settings.push_back(std::make_pair("Include Purely Spatial Clusters",(gParameters.GetIncludePurelySpatialClusters() ? "Yes" : "No")));
+        if (_parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && _parameters.GetIsSpaceTimeAnalysis()) {
+            settings.push_back(std::make_pair("Include Purely Spatial Clusters",(_parameters.GetIncludePurelySpatialClusters() ? "Yes" : "No")));
         }
-        if (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == SPACETIME) {
-            switch (gParameters.GetIncludeClustersType()) {
+        if (_parameters.GetAnalysisType() == PURELYTEMPORAL || _parameters.GetAnalysisType() == SPACETIME) {
+            switch (_parameters.GetIncludeClustersType()) {
                 case ALIVECLUSTERS   :
                     settings.push_back(std::make_pair("Clusters to Include", "Only those including the study end date"));
                     break;
@@ -1409,12 +1395,12 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
                                   -- geIncludeClustersType parameter no longer visible in GUI,
                                      defaulted to ALLCLUSTERS, so don't print setting */ break;
                 case CLUSTERSINRANGE :
-                    printString(buffer, "%s to %s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
+                    printString(buffer, "%s to %s", _parameters.GetStartRangeStartDate().c_str(), _parameters.GetStartRangeEndDate().c_str());
                     settings.push_back(std::make_pair("Flexible Temporal Window Start Range", buffer));
-                    printString(buffer, "%s to %s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
+                    printString(buffer, "%s to %s", _parameters.GetEndRangeStartDate().c_str(), _parameters.GetEndRangeEndDate().c_str());
                     settings.push_back(std::make_pair("Flexible Temporal Window End Range", buffer));
                     break;
-                default : throw prg_error("Unknown inclusion cluster type '%d'.\n", "PrintTemporalWindowParameters()", gParameters.GetIncludeClustersType());
+                default : throw prg_error("Unknown inclusion cluster type '%d'.\n", "PrintTemporalWindowParameters()", _parameters.GetIncludeClustersType());
             }
         }
         WriteSettingsContainer(settings, "Temporal Window", fp);
@@ -1425,37 +1411,27 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
 }
 
 /** Writes settings container to file stream. */
-void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp) const {
-  try {
-      if (!settings.size()) return;
-
-      //print section label
-      fprintf(fp, "\n");
-      fprintf(fp, "%s", section.c_str());
-      fprintf(fp, "\n");
-      for (size_t t=0; t < section.size(); ++t)
-          fprintf(fp, "-");
-      fprintf(fp, "\n");
-
-      SettingContainer_t::const_iterator itr=settings.begin();
-      //first calculate maximum label length
-      size_t tMaxLabel=0;
-      for (; itr != settings.end(); ++itr) {
-            tMaxLabel = std::max(tMaxLabel, itr->first.size());
-      }
-      //print settings
-      for (itr=settings.begin(); itr != settings.end(); ++itr) {
-          fprintf(fp, "  ");
-          fprintf(fp, "%s", itr->first.c_str());
-          for (size_t t=itr->first.size(); t < tMaxLabel; ++t)
-            fprintf(fp, " ");
-          fprintf(fp, " : ");
-          fprintf(fp, "%s", itr->second.c_str());
-          fprintf(fp, "\n");
-      }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("WriteSettingsContainer()","ParametersPrint");
-    throw;
-  }
+void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp, unsigned int margin) const {
+    try {
+        if (!settings.size()) return;
+        if (section.size()) { //print section label
+            fprintf(fp, "\n%s\n", section.c_str());
+            for (size_t t = 0; t < section.size(); ++t)
+                fprintf(fp, "-");
+            fprintf(fp, "\n");
+        }
+        size_t tMaxLabel=0; //first calculate maximum label length
+        for (auto s: settings)
+            tMaxLabel = std::max(tMaxLabel, s.first.size());
+        for (const auto& s : settings) { //print settings
+            for (unsigned int i=0; i < margin; ++i) fprintf(fp, " ");
+            fprintf(fp, "%s", s.first.c_str());
+            for (size_t t=s.first.size(); t < tMaxLabel; ++t)
+                fprintf(fp, " ");
+            fprintf(fp, " : %s\n", s.second.c_str());
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("WriteSettingsContainer()","ParametersPrint");
+        throw;
+    }
 }
