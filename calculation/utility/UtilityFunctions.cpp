@@ -805,6 +805,19 @@ std::stringstream & templateReplace(std::stringstream& templateText, const std::
     return templateText;
 }
 
+/** HTML encodes text - replacing symbols/punctuation with html codes. */
+std::string& htmlencode(const std::string& text, std::string& encoded) {
+    std::stringstream ss;
+    for (size_t pos = 0; pos != text.size(); ++pos) {
+        if (std::ispunct(static_cast<unsigned char>(text[pos])) || text[pos] == ' ')
+            ss << "&#" << int(text[pos]) << ';';
+        else
+            ss << text[pos];
+    }
+    encoded = ss.str();
+    return encoded;
+}
+
 /////////////////// EmailText /////////////////////////
 
 const char* EmailText::LINEBREAK = "<linebreak>";

@@ -22,7 +22,7 @@ class EventType {
         std::string _name;
         std::vector<CategoryTuple_t> _categories;
 
-        std::string                           formatTypeString(const std::string& str);
+        std::string                           formatTypeString(const std::string& str, unsigned int offset);
 
     public:
         EventType(const std::string& name);

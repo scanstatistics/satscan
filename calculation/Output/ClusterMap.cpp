@@ -19,9 +19,10 @@ unsigned int EventType::_counter = 0;
 /* EventType constructor */
 EventType::EventType(const std::string& name) {
     ++_counter; // increment counter to tract number of event types
+    unsigned int idx = _counter; // since _counter is static, concurrent analyses could cause strange behavior
     _name = name;
-    printString(_class, "event_type_%u", _counter);
-    _type = formatTypeString(name);
+    printString(_class, "event_type_%u", idx);
+    _type = formatTypeString(name, idx);
 }
 
 // Attempts to add new category to event collection.
@@ -32,25 +33,32 @@ const EventType::CategoryTuple_t& EventType::addCategory(const std::string& cate
             return category;
         }
     }
-    _categories.push_back(CategoryTuple_t(formatTypeString(category_label), category_label, 1));
+    _categories.push_back(CategoryTuple_t(formatTypeString(category_label, _categories.size() + 1), category_label, 1));
     return _categories.back();
 }
 
 /* Formats string for use as javascript hash string. */
-std::string EventType::formatTypeString(const std::string& str) {
-    std::stringstream text(str);
-    std::string return_value = templateReplace(text, " ", "_").str(); // strip spaces from type string for javascript
+std::string EventType::formatTypeString(const std::string& str, unsigned int offset) {
+    std::stringstream text;
+    for (size_t pos = 0; pos != str.size(); ++pos) {
+        if (std::ispunct(static_cast<unsigned char>(str[pos])) || str[pos] == ' ')
+            text << "_";
+        else
+            text << str[pos];
+    }
+    text << "_" << offset; // just to prevent possible conflicts with replacement (e.g. 't@est' -> 't_st' and 't%est' -> 't_st')
+    std::string return_value = text.str();
     return lowerString(return_value);
-
 }
 
 /* Returns event type as json formatted string. */
 std::string& EventType::toJson(std::string& json_str) {
+    std::string buffer;
     std::stringstream json;
-    json << "{ event_class: '" << _class << "', " << "event_type: '" << _type << "', " << "event_name: '" << _name << "', ";
+    json << "{ event_class: '" << _class << "', " << "event_type: '" << _type << "', " << "event_name: '" << htmlencode(_name, buffer) << "', ";
     json << "categories: [";
     for (auto itr = _categories.begin(); itr != _categories.end(); ++itr) {
-        json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << _class << "-" << itr->get<0>() << "', label: '" << itr->get<1>() << "'}";
+        json << (itr == _categories.begin() ? "" : ", ") << "{type: '" << _class << "-" << itr->get<0>() << "', label: '" << htmlencode(itr->get<1>(), buffer) << "'}";
     }
     json << "] }";
     json_str = json.str();
@@ -214,7 +222,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.1.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.2.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -373,7 +381,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
         // Iterate over the records of the case file - creating event types and event entries.
         const char * value = 0;
         tract_t tid; count_t count; Julian case_date;
-        std::string event_date, individual, latitude, longitude, status;
+        std::string event_date, individual, latitude, longitude, status, buffer;
         std::stringstream event_types;
         std::vector<std::pair<std::string, std::string>> event_attrs;
         std::set<const EventType*> unseen_events; // tracks which event types haven't been seen in this record
@@ -447,8 +455,8 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             std::sort(event_attrs.begin(), event_attrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
                 return left.first < right.first;
             });
-            for (auto attr = event_attrs.begin(); attr != event_attrs.end(); ++attr) {
-                _event_definitions << attr->first << ": " << attr->second << "<br>";
+            for (auto& attr: event_attrs) {
+                _event_definitions << htmlencode(attr.first, buffer) << ": " << htmlencode(attr.second, buffer) << "<br>";
             }
             _event_definitions << "</div>'}";
         }
@@ -506,10 +514,10 @@ void ClusterMap::finalize() {
         // write individual (event) option groups
         stream_buffer.str("");
         for (auto& eventtype: _event_types) {
-            stream_buffer << "<optgroup label='" << eventtype.name() << "' class='" << eventtype.className() << "'>";
+            stream_buffer << "<optgroup label='" << htmlencode(eventtype.name(), str_buffer) << "' class='" << eventtype.className() << "'>";
             for (const auto& category: eventtype.sortCategories()) {
                 stream_buffer << "<option value='" << eventtype.className() << "-" << category.get<0>() << "' class='" << eventtype.className() << "'>";
-                stream_buffer << category.get<1>() << " (" << category.get<2>() << ")" << "</option>";
+                stream_buffer << htmlencode(category.get<1>(), str_buffer) << " (" << category.get<2>() << ")" << "</option>";
             }
             stream_buffer << "</optgroup>";
         }
