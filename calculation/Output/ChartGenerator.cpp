@@ -501,9 +501,9 @@ void TemporalChartGenerator::generateChart() const {
                     templateReplace(cluster_details, "--inside-outside--", buffer);
                     printString(buffer, "%d", caseTotals.get<3>());
                     templateReplace(cluster_details, "--outside-outside--", buffer);
-                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<0>() * 100) / static_cast<double>(caseTotals.get<2>()));
+                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<0>()) / static_cast<double>(caseTotals.get<0>() + caseTotals.get<2>()) * 100.0);
                     templateReplace(cluster_details, "--inside-percent--", buffer);
-                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<1>() * 100) / static_cast<double>(caseTotals.get<3>()));
+                    printString(buffer, "%.1f", static_cast<double>(caseTotals.get<1>()) / static_cast<double>(caseTotals.get<1>() + caseTotals.get<3>()) * 100.0);
                     templateReplace(cluster_details, "--outside-percent--", buffer);
                     templateReplace(chart_section, "--cluster-details--", cluster_details.str());
                 } else {
