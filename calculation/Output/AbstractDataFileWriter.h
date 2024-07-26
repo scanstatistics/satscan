@@ -20,6 +20,7 @@ class RecordBuffer {
       RecordBuffer(const RecordBuffer& copyme);
       virtual ~RecordBuffer();
 
+      void                              DefaultBlankFieldsOfType(FieldValue default_value);
       const FieldDef                  & GetFieldDefinition(unsigned int iFieldIndex) const;
       const FieldDef                  & GetFieldDefinition(const std::string& sFieldName) const;
       unsigned int                      GetFieldIndex(const std::string& sFieldName) const;

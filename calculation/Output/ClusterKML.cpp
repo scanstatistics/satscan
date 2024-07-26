@@ -212,7 +212,7 @@ std::string & BaseClusterKML::getClusterStyleTags(const CCluster& cluster, int i
 
 /* Returns cluster balloon template. */
 std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std::string& templateString) const {
-    std::string buffer, bufferSetIdx;
+    std::string buffer, buffer2, buffer3, bufferSetIdx;
     std::stringstream  templateLines;
     const CParameters& parameters = _dataHub.GetParameters();
     const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;%s\">%s</th><td style=\"white-space:nowrap;\">$[%s%s]</td></tr>";
@@ -231,8 +231,8 @@ std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster,
         templateLines << printString(buffer,
             rowFormat,
             numFilesSets == 1 || itr->second.second == 0 ? "" : "padding-left:10px;",
-            itr->first.c_str(),
-            itr->first.c_str(),
+            encode(itr->first, buffer2).c_str(),
+            encode(itr->first, buffer3).c_str(),
             numFilesSets == 1 || itr->second.second == 0 ? "" : printString(bufferSetIdx, " set%u", itr->second.second).c_str()).c_str();
     }
     templateLines << "</table>]]>";
@@ -389,13 +389,9 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     const CParameters& parameters = _dataHub.GetParameters();
     std::string buffer, buffer2;
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
-    std::string file_name = group_by;
-    std::transform(std::begin(group_by), std::end(group_by), std::begin(file_name), [](char ch) {
-        return (ch == '<' || ch == '>' || ch == ':' || ch == '"' || ch == '/' || ch == '\\' || ch == '|' || ch == '?' || ch == '*' || ch == ' ') ? '_' : ch;
-    });
     _kml_files.resize(_kml_files.size() + 1);
     _kml_files.back().setFullPath(parameters.GetOutputFileName().c_str());
-    _kml_files.back().setFileName(printString(buffer, "%s_events%u_by_%s", _kml_files.back().getFileName().c_str(), _kml_files.size(), file_name.c_str()).c_str());
+    _kml_files.back().setFileName(printString(buffer, "%s_individuals_group%u", _kml_files.back().getFileName().c_str(), _kml_files.size() - 1).c_str());
     _kml_files.back().setExtension(KML_FILE_EXT);
     std::ofstream kml_out;
     kml_out.open(_kml_files.back().getFullPath(buffer).c_str());
@@ -460,7 +456,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
                     longitude = value;
                 } else {
                     value = strlen(value) == 0 ? "~ blank ~" : value;
-                    extended << "<Data name=\"" << llfm.get<2>() << "\"><value>" << value << "</value></Data>";
+                    extended << "<Data name=\"" << encode(llfm.get<2>(), buffer) << "\"><value>" << encode(value, buffer2) << "</value></Data>";
                     if (boost::iequals(llfm.get<2>(), group_by)) category = value;
                 }
             }
@@ -502,7 +498,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     for (const auto& gr : category_frequency) ordered_frequency.push_back(gr); // create new collection which sorts the categories by frequency
     std::sort(ordered_frequency.begin(), ordered_frequency.end(), [](const std::pair<std::string, unsigned int> &left, const std::pair<std::string, unsigned int> &right) { return left.second > right.second; });
     // write the screen overlay / legend
-    kml_out << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << group_by;
+    kml_out << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << encode(group_by, buffer);
     kml_out << "</div></name><Snippet></Snippet><description><div style='border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;'><div>" << std::endl;
     kml_out << "<ul style='padding-left:3px;margin-left:5px;margin-top:5px;padding-right: 5px;margin-bottom: 3px;'>" << std::endl;
     kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
@@ -518,7 +514,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         if (itrShape != _visual_utils.getShapes().end()) {
             kml_out << "<li style='list-style-type:none;white-space:nowrap;margin-bottom: 5px;'><img style='vertical-align:middle;margin-left:5px;margin-right:6px;'"
                 << " width='16' height='16' src='" << website << "images/events/" << *itrShape << "-whitecenter.png'/><span style='font-weight:bold;margin-left:5px;'>"
-                << pgroup.first << "</span></li>" << std::endl;
+                << encode(pgroup.first, buffer) << "</span></li>" << std::endl;
             ++itrShape;
         } else
             squasheditems << (squasheditems.rdbuf()->in_avail() ? ", " : "") << pgroup.first;
@@ -530,7 +526,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     kml_out << "</ul></div></description>" << std::endl;
     kml_out << "<overlayXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/><screenXY x=\"1\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>";
     kml_out << "<rotationXY x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/><size x=\"0\" y=\"0\" xunits=\"fraction\" yunits=\"fraction\"/></ScreenOverlay>" << std::endl;
-    kml_out << "<name>Individuals By " << group_by << "</name>" << std::endl;
+    kml_out << "<name>Individuals By " << encode(group_by, buffer) << "</name>" << std::endl;
     itrShape = itrShape = _visual_utils.getShapes().begin();
     for (auto const& pgroup: ordered_frequency) { // write the styles, balloon style, and placesmarks
         const auto& shape = itrShape != _visual_utils.getShapes().end() ? *itrShape : std::string(_visual_utils.getAggregationShape());
@@ -552,13 +548,13 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             kml_out << "<StyleMap id=\"events-" << styleHex.str() << "-outside-stylemap\"><Pair><key>normal</key><styleUrl>#events-" << styleHex.str()
                 << "-outside-style</styleUrl></Pair><Pair><key>highlight</key><styleUrl>#events-" << styleHex.str() << "-outside-style</styleUrl></Pair></StyleMap>" << std::endl;
         }
-        kml_out << "<Folder><name>" << pgroup.first << " (" << pgroup.second << ")</name>" << std::endl << category_placemarks[pgroup.first]->str() << "</Folder>";
+        kml_out << "<Folder><name>" << encode(pgroup.first, buffer) << " (" << pgroup.second << ")</name>" << std::endl << category_placemarks[pgroup.first]->str() << "</Folder>";
         if (itrShape != _visual_utils.getShapes().end()) ++itrShape;
     }
     kml_out << "</Document>" << std::endl << "</kml>" << std::endl;
     kml_out.close();
     // Now reference this event kml file in a NetworkLink tag of primary kml.
-    _kml_out << "\t<NetworkLink><name>Individuals By " << group_by << "</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility>";
+    _kml_out << "\t<NetworkLink><name>Individuals By " << encode(group_by, buffer) << "</name><visibility>0</visibility><refreshVisibility>0</refreshVisibility>";
     _kml_out << "<Link><href>"<< _kml_files.back().getFileName() << KML_FILE_EXT << "</href></Link></NetworkLink>" << std::endl << std::endl;
 }
 

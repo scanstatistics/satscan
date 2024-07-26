@@ -273,6 +273,9 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                     default: throw prg_error("Unknown coordinate type '%d'.", "Write()", gParameters.GetCoordinatesType());
                 }
             }
+            FieldValue default_numeric(FieldValue::NUMBER_FLD);
+            default_numeric.AsDouble() = 0.0;
+            Record.DefaultBlankFieldsOfType(default_numeric); // default numeric values such that we report them as zero vs blank
             // Certain location information fields are only present for one dataset and not ordinal/multinomial models
             if (gParameters.getNumFileSets() == 1 && 
                 gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME &&
@@ -422,24 +425,27 @@ void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaT
             DataHub.getClusterNetworkLocations(theCluster, *_clusterNetwork);
         }
         // Get the collection of locations within this cluster.
-        boost::dynamic_bitset<> clusterLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, theCluster, &clusterLocations);
+        std::vector<tract_t> clusterLocations;
+        boost::dynamic_bitset<> clusterLocationsSet;
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, theCluster, &clusterLocationsSet, &clusterLocations);
         // Now associate those locations with identifiers located at them - this is kind of the opposite of storage.
         _location_to_identifiers.clear();
         std::map<const Location*, size_t> locationMap;
+        // Build a collection of locations in cluster to identifiers in the cluster.
+        for (auto idx: clusterLocations) {
+            const auto& location = DataHub.getLocationsManager().locations()[idx];
+            locationMap.insert(std::make_pair(location.get(), _location_to_identifiers.size()));
+            _location_to_identifiers.push_back(std::make_pair(location.get(), MinimalGrowthArray<size_t>()));
+        }
         // Iterate over identifiers in this cluster and associate with location(s) - maintaining the location order within cluster.
         for (auto identifieridx : identifierindexes) {
             const auto& idLocations = DataHub.getIdentifierInfo().getIdentifiers()[identifieridx]->getLocations();
             for (size_t t = 0; t < idLocations.size(); ++t) {
                 // All locations of an identifier will not always be in the cluster, per multiple coordinates, so test inclusion.
                 const auto& location = idLocations[t];
-                if (clusterLocations.test(location->index())) {
+                if (clusterLocationsSet.test(location->index())) {
                     auto itrM = locationMap.find(location);
-                    if (itrM == locationMap.end()) {
-                        _location_to_identifiers.push_back(std::make_pair(location, MinimalGrowthArray<size_t>()));
-                        itrM = locationMap.insert(std::make_pair(location, _location_to_identifiers.size() - 1)).first;
-                    }
-                    _location_to_identifiers[itrM->second].second.add(identifieridx, true);
+                    if (itrM != locationMap.end()/*safeguard*/) _location_to_identifiers[itrM->second].second.add(identifieridx, true);
                 }
             }
         }
