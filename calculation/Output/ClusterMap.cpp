@@ -455,7 +455,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             std::sort(event_attrs.begin(), event_attrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
                 return left.first < right.first;
             });
-            for (auto& const attr: event_attrs) {
+            for (const auto& attr: event_attrs) {
                 _event_definitions << htmlencode(attr.first, buffer) << ": " << htmlencode(attr.second, buffer2) << "<br>";
             }
             _event_definitions << "</div>'}";
