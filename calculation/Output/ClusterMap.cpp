@@ -381,7 +381,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
         // Iterate over the records of the case file - creating event types and event entries.
         const char * value = 0;
         tract_t tid; count_t count; Julian case_date;
-        std::string event_date, individual, latitude, longitude, status, buffer;
+        std::string event_date, individual, latitude, longitude, status, buffer, buffer2;
         std::stringstream event_types;
         std::vector<std::pair<std::string, std::string>> event_attrs;
         std::set<const EventType*> unseen_events; // tracks which event types haven't been seen in this record
@@ -455,8 +455,8 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             std::sort(event_attrs.begin(), event_attrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
                 return left.first < right.first;
             });
-            for (auto& attr: event_attrs) {
-                _event_definitions << htmlencode(attr.first, buffer) << ": " << htmlencode(attr.second, buffer) << "<br>";
+            for (const auto& attr: event_attrs) {
+                _event_definitions << htmlencode(attr.first, buffer) << ": " << htmlencode(attr.second, buffer2) << "<br>";
             }
             _event_definitions << "</div>'}";
         }

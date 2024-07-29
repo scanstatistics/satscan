@@ -57,93 +57,102 @@ bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
 
 /** Returns field index for named field. */
 unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
-  bool                 bFound(false);
-  unsigned int         i, iPosition;
+    bool                 bFound(false);
+    unsigned int         i, iPosition;
 
-  try {
-    for (i=0; i < vFieldDefinitions.size() && !bFound; ++i) {
-       bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
-       iPosition = i;
-   }
-   if (!bFound)
-     throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetFieldIndex()","RecordBuffer");
-    throw;
-  }
-  return iPosition;
+    try {
+        for (i = 0; i < vFieldDefinitions.size() && !bFound; ++i) {
+            bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
+            iPosition = i;
+        }
+        if (!bFound)
+            throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
+    }
+    catch (prg_exception& x) {
+        x.addTrace("GetFieldIndex()", "RecordBuffer");
+        throw;
+    }
+    return iPosition;
 }
 
 /** Returns reference to field value for named field, setting field 'blank' indicator to false. */
 FieldValue& RecordBuffer::GetFieldValue(const std::string& sFieldName) {
-  try {
-    unsigned int iFieldIndex = GetFieldIndex(sFieldName);
-    gvBlankFields[iFieldIndex] = false;
-    return gvFieldValues[iFieldIndex];
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetFieldValue()","RecordBuffer");
-    throw;
-  }
+    try {
+        unsigned int iFieldIndex = GetFieldIndex(sFieldName);
+        gvBlankFields[iFieldIndex] = false;
+        return gvFieldValues[iFieldIndex];
+    }
+    catch (prg_exception& x) {
+        x.addTrace("GetFieldValue()", "RecordBuffer");
+        throw;
+    }
 }
 
 /** Returns FieldValue reference for field index. Throws prg_error if
     iFieldIndex is greater than number of FieldValues. */
 FieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
-  try {
-    if (iFieldIndex >= gvFieldValues.size())
-      throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
-    gvBlankFields[iFieldIndex] = false;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetFieldValue()","RecordBuffer");
-    throw;
-  }
-  return gvFieldValues[iFieldIndex];
+    try {
+        if (iFieldIndex >= gvFieldValues.size())
+            throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
+        gvBlankFields[iFieldIndex] = false;
+    }
+    catch (prg_exception& x) {
+        x.addTrace("GetFieldValue()", "RecordBuffer");
+        throw;
+    }
+    return gvFieldValues[iFieldIndex];
 }
 
 /** Returns FieldValue reference for field index. Throws prj_error if
     iFieldIndex is greater than number of FieldValues. */
 const FieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const {
-  try {
-    if (iFieldIndex >= gvFieldValues.size())
-      throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
-  }
-  catch (prg_exception& x) {
-    x.addTrace("GetFieldValue()","RecordBuffer");
-    throw;
-  }
-  return gvFieldValues[iFieldIndex];
+    try {
+        if (iFieldIndex >= gvFieldValues.size())
+            throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
+    }
+    catch (prg_exception& x) {
+        x.addTrace("GetFieldValue()", "RecordBuffer");
+        throw;
+    }
+    return gvFieldValues[iFieldIndex];
 }
 
 /** Sets all blank indicators as not blank. */
 void RecordBuffer::SetAllFieldsBlank(bool bBlank) {
-  std::fill(gvBlankFields.begin(), gvBlankFields.end(), bBlank);
+    std::fill(gvBlankFields.begin(), gvBlankFields.end(), bBlank);
 }
 
 /** Sets the field at fieldnumber to either be blank or non-blank. */
 void RecordBuffer::SetFieldIsBlank(const std::string& sFieldName, bool bBlank) {
-  try {
-    gvBlankFields[GetFieldIndex(sFieldName)] = bBlank;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("SetFieldIsBlank()","RecordBuffer");
-    throw;
-  }
+    try {
+        gvBlankFields[GetFieldIndex(sFieldName)] = bBlank;
+    }
+    catch (prg_exception& x) {
+        x.addTrace("SetFieldIsBlank()", "RecordBuffer");
+        throw;
+    }
 }
 
 /** Sets the field at fieldnumber to either be blank or non-blank. */
 void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
-  try {
-    if (iFieldNumber >= gvBlankFields.size())
-      throw prg_error("Index %u out of range [size=%u].", "SetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
-    gvBlankFields[iFieldNumber] = bBlank;
-  }
-  catch (prg_exception& x) {
-    x.addTrace("SetFieldIsBlank()","RecordBuffer");
-    throw;
-  }
+    try {
+        if (iFieldNumber >= gvBlankFields.size())
+            throw prg_error("Index %u out of range [size=%u].", "SetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
+        gvBlankFields[iFieldNumber] = bBlank;
+    }
+    catch (prg_exception& x) {
+        x.addTrace("SetFieldIsBlank()", "RecordBuffer");
+        throw;
+    }
+}
+
+/** Set named fields of type that are blank to a defaulted value. */
+void RecordBuffer::DefaultBlankFieldsOfType(FieldValue default_value, const std::vector<std::string>& file_names) {
+    for (const auto& filename : file_names) {
+        unsigned int idx = GetFieldIndex(filename);
+        if (gvBlankFields[idx] && vFieldDefinitions[idx]->GetType() == default_value.GetType())
+            GetFieldValue(idx) = default_value;
+    }
 }
 
 const char * AbstractDataFileWriter::CLUST_NUM_FIELD                    = "CLUSTER";

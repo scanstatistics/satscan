@@ -273,7 +273,7 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                     default: throw prg_error("Unknown coordinate type '%d'.", "Write()", gParameters.GetCoordinatesType());
                 }
             }
-            // Certain location information fields are only present for one dataset and not ordinal/multinomial models
+            // Certain location information fields are only present for one dataset and certain probability models.
             if (gParameters.getNumFileSets() == 1 && 
                 gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME &&
                 locationToIdentifiers.second.size()/* zero identifiers is an indication that tracts where combined at this location */) {
@@ -297,7 +297,7 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                 // Others need a specialized process or the accumulation is just clearer in separate routine.
                 if (gParameters.GetProbabilityModelType() != NORMAL) {
                     double expected = Record.GetFieldValue(LOC_EXP_FIELD).AsDouble();
-                    Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = expected ? Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() / expected : 0;
+                    if (expected) Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() / expected;
                 }
                 if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
                     dRelativeRisk = getRelativeRiskForIdentifiers(DataHub, theCluster, locationToIdentifiers.second);
@@ -329,6 +329,15 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                         default: throw prg_error("Unknown time trend status type '%d'.", "Write()", timetrend->GetStatus());
                     }
                 }
+            }
+            if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION && !locationToIdentifiers.second.size()) {
+                // When there are multiple coordinates per location, it's possible that there are no records defined 
+                // in the case file for a location, which results in the 'LOC*' fields being reported as blank. 
+                // Instead report these fields as zero.
+                FieldValue default_numeric(FieldValue::NUMBER_FLD);
+                default_numeric.AsDouble() = 0.0;
+                std::vector<std::string> default_fields = { LOC_OBS_FIELD, LOC_EXP_FIELD, LOC_POPULATION_FIELD };
+                Record.DefaultBlankFieldsOfType(default_numeric, default_fields); // default numeric values such that we report them as zero vs blank
             }
             if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
             if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
@@ -422,24 +431,27 @@ void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaT
             DataHub.getClusterNetworkLocations(theCluster, *_clusterNetwork);
         }
         // Get the collection of locations within this cluster.
-        boost::dynamic_bitset<> clusterLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, theCluster, &clusterLocations);
+        std::vector<tract_t> clusterLocations;
+        boost::dynamic_bitset<> clusterLocationsSet;
+        CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, theCluster, &clusterLocationsSet, &clusterLocations);
         // Now associate those locations with identifiers located at them - this is kind of the opposite of storage.
         _location_to_identifiers.clear();
         std::map<const Location*, size_t> locationMap;
+        // Build a collection of locations in cluster to identifiers in the cluster.
+        for (auto idx: clusterLocations) {
+            const auto& location = DataHub.getLocationsManager().locations()[idx];
+            locationMap.insert(std::make_pair(location.get(), _location_to_identifiers.size()));
+            _location_to_identifiers.push_back(std::make_pair(location.get(), MinimalGrowthArray<size_t>()));
+        }
         // Iterate over identifiers in this cluster and associate with location(s) - maintaining the location order within cluster.
         for (auto identifieridx : identifierindexes) {
             const auto& idLocations = DataHub.getIdentifierInfo().getIdentifiers()[identifieridx]->getLocations();
             for (size_t t = 0; t < idLocations.size(); ++t) {
                 // All locations of an identifier will not always be in the cluster, per multiple coordinates, so test inclusion.
                 const auto& location = idLocations[t];
-                if (clusterLocations.test(location->index())) {
+                if (clusterLocationsSet.test(location->index())) {
                     auto itrM = locationMap.find(location);
-                    if (itrM == locationMap.end()) {
-                        _location_to_identifiers.push_back(std::make_pair(location, MinimalGrowthArray<size_t>()));
-                        itrM = locationMap.insert(std::make_pair(location, _location_to_identifiers.size() - 1)).first;
-                    }
-                    _location_to_identifiers[itrM->second].second.add(identifieridx, true);
+                    if (itrM != locationMap.end()/*safeguard*/) _location_to_identifiers[itrM->second].second.add(identifieridx, true);
                 }
             }
         }
