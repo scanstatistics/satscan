@@ -273,10 +273,7 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                     default: throw prg_error("Unknown coordinate type '%d'.", "Write()", gParameters.GetCoordinatesType());
                 }
             }
-            FieldValue default_numeric(FieldValue::NUMBER_FLD);
-            default_numeric.AsDouble() = 0.0;
-            Record.DefaultBlankFieldsOfType(default_numeric); // default numeric values such that we report them as zero vs blank
-            // Certain location information fields are only present for one dataset and not ordinal/multinomial models
+            // Certain location information fields are only present for one dataset and certain probability models.
             if (gParameters.getNumFileSets() == 1 && 
                 gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL && gParameters.GetProbabilityModelType() != UNIFORMTIME &&
                 locationToIdentifiers.second.size()/* zero identifiers is an indication that tracts where combined at this location */) {
@@ -300,7 +297,7 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                 // Others need a specialized process or the accumulation is just clearer in separate routine.
                 if (gParameters.GetProbabilityModelType() != NORMAL) {
                     double expected = Record.GetFieldValue(LOC_EXP_FIELD).AsDouble();
-                    Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = expected ? Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() / expected : 0;
+                    if (expected) Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() / expected;
                 }
                 if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
                     dRelativeRisk = getRelativeRiskForIdentifiers(DataHub, theCluster, locationToIdentifiers.second);
@@ -332,6 +329,15 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                         default: throw prg_error("Unknown time trend status type '%d'.", "Write()", timetrend->GetStatus());
                     }
                 }
+            }
+            if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION && !locationToIdentifiers.second.size()) {
+                // When there are multiple coordinates per location, it's possible that there are no records defined 
+                // in the case file for a location, which results in the 'LOC*' fields being reported as blank. 
+                // Instead report these fields as zero.
+                FieldValue default_numeric(FieldValue::NUMBER_FLD);
+                default_numeric.AsDouble() = 0.0;
+                std::vector<std::string> default_fields = { LOC_OBS_FIELD, LOC_EXP_FIELD, LOC_POPULATION_FIELD };
+                Record.DefaultBlankFieldsOfType(default_numeric, default_fields); // default numeric values such that we report them as zero vs blank
             }
             if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
             if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);

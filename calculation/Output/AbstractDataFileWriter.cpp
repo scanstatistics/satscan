@@ -146,11 +146,12 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
     }
 }
 
-/** Set all fields of type that are blank to a defaulted value. */
-void RecordBuffer::DefaultBlankFieldsOfType(FieldValue default_value) {
-    for (size_t t = 0; t < gvBlankFields.size(); ++t) {
-        if (gvBlankFields[t] && vFieldDefinitions[t]->GetType() == default_value.GetType())
-            GetFieldValue(t) = default_value;
+/** Set named fields of type that are blank to a defaulted value. */
+void RecordBuffer::DefaultBlankFieldsOfType(FieldValue default_value, const std::vector<std::string>& file_names) {
+    for (const auto& filename : file_names) {
+        unsigned int idx = GetFieldIndex(filename);
+        if (gvBlankFields[idx] && vFieldDefinitions[idx]->GetType() == default_value.GetType())
+            GetFieldValue(idx) = default_value;
     }
 }
 
