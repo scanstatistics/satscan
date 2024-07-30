@@ -1019,17 +1019,23 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _closeSessionMenuItem.setIcon(null);
         _closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_closeSessionMenuItem);
+        _closeSessionMenuItem.getAccessibleContext().setAccessibleName("Close Session");
+
         _fileMenu.add(_fileMenuSeparator1);
 
         _saveSessionMenuItem.setAction(_saveSessionAction);
         _saveSessionMenuItem.setIcon(null);
         _saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_saveSessionMenuItem);
+        _saveSessionMenuItem.getAccessibleContext().setAccessibleName("Save Session");
 
         _saveSessionAsMenuItem.setAction(_saveSessionAsAction);
         _saveSessionAsMenuItem.setIcon(null);
         _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));
         _fileMenu.add(_saveSessionAsMenuItem);
+        _saveSessionAsMenuItem.getAccessibleContext().setAccessibleName("Save Session As");
+        _saveSessionAsMenuItem.getAccessibleContext().setAccessibleDescription("");
+
         _fileMenu.add(_fileMenuSeparator2);
 
         _batchAnalyses.setAction(new ShowMultipleAnalysisFrameAction());
@@ -1037,22 +1043,27 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _appPreferences.setIcon(null);
         _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_batchAnalyses);
+        _batchAnalyses.getAccessibleContext().setAccessibleName("Batched Analyses");
 
         _appPreferences.setAction(_applicationPreferencesAction);
         _appPreferences.setIcon(null);
         _appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_appPreferences);
+        _appPreferences.getAccessibleContext().setAccessibleName("Application Preferences");
 
         _printMenuItem.setAction(_printResultsAction);
         _printMenuItem.setIcon(null);
         _printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         _fileMenu.add(_printMenuItem);
+        _printMenuItem.getAccessibleContext().setAccessibleName("Print Analysis Results");
+
         _fileMenu.add(_fileMenuSeparator3);
 
         _exitMenuItem.setAction(new ExitAction());
         _exitMenuItem.setText("Exit"); // NOI18N
         _exitMenuItem.setIcon(null);
         _fileMenu.add(_exitMenuItem);
+        _exitMenuItem.getAccessibleContext().setAccessibleName("Exit Application");
 
         menuBar.add(_fileMenu);
 
@@ -1068,13 +1079,17 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _executeOptionsMenuItem.setIcon(null);
         _executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));
         _sessionMenu.add(_executeOptionsMenuItem);
+        _executeOptionsMenuItem.getAccessibleContext().setAccessibleName("Execution Options");
+
         _sessionMenu.add(jSeparator7);
 
         _importMultipleAnalysisjMenuItem.setAction(_importMultipleAnalysesAction);
         _sessionMenu.add(_importMultipleAnalysisjMenuItem);
+        _importMultipleAnalysisjMenuItem.getAccessibleContext().setAccessibleName("Multiple Analyses IMport");
 
         _exportMultipleAnalysisjMenuItem.setAction(_exportMultipleAnalysesAction);
         _sessionMenu.add(_exportMultipleAnalysisjMenuItem);
+        _exportMultipleAnalysisjMenuItem.getAccessibleContext().setAccessibleName("Multiple Analyses Export");
 
         menuBar.add(_sessionMenu);
 

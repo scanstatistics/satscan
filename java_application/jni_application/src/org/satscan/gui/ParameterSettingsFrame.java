@@ -1652,7 +1652,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _probabilityModelTypeButtonGroup = new javax.swing.ButtonGroup();
         _scanAreasButtonGroup = new javax.swing.ButtonGroup();
         _timeAggregationButtonGroup = new javax.swing.ButtonGroup();
-        _clustersReportedButtonGroup = new javax.swing.ButtonGroup();
         _tabbedPane = new javax.swing.JTabbedPane();
         _inputTab = new javax.swing.JPanel();
         _caseInputPanel = new javax.swing.JPanel();
@@ -1809,20 +1808,22 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinatesButtonGroup.add(_cartesianRadioButton);
         _coordinatesButtonGroup.add(_latLongRadioButton);
 
-        _analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);
         _analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);
+        _analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);
         _analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);
+        _analysisTypeButtonGroup.add(_retrospectiveSeasonalRadioButton);
+        _analysisTypeButtonGroup.add(_spatialVariationRadioButton);
         _analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);
         _analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);
-        _analysisTypeButtonGroup.add(_retrospectiveSeasonalRadioButton);
 
         _probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);
+        _probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_normalModelRadioButton);
-        _probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);
+        _probabilityModelTypeButtonGroup.add(_uniformtimeModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);
 
         _scanAreasButtonGroup.add(_highRatesRadioButton);
@@ -1840,6 +1841,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _caseInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
+        _caseFileLabel.setLabelFor(_caseFileTextField);
         _caseFileLabel.setText("Case File:"); // NOI18N
 
         _caseFileBrowseButton.setText("..."); // NOI18N
@@ -1944,6 +1946,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _timePrecisionNone.getAccessibleContext().setAccessibleName("time precision none");
+        _timePrecisionYear.getAccessibleContext().setAccessibleName("time precision Year");
+        _timePrecisionMonth.getAccessibleContext().setAccessibleName("time precision Month");
+        _timePrecisionDay.getAccessibleContext().setAccessibleName("time precision Day");
+        _timePrecisionGeneric.getAccessibleContext().setAccessibleName("time precision Generic");
+
         _studyPeriodGroup.setLayout(new java.awt.CardLayout());
 
         _studyPeriodComplete.setBorder(javax.swing.BorderFactory.createTitledBorder("Study Period"));
@@ -2046,6 +2054,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _studyPeriodStartDateYearTextField.getAccessibleContext().setAccessibleName("Study Period Start Date Year");
+        _studyPeriodStartDateMonthTextField.getAccessibleContext().setAccessibleName("Study Period Start Date Month");
+        _studyPeriodStartDateMonthTextField.getAccessibleContext().setAccessibleDescription("");
+        _studyPeriodStartDateDayTextField.getAccessibleContext().setAccessibleName("Study Period Start Date Day");
+        _studyPeriodEndDateYearTextField.getAccessibleContext().setAccessibleName("Study Period End Date Year");
+        _studyPeriodEndDateMonthTextField.getAccessibleContext().setAccessibleName("Study Period End Date Month");
+        _studyPeriodEndDateDayTextField.getAccessibleContext().setAccessibleName("Study Period End Date Day");
+        _studyPeriodEndDateDayTextField.getAccessibleContext().setAccessibleDescription("");
+
         _studyPeriodGroup.add(_studyPeriodComplete, "study_complete");
 
         _studyPeriodGeneric.setBorder(javax.swing.BorderFactory.createTitledBorder("Study Period"));
@@ -2134,8 +2151,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _studyPeriodStartDateGenericTextField.getAccessibleContext().setAccessibleName("Generic units start time");
+        _studyPeriodEndDateGenericTextField.getAccessibleContext().setAccessibleName("Generic units end time");
+
         _studyPeriodGroup.add(_studyPeriodGeneric, "study_generic");
 
+        _controlFileLabel.setLabelFor(_controlFileTextField);
         _controlFileLabel.setText("Control File:"); // NOI18N
 
         _controlFileBrowseButton.setText("..."); // NOI18N
@@ -2210,6 +2231,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap())
         );
 
+        _caseFileBrowseButton.getAccessibleContext().setAccessibleName("");
+        _timePrecisionGroup.getAccessibleContext().setAccessibleName("Time Precision Selection");
+        _controlFileBrowseButton.getAccessibleContext().setAccessibleName("");
+
+        _populationFileLabel.setLabelFor(_populationFileTextField);
         _populationFileLabel.setText("Population File:"); // NOI18N
 
         _populationFileBrowseButton.setText("..."); // NOI18N
@@ -2259,8 +2285,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _populationFileBrowseButton.getAccessibleContext().setAccessibleName("");
+
         _geographicalInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
+        _coordinatesFileLabel.setLabelFor(_coordiantesFileTextField);
         _coordinatesFileLabel.setText("Coordinates File:"); // NOI18N
 
         _coordinatesFileBrowseButton.setText("..."); // NOI18N
@@ -2329,6 +2358,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(22, Short.MAX_VALUE))
         );
 
+        _cartesianRadioButton.getAccessibleContext().setAccessibleName("Cartesian coordinates");
+        _latLongRadioButton.getAccessibleContext().setAccessibleName("Latitude/Longitude coordinates");
+
+        _gridFileLabel.setLabelFor(_gridFileTextField);
         _gridFileLabel.setText("Grid File:"); // NOI18N
 
         _gridFileBrowseButton.setText("..."); // NOI18N
@@ -2398,6 +2431,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _coordinatesFileBrowseButton.getAccessibleContext().setAccessibleName("");
+        _coordinateTypeGroup.getAccessibleContext().setAccessibleName("Coordinates Type Selection");
+        _gridFileBrowseButton.getAccessibleContext().setAccessibleName("");
+
         _advancedInputButton.setText("Advanced >>"); // NOI18N
         _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -2433,7 +2470,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap())
         );
 
+        _advancedInputButton.getAccessibleContext().setAccessibleName("Advanced Input Features");
+
         _tabbedPane.addTab("Input", _inputTab);
+        _inputTab.getAccessibleContext().setAccessibleName("Input tab");
 
         _analysisTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Type of Analysis"));
 
@@ -2587,6 +2627,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_prospectiveSpaceTimeRadioButton)
                 .addContainerGap())
         );
+
+        _retrospectivePurelySpatialRadioButton.getAccessibleContext().setAccessibleName("Retrospective Purely Spatial");
+        _retrospectivePurelyTemporalRadioButton.getAccessibleContext().setAccessibleName("Retrospective Purely Temporal");
+        _retrospectiveSpaceTimeRadioButton.getAccessibleContext().setAccessibleName("Retrospective Space-Time");
+        _prospectivePurelyTemporalRadioButton.getAccessibleContext().setAccessibleName("Prospective Purely Temporal");
+        _prospectiveSpaceTimeRadioButton.getAccessibleContext().setAccessibleName("Prospective Space-Time");
+        _spatialVariationRadioButton.getAccessibleContext().setAccessibleName("Retrospective Spatial Variation in Temporal Trends");
+        _retrospectiveSeasonalRadioButton.getAccessibleContext().setAccessibleName("Retrospective Seasonal");
 
         _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Probability Model"));
 
@@ -2760,6 +2808,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGap(18, 18, 18))
         );
 
+        _poissonModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Poisson");
+        _bernoulliModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Bernoulli");
+        _spaceTimePermutationModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Space-Time Permutation");
+        _ordinalModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Ordinal");
+        _exponentialModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Exponential");
+        _normalModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Normal");
+        _categoricallModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Multinomial");
+        _homogeneouspoissonModelRadioButton.getAccessibleContext().setAccessibleName("Continuous Poisson");
+        _observableRegionsButton.getAccessibleContext().setAccessibleName("");
+        _observableRegionsButton.getAccessibleContext().setAccessibleDescription("Define polygons");
+        _uniformtimeModelRadioButton.getAccessibleContext().setAccessibleName("Discrete Uniform Time");
+
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Scan For Areas With:"));
 
         _highRatesRadioButton.setSelected(true);
@@ -2824,6 +2884,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_highOrLowRatesRadioButton)
                 .addGap(0, 33, Short.MAX_VALUE))
         );
+
+        _highRatesRadioButton.getAccessibleContext().setAccessibleName("scan High Rates");
+        _lowRatesRadioButton.getAccessibleContext().setAccessibleName("scan Low Rates");
+        _highOrLowRatesRadioButton.getAccessibleContext().setAccessibleName("scan High or Low Rates");
 
         _timeAggregationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder("Time Aggregation"));
 
@@ -2928,6 +2992,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(24, Short.MAX_VALUE))
         );
 
+        _timeAggregationYearRadioButton.getAccessibleContext().setAccessibleName("Time Aggregation Year");
+        _timeAggregationMonthRadioButton.getAccessibleContext().setAccessibleName("Time Aggregation Month");
+        _timeAggregationDayRadioButton.getAccessibleContext().setAccessibleName("Time Aggregation Day");
+        _timeAggregationLengthLabel.getAccessibleContext().setAccessibleName("Time Aggregation Length");
+
         _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
         _advancedAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -2972,7 +3041,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap())
         );
 
+        _analysisTypeGroup.getAccessibleContext().setAccessibleName("Analysis Type Selection");
+        _probabilityModelGroup.getAccessibleContext().setAccessibleName("Probability Model Type Selection");
+        _scanAreasGroup.getAccessibleContext().setAccessibleName("Scan Area Type Selection");
+        _timeAggregationGroup.getAccessibleContext().setAccessibleName("Time Aggregation Type Selection");
+        _advancedAnalysisButton.getAccessibleContext().setAccessibleName("Advanced Analysis Features");
+
         _tabbedPane.addTab("Analysis", _analysisTab);
+        _analysisTab.getAccessibleContext().setAccessibleName("Analysis Tab");
 
         _additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Output Format"));
 
@@ -3131,6 +3207,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _clustersInColumnFormatAsciiCheckBox.getAccessibleContext().setAccessibleName("Cluster Information in text format");
+        _clustersInColumnFormatDBaseCheckBox.getAccessibleContext().setAccessibleName("Cluster Information in dbase format");
+        _clusterCaseInColumnFormatAsciiCheckBox.getAccessibleContext().setAccessibleName("Stratified Cluster Information in text format");
+        _clusterCaseInColumnFormatDBaseCheckBox.getAccessibleContext().setAccessibleName("Stratified Cluster Information in dbase format");
+        _censusAreasReportedClustersAsciiCheckBox.getAccessibleContext().setAccessibleName("Location Information in text format");
+        _censusAreasReportedClustersDBaseCheckBox.getAccessibleContext().setAccessibleName("Location Information in dbase format");
+        _relativeRiskEstimatesAreaAsciiCheckBox.getAccessibleContext().setAccessibleName("Risk Estimates for Each Location in text format");
+        _relativeRiskEstimatesAreaDBaseCheckBox.getAccessibleContext().setAccessibleName("Risk Estimates for Each Location in dbase format");
+        _simulatedLogLikelihoodRatiosAsciiCheckBox.getAccessibleContext().setAccessibleName("Simulated Log Likelihood Ratios/Test Statistics in text format");
+        _simulatedLogLikelihoodRatiosDBaseCheckBox.getAccessibleContext().setAccessibleName("Simulated Log Likelihood Ratios/Test Statistics in dbase format");
+
         _advancedFeaturesOutputButton.setText("Advanced >>"); // NOI18N
         _advancedFeaturesOutputButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -3141,6 +3228,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
 
+        _resultsFileLabel.setLabelFor(_resultsFileTextField);
         _resultsFileLabel.setText("Main Results File:"); // NOI18N
 
         _resultsFileBrowseButton.setText("..."); // NOI18N
@@ -3188,6 +3276,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        _resultsFileBrowseButton.getAccessibleContext().setAccessibleName("");
 
         _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output"));
 
@@ -3269,7 +3359,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap())
         );
 
+        _advancedFeaturesOutputButton.getAccessibleContext().setAccessibleName("Advanced Output Features");
+
         _tabbedPane.addTab("Output", _outputTab);
+        _outputTab.getAccessibleContext().setAccessibleName("Output Tab");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -3312,7 +3405,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JCheckBox _clustersInColumnFormatAsciiCheckBox;
     private javax.swing.JCheckBox _clustersInColumnFormatDBaseCheckBox;
     private javax.swing.JLabel _clustersInColumnFormatLabel;
-    private javax.swing.ButtonGroup _clustersReportedButtonGroup;
     private javax.swing.JButton _controlFileBrowseButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;

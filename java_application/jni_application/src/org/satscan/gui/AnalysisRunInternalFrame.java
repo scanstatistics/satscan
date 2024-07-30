@@ -690,7 +690,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         setMaximizable(true);
         setResizable(true);
 
-        jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(251);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(0.67);
@@ -716,6 +715,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         );
 
         _bottom_tabbed_pane.addTab("Warnings/Errors", _warnings_errors_tab);
+        _warnings_errors_tab.getAccessibleContext().setAccessibleName("Warnings/Errors");
 
         jScrollPane1.setViewportView(_results_tree);
         _results_tree.setCellRenderer(new FileTreeCellRenderer());
@@ -742,6 +742,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 LoadFromFile(_tree_output_map.get(node));
             }
         });
+        _results_tree.getAccessibleContext().setAccessibleDescription("Treeview detailing drilldown analyses");
 
         btnSwitchOrientation.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Window_App_SplitScreen.png"))); // NOI18N
         btnSwitchOrientation.setToolTipText("Switch Orientation");
@@ -799,6 +800,9 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
+        btnSwitchOrientation.getAccessibleContext().setAccessibleName("Switch Tabs Orientation");
+        btnSwitchOrientation.getAccessibleContext().setAccessibleDescription("Switch Tabs Orientation");
+
         javax.swing.GroupLayout _drilldown_results_tabLayout = new javax.swing.GroupLayout(_drilldown_results_tab);
         _drilldown_results_tab.setLayout(_drilldown_results_tabLayout);
         _drilldown_results_tabLayout.setHorizontalGroup(
@@ -820,6 +824,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         );
 
         _bottom_tabbed_pane.addTab("Drilldown", _drilldown_results_tab);
+        _drilldown_results_tab.getAccessibleContext().setAccessibleName("Drilldown Results");
 
         _user_cancel_button.setText("Cancel");
         _user_cancel_button.addActionListener(new java.awt.event.ActionListener() {
@@ -867,6 +872,9 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                     .addComponent(_emailButton)))
         );
 
+        _bottom_tabbed_pane.getAccessibleContext().setAccessibleName("Analysis Results Tabs");
+        _emailButton.getAccessibleContext().setAccessibleName("Email technical support");
+
         jSplitPane1.setRightComponent(_bottom_panel);
 
         _progressTextArea.setEditable(false);
@@ -874,6 +882,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         _progressTextArea.setRows(5);
         _progressTextArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
         jScrollPane3.setViewportView(_progressTextArea);
+        _progressTextArea.getAccessibleContext().setAccessibleName("Analysis run window and results");
 
         javax.swing.GroupLayout _primary_panelLayout = new javax.swing.GroupLayout(_primary_panel);
         _primary_panel.setLayout(_primary_panelLayout);

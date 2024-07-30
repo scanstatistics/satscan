@@ -3275,6 +3275,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _temporalTrendAdjButtonGroup.add(_temporalTrendAdjLogLinearCalc);
             _temporalTrendAdjButtonGroup.add(_temporalTrendAdjQuadCalc);
 
+            _pValueButtonGroup.add(_radioDefaultPValues);
+            _pValueButtonGroup.add(_radioStandardPValues);
+            _pValueButtonGroup.add(_radioEarlyTerminationPValues);
+            _pValueButtonGroup.add(_radioGumbelPValues);
+
             popupMenu1.setLabel("popupMenu1");
 
             setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
@@ -3295,6 +3300,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
             jScrollPane1.setViewportView(_inputDataSetsList);
+            _inputDataSetsList.getAccessibleContext().setAccessibleName("Additional data sets selection");
 
             _addDataSetButton.setText("Add"); // NOI18N
             _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
@@ -3385,6 +3391,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _addDataSetButton.getAccessibleContext().setAccessibleName("Add data set");
+            _removeDataSetButton.getAccessibleContext().setAccessibleName("Remove selected data set");
+
+            _caseFileLabel.setLabelFor(_caseFileTextField);
             _caseFileLabel.setText("Case File:"); // NOI18N
 
             _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -3416,6 +3426,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _controlFileLabel.setLabelFor(_controlFileTextField);
             _controlFileLabel.setText("Control File:"); // NOI18N
 
             _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -3447,6 +3458,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _populationFileLabel.setLabelFor(_populationFileTextField);
             _populationFileLabel.setText("Population File:"); // NOI18N
 
             _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -3527,6 +3539,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
+
+            _caseFileTextField.getAccessibleContext().setAccessibleName("Case File");
+            _caseFileBrowseButton.getAccessibleContext().setAccessibleName("");
+            _controlFileLabel.getAccessibleContext().setAccessibleName("Control File");
+            _controlFileBrowseButton.getAccessibleContext().setAccessibleName("");
+            _populationFileLabel.getAccessibleContext().setAccessibleName("Population File");
+            _populationFileTextField.getAccessibleContext().setAccessibleName("Population File");
+            _populationFileBrowseButton.getAccessibleContext().setAccessibleName("");
 
             _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
 
@@ -3624,6 +3644,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
+            _multipleDataSetsTab.getAccessibleContext().setAccessibleName("Multiple Data Sets tab");
 
             _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check"));
 
@@ -3716,6 +3737,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _strictCoordinatesRadioButton.getAccessibleContext().setAccessibleName("Check to ensure that all observations (cases, controls and populations) are within the specified geographical area.");
+
             javax.swing.GroupLayout _dataCheckingTabLayout = new javax.swing.GroupLayout(_dataCheckingTab);
             _dataCheckingTab.setLayout(_dataCheckingTabLayout);
             _dataCheckingTabLayout.setHorizontalGroup(
@@ -3738,6 +3761,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
+            _dataCheckingTab.getAccessibleContext().setAccessibleName("Data Checking tab");
 
             _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidean Neighbors"));
 
@@ -3835,6 +3859,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _neighborsFileTextField.getAccessibleContext().setAccessibleName("non-euclidean neighbors file path");
+            _neighborsFileBrowseButton.getAccessibleContext().setAccessibleName("");
+            _metaLocationsFileTextField.getAccessibleContext().setAccessibleName("meta locations files path");
+            _metaLocationsFileBrowseButton.getAccessibleContext().setAccessibleName("");
+
             _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Observations with Multiple Locations"));
 
             _onePerLocationIdRadioButton.setSelected(true);
@@ -3895,6 +3924,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _multiple_locations_file_label.setLabelFor(_multiple_locations_file);
             _multiple_locations_file_label.setText("Multiple Locations Per Observation File:");
 
             javax.swing.GroupLayout _multipleSetsSpatialCoordinatesGroupLayout = new javax.swing.GroupLayout(_multipleSetsSpatialCoordinatesGroup);
@@ -3933,6 +3963,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _multiple_locations_file_browse.getAccessibleContext().setAccessibleName("");
+
             javax.swing.GroupLayout _spatialNeighborsTabLayout = new javax.swing.GroupLayout(_spatialNeighborsTab);
             _spatialNeighborsTab.setLayout(_spatialNeighborsTabLayout);
             _spatialNeighborsTabLayout.setHorizontalGroup(
@@ -3955,6 +3987,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
+            _spatialNeighborsTab.getAccessibleContext().setAccessibleName("Spatial Neighbors tab");
 
             _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size"));
 
@@ -3980,6 +4013,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _percentageOfPopulationLabel.setLabelFor(_maxSpatialClusterSizeTextField);
             _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
 
             _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4013,6 +4047,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _percentageOfPopFileLabel.setLabelFor(_maxSpatialPercentFileTextField);
             _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
             _maxCirclePopFileBrowseButton.setText("..."); // NOI18N
@@ -4127,6 +4162,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(21, Short.MAX_VALUE))
             );
 
+            _spatialPopulationFileCheckBox.getAccessibleContext().setAccessibleName("selection for spatial maximum by max circle size file");
+            _maxCirclePopulationFilenameTextField.getAccessibleContext().setAccessibleName("file path of maximum circle size file");
+            _maxCirclePopFileBrowseButton.getAccessibleContext().setAccessibleName("");
+            _spatialDistanceCheckBox.getAccessibleContext().setAccessibleName("selection for spatial maximum by distance");
+            _maxSpatialRadiusTextField.getAccessibleContext().setAccessibleName("maximum radius by distance");
+
             _inclPureTempClustCheckBox.setText("Include Purely Temporal Clusters (Spatial Size = 100%)"); // NOI18N
             _inclPureTempClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _inclPureTempClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4163,6 +4204,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _nonCompactnessPenaltyLabel.setLabelFor(_nonCompactnessPenaltyComboBox);
             _nonCompactnessPenaltyLabel.setText("Non-Compactness Penalty:"); // NOI18N
 
             _nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -4206,6 +4248,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _circularRadioButton.getAccessibleContext().setAccessibleName("Circular window shape");
+            _ellipticRadioButton.getAccessibleContext().setAccessibleName("Elliptic window shape");
+            _nonCompactnessPenaltyComboBox.getAccessibleContext().setAccessibleName("Non-Compactness Penalty");
+
             _performIsotonicScanCheckBox.setText("Use Isotonic Spatial Scan Statistic"); // NOI18N
             _performIsotonicScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _performIsotonicScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4244,6 +4290,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
+            _spatialWindowTab.getAccessibleContext().setAccessibleName("Spatial Window tab");
 
             _maxTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
 
@@ -4297,6 +4344,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _percentageOfStudyPeriodLabel.setLabelFor(_maxTemporalClusterSizeTextField);
             _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)"); // NOI18N
 
             _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
@@ -4319,6 +4367,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _maxTemporalTimeUnitsLabel.setLabelFor(_maxTemporalClusterSizeUnitsTextField);
             _maxTemporalTimeUnitsLabel.setText("years (<=90% of the study period)"); // NOI18N
 
             _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)"); // NOI18N
@@ -4369,6 +4418,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_includePureSpacClustCheckBox)
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
+
+            _percentageTemporalRadioButton.getAccessibleContext().setAccessibleName("selection of maximum temporal by percentage of population");
+            _timeTemporalRadioButton.getAccessibleContext().setAccessibleName("selection of maximum temporal by time units");
+            _percentageOfStudyPeriodLabel.getAccessibleContext().setAccessibleName("percent of the study period (<= 90, default = 50)");
+            _maxTemporalClusterSizeUnitsTextField.getAccessibleContext().setAccessibleName("years (<=90 of the study period)");
 
             _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
 
@@ -4429,24 +4483,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endWindowRangeLabel))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_endRangeStartYearTextField)
-                        .addComponent(_startRangeStartYearTextField))
+                        .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_endRangeStartMonthTextField)
-                        .addComponent(_startRangeStartMonthTextField))
+                        .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, Short.MAX_VALUE)
-                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, Short.MAX_VALUE))
+                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(_startRangeToLabel)
                         .addComponent(_endRangeToLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_endRangeEndYearTextField)
-                        .addComponent(_startRangeEndYearTextField))
+                        .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(_windowCompletePanelLayout.createSequentialGroup()
@@ -4457,7 +4511,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addContainerGap(191, Short.MAX_VALUE))
+                    .addContainerGap(227, Short.MAX_VALUE))
             );
             _windowCompletePanelLayout.setVerticalGroup(
                 _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4484,6 +4538,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
+
+            _startRangeStartYearTextField.getAccessibleContext().setAccessibleName("start range, begin year");
+            _startRangeStartMonthTextField.getAccessibleContext().setAccessibleName("start range, begin month");
+            _startRangeStartDayTextField.getAccessibleContext().setAccessibleName("start range, begin day");
+            _startRangeEndYearTextField.getAccessibleContext().setAccessibleName("start range, end year");
+            _startRangeEndMonthTextField.getAccessibleContext().setAccessibleName("start range, end month");
+            _startRangeEndDayTextField.getAccessibleContext().setAccessibleName("start range, end day");
+            _endRangeEndDayTextField.getAccessibleContext().setAccessibleName("end range, end day");
+            _endRangeEndMonthTextField.getAccessibleContext().setAccessibleName("end range, end month");
+            _endRangeEndYearTextField.getAccessibleContext().setAccessibleName("end range, end year");
+            _endRangeStartDayTextField.getAccessibleContext().setAccessibleName("end range, begin day");
+            _endRangeStartMonthTextField.getAccessibleContext().setAccessibleName("end range, begin month");
+            _endRangeStartYearTextField.getAccessibleContext().setAccessibleName("end range, begin year");
 
             _flexible_window_cards.add(_windowCompletePanel, "flexible_complete");
 
@@ -4609,6 +4676,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _restrictTemporalRangeCheckBox.getAccessibleContext().setAccessibleName("Include only windows within specified range");
+
             _minTemporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Temporal Cluster Size"));
 
             _minTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
@@ -4654,6 +4723,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _minTemporalClusterSizeUnitsTextField.getAccessibleContext().setAccessibleName("minimum temporal cluster size in time units");
+
             javax.swing.GroupLayout _temporalWindowTabLayout = new javax.swing.GroupLayout(_temporalWindowTab);
             _temporalWindowTab.setLayout(_temporalWindowTabLayout);
             _temporalWindowTabLayout.setHorizontalGroup(
@@ -4679,6 +4750,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
+            _temporalWindowTab.getAccessibleContext().setAccessibleName("Temporal Window tab");
 
             _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Trend Adjustments"));
 
@@ -4803,6 +4875,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _temporalTrendAdjNone.getAccessibleContext().setAccessibleName("no temporal adjustments");
+            _temporalTrendAdjNonparametric.getAccessibleContext().setAccessibleName("Nonparametric temporal adjustment");
+            _temporalTrendAdjLogLinear.getAccessibleContext().setAccessibleName("Log linear trend adjustment");
+            _logLinearTextField.getAccessibleContext().setAccessibleName("log linear trend adjustment percentage");
+
             _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
 
             _spatialAdjustmentsNone.setSelected(true);
@@ -4847,6 +4924,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _spatialAdjustmentsNone.getAccessibleContext().setAccessibleName("no spatial adjustment");
+            _spatialAdjustmentsNonparametric.getAccessibleContext().setAccessibleName("Nonparametric spatial adjustment");
+
             _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
 
             _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
@@ -4884,6 +4964,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _adjustmentsByRelativeRisksFileLabel.setLabelFor(_adjustmentsByRelativeRisksFileTextField);
             _adjustmentsByRelativeRisksFileLabel.setText("Adjustments File:"); // NOI18N
 
             javax.swing.GroupLayout _knownAdjustmentsGroupLayout = new javax.swing.GroupLayout(_knownAdjustmentsGroup);
@@ -4915,6 +4996,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_adjustmentsFileBrowseButton))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
+
+            _adjustmentsFileBrowseButton.getAccessibleContext().setAccessibleName("");
 
             _adjustDayOfWeek.setText("Adjust for day-of-week ");
             _adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {
@@ -4951,11 +5034,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(94, Short.MAX_VALUE))
             );
 
+            _adjustDayOfWeek.getAccessibleContext().setAccessibleName("Adjust for day of week");
+
             jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
+            _spaceTimeAjustmentsTab.getAccessibleContext().setAccessibleName("Space and Time Adjustments tab");
 
             _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value"));
 
-            _pValueButtonGroup.add(_radioDefaultPValues);
             _radioDefaultPValues.setSelected(true);
             _radioDefaultPValues.setText("Default");
             _radioDefaultPValues.addItemListener(new java.awt.event.ItemListener() {
@@ -4968,7 +5053,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _pValueButtonGroup.add(_radioEarlyTerminationPValues);
             _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff:");
             _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -4980,7 +5064,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _pValueButtonGroup.add(_radioGumbelPValues);
             _radioGumbelPValues.setText("Gumbel Approximation");
             _radioGumbelPValues.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -4992,7 +5075,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _pValueButtonGroup.add(_radioStandardPValues);
             _radioStandardPValues.setText("Standard Monte Carlo");
             _radioStandardPValues.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -5063,6 +5145,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _radioDefaultPValues.getAccessibleContext().setAccessibleName("Default combination");
+            _earlyTerminationThreshold.getAccessibleContext().setAccessibleName("early termination cutoff");
+
             _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
 
             _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
@@ -5075,6 +5160,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _maxIterativeScansLabel.setLabelFor(_numIterativeScansTextField);
             _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
 
             _numIterativeScansTextField.setText("10"); // NOI18N
@@ -5099,6 +5185,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _iterativeCutoffLabel.setLabelFor(_iterativeScanCutoffTextField);
             _iterativeCutoffLabel.setText("Stop when the p-value is greater than:"); // NOI18N
 
             _iterativeScanCutoffTextField.setText("0.05"); // NOI18N
@@ -5156,6 +5243,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
+            _labelMonteCarloReplications.setLabelFor(_montCarloReplicationsTextField);
             _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
             _montCarloReplicationsTextField.setText("999"); // NOI18N
@@ -5222,7 +5310,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(196, Short.MAX_VALUE))
             );
 
+            _pValueOptionsGroup.getAccessibleContext().setAccessibleName("P-Value options");
+
             jTabbedPane1.addTab("Inference", _inferenceTab);
+            _inferenceTab.getAccessibleContext().setAccessibleName("Inference tab");
 
             _mapsOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maps"));
 
@@ -5293,6 +5384,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
             _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
 
+            _hierarchicalLabel.setLabelFor(_hierarchicalSecondaryClusters);
             _hierarchicalLabel.setText("Criteria for Reporting Hierarchical Clusters");
 
             _checkboxReportIndexCoefficients.setText("Report Gini indexes in results file");
@@ -5352,6 +5444,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _hierarchicalSecondaryClusters.getAccessibleContext().setAccessibleName("Criteria for Reporting Hierarchical Clusters");
             _hierarchicalLabel.getAccessibleContext().setAccessibleDescription("");
 
             _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
@@ -5386,6 +5479,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _reportedPercentOfPopulationLabel.setLabelFor(_maxReportedSpatialClusterSizeTextField);
             _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
 
             _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5417,6 +5511,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _reportedPercentageOfPopFileLabel.setLabelFor(_maxReportedSpatialPercentFileTextField);
             _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
             _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -5450,6 +5545,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _maxReportedRadiusLabel.setLabelFor(_maxReportedSpatialRadiusTextField);
             _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
 
             javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
@@ -5508,6 +5604,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _reportedSpatialPopulationFileCheckBox.getAccessibleContext().setAccessibleName("selection for spatial maximum by population in maximum circle size file");
+            _reportedSpatialDistanceCheckBox.getAccessibleContext().setAccessibleName("selection for spatial maximum by distance");
+
             javax.swing.GroupLayout _spatialOutputTabLayout = new javax.swing.GroupLayout(_spatialOutputTab);
             _spatialOutputTab.setLayout(_spatialOutputTabLayout);
             _spatialOutputTabLayout.setHorizontalGroup(
@@ -5533,6 +5632,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Spatial Output", _spatialOutputTab);
+            _spatialOutputTab.getAccessibleContext().setAccessibleName("Spatial Output tab");
 
             _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
 
@@ -5637,6 +5737,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _printTitle.getAccessibleContext().setAccessibleName("title for results files");
+
             _cluster_lineline_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Line List:"));
 
             _cluster_lineline_value.setText("1");
@@ -5669,6 +5771,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _cluster_lineline_value.getAccessibleContext().setAccessibleName("Include clusters in line list CSV file meeting cutoff");
+
             javax.swing.GroupLayout _otherOutputTabLayout = new javax.swing.GroupLayout(_otherOutputTab);
             _otherOutputTab.setLayout(_otherOutputTabLayout);
             _otherOutputTabLayout.setHorizontalGroup(
@@ -5700,6 +5804,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Other Output", _otherOutputTab);
+            _otherOutputTab.getAccessibleContext().setAccessibleName("Other Output tab");
 
             _powerEvaluationsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Statistical Power Evaluation"));
 
@@ -5752,6 +5857,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _powerEvaluationWithSpecifiedCasesLabel.setText("Total Cases");
 
+            _alternativeHypothesisFilenameLabel.setLabelFor(_alternativeHypothesisFilename);
             _alternativeHypothesisFilenameLabel.setText("Alternative Hypothesis File:"); // NOI18N
 
             _alternativeHypothesisFilename.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -5771,6 +5877,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _numberPowerReplicationsLabel.setLabelFor(_numberPowerReplications);
             _numberPowerReplicationsLabel.setText("Number of replications (100, 1000 or multiple of 100):"); // NOI18N
 
             _numberPowerReplications.setText("1000"); // NOI18N
@@ -5939,6 +6046,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap())
             );
 
+            _powerEvaluationWithSpecifiedCases.getAccessibleContext().setAccessibleName("Power Evaluation Only, Use total cases");
+            _totalPowerCases.getAccessibleContext().setAccessibleName("total cases in power evaluation");
+            _alternativeHypothesisFilenameButton.getAccessibleContext().setAccessibleName("");
+            _criticalValuesMonteCarlo.getAccessibleContext().setAccessibleName("Monte Carlo critical values");
+            _criticalValuesGumbel.getAccessibleContext().setAccessibleName("Gumbel critical values");
+            _powerEstimationMonteCarlo.getAccessibleContext().setAccessibleName("Monte Carlo power estimation");
+            _powerEstimationGumbel.getAccessibleContext().setAccessibleName("Gumbel power estimation");
+
             javax.swing.GroupLayout _powerEvaluationTabLayout = new javax.swing.GroupLayout(_powerEvaluationTab);
             _powerEvaluationTab.setLayout(_powerEvaluationTabLayout);
             _powerEvaluationTabLayout.setHorizontalGroup(
@@ -5957,6 +6072,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Power Evaluation", _powerEvaluationTab);
+            _powerEvaluationTab.getAccessibleContext().setAccessibleName("Power Evaluation tab");
 
             _graphOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Graphs"));
 
@@ -6007,6 +6123,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _numMostLikelyClustersGraphLabel.setLabelFor(_numMostLikelyClustersGraph);
             _numMostLikelyClustersGraphLabel.setText("most likely clusters, one graph for each");
             _numMostLikelyClustersGraphLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                 public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -6071,6 +6188,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _temporalGraphMostLikelyX.getAccessibleContext().setAccessibleName("select one graph for each cluster");
+            _temporalGraphPvalueCutoff.getAccessibleContext().setAccessibleName("All clusters, one graph for each cluster meeting cutoff");
+
             javax.swing.GroupLayout _temporalOutputTabLayout = new javax.swing.GroupLayout(_temporalOutputTab);
             _temporalOutputTab.setLayout(_temporalOutputTabLayout);
             _temporalOutputTabLayout.setHorizontalGroup(
@@ -6089,11 +6209,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Temporal Output", _temporalOutputTab);
+            _temporalOutputTab.getAccessibleContext().setAccessibleName("Temporal Output tab");
 
             _oliveiras_f_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Oliveira's F"));
 
             _calculate_oliveiras_f.setText("Calculate Oliveira's F for each location (increases computing time)");
 
+            _number_oliveira_data_sets_label.setLabelFor(_number_oliveira_data_sets);
             _number_oliveira_data_sets_label.setText("Number of bootstrap replications (minimum 100, multiple of 100):"); // NOI18N
 
             _number_oliveira_data_sets.setText("1000"); // NOI18N
@@ -6145,6 +6267,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
 
+            _label_prospective_frequency.setLabelFor(_prospective_frequency);
             _label_prospective_frequency.setText("How frequently are analyses performed?");
 
             _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
@@ -6179,6 +6302,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addGap(0, 14, Short.MAX_VALUE))
             );
 
+            _prospective_frequency.getAccessibleContext().setAccessibleName("How frequently are analyses performed?");
+
             javax.swing.GroupLayout _miscellaneous_analysis_tabLayout = new javax.swing.GroupLayout(_miscellaneous_analysis_tab);
             _miscellaneous_analysis_tab.setLayout(_miscellaneous_analysis_tabLayout);
             _miscellaneous_analysis_tabLayout.setHorizontalGroup(
@@ -6201,6 +6326,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
+            _miscellaneous_analysis_tab.getAccessibleContext().setAccessibleName("Miscellaneous tab");
 
             _limit_clusters_risk_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Boscoe’s Limit on Clusters by Risk Level"));
 
@@ -6290,6 +6416,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _limit_low_clusters_value.getAccessibleContext().setAccessibleName("Restrict low rate clusters to relative risk less than or equal to:");
+            _limit_high_clusters_value.getAccessibleContext().setAccessibleName("Restrict high rate clusters to relative risk greater than or equal to:");
+
             _minimum_clusters_group.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Minimum Number of Cases"));
 
             _min_cases_label.setText("Restrict high rate clusters to have at least"); // NOI18N
@@ -6340,6 +6469,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _minimum_number_cases_cluster.getAccessibleContext().setAccessibleName("Restrict high rate clusters to have at least X cases");
+
             javax.swing.GroupLayout _cluster_restrictions_tabLayout = new javax.swing.GroupLayout(_cluster_restrictions_tab);
             _cluster_restrictions_tab.setLayout(_cluster_restrictions_tabLayout);
             _cluster_restrictions_tabLayout.setHorizontalGroup(
@@ -6362,6 +6493,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Cluster Restrictions", _cluster_restrictions_tab);
+            _cluster_restrictions_tab.getAccessibleContext().setAccessibleName("Cluster Restrictions tab");
 
             _drilldown_restrictions_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Cluster Drilldown"));
 
@@ -6489,6 +6621,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(80, Short.MAX_VALUE))
             );
 
+            _drilldown_restriction_locations.getAccessibleContext().setAccessibleName("Drilldown for Clusters having at least X locations");
+            _drilldown_restriction_cases.getAccessibleContext().setAccessibleName("Drilldown for Clusters having at least X cases");
+            _drilldown_restriction_cutoff.getAccessibleContext().setAccessibleName("Drilldown for Clusters meeting cutoff");
+
             javax.swing.GroupLayout _drilldown_tabLayout = new javax.swing.GroupLayout(_drilldown_tab);
             _drilldown_tab.setLayout(_drilldown_tabLayout);
             _drilldown_tabLayout.setHorizontalGroup(
@@ -6507,6 +6643,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Drilldown", _drilldown_tab);
+            _drilldown_tab.getAccessibleContext().setAccessibleName("Drilldown tab");
 
             _network_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Locations Network"));
 
@@ -6518,6 +6655,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _network_file_label.setLabelFor(_network_filename);
             _network_file_label.setText("Network File:"); // NOI18N
 
             _adjustmentsByRelativeRisksFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -6571,6 +6709,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _browse_network_filename.getAccessibleContext().setAccessibleName("");
+
             javax.swing.GroupLayout _network_tabLayout = new javax.swing.GroupLayout(_network_tab);
             _network_tab.setLayout(_network_tabLayout);
             _network_tabLayout.setHorizontalGroup(
@@ -6589,6 +6729,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Network", _network_tab);
+            _network_tab.getAccessibleContext().setAccessibleName("Network tab");
 
             _panel_email_notifications.setBorder(javax.swing.BorderFactory.createTitledBorder("Email Alerts"));
 
@@ -6608,6 +6749,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _custom_email_message.setLineWrap(true);
             _custom_email_message.setRows(5);
             jScrollPane3.setViewportView(_custom_email_message);
+            _custom_email_message.getAccessibleContext().setAccessibleName("email message body");
 
             _custom_email_message_label.setText("Message");
 
@@ -6691,6 +6833,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addGap(24, 24, 24))
             );
 
+            _always_email_recipients.getAccessibleContext().setAccessibleName("");
+            _always_email_recipients.getAccessibleContext().setAccessibleDescription("Always send email with summary results to email list");
+            _cutoff_email_recipients.getAccessibleContext().setAccessibleName("");
+            _cutoff_email_recipients.getAccessibleContext().setAccessibleDescription("Send email with summary results to email list if analysis meets cutoff");
+            _custom_email_subject.getAccessibleContext().setAccessibleName("email message subject");
+            _custom_email_tags.getAccessibleContext().setAccessibleName("Message Body Tags");
+            _cutoff_value_email.getAccessibleContext().setAccessibleName("send email summary cutoff");
+
             javax.swing.GroupLayout _notificatons_tabLayout = new javax.swing.GroupLayout(_notificatons_tab);
             _notificatons_tab.setLayout(_notificatons_tabLayout);
             _notificatons_tabLayout.setHorizontalGroup(
@@ -6709,6 +6859,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             );
 
             jTabbedPane1.addTab("Notifications", _notificatons_tab);
+            _notificatons_tab.getAccessibleContext().setAccessibleName("Notifications tab");
 
             _closeButton.setText("Close"); // NOI18N
             _closeButton.addActionListener(new java.awt.event.ActionListener() {

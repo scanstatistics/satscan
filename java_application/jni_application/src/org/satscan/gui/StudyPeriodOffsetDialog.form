@@ -94,6 +94,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="_offset_value"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Duration"/>
       </Properties>
     </Component>
@@ -107,6 +110,9 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="_offset_units"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="Units"/>
       </Properties>
     </Component>
@@ -139,6 +145,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="No Offset"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Selector toggle use of offset."/>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_toggle_no_offset.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableControls();&#xa;    }&#xa;});&#xa;"/>
       </AuxValues>
@@ -172,6 +181,9 @@
             <Property name="text" type="java.lang.String" value="Lag is an offset from today, as in the day which the analysis is performed each time. This offset date is used in place of the study period end date."/>
             <Property name="wrapStyleWord" type="boolean" value="true"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="What is this?"/>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>

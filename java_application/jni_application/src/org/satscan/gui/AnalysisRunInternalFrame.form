@@ -46,9 +46,6 @@
   <SubComponents>
     <Container class="javax.swing.JSplitPane" name="jSplitPane1">
       <Properties>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="null"/>
-        </Property>
         <Property name="dividerLocation" type="int" value="251"/>
         <Property name="orientation" type="int" value="0"/>
         <Property name="resizeWeight" type="double" value="0.67"/>
@@ -91,10 +88,16 @@
           </Layout>
           <SubComponents>
             <Container class="javax.swing.JTabbedPane" name="_bottom_tabbed_pane">
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Analysis Results Tabs"/>
+              </AccessibilityProperties>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
               <SubComponents>
                 <Container class="javax.swing.JPanel" name="_warnings_errors_tab">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Warnings/Errors"/>
+                  </AccessibilityProperties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                       <JTabbedPaneConstraints tabName="Warnings/Errors">
@@ -143,6 +146,9 @@
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="_drilldown_results_tab">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Drilldown Results"/>
+                  </AccessibilityProperties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                       <JTabbedPaneConstraints tabName="Drilldown">
@@ -184,6 +190,9 @@
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
                         <Component class="javax.swing.JTree" name="_results_tree">
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Treeview detailing drilldown analyses"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="_results_tree.setCellRenderer(new FileTreeCellRenderer());&#xa;_results_tree.setModel(new FilterTreeModel((DefaultMutableTreeNode)_results_tree.getModel().getRoot()));&#xa;_results_tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);&#xa;_results_tree.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));&#xa;_results_tree.addMouseMotionListener(new MouseMotionListener() {&#xa;    @Override&#xa;    public void mouseDragged(MouseEvent e) { }&#xa;    @Override&#xa;    public void mouseMoved(MouseEvent e) {&#xa;        TreePath tp = ((JTree)e.getSource()).getPathForLocation(e.getX(), e.getY());&#xa;        if(tp != null) {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.HAND_CURSOR));&#xa;        } else {&#xa;            ((JTree)e.getSource()).setCursor(new Cursor(Cursor.DEFAULT_CURSOR));&#xa;        }&#xa;    }&#xa; });&#xa; _results_tree.addTreeSelectionListener(new TreeSelectionListener() {&#xa;    public void valueChanged(TreeSelectionEvent e) {&#xa;        DefaultMutableTreeNode node = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();&#xa;        if (node == null) return;&#xa;        LoadFromFile(_tree_output_map.get(node));&#xa;    }&#xa; });"/>
                           </AuxValues>
@@ -226,6 +235,10 @@
                             </Property>
                             <Property name="toolTipText" type="java.lang.String" value="Switch Orientation"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Switch Tabs Orientation"/>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Switch Tabs Orientation"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnSwitchOrientation.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        jSplitPane1.setOrientation(jSplitPane1.getOrientation() == JSplitPane.VERTICAL_SPLIT ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);&#xa;        System.out.print(&quot; width = &quot; + AnalysisRunInternalFrame.this.getWidth());&#xa;        jSplitPane1.setDividerLocation(0.67);&#xa;        _bottom_tabbed_pane.setSelectedIndex(1);&#xa;    }&#xa;});"/>
                           </AuxValues>
@@ -268,6 +281,9 @@
                 <Property name="text" type="java.lang.String" value="Email"/>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Email technical support"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_emailButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        launchDefaultClientEmail();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -310,6 +326,9 @@
                       <Insets value="[5, 5, 5, 5]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Analysis run window and results"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>

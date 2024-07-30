@@ -419,6 +419,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
 
         _regionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Bounding Regions:"));
 
+        jLabel1.setLabelFor(_regionsList);
         jLabel1.setText("Polygons:");
 
         _regionsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -430,6 +431,8 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             }
         });
         jScrollPane1.setViewportView(_regionsList);
+        _regionsList.getAccessibleContext().setAccessibleName("Polygons");
+        _regionsList.getAccessibleContext().setAccessibleDescription("");
 
         _addRegionButton.setText("Add");
         _addRegionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -485,6 +488,10 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                 .addContainerGap())
         );
 
+        _addRegionButton.getAccessibleContext().setAccessibleName("Add Polygon");
+        _deleteRegionButton.getAccessibleContext().setAccessibleName("Delete Polygon");
+
+        _inequalitiesForRegion.setLabelFor(_inequalitiesList);
         _inequalitiesForRegion.setText("Region 1 Inequalities:");
 
         _inequalitiesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -540,6 +547,9 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        _addInequalityButton.getAccessibleContext().setAccessibleName("Add Inequality");
+        _deleteInequalityButton.getAccessibleContext().setAccessibleName("Delete Inequality");
 
         javax.swing.GroupLayout _regionsPanelLayout = new javax.swing.GroupLayout(_regionsPanel);
         _regionsPanel.setLayout(_regionsPanelLayout);
@@ -638,6 +648,9 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
         _inequalitiesPanelLayout.setVerticalGroup(
             _inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
+                .addComponent(_inequalitySelectComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(40, 40, 40))
+            .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
                 .addGroup(_inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(_inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_ycoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -645,15 +658,17 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                         .addComponent(_xcoefficientLabel)
                         .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_updateInequalityButton))
-                    .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
-                .addComponent(_inequalitySelectComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(40, 40, 40))
-            .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
-                .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
         );
+
+        _ycoefficientTextField.getAccessibleContext().setAccessibleName("Inequality Coeficient");
+        _xcoefficientTextField.getAccessibleContext().setAccessibleDescription("X coeficient");
+        _interceptTextField.getAccessibleContext().setAccessibleDescription("Intercept value");
+        _variableSelectComboBox.getAccessibleContext().setAccessibleDescription("Variable selection");
+        _inequalitySelectComboBox.getAccessibleContext().setAccessibleDescription("Inequality selection");
+        _plusMinusComboBox.getAccessibleContext().setAccessibleDescription("Operator selection");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

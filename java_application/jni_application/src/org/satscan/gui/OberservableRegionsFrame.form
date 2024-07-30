@@ -141,6 +141,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_regionsList"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Polygons:"/>
               </Properties>
             </Component>
@@ -158,6 +161,10 @@
                     </Property>
                     <Property name="selectionMode" type="int" value="0"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Polygons"/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JList(_regionsListModel);"/>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_regionsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {&#xa;    public void valueChanged(javax.swing.event.ListSelectionEvent e) {&#xa;        enableRegionEditButtons();&#xa;        showSelectedRegionInequalities();&#xa;        enableInequalityEditor();&#xa;    }&#xa;});&#xa;"/>
@@ -169,6 +176,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Add Polygon"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addRegionButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        addRegion();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -177,6 +187,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Delete"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Delete Polygon"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_deleteRegionButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        deleteRegion();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -231,6 +244,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="_inequalitiesForRegion">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_inequalitiesList"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Region 1 Inequalities:"/>
               </Properties>
             </Component>
@@ -259,6 +275,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Add"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Add Inequality"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addInequalityButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        addNewInequalityToRegion();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -267,6 +286,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Delete"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Delete Inequality"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_deleteInequalityButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        deleteInequalityFromRegion();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -310,6 +332,10 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="_inequalitySelectComboBox" max="32767" attributes="1"/>
+                  <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+              </Group>
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -320,16 +346,9 @@
                           <Component id="_updateInequalityButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="_plusMinusComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="_variableSelectComboBox" alignment="0" min="-2" max="-2" attributes="1"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="_inequalitySelectComboBox" max="32767" attributes="1"/>
-                  <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-              </Group>
-              <Group type="102" alignment="0" attributes="0">
-                  <Component id="_variableSelectComboBox" min="-2" max="-2" attributes="1"/>
-                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -339,6 +358,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="1"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Inequality Coeficient"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_ycoefficientTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_ycoefficientTextField, e, 10);&#xa;    }&#xa;});&#xa;_ycoefficientTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_ycoefficientTextField.getText().length() == 0 ||&#xa;              Double.parseDouble(_ycoefficientTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _ycoefficientTextField.setText(&quot;1&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_ycoefficientTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
           </AuxValues>
@@ -347,6 +369,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="1"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="X coeficient"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_xcoefficientTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_xcoefficientTextField, e, 10);&#xa;    }&#xa;});&#xa;_xcoefficientTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_xcoefficientTextField.getText().length() == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _xcoefficientTextField.setText(&quot;1&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_xcoefficientTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
           </AuxValues>
@@ -360,6 +385,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="1"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Intercept value"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_interceptTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_interceptTextField, e, 10);&#xa;    }&#xa;});&#xa;_interceptTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_interceptTextField.getText().length() == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _interceptTextField.setText(&quot;1&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_interceptTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
           </AuxValues>
@@ -376,16 +404,25 @@
           </AuxValues>
         </Component>
         <Component class="java.awt.Choice" name="_variableSelectComboBox">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Variable selection"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_variableSelectComboBox.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        _xcoefficientTextField.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;        _xcoefficientLabel.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_variableSelectComboBox.add(&quot;Y&quot;);&#xd;&#xa;_variableSelectComboBox.add(&quot;X&quot;);&#xd;&#xa;"/>
           </AuxValues>
         </Component>
         <Component class="java.awt.Choice" name="_inequalitySelectComboBox">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Inequality selection"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_inequalitySelectComboBox.add(&quot;&gt;=&quot;);&#xd;&#xa;_inequalitySelectComboBox.add(&quot;&lt;=&quot;);&#xd;&#xa;"/>
           </AuxValues>
         </Component>
         <Component class="java.awt.Choice" name="_plusMinusComboBox">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Operator selection"/>
+          </AccessibilityProperties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_plusMinusComboBox.add(&quot;+&quot;);&#xd;&#xa;_plusMinusComboBox.add(&quot;-&quot;);&#xd;&#xa;"/>
           </AuxValues>

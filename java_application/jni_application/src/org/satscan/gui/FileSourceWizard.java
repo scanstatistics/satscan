@@ -26,8 +26,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.UndoableEditEvent;
@@ -1731,6 +1729,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addContainerGap())
         );
 
+        _source_filename.getAccessibleContext().setAccessibleName("file path of data file source");
+        _browse_source.getAccessibleContext().setAccessibleName("");
+        _browse_source.getAccessibleContext().setAccessibleDescription("Browse for source file");
+
         _main_content_panel.add(_fileSourceSettingsPanel, "source-settings");
 
         jLabel1.setText("Sample of the File Content:"); // NOI18N
@@ -1739,6 +1741,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _fileContentsTextArea.setColumns(20);
         _fileContentsTextArea.setRows(5);
         jScrollPane1.setViewportView(_fileContentsTextArea);
+        _fileContentsTextArea.getAccessibleContext().setAccessibleName("Sampling of source data file contents");
 
         jLabel4.setText("Ignore first"); // NOI18N
 
@@ -1827,6 +1830,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _otherFieldSeparatorTextField.getAccessibleContext().setAccessibleName("Other field separator");
+
         _groupIndiocatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Group Indicator"));
 
         _doubleQuotesRadioButton.setSelected(true);
@@ -1901,12 +1906,15 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addContainerGap(99, Short.MAX_VALUE))
         );
 
+        _ignoreRowsTextField.getAccessibleContext().setAccessibleName("ignore first X rows");
+
         _main_content_panel.add(_fileFormatPanel, "file-format");
 
         jSplitPane1.setDividerLocation(170);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setBorder(null);
 
+        _displayVariablesLabel.setLabelFor(_displayVariablesComboBox);
         _displayVariablesLabel.setText("Import SaTScan Variables for Analysis Using:"); // NOI18N
 
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -1933,6 +1941,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _mapping_table.setRowSelectionAllowed(false);
         _mapping_table.setModel(new VariableMappingTableModel(_import_variables));
         jScrollPane2.setViewportView(_mapping_table);
+        _mapping_table.getAccessibleContext().setAccessibleName("Import variables mapping");
 
         _clearSelectionButton.setText("Clear"); // NOI18N
         _clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1967,6 +1976,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        _displayVariablesComboBox.getAccessibleContext().setAccessibleName("");
 
         jSplitPane1.setTopComponent(_dataMappingTopPanel);
 
@@ -2032,6 +2043,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _casefile_linelist.setText("OPTIONAL: Import descriptive line list variables for output files.");
         _casefile_linelist.setToolTipText("*  For Cluster Line List, KML, and HMTL Google Map output files only, not used by the SaTScan analysis.");
 
+        _label_individual.setLabelFor(_combobox_eventid);
         _label_individual.setText("Individual (optional)");
 
         _combobox_eventid.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "not set" }));
@@ -2063,13 +2075,16 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
 
         _down_linelist.setIcon(new javax.swing.ImageIcon(getClass().getResource("/arrow-down.png"))); // NOI18N
 
+        _label_descriptive_lat.setLabelFor(_combobox_event_y);
         _label_descriptive_lat.setText("Descriptive Latitude (optional)");
 
+        _label_descriptive_long.setLabelFor(_combobox_event_x);
         _label_descriptive_long.setText("Descriptive Longitude (optional)");
 
         _linelist_help.setIcon(new javax.swing.ImageIcon(getClass().getResource("/help.png"))); // NOI18N
         _linelist_help.setToolTipText("What is this?");
 
+        _label_other_linelist_variables.setLabelFor(_mapping_table_linelist);
         _label_other_linelist_variables.setText("Add other line list variables:");
 
         _individuals_line_list_cache.setText(_suggested_import_filename.getAbsolutePath());
@@ -2090,6 +2105,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             }
         });
 
+        _individuals_line_list_cache_label.setLabelFor(_individuals_line_list_cache);
         _individuals_line_list_cache_label.setText("Individuals Cache (optional):");
 
         javax.swing.GroupLayout _line_list_panel_settingsLayout = new javax.swing.GroupLayout(_line_list_panel_settings);
@@ -2168,6 +2184,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)))
         );
 
+        _add_linelist.getAccessibleContext().setAccessibleName("Add line list item");
+        _remove_linelist.getAccessibleContext().setAccessibleName("Remove line list item");
+        _up_linelist.getAccessibleContext().setAccessibleName("Move item up");
+        _down_linelist.getAccessibleContext().setAccessibleName("move item down");
         _linelist_help.getAccessibleContext().setAccessibleDescription("Help On This.");
 
         jSplitPane2.setTopComponent(_line_list_panel_settings);
@@ -2200,6 +2220,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
+
+        jScrollPane3.getAccessibleContext().setAccessibleName("Sampling of source data file");
 
         jSplitPane2.setRightComponent(_source_table_panel);
 
@@ -2289,6 +2311,10 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        _outputDirectoryTextField.getAccessibleContext().setAccessibleName("");
+        _outputDirectoryTextField.getAccessibleContext().setAccessibleDescription("Filename path of generated import file");
+        _changeSaveDirectoryButton.getAccessibleContext().setAccessibleName("Browser for location and filename of import file");
 
         _main_content_panel.add(_outputSettingsPanel, "output-settings");
 

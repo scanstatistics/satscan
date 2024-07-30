@@ -118,6 +118,9 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_source_filename">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="file path of data file source"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JButton" name="_browse_source">
                   <Properties>
@@ -127,6 +130,10 @@
                       <Dimension value="[45, 20]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Browse for source file"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_browse_source.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {       &#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), _input_source_settings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = selectionDialog.browse_load(true);&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = selectionDialog.getDirectory();&#xa;            _source_filename.setText(file.getAbsolutePath());  &#xa;        }&#xa;    }&#xa;}); "/>
                   </AuxValues>
@@ -232,6 +239,9 @@
                         <Property name="columns" type="int" value="20"/>
                         <Property name="rows" type="int" value="5"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Sampling of source data file contents"/>
+                      </AccessibilityProperties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -244,6 +254,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="ignore first X rows"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_ignoreRowsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_ignoreRowsTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _ignoreRowsTextField.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;_ignoreRowsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_ignoreRowsTextField, e, 5);&#xa;    }&#xa;});&#xa;_ignoreRowsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -367,6 +380,9 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_otherFieldSeparatorTextField">
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Other field separator"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_otherFieldSeparatorTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        //Utils.validatePostiveNumericKeyTyped(_otherFieldSeparatorTextField, e, 1);&#xa;        enableNavigationButtons();&#xa;    }&#xa;});&#xa;_otherFieldSeparatorTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;        enableNavigationButtons();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -529,6 +545,9 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="_displayVariablesLabel">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_displayVariablesComboBox"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Import SaTScan Variables for Analysis Using:" noResource="true"/>
                           </Properties>
                         </Component>
@@ -543,6 +562,9 @@
                               </StringArray>
                             </Property>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Control || _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Population) {&#xa;            // skip this listener for the control and popuation files&#xa;            return;&#xa;        }&#xa;        if (_displayVariablesComboBox.getItemCount() &gt; 0 &amp;&amp; &#xa;            (_input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.Coordinates || &#xa;            _input_source_settings.getInputFileType() == InputSourceSettings.InputFileType.SpecialGrid)) {&#xa;            if (_displayVariablesComboBox.getSelectedIndex() == 0) {&#xa;              _coordinatesType = Parameters.CoordinatesType.LATLON;&#xa;            } else {&#xa;              _coordinatesType = Parameters.CoordinatesType.CARTESIAN;&#xa;            }&#xa;        }&#xa;        setShowingVariables();&#xa;        enableNavigationButtons();&#xa;    }&#xa;});"/>
                           </AuxValues>
@@ -558,6 +580,9 @@
                               <Properties>
                                 <Property name="rowSelectionAllowed" type="boolean" value="false"/>
                               </Properties>
+                              <AccessibilityProperties>
+                                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Import variables mapping"/>
+                              </AccessibilityProperties>
                               <AuxValues>
                                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_mapping_table.setModel(new VariableMappingTableModel(_import_variables));"/>
                               </AuxValues>
@@ -784,6 +809,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="_label_individual">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_combobox_eventid"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Individual (optional)"/>
                           </Properties>
                         </Component>
@@ -854,6 +882,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Add"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Add line list item"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_add_linelist.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        WaitCursor waitCursor = new WaitCursor(FileSourceWizard.this);&#xd;&#xa;        try {&#xd;&#xa;            // Add record to table.&#xd;&#xa;            LinelistMappingTableModel model = (LinelistMappingTableModel) _mapping_table_linelist.getModel();&#xd;&#xa;            model.addRow(new Object[]{ _unassigned_variable, _default_linelist_label });&#xd;&#xa;            _sticky_ll_labels.add(false);&#xd;&#xa;            _mapping_table_linelist.setRowSelectionInterval(model.getRowCount() - 1, model.getRowCount() - 1);&#xd;&#xa;            enableLinelistPanels();&#xd;&#xa;        } catch (Throwable t) {&#xd;&#xa;            new ExceptionDialog(FileSourceWizard.this, t).setVisible(true);&#xd;&#xa;        } finally {&#xd;&#xa;            waitCursor.restore();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
                           </AuxValues>
@@ -862,6 +893,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Remove"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Remove line list item"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_remove_linelist.addActionListener(new java.awt.event.ActionListener() {&#xd;&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xd;&#xa;        DefaultTableModel model = (DefaultTableModel) _mapping_table_linelist.getModel();&#xd;&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xd;&#xa;        _sticky_ll_labels.remove(selected);&#xd;&#xa;        model.removeRow(selected);&#xd;&#xa;        if (_mapping_table_linelist.getRowCount() &gt; 0)&#xd;&#xa;            _mapping_table_linelist.setRowSelectionInterval(Integer.max(0, selected - 1), Integer.max(0, selected - 1));&#xd;&#xa;        enableLinelistPanels();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
                           </AuxValues>
@@ -872,6 +906,9 @@
                               <Image iconType="3" name="/arrow-up.png"/>
                             </Property>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Move item up"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_up_linelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent evt) {&#xa;        // move rows from the index to index into the position index -1&#xa;        DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xa;        if (selected &gt; 0) {&#xa;            model.moveRow(selected, selected, selected - 1);&#xa;            _mapping_table_linelist.setRowSelectionInterval(selected - 1, selected - 1);  &#xa;            enableLinelistPanels();&#xa;            if (_up_linelist.isEnabled()) _up_linelist.requestFocusInWindow();&#xa;        }&#xa;    }&#xa;});"/>
                           </AuxValues>
@@ -882,17 +919,26 @@
                               <Image iconType="3" name="/arrow-down.png"/>
                             </Property>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="move item down"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_down_linelist.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent evt) {&#xa;        // move rows from the index to index into the position index -1&#xa;        DefaultTableModel model = (DefaultTableModel)_mapping_table_linelist.getModel();&#xa;        int selected = _mapping_table_linelist.getSelectedRow();&#xa;        if (selected &lt; _mapping_table_linelist.getModel().getRowCount() - 1){&#xa;            model.moveRow(selected, selected, selected + 1);&#xa;            // set selection to the new position&#xa;            _mapping_table_linelist.setRowSelectionInterval(selected + 1, selected + 1);&#xa;            enableLinelistPanels();&#xa;            if (_down_linelist.isEnabled()) _down_linelist.requestFocusInWindow();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                           </AuxValues>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_label_descriptive_lat">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_combobox_event_y"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Descriptive Latitude (optional)"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_label_descriptive_long">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_combobox_event_x"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Descriptive Longitude (optional)"/>
                           </Properties>
                         </Component>
@@ -912,6 +958,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="_label_other_linelist_variables">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_mapping_table_linelist"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Add other line list variables:"/>
                           </Properties>
                         </Component>
@@ -931,6 +980,9 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="_individuals_line_list_cache_label">
                           <Properties>
+                            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                              <ComponentRef name="_individuals_line_list_cache"/>
+                            </Property>
                             <Property name="text" type="java.lang.String" value="Individuals Cache (optional):"/>
                           </Properties>
                         </Component>
@@ -960,6 +1012,9 @@
                       </Layout>
                       <SubComponents>
                         <Container class="javax.swing.JScrollPane" name="jScrollPane3">
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Sampling of source data file"/>
+                          </AccessibilityProperties>
 
                           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                           <SubComponents>
@@ -1046,6 +1101,10 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_outputDirectoryTextField">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Filename path of generated import file"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_outputDirectoryTextField.setText(_suggested_import_filename.getAbsolutePath());"/>
                   </AuxValues>
@@ -1054,6 +1113,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Change" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Browser for location and filename of import file"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        FileSelectionDialog select = new FileSelectionDialog(org.satscan.gui.SaTScanApplication.getInstance(), &quot;Select directory to save imported file&quot;, org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            org.satscan.gui.SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            _outputDirectoryTextField.setText(file.getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, select.getDirectory().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>

@@ -39,7 +39,6 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" attributes="0">
-                                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
                                       <Component id="_cutoff_value_ri" min="-2" pref="90" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="_cutoff_value_label_pval" min="-2" max="-2" attributes="0"/>
@@ -119,6 +118,10 @@
           <Dimension value="[75, 22]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Recurrance interval cutoff with prospective analyses."/>
+      </AccessibilityProperties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cutoff_value_ri.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_cutoff_value_ri, e, 10);&#xa;    }&#xa;});&#xa;_cutoff_value_ri.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_cutoff_value_ri.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _cutoff_value_ri.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);&#xa;    }&#xa;});&#xa;_cutoff_value_ri.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
       </AuxValues>

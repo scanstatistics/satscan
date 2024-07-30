@@ -113,6 +113,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
 
+        jLabel1.setLabelFor(_offset_value);
         jLabel1.setText("Duration");
 
         _offset_value.setText("365");
@@ -139,6 +140,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
             }
         });
 
+        jLabel2.setLabelFor(_offset_units);
         jLabel2.setText("Units");
 
         _offset_units.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "year", "month", "day", "generic" }));
@@ -165,6 +167,7 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
         _text_area_help.setText("Lag is an offset from today, as in the day which the analysis is performed each time. This offset date is used in place of the study period end date.");
         _text_area_help.setWrapStyleWord(true);
         jScrollPane1.setViewportView(_text_area_help);
+        _text_area_help.getAccessibleContext().setAccessibleDescription("What is this?");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -219,6 +222,8 @@ public class StudyPeriodOffsetDialog extends javax.swing.JDialog implements Acti
                             .addComponent(_cancel))))
                 .addContainerGap())
         );
+
+        _toggle_no_offset.getAccessibleContext().setAccessibleDescription("Selector toggle use of offset.");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

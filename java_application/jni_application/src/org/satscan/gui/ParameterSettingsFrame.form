@@ -14,12 +14,12 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_analysisTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSeasonalRadioButton);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSeasonalRadioButton);&#xa;_analysisTypeButtonGroup.add(_spatialVariationRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_uniformtimeModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_scanAreasButtonGroup">
@@ -31,8 +31,6 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationButtonGroup.add(_timeAggregationYearRadioButton);&#xa;_timeAggregationButtonGroup.add(_timeAggregationMonthRadioButton);&#xa;_timeAggregationButtonGroup.add(_timeAggregationDayRadioButton);"/>
       </AuxValues>
-    </Component>
-    <Component class="javax.swing.ButtonGroup" name="_clustersReportedButtonGroup">
     </Component>
   </NonVisualComponents>
   <Properties>
@@ -74,6 +72,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="_inputTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Input tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Input">
@@ -200,6 +201,9 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_caseFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_caseFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -213,6 +217,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Case File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -225,6 +232,9 @@
                       </Border>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Precision Selection"/>
+                  </AccessibilityProperties>
 
                   <Layout>
                     <DimensionLayout dim="0">
@@ -280,6 +290,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="time precision none"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -297,6 +310,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="time precision Year"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionYear.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -313,6 +329,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="time precision Month"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionMonth.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -329,6 +348,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="time precision Day"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionDay.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -348,6 +370,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="time precision Generic"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionGeneric.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -460,11 +485,18 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period Start Date Year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_studyPeriodStartDateMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period Start Date Month"/>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_startDateMonthLabel">
                           <Properties>
@@ -488,6 +520,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period Start Date Day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endDateLabel">
                           <Properties>
@@ -498,6 +533,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period End Date Year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endDateYearLabel">
                           <Properties>
@@ -521,11 +559,18 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period End Date Month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_studyPeriodEndDateDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Study Period End Date Day"/>
+                            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endDateDayLabel">
                           <Properties>
@@ -612,6 +657,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="0" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Generic units start time"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodStartDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodStartDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_studyPeriodStartDateGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;_studyPeriodStartDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {&#xa;           Utils.validateGenericDateField(_studyPeriodStartDateGenericTextField, undo);&#xa;        }&#xa;    }&#xa;});"/>
                           </AuxValues>
@@ -625,6 +673,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Generic units end time"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodEndDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_studyPeriodEndDateGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {&#xa;           Utils.validateGenericDateField(_studyPeriodEndDateGenericTextField, undo);&#xa;        }&#xa;    }&#xa;});"/>
                           </AuxValues>
@@ -644,6 +695,9 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="_controlFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_controlFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -654,6 +708,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Control File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -708,6 +765,9 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_populationFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_populationFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -718,6 +778,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Population File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -806,6 +869,9 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_coordinatesFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_coordiantesFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Coordinates File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -816,6 +882,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Coordinates File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Coordinates.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Coordinates));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_coordiantesFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -828,6 +897,9 @@
                       </Border>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Coordinates Type Selection"/>
+                  </AccessibilityProperties>
 
                   <Layout>
                     <DimensionLayout dim="0">
@@ -867,6 +939,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Cartesian coordinates"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();            &#xa;            getAdvancedParameterInternalFrame().setSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -883,6 +958,9 @@
                           <Insets value="[0, 0, 0, 0]"/>
                         </Property>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Latitude/Longitude coordinates"/>
+                      </AccessibilityProperties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            getAdvancedParameterInternalFrame().setSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
@@ -891,6 +969,9 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="_gridFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_gridFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Grid File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -901,6 +982,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Grid File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.SpecialGrid.toString() + &quot;1&quot;;&#xa;        if (!_input_source_map.containsKey(key)) {&#xa;          _input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.SpecialGrid));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_gridFileTextField, inputSourceSettings, ParameterSettingsFrame.this);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -916,6 +1000,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Advanced Input Features"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedInputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -923,6 +1010,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_analysisTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Analysis Tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Analysis">
@@ -987,6 +1077,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Analysis Type Selection"/>
+              </AccessibilityProperties>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1084,6 +1177,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Retrospective Purely Spatial"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectivePurelySpatialRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1100,6 +1196,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Retrospective Purely Temporal"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1116,6 +1215,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Retrospective Space-Time"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1132,6 +1234,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Prospective Purely Temporal"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1148,6 +1253,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Prospective Space-Time"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1167,6 +1275,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Retrospective Spatial Variation in Temporal Trends"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialVariationRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1188,6 +1299,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Retrospective Seasonal"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectiveSeasonalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1202,6 +1316,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Probability Model Type Selection"/>
+              </AccessibilityProperties>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1288,6 +1405,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Poisson"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1307,6 +1427,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Bernoulli"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_bernoulliModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1326,6 +1449,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Space-Time Permutation"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spaceTimePermutationModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1345,6 +1471,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Ordinal"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_ordinalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1364,6 +1493,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Exponential"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_exponentialModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1383,6 +1515,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Normal"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_normalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1402,6 +1537,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Multinomial"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1421,6 +1559,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Continuous Poisson"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1430,6 +1571,10 @@
                     <Property name="text" type="java.lang.String" value="_defineRegionsButton"/>
                     <Property name="toolTipText" type="java.lang.String" value="Define polygons ..."/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Define polygons"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        geObservableRegionsParameterInternalFrame().setVisible(true);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1459,6 +1604,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Discrete Uniform Time"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_uniformtimeModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1473,6 +1621,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Scan Area Type Selection"/>
+              </AccessibilityProperties>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1515,6 +1666,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="scan High Rates"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGH);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGH);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1531,6 +1685,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="scan Low Rates"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_lowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.LOW);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.LOW);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1547,6 +1704,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="scan High or Low Rates"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_highOrLowRatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;        //getAdvancedParameterInternalFrame().enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType.HIGHANDLOW);&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1561,6 +1721,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Aggregation Type Selection"/>
+              </AccessibilityProperties>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1630,6 +1793,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Aggregation Year"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1646,6 +1812,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Aggregation Month"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1662,6 +1831,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Aggregation Day"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().updateMaximumTemporalSizeTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1670,6 +1842,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Length:" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Time Aggregation Length"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_timeAggregationLengthTextField">
                   <Properties>
@@ -1691,6 +1866,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Advanced Analysis Features"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedAnalysisButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.ANALYSIS);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
@@ -1698,6 +1876,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_outputTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Output Tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Output">
@@ -1898,6 +2079,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Cluster Information in text format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_clustersInColumnFormatDBaseCheckBox">
                   <Properties>
@@ -1913,6 +2097,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Cluster Information in dbase format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_clusterCaseInColumnFormatLabel">
                   <Properties>
@@ -1933,6 +2120,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Stratified Cluster Information in text format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_clusterCaseInColumnFormatDBaseCheckBox">
                   <Properties>
@@ -1948,6 +2138,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Stratified Cluster Information in dbase format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_censusAreasReportedClustersLabel">
                   <Properties>
@@ -1968,6 +2161,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Location Information in text format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_censusAreasReportedClustersDBaseCheckBox">
                   <Properties>
@@ -1983,6 +2179,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Location Information in dbase format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_relativeRiskEstimatesAreaLabel">
                   <Properties>
@@ -2003,6 +2202,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Risk Estimates for Each Location in text format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_relativeRiskEstimatesAreaDBaseCheckBox">
                   <Properties>
@@ -2018,6 +2220,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Risk Estimates for Each Location in dbase format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_simulatedLogLikelihoodRatiosLabel">
                   <Properties>
@@ -2038,6 +2243,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Simulated Log Likelihood Ratios/Test Statistics in text format"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_simulatedLogLikelihoodRatiosDBaseCheckBox">
                   <Properties>
@@ -2053,6 +2261,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Simulated Log Likelihood Ratios/Test Statistics in dbase format"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -2060,6 +2271,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;" noResource="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Advanced Output Features"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedFeaturesOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);&#xa;        getAdvancedParameterInternalFrame().requestFocus();&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
@@ -2114,6 +2328,9 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_resultsFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_resultsFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Main Results File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -2124,6 +2341,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Browse Results File"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        List&lt;InputFileFilter&gt; filters = new ArrayList&lt;InputFileFilter&gt;();&#xa;        filters.add(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        FileSelectionDialog select = new FileSelectionDialog(SaTScanApplication.getInstance(), &quot;Select Results File&quot;, filters, SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        File file = select.browse_saveas();&#xa;        if (file != null) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = select.getDirectory();&#xa;            String filename = file.getAbsolutePath();&#xa;            if (new File(filename).getName().lastIndexOf(&apos;.&apos;) == -1){&#xa;                filename = filename + &quot;.txt&quot;;&#xa;            } &#xa;            _resultsFileTextField.setText(filename);  &#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
