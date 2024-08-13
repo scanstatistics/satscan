@@ -1222,7 +1222,7 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noCases.size() - 1; i >= 0; --i) {
-                s << "Data Set " << (noCases[i] + 1) << (i == 0 ? "" : ", ");
+                s << _parameters.getDataSourceNames()[noCases[i]].c_str() << (i == 0 ? "" : ", ");
             }
             printFormat.PrintAlignedMarginsDataString(fp, s.str());
         }
@@ -1232,7 +1232,7 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
             for (int i = noControls.size() - 1; i >= 0; --i) {
-                s << "Data Set " << (noControls[i] + 1) << (i == 0 ? "" : ", ");
+                s << _parameters.getDataSourceNames()[noControls[i]].c_str() << (i == 0 ? "" : ", ");
             }
             printFormat.PrintAlignedMarginsDataString(fp, s.str());
         }
@@ -2148,6 +2148,9 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     createReducedCoodinatesFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
     // Read files again but using the new coordinates file plus ignoring locations outside geographical area. Exclude reading case and control data.
     SaTScanDataReader(*_data_hub).ReadBernoulliDrilldown();
+    // Carry down knowledge of which sets have been removed in parent analysis.
+    for (auto details: source_data_hub.GetDataSetHandler().getRemovedDataSetDetails())
+        _data_hub->GetDataSetHandler().removeDataSet(details.get<0>());
     // Get detected clusters case data.
     if (!source_parameters.getDrilldownAdjustWeeklyTrends()) {
         // Allocate the case and measure structures in new data hub - this is needed for the rare situation one

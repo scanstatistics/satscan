@@ -171,6 +171,12 @@ void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText
      putChar('\n', fp);
 }
 
+/** Prints statement to file stream, respecting left and right margins. */
+void AsciiPrintFormat::PrintSectionStatement(FILE* fp, const char* sText, unsigned int iPostNewlines) const {
+    std::string wrapped;
+    fprintf(fp, getWrappedText(sText, giLeftMargin, giRightMargin, "\n", wrapped).c_str());
+}
+
 /** Prints character cSeparator giRightMargin'th times. Prefixes/postfixes separator
     string newline character as specified by parameters, respectively. */
 void AsciiPrintFormat::PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines, unsigned int iPostNewlines, char cSeparator) {

@@ -97,6 +97,7 @@ class CParameters {
 
   private:
     InputSourceContainer_t              _input_sources;                         /** input parameter source */
+    std::vector<std::string>            _data_source_names;                     /** human readable names for each data set */
     MultipleCoordinatesType             geMultipleCoordinatesType;              /** multiple locations type */
     unsigned int                        giNumRequestedParallelProcesses;        /** number of parallel processes to run */
     ExecutionType                       geExecutionType;                        /** execution process type */
@@ -320,9 +321,12 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
+    
+    std::vector<std::string>            getDataSourceNames() const { return _data_source_names; }
+    void                                setDataSourceNames(const std::vector<std::string>& v) { _data_source_names = v; }
+
     double                              getCutoffLineListCSV() const { return _linelist_csv_cutoff; }
     void                                setCutoffLineListCSV(double d) { _linelist_csv_cutoff = d; }
-
     const std::string                 & getMultipleLocationsFile() const { return _multiple_locations_file; }
     void                                setMultipleLocationsFile(const char * filename, bool bCorrectForRelativePath = false);
     bool                                getAlwaysEmailSummary() const { return _always_email_summary; }

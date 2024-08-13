@@ -174,6 +174,7 @@ public class Parameters implements Cloneable {
     private ArrayList<String>               gvCaseFilenames = new ArrayList<>(); /** case data source filenames */
     private ArrayList<String>               gvControlFilenames = new ArrayList<>(); /** control data source filenames */
     private ArrayList<String>               gvPopulationFilenames = new ArrayList<>(); /** population data source filenames */
+    private ArrayList<String>               _data_set_names = new ArrayList<>(); /** data set names */
     private String                          gsCoordinatesFileName=""; /** coordinates data source filename */
     private String                          gsSpecialGridFileName=""; /** special grid data source filename */
     private String                          gsMaxCirclePopulationFileName=""; /** special population file for constructing circles only */
@@ -275,6 +276,7 @@ public class Parameters implements Cloneable {
       gvCaseFilenames.add("");
       gvControlFilenames.add("");
       gvPopulationFilenames.add("");
+      _data_set_names.add("Data Set #1");
       gvEllipseShapes.add(1.5);
       gvEllipseShapes.add(2.0);
       gvEllipseShapes.add(3.0);
@@ -294,6 +296,7 @@ public class Parameters implements Cloneable {
             newObject.gvCaseFilenames = new ArrayList<>(gvCaseFilenames);
             newObject.gvControlFilenames = new ArrayList<>(gvControlFilenames);
             newObject.gvPopulationFilenames = new ArrayList<>(gvPopulationFilenames);
+            newObject._data_set_names = new ArrayList<>(_data_set_names);
             newObject.gvObservableRegions = new ArrayList<>(gvObservableRegions);
             newObject._input_sources = new ArrayList<>();
             for (InputSourceSettings iss : _input_sources)
@@ -334,6 +337,7 @@ public class Parameters implements Cloneable {
         if (!gvCaseFilenames.equals(rhs.gvCaseFilenames)) return false;
         if (!gvControlFilenames.equals(rhs.gvControlFilenames)) return false;
         if (!gvPopulationFilenames.equals(rhs.gvPopulationFilenames)) return false;
+        if (!_data_set_names.equals(rhs._data_set_names)) return false;
         if (!gsCoordinatesFileName.equals(rhs.gsCoordinatesFileName)) return false;
         if (!gsSpecialGridFileName.equals(rhs.gsSpecialGridFileName)) return false;
         if (!gsMaxCirclePopulationFileName.equals(rhs.gsMaxCirclePopulationFileName)) return false;
@@ -650,6 +654,13 @@ public class Parameters implements Cloneable {
     }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
     public final ArrayList<String> GetObservableRegions() {return gvObservableRegions;}
+
+    public final String getDataSourceName(int iSetIndex/*=1*/) {
+        return _data_set_names.get(iSetIndex - 1);
+    }
+    public final ArrayList<String> getDataSourceNames() {return _data_set_names;}
+
+
     public final String GetCaseFileName(int iSetIndex/*=1*/) {
         return gvCaseFilenames.get(iSetIndex - 1);
     }
@@ -822,6 +833,10 @@ public class Parameters implements Cloneable {
     public void SetExecutionType(int iOrdinal) {
         try { geExecutionType = ExecutionType.values()[iOrdinal];
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, ExecutionType.values()); }
+    }
+    public void setDataSourceName(final String name, int iSetIndex/*=1*/) {
+        setSize(_data_set_names, iSetIndex);
+        _data_set_names.set(iSetIndex - 1, name);
     }
     public void SetCaseFileName(final String sCaseFileName, int iSetIndex/*=1*/) {
         setSize(gvCaseFilenames, iSetIndex);

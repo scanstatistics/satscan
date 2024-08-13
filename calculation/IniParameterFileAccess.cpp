@@ -195,12 +195,27 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
 /* Reads optional input source settings. */
 void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
     const char * section, * multiple_sets_section, * key;
-    std::string buffer;
+    std::string buffer, buffer2;
 
     try {
         // section name for multiple data sets
         if (!GetSpecifications().GetParameterIniInfo(MULTI_DATASET_PURPOSE_TYPE, &multiple_sets_section, &key) && gParameters.getNumFileSets() > 1)
             throw prg_error("Unable to determine section for multiple data sets.", "ReadInputSourceSettings()");
+
+        // read data source names - this information is stored separate from CParameters::InputSource
+        std::vector<std::string> setNames;
+        for (unsigned int setIdx = 0; setIdx < gParameters.getNumFileSets(); ++setIdx)
+            setNames.push_back(printString(buffer, "Data Set #%ld", setIdx + 1));
+        long lSectionIndex, lKeyIndex = -1;
+        if ((lSectionIndex = SourceFile.GetSectionIndex(multiple_sets_section)) > -1) {
+            const IniSection* pSection = SourceFile.GetSection(lSectionIndex);
+            for (unsigned int setIdx = 0; setIdx < gParameters.getNumFileSets(); ++setIdx) {
+                printString(buffer, IniParameterSpecification::DataSetName, setIdx + 1);
+                if ((lKeyIndex = pSection->FindKey(buffer.c_str())) > -1)
+                    setNames[setIdx] = pSection->GetLine(lKeyIndex)->GetValue();
+            }
+        }
+        gParameters.setDataSourceNames(setNames);
 
         // case file
         if (GetSpecifications().GetParameterIniInfo(CASEFILE, &section, &key)) {
@@ -771,13 +786,26 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Multiple Data Sets'. */
 void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
-    std::string   s, sComment;
+    std::string   s, sComment, buffer;
     const char  * sSectionName, * sBaseKey;
     try {
         WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()).c_str(),
                           " multiple data sets purpose type (0=Multivariate, 1=Adjustment)");
 
+        if (!GetSpecifications().GetParameterIniInfo(MULTI_DATASET_PURPOSE_TYPE, &sSectionName, &sBaseKey) && gParameters.getNumFileSets() > 1)
+            throw prg_error("Unable to determine section for multiple data sets.", "WriteMultipleDataSetsSettings()");
+        long lSectionIndex, lKeyIndex = -1;
+        IniSection* pSection=0;
+        if ((lSectionIndex = WriteFile.GetSectionIndex(sSectionName)) < 0)
+            throw prg_error("Unable to determine section for multiple data sets.", "WriteMultipleDataSetsSettings()");
+        pSection = WriteFile.GetSection(lSectionIndex);
+        const char * dsnCommentFormat = " source data set name (data set %i)";
+        pSection->AddComment(printString(buffer, dsnCommentFormat, 1).c_str());
+        pSection->AddLine(printString(buffer, IniParameterSpecification::DataSetName, 1).c_str(), gParameters.getDataSourceNames()[0].c_str());
         for (size_t t=1; t < gParameters.getNumFileSets(); ++t) {
+            pSection->AddComment(printString(buffer, dsnCommentFormat, t + 1).c_str());
+            pSection->AddLine(printString(buffer, IniParameterSpecification::DataSetName, t + 1).c_str(), gParameters.getDataSourceNames()[t].c_str());
+
             if (GetSpecifications().GetMultipleParameterIniInfo(CASEFILE, &sSectionName, &sBaseKey)) {
                 printString(s, "%s%i", sBaseKey, t + 1);
                 printString(sComment, " case data filename (additional data set %i)", t + 1);

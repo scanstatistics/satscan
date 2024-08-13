@@ -164,26 +164,6 @@ FileName& CartesianGraph::getFilename(FileName& filename) {
     return filename;
 }
 
-/** Return legend of cluster information to be used as popup in html page. */
-std::string & CartesianGraph::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
-    std::stringstream  lines;
-    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
-    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
-
-    lines << "<div class=\"cluster-tip\">Cluster " << iCluster + 1 << "<span><a href=\"#\">X</a></span></div><div class=\"tip-info\">";
-    for (; itr != itr_end; ++itr) {
-        if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
-            lines << "Data Set " << itr->second.second << "<br>";
-            currSetIdx = itr->second.second;
-        }
-        lines << itr->first << " : " << itr->second.first << "<br>";
-    }
-    lines << "</div>";
-    legend = lines.str();
-    std::replace(legend.begin(), legend.end(), '\n', ' ');
-    return legend;
-}
-
 /* If the coordinates system in settings is latitude/longitude, transform coordinates back to latitude/longitude. */
 std::vector<double>& CartesianGraph::transform(std::vector<double>& vCoordinates) {
     if (_dataHub.GetParameters().GetCoordinatesType() == LATLON) {
@@ -254,7 +234,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
             else
                 radius = cluster.GetCartesianRadius();
             // Add cluster definition to javascript hash collection.
-            getClusterLegend(cluster, i + clusterOffset, legend);
+            VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, legend);
             const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             transform(vCoordinates);

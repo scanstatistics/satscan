@@ -269,3 +269,54 @@ double VisualizationUtils::getSliderValue(const CSaTScanData& datahub, const CCl
         return std::max(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1), MIN_PVALUE_VALUE);
     return MAX_PVALUE_VALUE;
 }
+
+/** Returns cluster legend to be used as popup in html page. */
+std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, int iCluster, const CSaTScanData& datahub, std::string& legend) {
+    std::string buffer, buffer2, buffer3, buffer4;
+    std::stringstream  legendLines;
+    const CParameters& parameters = datahub.GetParameters();
+    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = parameters.getNumFileSets();
+
+    legendLines << "<div style=\"text-decoration:underline;font-weight:bold;margin-bottom:5px;\">Cluster " << iCluster + 1 << "</div>";
+    if (numFilesSets == 1) {
+        legendLines << "<table border=\"0\" style=\"width:100%;\">";
+        for (auto rptline: cluster.getReportLinesCache()) {
+            legendLines << printString(buffer,
+                "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s:</th><td style=\"white-space:nowrap;text-align:left;\">%s</td></tr>",
+                htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+            );
+        }
+        legendLines << "</table>";
+    } else {
+        std::stringstream clusterLines, clusterDataSetLines;
+        clusterLines << "<table border=\"0\" style=\"width:100%;\">";
+        for (auto rptline : cluster.getReportLinesCache()) {
+            if (rptline.second.second == std::numeric_limits<unsigned int>::max()) { // cluster level
+                clusterLines << printString(buffer,
+                    "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">%s</td></tr>",
+                    htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+                );
+            } else { // cluster data set level
+                if (currSetIdx != rptline.second.second) {
+                    if (currSetIdx != std::numeric_limits<unsigned int>::max()) clusterDataSetLines << "</table>";
+                    clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
+                    clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
+                    clusterDataSetLines << getWrappedText(htmlencode(
+                        parameters.getDataSourceNames()[datahub.GetDataSetHandler().getDataSetRelativeIndex(rptline.second.second)],
+                        buffer2, false), 0, 40, "<br>", buffer3
+                    );
+                    clusterDataSetLines << "</caption>";
+                    currSetIdx = rptline.second.second;
+                }
+                clusterDataSetLines << printString(buffer,
+                    "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">%s</td></tr>",
+                    htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+                );
+            }
+        }
+        legendLines << clusterLines.str() << "</table>" << clusterDataSetLines.str() << "</table>";
+    }
+    legend = legendLines.str();
+    std::replace(legend.begin(), legend.end(), '\n', ' ');
+    return legend;
+}

@@ -198,6 +198,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_multiple_locations_file != _multiple_locations_file) return false;
   if (_linelist_individuals_cache_name != _linelist_individuals_cache_name) return false;
   if (_linelist_csv_cutoff != _linelist_csv_cutoff) return false;
+  //if (_input_sources != _input_sources) return false;
+  if (_data_source_names != _data_source_names) return false;
 
   return true;
 }
@@ -426,6 +428,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _minimum_high_rate_cases = rhs._minimum_high_rate_cases;
   _output_google_map = rhs._output_google_map;
   _input_sources = rhs._input_sources;
+  _data_source_names = rhs._data_source_names;
   _perform_standard_drilldown = rhs._perform_standard_drilldown;
   _perform_bernoulli_drilldown = rhs._perform_bernoulli_drilldown;
   _drilldown_minimum_locations = rhs._drilldown_minimum_locations;
@@ -867,6 +870,8 @@ void CParameters::SetAsDefaulted() {
   geAreaScanRate                           = HIGH;
   gvCaseFilenames.resize(1);
   gvPopulationFilenames.resize(1);
+  _input_sources.clear();
+  _data_source_names.clear();
   gsCoordinatesFileName                    = "";
   gsOutputFileNameSetting                  = "";
   _results_filename                        = "";

@@ -205,6 +205,7 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_caseFileTextField">
                   <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {}&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;});&#xa;"/>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
                   </AuxValues>
                 </Component>
@@ -648,6 +649,10 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_controlFileTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {}&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
                   <Properties>
@@ -712,6 +717,10 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_populationFileTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {}&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        _advancedParametersSetting.updateMultipleDataSetsInputs();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
                   <Properties>

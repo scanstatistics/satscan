@@ -386,6 +386,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetSourceFileName().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setDataSourceName", "(Ljava/lang/String;I)V");
+  for (size_t t = 0; t < Parameters.getDataSourceNames().size(); ++t) {
+      Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getDataSourceNames()[t].c_str()), (jint)(t + 1));
+      jni_error::_detectError(Env);
+  }
+
   mid = _getMethodId_Checked(Env, clazz, "SetCaseFileName", "(Ljava/lang/String;I)V");
   for (size_t t=0; t < Parameters.GetCaseFileNames().size(); ++t) {
     Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetCaseFileNames()[t].c_str()), (jint)(t + 1));
@@ -1064,6 +1070,24 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.SetSourceFileName(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  std::vector<std::string> dataSourceNames;
+  mid = _getMethodId_Checked(Env, clazz, "getDataSourceNames", "()Ljava/util/ArrayList;");
+  vectorobject = Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  vclazz = Env.GetObjectClass(vectorobject);
+  mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
+  jni_error::_detectError(Env);
+  vsize = Env.CallIntMethod(vectorobject, mid);
+  for (jint i = 0; i < vsize; ++i) {
+      mid = _getMethodId_Checked(Env, vclazz, "get", "(I)Ljava/lang/Object;");
+      jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(str_object, &iscopy);
+      dataSourceNames.push_back(sFilename);
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+  }
+  Parameters.setDataSourceNames(dataSourceNames);
 
   mid = _getMethodId_Checked(Env, clazz, "GetCaseFileNames", "()Ljava/util/ArrayList;");
   vectorobject = Env.CallObjectMethod(jParameters, mid);

@@ -70,7 +70,7 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
             printString(buffer2, " (%sC%u)", _dataHub.GetParameters().getClusterMonikerPrefix().c_str(), (iCluster + 1));
         }
         outKML << "\t\t<name>#" << (iCluster + 1) << buffer2.c_str() << "</name>" << std::endl;
-        outKML << "\t\t<snippet>#" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
+        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
         outKML << "\t\t<visibility>" << (iCluster == 0 ? "1" : "0") << "</visibility>" << std::endl;
         //outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
@@ -212,30 +212,51 @@ std::string & BaseClusterKML::getClusterStyleTags(const CCluster& cluster, int i
 
 /* Returns cluster balloon template. */
 std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster, std::string& templateString) const {
-    std::string buffer, buffer2, buffer3, bufferSetIdx;
+    std::string buffer, buffer2, buffer3, buffer4;
     std::stringstream  templateLines;
     const CParameters& parameters = _dataHub.GetParameters();
-    const char * rowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;%s\">%s</th><td style=\"white-space:nowrap;\">$[%s%s]</td></tr>";
-    const char * setRowFormat = "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s</th><td style=\"white-space:nowrap;\"></td></tr>";
-    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
+    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = parameters.getNumFileSets();
 
-    templateLines << "<![CDATA[<b>$[snippet]</b><br/><table border=\"0\">";
-    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
-    for (; itr != itr_end; ++itr) {
-        if (numFilesSets > 1 && itr->second.second > 0 && currSetIdx != itr->second.second) {
-            // add table row for data set label
-            printString(bufferSetIdx, "Data Set %u", itr->second.second);
-            templateLines << printString(buffer, setRowFormat, bufferSetIdx.c_str()).c_str();
-            currSetIdx = itr->second.second;
+    templateLines << "<![CDATA[<u><b>$[snippet]</b></u><br/>";
+    if (numFilesSets == 1) {
+        templateLines << "<table border=\"0\" style=\"width:100%;\">";
+        for (auto itr=cluster.getReportLinesCache().begin(); itr != cluster.getReportLinesCache().end(); ++itr) {
+            templateLines << printString(buffer,
+                "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s:</th><td style=\"white-space:nowrap;text-align:left;\">$[%s]</td></tr>",
+                encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str()
+            );
         }
-        templateLines << printString(buffer,
-            rowFormat,
-            numFilesSets == 1 || itr->second.second == 0 ? "" : "padding-left:10px;",
-            encode(itr->first, buffer2).c_str(),
-            encode(itr->first, buffer3).c_str(),
-            numFilesSets == 1 || itr->second.second == 0 ? "" : printString(bufferSetIdx, " set%u", itr->second.second).c_str()).c_str();
+        templateLines << "</table>";
+    } else {
+        std::stringstream clusterLines, clusterDataSetLines;
+        clusterLines << "<table border=\"0\" style=\"width:100%;\">";
+        for (auto itr=cluster.getReportLinesCache().begin(); itr != cluster.getReportLinesCache().end(); ++itr) {
+            if (itr->second.second == std::numeric_limits<unsigned int>::max()) { // cluster level
+                clusterLines << printString(buffer,
+                    "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s</th><td style=\"white-space:nowrap;text-align:right;\">$[%s]</td></tr>",
+                    encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str()
+                );
+            } else { // cluster data set level
+                if (currSetIdx != itr->second.second) {
+                    if (currSetIdx != std::numeric_limits<unsigned int>::max()) clusterDataSetLines << "</table>";
+                    clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
+                    clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
+                    clusterDataSetLines << getWrappedText(
+                        encode(parameters.getDataSourceNames()[
+                        _dataHub.GetDataSetHandler().getDataSetRelativeIndex(itr->second.second)], buffer2), 0, 40, "<br>", buffer3
+                    );
+                    clusterDataSetLines << "</caption>";
+                    currSetIdx = itr->second.second;
+                }
+                clusterDataSetLines << printString(buffer,
+                    "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">$[%s%s]</td></tr>",
+                    encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str(), printString(buffer4, " set%u", itr->second.second).c_str()
+                );
+            }
+        }
+        templateLines << clusterLines.str() << "</table>" << clusterDataSetLines.str() << "</table>";
     }
-    templateLines << "</table>]]>";
+    templateLines << "]]>";
     templateString = templateLines.str();
     return templateString;
 }
@@ -263,7 +284,7 @@ std::string & BaseClusterKML::getClusterExtendedData(const CCluster& cluster, in
     lines << "<ExtendedData>";
     for (; itr != itr_end; ++itr) {
         lines << "<Data name=\"" << itr->first.c_str()
-            << (numDataSets > 1 && itr->second.second != 0 ? printString(bufferSetIdx, " set%u", itr->second.second).c_str() : "")
+            << (numDataSets > 1 && itr->second.second != std::numeric_limits<unsigned int>::max() ? printString(bufferSetIdx, " set%u", itr->second.second).c_str() : "")
             << "\"><value>" << encode(itr->second.first, buffer).c_str() << "</value></Data>";
     }
     lines << "</ExtendedData>";

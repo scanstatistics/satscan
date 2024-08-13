@@ -48,6 +48,8 @@ const char * IniParameterSpecification::OtherOutput               = "Other Outpu
 const char * IniParameterSpecification::EmailAlerts               = "Email Alerts";
 const char* IniParameterSpecification::Notifications              = "Notifications";
 
+const char* IniParameterSpecification::DataSetName                = "DataSet%ld-Name";
+
 const char * IniParameterSpecification::SourceType                = "SourceType";
 const char * IniParameterSpecification::SourceDelimiter           = "SourceDelimiter";
 const char * IniParameterSpecification::SourceGrouper             = "SourceGrouper";

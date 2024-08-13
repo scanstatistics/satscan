@@ -806,25 +806,24 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
 /** Prints 'Input' tab parameters to file stream. */
 void ParametersPrint::PrintInputParameters(FILE* fp) const {
     DatePrecisionType ePrecision;
-    const char * sDataSetLabel = (_parameters.getNumFileSets() == 1 ? "" : " (data set 1)");
-    const char * sBlankDataSetLabel = (_parameters.getNumFileSets() == 1 ? "" : "            ");
     SettingContainer_t settings;
     std::string buffer;
 
     try {
+        if (_parameters.getNumFileSets() > 1)
+            settings.push_back(std::make_pair("Data Set 1", _parameters.getDataSourceNames().front()));
         if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
             (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
             settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(1), _parameters.getTimestamp())));
-            settings.back().first += sDataSetLabel;
         }
         switch (_parameters.GetProbabilityModelType()) {
             case POISSON :
                 if (!_parameters.UsePopulationFile()) break;
                 settings.push_back(std::make_pair("Population File", getFilenameFormatTime(_parameters.GetPopulationFileName(1), _parameters.getTimestamp())));
-                settings.back().first += sDataSetLabel; break;
+                break;
             case BERNOULLI :
                 settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(1), _parameters.getTimestamp())));
-                settings.back().first += sDataSetLabel; break;
+                break;
             case SPACETIMEPERMUTATION :
             case CATEGORICAL          :
             case ORDINAL              :
@@ -884,16 +883,14 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
     try {
         if (_parameters.getNumFileSets() == 1) return;
         for (unsigned int t=1; t < _parameters.getNumFileSets(); ++t) {
-            printString(buffer, "Case File (data set %i)", t + 1);
-            settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetCaseFileName(t + 1), _parameters.getTimestamp())));
+            settings.push_back(std::make_pair(printString(buffer, "Data Set %i", t + 1), _parameters.getDataSourceNames()[t]));
+            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(t + 1), _parameters.getTimestamp())));
             switch (_parameters.GetProbabilityModelType()) {
                 case POISSON :
                     if (!_parameters.UsePopulationFile()) break;
-                    printString(buffer, "Population File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetPopulationFileName(t + 1), _parameters.getTimestamp()))); break;
+                    settings.push_back(std::make_pair("Population File", getFilenameFormatTime(_parameters.GetPopulationFileName(t + 1), _parameters.getTimestamp()))); break;
                 case BERNOULLI :
-                    printString(buffer, "Control File (data set %i)", t + 1);
-                    settings.push_back(std::make_pair(buffer, getFilenameFormatTime(_parameters.GetControlFileName(t + 1), _parameters.getTimestamp()))); break;
+                    settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(t + 1), _parameters.getTimestamp()))); break;
                 case SPACETIMEPERMUTATION :
                 case CATEGORICAL          :
                 case ORDINAL              :

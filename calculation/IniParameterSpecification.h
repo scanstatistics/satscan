@@ -130,6 +130,8 @@ class IniParameterSpecification {
     static const char         * OutputFiles;
     static const char         * AdvancedFeatures;
 
+    static const char         * DataSetName;
+
     static const char         * SourceType;
     static const char         * SourceDelimiter;
     static const char         * SourceGrouper;

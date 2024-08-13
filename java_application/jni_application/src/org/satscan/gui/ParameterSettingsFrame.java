@@ -25,6 +25,8 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.UndoManager;
 import java.util.concurrent.TimeUnit;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.satscan.app.AdvFeaturesExpection;
 import org.satscan.app.AppConstants;
 import org.satscan.utils.FileAccess;
@@ -1842,6 +1844,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _caseFileLabel.setText("Case File:"); // NOI18N
 
+        _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {}
+            public void removeUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+        });
+
         _caseFileBrowseButton.setText("..."); // NOI18N
         _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -2138,6 +2150,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _controlFileLabel.setText("Control File:"); // NOI18N
 
+        _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {}
+            public void removeUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+        });
+
         _controlFileBrowseButton.setText("..."); // NOI18N
         _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -2211,6 +2233,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
 
         _populationFileLabel.setText("Population File:"); // NOI18N
+
+        _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {}
+            public void removeUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+            public void insertUpdate(DocumentEvent e) {
+                _advancedParametersSetting.updateMultipleDataSetsInputs();
+            }
+        });
 
         _populationFileBrowseButton.setText("..."); // NOI18N
         _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
@@ -3315,7 +3347,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.ButtonGroup _clustersReportedButtonGroup;
     private javax.swing.JButton _controlFileBrowseButton;
     private javax.swing.JLabel _controlFileLabel;
-    private javax.swing.JTextField _controlFileTextField;
+    public javax.swing.JTextField _controlFileTextField;
     private javax.swing.JTextField _coordiantesFileTextField;
     private javax.swing.JPanel _coordinateTypeGroup;
     private javax.swing.ButtonGroup _coordinatesButtonGroup;
@@ -3349,7 +3381,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _poissonModelRadioButton;
     private javax.swing.JButton _populationFileBrowseButton;
     private javax.swing.JLabel _populationFileLabel;
-    private javax.swing.JTextField _populationFileTextField;
+    public javax.swing.JTextField _populationFileTextField;
     private javax.swing.JPanel _populationInputPanel;
     private javax.swing.JPanel _probabilityModelGroup;
     private javax.swing.ButtonGroup _probabilityModelTypeButtonGroup;

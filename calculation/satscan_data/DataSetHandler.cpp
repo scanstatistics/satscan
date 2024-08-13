@@ -237,10 +237,16 @@ void DataSetHandler::removeDataSetsWithNoData() {
         throw resolvable_error("Error: Analysis stopped. No data sets to analyze.\n");
 }
 
+/** Returns the relative data set index, taking into account the data sets that have been removed. 
+    For instance indices are 0, 1, 2, 3 with 4 data sets. If data set 1 is removed, we are only accessing 3 data sets, so:
+    - calling with iSet = 0 returns 0
+    - calling with iSet = 1 returns 2
+    - calling with iSet = 2 returns 3
+*/
 size_t DataSetHandler::getDataSetRelativeIndex(size_t iSet) const {
     boost::dynamic_bitset<> sets(gParameters.getNumFileSets());
-    sets.set();
-    for (auto const& removed: _removed_data_set_details)
+    sets.set(); // set all as included
+    for (auto const& removed: _removed_data_set_details) // toggle off removed sets
         sets.set(removed.get<0>(), false);
     int idx = -1;
     for (size_t s=0; s < sets.size(); ++s) {

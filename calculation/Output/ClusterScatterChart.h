@@ -67,7 +67,6 @@ class CartesianGraph {
         double                              _median_parallel;
         std::stringstream                   _cluster_options;
 
-        std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
         std::vector<double>               & transform(std::vector<double>& vCoordinates);
 
     public:

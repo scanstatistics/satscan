@@ -132,7 +132,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -144,7 +144,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="220" max="32767" attributes="0"/>
+                      <EmptySpace pref="176" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -154,7 +154,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Additional Input Data Sets">
+                    <TitledBorder title="Input Data Sets">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -169,14 +169,48 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="1" attributes="0">
-                                  <Component id="_dataSetsGroup" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_dataSetsGroup" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_addDataSetButton" min="-2" pref="84" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_removeDataSetButton" min="-2" pref="79" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_fileInputGroup" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_dataSetNameTextField" alignment="1" max="32767" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_populationFileTextField" max="32767" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_caseFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                              <Component id="_controlFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
+                                              <Component id="_populationFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_caseFileTextField" max="32767" attributes="0"/>
+                                              <Component id="_controlFileTextField" max="32767" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="31" pref="31" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_datasetNameLabel" alignment="0" min="-2" pref="233" max="-2" attributes="0"/>
+                                              <Component id="_caseFileLabel" alignment="0" min="-2" pref="219" max="-2" attributes="0"/>
+                                              <Component id="_controlFileLabel" alignment="0" min="-2" pref="248" max="-2" attributes="0"/>
+                                              <Component id="_populationFileLabel" alignment="0" min="-2" pref="233" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
                               </Group>
-                              <Component id="_multipleSetPurposeGroup" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_multipleSetPurposeGroup" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -184,12 +218,39 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_dataSetsGroup" min="0" max="32767" attributes="1"/>
-                              <Component id="_fileInputGroup" alignment="0" max="32767" attributes="1"/>
+                              <Group type="102" attributes="0">
+                                  <Component id="_datasetNameLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
+                                  <Component id="_dataSetNameTextField" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_caseFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_caseFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_caseFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_controlFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_controlFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_populationFileLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_dataSetsGroup" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_populationFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_populationFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_removeDataSetButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_addDataSetButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="6" max="32767" attributes="0"/>
                           <Component id="_multipleSetPurposeGroup" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -200,25 +261,12 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="140" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="_addDataSetButton" pref="63" max="32767" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_removeDataSetButton" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jScrollPane1" alignment="0" pref="166" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jScrollPane1" min="-2" pref="100" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="_removeDataSetButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_addDataSetButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
@@ -239,152 +287,11 @@
                           </Properties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JList(_dataSetsListModel)"/>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {&#xa;    public void valueChanged(javax.swing.event.ListSelectionEvent e) {&#xa;        enableInputFileEdits();&#xa;        if (_dataSetsListModel.getSize() &gt; 0 &amp;&amp; _inputDataSetsList.getSelectedIndex() != -1) {&#xa;            _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.get(_inputDataSetsList.getSelectedIndex()));&#xa;            _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.get(_inputDataSetsList.getSelectedIndex()));&#xa;            _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.get(_inputDataSetsList.getSelectedIndex()));&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {&#xa;    public void valueChanged(javax.swing.event.ListSelectionEvent e) {&#xa;        enableInputFileEdits();&#xa;        enableRemoveButton();&#xa;        if (_dataSetsListModel.getSize() &gt; 0 &amp;&amp; _inputDataSetsList.getSelectedIndex() != -1) {&#xa;            _dataSetNameTextField.setText(AdvancedParameterSettingsFrame.this._datasetNames.get(_inputDataSetsList.getSelectedIndex()));&#xa;            _caseFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex()));&#xa;            _controlFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex()));&#xa;            _populationFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex()));&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                           </AuxValues>
                         </Component>
                       </SubComponents>
                     </Container>
-                    <Component class="javax.swing.JButton" name="_addDataSetButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Add" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));&#xa;        &#xa;        // enable and clear the edit boxes&#xa;        _caseFilenames.add(&quot;&quot;);&#xa;        _controlFilenames.add(&quot;&quot;);&#xa;        _populationFilenames.add(&quot;&quot;);&#xa;        _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_removeDataSetButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Remove" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;&#xa;        ArrayList&lt;InputSourceSettings.InputFileType&gt; filetypes = new ArrayList&lt;&gt;();&#xa;        filetypes.add(InputSourceSettings.InputFileType.Case);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Control);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Population);&#xa;        for (InputSourceSettings.InputFileType type : filetypes) {&#xa;            String key = type.toString() + Integer.toString(iDeleteIndex + 2);&#xa;            // remove input source settings for file type&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                _settings_window._input_source_map.remove(key);&#xa;            }&#xa;            // update input source settings keys for greater indexes      &#xa;            for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;                key = type.toString() + Integer.toString(i + 2);&#xa;                if (_settings_window._input_source_map.containsKey(key)) {&#xa;                    String newKey = type.toString() + Integer.toString(i - 1 + 2);&#xa;                    _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));&#xa;                }&#xa;            }&#xa;        }&#xa;&#xa;        // update remaining list box names&#xa;        for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i + 1);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;&#xa;        // remove files&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex);&#xa;        if (_inputDataSetsList.getModel().getSize() &gt; 0) {&#xa;            _inputDataSetsList.setSelectedIndex(0);&#xa;            _inputDataSetsList.ensureIndexIsVisible(0);&#xa;        }&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                  </SubComponents>
-                </Container>
-                <Container class="javax.swing.JPanel" name="_fileInputGroup">
-
-                  <Layout>
-                    <DimensionLayout dim="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="_populationFileTextField" max="32767" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="_populationFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="_caseFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="_controlFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                          <Component id="_populationFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="0" pref="389" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" alignment="1" attributes="0">
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="_controlFileTextField" max="32767" attributes="0"/>
-                                          <Component id="_caseFileTextField" max="32767" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="_caseFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
-                                          <Component id="_controlFileBrowseButton" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
-                                      </Group>
-                                  </Group>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                    <DimensionLayout dim="1">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="_caseFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="_caseFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_caseFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="_controlFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_controlFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_populationFileLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="_populationFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_populationFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                    </DimensionLayout>
-                  </Layout>
-                  <SubComponents>
-                    <Component class="javax.swing.JLabel" name="_caseFileLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="_caseFileTextField">
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());&#xa;    }&#xa;});&#xa;"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_caseFileBrowseButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Open Case File Import Wizard" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="_controlFileLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="_controlFileTextField">
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Open Control File Import Wizard" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JLabel" name="_populationFileLabel">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
-                      </Properties>
-                    </Component>
-                    <Component class="javax.swing.JTextField" name="_populationFileTextField">
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
-                    <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
-                      <Properties>
-                        <Property name="text" type="java.lang.String" value="..." noResource="true"/>
-                        <Property name="toolTipText" type="java.lang.String" value="Open Population File Import Wizard" noResource="true"/>
-                      </Properties>
-                      <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
-                      </AuxValues>
-                    </Component>
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="_multipleSetPurposeGroup">
@@ -395,7 +302,7 @@
                           <Group type="102" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="_multivariateAdjustmentsRadioButton" alignment="1" max="32767" attributes="0"/>
+                                  <Component id="_multivariateAdjustmentsRadioButton" alignment="1" pref="661" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="_multipleDataSetPurposeLabel" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -464,6 +371,89 @@
                     </Component>
                   </SubComponents>
                 </Container>
+                <Component class="javax.swing.JLabel" name="_caseFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_caseFileTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_caseFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open Case File Import Wizard" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_controlFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_controlFileTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open Control File Import Wizard" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_populationFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_populationFileTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            setFileTypeFullpath(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex());&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..." noResource="true"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Open Population File Import Wizard" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_datasetNameLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Data Set Name"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_dataSetNameTextField">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_dataSetNameTextField.getDocument().addDocumentListener(new DocumentListener() {&#xa;    public void changedUpdate(DocumentEvent e) {&#xa;    }&#xa;    public void removeUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _datasetNames.set(_inputDataSetsList.getSelectedIndex(), _dataSetNameTextField.getText());&#xa;    }&#xa;    public void insertUpdate(DocumentEvent e) {&#xa;        if (_inputDataSetsList.getSelectedIndex() != -1)&#xa;            _datasetNames.set(_inputDataSetsList.getSelectedIndex(), _dataSetNameTextField.getText());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_addDataSetButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Add" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_datasetNames.size() + 1));&#xa;        _datasetNames.add(&quot;Data Set #&quot; + Integer.toString(_inputDataSetsList.getModel().getSize()));&#xa;        // enable and clear the edit boxes&#xa;        _caseFilenames.add(&quot;&quot;);&#xa;        _controlFilenames.add(&quot;&quot;);&#xa;        _populationFilenames.add(&quot;&quot;);&#xa;        _inputDataSetsList.setSelectedIndex(_datasetNames.size() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_datasetNames.size() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_removeDataSetButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Remove" noResource="true"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;&#xa;        ArrayList&lt;InputSourceSettings.InputFileType&gt; filetypes = new ArrayList&lt;&gt;();&#xa;        filetypes.add(InputSourceSettings.InputFileType.Case);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Control);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Population);&#xa;        for (InputSourceSettings.InputFileType type : filetypes) {&#xa;            String key = type.toString() + Integer.toString(iDeleteIndex + 1);&#xa;            // remove input source settings for file type&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                _settings_window._input_source_map.remove(key);&#xa;            }&#xa;            // update input source settings keys for greater indexes      &#xa;            for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;                key = type.toString() + Integer.toString(i + 1);&#xa;                if (_settings_window._input_source_map.containsKey(key)) {&#xa;                    String newKey = type.toString() + Integer.toString(i);&#xa;                    _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));&#xa;                }&#xa;            }&#xa;        }&#xa;&#xa;        // update remaining list box names&#xa;        for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;&#xa;        // remove files&#xa;        _datasetNames.remove(iDeleteIndex);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex - 1);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex - 1);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex - 1);&#xa;        int selectIdx = Math.min(iDeleteIndex, _inputDataSetsList.getModel().getSize() - 1);&#xa;        _inputDataSetsList.setSelectedIndex(selectIdx);&#xa;        _inputDataSetsList.ensureIndexIsVisible(selectIdx);&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
           </SubComponents>
@@ -606,7 +596,7 @@
                                   <Component id="_strictCoordinatesLabel" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_relaxedCoordinatesRadioButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="673" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -725,18 +715,18 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
-                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="673" max="32767" attributes="0"/>
+                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="673" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_metaLocationsFileTextField" pref="572" max="32767" attributes="0"/>
+                                          <Component id="_metaLocationsFileTextField" pref="625" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_metaLocationsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_neighborsFileTextField" pref="572" max="32767" attributes="0"/>
+                                          <Component id="_neighborsFileTextField" pref="625" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_neighborsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
@@ -851,12 +841,12 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_atLeastOneRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_atLeastOneRadioButton" alignment="0" pref="673" max="32767" attributes="0"/>
                               <Component id="_onePerLocationIdRadioButton" alignment="0" max="32767" attributes="0"/>
                               <Component id="_allLocationsRadioButton" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_multiple_locations_file" pref="589" max="32767" attributes="0"/>
+                                      <Component id="_multiple_locations_file" pref="642" max="32767" attributes="0"/>
                                       <Component id="_multiple_locations_file_label" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1031,7 +1021,7 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_maxSpatialPercentFileTextField" min="-2" pref="55" max="-2" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="_percentageOfPopFileLabel" pref="526" max="32767" attributes="0"/>
+                                          <Component id="_percentageOfPopFileLabel" pref="573" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" attributes="0">
                                           <Component id="_maxSpatialClusterSizeTextField" min="-2" pref="55" max="-2" attributes="0"/>
@@ -1611,7 +1601,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="192" max="32767" attributes="0"/>
+                                  <EmptySpace pref="196" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1762,7 +1752,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="247" max="32767" attributes="0"/>
+                                  <EmptySpace pref="294" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1976,7 +1966,7 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_logLinearLabel" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="628" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="677" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               </Group>
@@ -2128,7 +2118,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_spatialAdjustmentsNone" max="32767" attributes="0"/>
-                              <Component id="_spatialAdjustmentsNonparametric" alignment="0" pref="628" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsNonparametric" alignment="0" pref="677" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
@@ -2209,7 +2199,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="620" max="32767" attributes="0"/>
+                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="673" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2342,7 +2332,7 @@
                               <Component id="_radioStandardPValues" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioGumbelPValues" min="-2" pref="342" max="-2" attributes="0"/>
-                                  <EmptySpace pref="5" max="32767" attributes="0"/>
+                                  <EmptySpace pref="50" max="32767" attributes="0"/>
                                   <Component id="_checkReportGumbel" min="-2" pref="281" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -3047,7 +3037,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportCriticalValuesCheckBox" pref="669" max="32767" attributes="0"/>
+                          <Component id="_reportCriticalValuesCheckBox" pref="673" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3099,7 +3089,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportClusterRankCheckBox" pref="620" max="32767" attributes="0"/>
+                          <Component id="_reportClusterRankCheckBox" pref="673" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3151,7 +3141,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_printAsciiColumnHeaders" pref="620" max="32767" attributes="0"/>
+                          <Component id="_printAsciiColumnHeaders" pref="673" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3395,7 +3385,7 @@
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="366" max="32767" attributes="0"/>
+                                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="400" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
                                           <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
@@ -3658,7 +3648,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="624" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="673" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -3842,7 +3832,7 @@
                                   <Component id="_number_oliveira_data_sets_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_number_oliveira_data_sets" min="-2" pref="80" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="203" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="207" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4189,7 +4179,7 @@
                                           <Component id="_drilldown_restriction_dow" min="-2" pref="241" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="161" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="206" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4343,7 +4333,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_locations_network" pref="624" max="32767" attributes="0"/>
+                              <Component id="_locations_network" pref="675" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   <Component id="_network_file_label" min="-2" max="-2" attributes="0"/>

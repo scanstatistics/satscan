@@ -806,16 +806,43 @@ std::stringstream & templateReplace(std::stringstream& templateText, const std::
 }
 
 /** HTML encodes text - replacing symbols/punctuation with html codes. */
-std::string& htmlencode(const std::string& text, std::string& encoded) {
+std::string& htmlencode(const std::string& text, std::string& encoded, bool includeWS) {
     std::stringstream ss;
     for (size_t pos = 0; pos != text.size(); ++pos) {
-        if (std::ispunct(static_cast<unsigned char>(text[pos])) || text[pos] == ' ')
+        if (std::ispunct(static_cast<unsigned char>(text[pos])) || (includeWS && text[pos] == ' '))
             ss << "&#" << int(text[pos]) << ';';
         else
             ss << text[pos];
     }
     encoded = ss.str();
     return encoded;
+}
+
+/** Returns text that is margin aligned and wraps text at those margins. */
+std::string& getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped) {
+    std::stringstream wrappedText;
+    auto leftPadding = [&wrappedText, marginLeft]() {
+        unsigned int iPad = 0;
+        while (iPad++ < marginLeft) wrappedText << ' ';
+    };
+    leftPadding();
+    unsigned int line_length = 0, max_width = marginRight - marginLeft;
+    std::stringstream line;
+    boost::escaped_list_separator<char> separator('\\', ' ', '\"');
+    boost::tokenizer<boost::escaped_list_separator<char> > tokens(text, separator);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr) {
+        if (line_length + itr->size() > max_width) {
+            wrappedText << line.str() << newline;
+            if (itr != tokens.end()) leftPadding();
+            line.str(""); line << (*itr) << " "; line_length = itr->size() + 1;
+        } else {
+            line << (*itr) << " ";
+            line_length += itr->size() + 1;
+        }
+    }
+    if (line_length) wrappedText << line.str() << newline;
+    wrapped = wrappedText.str();
+    return wrapped;
 }
 
 /////////////////// EmailText /////////////////////////

@@ -32,6 +32,7 @@ class AsciiPrintFormat {
      void                       PrintNonRightMarginedDataString(FILE* fp, const std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
      void                       PrintSectionLabel(FILE* fp, const char* sText, bool bDataSetParticular, bool bPadLeftMargin) const;
      void                       PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines=1) const;
+     void                       PrintSectionStatement(FILE* fp, const char* sText, unsigned int iPostNewlines = 1) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');
      static void                PrintVersionHeader(FILE* fp);
      static void                printPadRight(FILE* fp, const char * s, unsigned int width, char pad=' ');

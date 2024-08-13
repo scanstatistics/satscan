@@ -239,24 +239,6 @@ FileName& ClusterMap::getFilename(FileName& filename) {
     return filename;
 }
 
-/** Returns cluster legend to be used as popup in html page. */
-std::string & ClusterMap::getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const {
-    std::stringstream  lines;
-    unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = _dataHub.GetParameters().getNumFileSets();
-
-    lines << "<div style=\"text-decoration:underline;\">Cluster " << iCluster + 1 << "</div>";
-    for (const auto& ci: cluster.getReportLinesCache()) {
-        if (numFilesSets > 1 && ci.second.second > 0 && currSetIdx != ci.second.second) {
-            lines << "Data Set " << ci.second.second << "<br>";
-            currSetIdx = ci.second.second;
-        }
-        lines << ci.first << " : " << ci.second.first << "<br>";
-    }
-    legend = lines.str();
-    std::replace(legend.begin(), legend.end(), '\n', ' ');
-    return legend;
-}
-
 /* Conditionally adds clusters of most likely cluster collection to Google Map. */
 void ClusterMap::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration) {
     double gdMinRatioToReport = 0.001;
@@ -324,7 +306,7 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
                 << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
-                << "', tip : '" << getClusterLegend(cluster, i + clusterOffset, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
+                << "', tip : '" << VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
             _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " << (i + iteration) << "</option>";
         }
         ++_clusters_written;

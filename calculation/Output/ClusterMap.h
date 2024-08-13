@@ -52,8 +52,6 @@ protected:
     std::vector<EventType>              _event_types;
     Julian                              _recent_startdate;
 
-    std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
-
 public:
     ClusterMap(const CSaTScanData& dataHub);
     ~ClusterMap() {}

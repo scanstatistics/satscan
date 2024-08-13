@@ -50,9 +50,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private final UndoManager undo = new UndoManager();
     private final ParameterSettingsFrame _settings_window;
     private final DefaultListModel _dataSetsListModel = new DefaultListModel();
-    private ArrayList<String> _caseFilenames = new ArrayList<>();
-    private ArrayList<String> _controlFilenames = new ArrayList<>();
-    private ArrayList<String> _populationFilenames = new ArrayList<>();
+    private final ArrayList<String> _caseFilenames = new ArrayList<>();
+    private final ArrayList<String> _controlFilenames = new ArrayList<>();
+    private final ArrayList<String> _populationFilenames = new ArrayList<>();
+    private final ArrayList<String> _datasetNames = new ArrayList<>();
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
     private final int MAXIMUM_ADDITIONAL_SETS = 19;
     final static String FLEXIBLE_COMPLETE = "flexible_complete";
@@ -222,6 +223,49 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+    /** Returns the file path at data set index for file type. */
+    private String getFileTypeFullpath(InputSourceSettings.InputFileType ftype, int setIdx) {
+        switch (ftype) {
+            case Case -> { 
+                if (setIdx == 0)
+                    return _settings_window._caseFileTextField.getText();
+                return _caseFilenames.get(setIdx - 1);
+            }
+            case Control -> {
+                if (setIdx == 0)
+                    return _settings_window._controlFileTextField.getText();
+                return _controlFilenames.get(setIdx - 1);
+            }
+            case Population -> {
+                if (setIdx == 0)
+                    return _settings_window._populationFileTextField.getText();
+                return _populationFilenames.get(setIdx - 1);
+            }
+            default -> throw new UnknownEnumException(ftype);
+        }
+    }
+    
+    /** Sets the file path at data set index for file type. */
+    private void setFileTypeFullpath(String fullpath, InputSourceSettings.InputFileType ftype, int setIdx) {
+        // File paths for data set at index zero aren't maintained here.
+        if (setIdx == 0) return;
+        switch (ftype) {
+            case Case -> {
+                while (_caseFilenames.size() < setIdx) _caseFilenames.add("");
+                _caseFilenames.set(setIdx - 1, fullpath);
+            }
+            case Control -> {
+                while (_controlFilenames.size() < setIdx) _controlFilenames.add("");
+                _controlFilenames.set(setIdx - 1, fullpath);
+            }
+            case Population -> {
+                while (_populationFilenames.size() < setIdx) _populationFilenames.add("");
+                _populationFilenames.set(setIdx - 1, fullpath);
+            }
+            default -> throw new UnknownEnumException(ftype);
+        }
+    }    
+    
     /*
      * enables options in the maps output group
      */
@@ -846,7 +890,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void enableRemoveButton() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled();
-        _removeDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() > 0 ? bEnable : false);
+        _removeDataSetButton.setEnabled(
+            _additionalDataSetsGroup.isEnabled() &&
+            _inputDataSetsList.getSelectedIndex() > 0
+        );
     }
 
     /**
@@ -857,7 +904,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean getDefaultsSetForInputOptions() {
         boolean bReturn = true;
 
-        bReturn &= Utils.sizeIs(_inputDataSetsList, 0);
+        bReturn &= Utils.sizeIs(_inputDataSetsList, 1);
         bReturn &= Utils.selected(_multivariateAdjustmentsRadioButton, true);
         bReturn &= Utils.selected(_strictStudyPeriodCheckRadioButton, true);
         bReturn &= Utils.selected(_strictCoordinatesRadioButton, true);
@@ -1242,13 +1289,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!_additionalDataSetsGroup.isEnabled()) {
             parameters.SetNumDataSets(1);
         } else {
-            parameters.SetNumDataSets(1);
-            parameters.SetNumDataSets(_dataSetsListModel.size() + 1);
-            if (_dataSetsListModel.size() > 0) {
-                for (int i = 0; i < _dataSetsListModel.size(); ++i) {
-                    parameters.SetCaseFileName(_caseFilenames.get(i), i + 2);
-                    parameters.SetControlFileName(_controlFilenames.get(i), i + 2);
-                    parameters.SetPopulationFileName(_populationFilenames.get(i), i + 2);
+            parameters.SetNumDataSets(_dataSetsListModel.size());
+            for (int i=0; i < _dataSetsListModel.size(); ++i) {
+                parameters.setDataSourceName(_datasetNames.get(i), i + 1);
+                if (i > 0) { // only interested in additional data sets here.
+                    parameters.SetCaseFileName(getFileTypeFullpath(InputSourceSettings.InputFileType.Case, i), i + 1);
+                    parameters.SetControlFileName(getFileTypeFullpath(InputSourceSettings.InputFileType.Control, i), i + 1);
+                    parameters.SetPopulationFileName(getFileTypeFullpath(InputSourceSettings.InputFileType.Population, i), i + 1);
                 }
             }
         }
@@ -1417,17 +1464,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             return;
         }
 
-        for (int i=0; i < _caseFilenames.size(); i++) {
-            //Ensure that controls have this dataset display, should we need to
-            //show window regarding an error with settings.
+        for (int i=1; i < _caseFilenames.size(); i++) {
+            //Ensure that controls have this dataset display, should we need to show window regarding an error with settings.
             _inputDataSetsList.setSelectedIndex(i);
             //validate the case file for this dataset
             if (_caseFilenames.get(i).length() == 0) {
                 throw new AdvFeaturesExpection("Please specify a case file for this additional data set.", FocusedTabSet.INPUT, (Component) _caseFileTextField);
             }
             if (!FileAccess.ValidateFileAccess(_caseFilenames.get(i), false, false)) {
-                throw new AdvFeaturesExpection("The case file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
-                        FocusedTabSet.INPUT, (Component) _caseFileTextField);
+                throw new AdvFeaturesExpection(
+                    "The case file for this additional data set could not be opened for reading.\nPlease confirm that the path and/or file name are valid\nand that you have permissions to read from this directory\nand file.",
+                    FocusedTabSet.INPUT, (Component) _caseFileTextField
+                );
             }
             if (!FileAccess.isValidFilename(_caseFilenames.get(i))) {                
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _caseFilenames.get(i)), FocusedTabSet.INPUT, (Component) _caseFileTextField);
@@ -2014,14 +2062,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables input tab case/control/pop files edit boxes
      */
     private void enableInputFileEdits() {
-        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 0;
-
-        _caseFileTextField.setEnabled(bEnable);
-        _controlFileTextField.setEnabled(bEnable);
-        _populationFileTextField.setEnabled(bEnable);
-        _caseFileBrowseButton.setEnabled(bEnable);
-        _controlFileBrowseButton.setEnabled(bEnable);
-        _populationFileBrowseButton.setEnabled(bEnable);
+        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 1;
+        
+        _dataSetNameTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _caseFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _controlFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _populationFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _caseFileBrowseButton.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _controlFileBrowseButton.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _populationFileBrowseButton.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _datasetNameLabel.setEnabled(bEnable);
         _caseFileLabel.setEnabled(bEnable);
         _controlFileLabel.setEnabled(bEnable);
         _populationFileLabel.setEnabled(bEnable);
@@ -2063,7 +2113,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _caseFileTextField.setText("");
         _controlFileTextField.setText("");
         _populationFileTextField.setText("");
-        _dataSetsListModel.removeAllElements();
+        while (_dataSetsListModel.getSize() > 1)
+            _dataSetsListModel.remove(_dataSetsListModel.getSize() - 1);
+        _inputDataSetsList.setSelectedIndex(0);
         enableDataSetList();
         enableDataSetPurposeControls();
 
@@ -2690,15 +2742,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Multiple Data Sets tab
         enableAdditionalDataSetsGroup(false);
-        for (int i = 1; i < parameters.GetNumDataSets(); i++) { // multiple data sets
+        for (int i = 0; i < parameters.GetNumDataSets(); i++) { // multiple data sets
             _dataSetsListModel.addElement("Data Set " + Integer.toString(i + 1));
-            _caseFilenames.add(parameters.GetCaseFileName(i + 1));
-            _controlFilenames.add(parameters.GetControlFileName(i + 1));
-            _populationFilenames.add(parameters.GetPopulationFileName(i + 1));
+            if (parameters.getDataSourceNames().size() > i)
+                _datasetNames.add(parameters.getDataSourceName(i + 1));
+            else
+                _datasetNames.add("Data Set " + Integer.toString(i + 1));
+            setFileTypeFullpath(parameters.GetCaseFileName(i + 1), InputSourceSettings.InputFileType.Case, i);
+            setFileTypeFullpath(parameters.GetControlFileName(i + 1), InputSourceSettings.InputFileType.Control, i);
+            setFileTypeFullpath(parameters.GetPopulationFileName(i + 1), InputSourceSettings.InputFileType.Population, i);
         }
-        if (_dataSetsListModel.size() > 0) {
-            _inputDataSetsList.setSelectedIndex(0);
-        }
+        if (_dataSetsListModel.size() > 0) _inputDataSetsList.setSelectedIndex(0);
         _multivariateAdjustmentsRadioButton.setSelected(parameters.GetMultipleDataSetPurposeType() == Parameters.MultipleDataSetPurposeType.MULTIVARIATE);
         _adjustmentByDataSetsRadioButton.setSelected(parameters.GetMultipleDataSetPurposeType() == Parameters.MultipleDataSetPurposeType.ADJUSTMENT);
 
@@ -2787,7 +2841,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _cutoff_value_email.setText(Double.toString(parameters.getCutoffEmailValue()));
             _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
         }
+        updateMultipleDataSetsInputs();
     }    
+    
+    /** Updates multiple data set inputs  */
+    public void updateMultipleDataSetsInputs() {
+        _dataSetNameTextField.setText(_datasetNames.get(_inputDataSetsList.getSelectedIndex()));
+        // Update the multiple data set inputs now that main setting window is populated.
+        _caseFileTextField.setText(getFileTypeFullpath(InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex()));
+        _controlFileTextField.setText(getFileTypeFullpath(InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex()));
+        _populationFileTextField.setText(getFileTypeFullpath(InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex()));
+    }
     
     /**
      * Enabled the power evaluations group based upon current settings.
@@ -2951,9 +3015,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _dataSetsGroup = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         _inputDataSetsList = new javax.swing.JList(_dataSetsListModel);
-        _addDataSetButton = new javax.swing.JButton();
-        _removeDataSetButton = new javax.swing.JButton();
-        _fileInputGroup = new javax.swing.JPanel();
+        _multipleSetPurposeGroup = new javax.swing.JPanel();
+        _multipleDataSetPurposeLabel = new javax.swing.JLabel();
+        _multivariateAdjustmentsRadioButton = new javax.swing.JRadioButton();
+        _adjustmentByDataSetsRadioButton = new javax.swing.JRadioButton();
         _caseFileLabel = new javax.swing.JLabel();
         _caseFileTextField = new javax.swing.JTextField();
         _caseFileBrowseButton = new javax.swing.JButton();
@@ -2963,10 +3028,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _populationFileLabel = new javax.swing.JLabel();
         _populationFileTextField = new javax.swing.JTextField();
         _populationFileBrowseButton = new javax.swing.JButton();
-        _multipleSetPurposeGroup = new javax.swing.JPanel();
-        _multipleDataSetPurposeLabel = new javax.swing.JLabel();
-        _multivariateAdjustmentsRadioButton = new javax.swing.JRadioButton();
-        _adjustmentByDataSetsRadioButton = new javax.swing.JRadioButton();
+        _datasetNameLabel = new javax.swing.JLabel();
+        _dataSetNameTextField = new javax.swing.JTextField();
+        _addDataSetButton = new javax.swing.JButton();
+        _removeDataSetButton = new javax.swing.JButton();
         _dataCheckingTab = new javax.swing.JPanel();
         _studyPeriodCheckGroup = new javax.swing.JPanel();
         _strictStudyPeriodCheckRadioButton = new javax.swing.JRadioButton();
@@ -3280,252 +3345,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
             setResizable(true);
 
-            _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets"));
+            _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Input Data Sets"));
 
             _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
             _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
                 public void valueChanged(javax.swing.event.ListSelectionEvent e) {
                     enableInputFileEdits();
+                    enableRemoveButton();
                     if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
-                        _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.get(_inputDataSetsList.getSelectedIndex()));
-                        _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.get(_inputDataSetsList.getSelectedIndex()));
-                        _populationFileTextField.setText(AdvancedParameterSettingsFrame.this._populationFilenames.get(_inputDataSetsList.getSelectedIndex()));
+                        _dataSetNameTextField.setText(AdvancedParameterSettingsFrame.this._datasetNames.get(_inputDataSetsList.getSelectedIndex()));
+                        _caseFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex()));
+                        _controlFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex()));
+                        _populationFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex()));
                     }
                     enableSetDefaultsButton();
                 }
             });
             jScrollPane1.setViewportView(_inputDataSetsList);
 
-            _addDataSetButton.setText("Add"); // NOI18N
-            _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 2));
-
-                    // enable and clear the edit boxes
-                    _caseFilenames.add("");
-                    _controlFilenames.add("");
-                    _populationFilenames.add("");
-                    _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);
-                    _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);
-                    _caseFileTextField.setText("");
-                    _controlFileTextField.setText("");
-                    _populationFileTextField.setText("");
-                    _caseFileTextField.requestFocusInWindow();
-                    enableSettingsForAnalysisModelCombination();
-                }
-            });
-
-            _removeDataSetButton.setText("Remove"); // NOI18N
-            _removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    int iDeleteIndex = _inputDataSetsList.getSelectedIndex();
-
-                    ArrayList<InputSourceSettings.InputFileType> filetypes = new ArrayList<>();
-                    filetypes.add(InputSourceSettings.InputFileType.Case);
-                    filetypes.add(InputSourceSettings.InputFileType.Control);
-                    filetypes.add(InputSourceSettings.InputFileType.Population);
-                    for (InputSourceSettings.InputFileType type : filetypes) {
-                        String key = type.toString() + Integer.toString(iDeleteIndex + 2);
-                        // remove input source settings for file type
-                        if (_settings_window._input_source_map.containsKey(key)) {
-                            _settings_window._input_source_map.remove(key);
-                        }
-                        // update input source settings keys for greater indexes
-                        for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
-                            key = type.toString() + Integer.toString(i + 2);
-                            if (_settings_window._input_source_map.containsKey(key)) {
-                                String newKey = type.toString() + Integer.toString(i - 1 + 2);
-                                _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));
-                            }
-                        }
-                    }
-
-                    // update remaining list box names
-                    for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
-                        String s = (String)_dataSetsListModel.getElementAt(i);
-                        s =	"Data Set " + Integer.toString(i + 1);
-                        _dataSetsListModel.setElementAt(s, i);
-                    }
-                    // remove list box name
-                    _dataSetsListModel.remove(iDeleteIndex);
-
-                    // remove files
-                    _caseFileTextField.setText("");
-                    _caseFilenames.remove(iDeleteIndex);
-                    _controlFileTextField.setText("");
-                    _controlFilenames.remove(iDeleteIndex);
-                    _populationFileTextField.setText("");
-                    _populationFilenames.remove(iDeleteIndex);
-                    if (_inputDataSetsList.getModel().getSize() > 0) {
-                        _inputDataSetsList.setSelectedIndex(0);
-                        _inputDataSetsList.ensureIndexIsVisible(0);
-                    }
-                    enableSettingsForAnalysisModelCombination();
-                }
-            });
-
             javax.swing.GroupLayout _dataSetsGroupLayout = new javax.swing.GroupLayout(_dataSetsGroup);
             _dataSetsGroup.setLayout(_dataSetsGroupLayout);
             _dataSetsGroupLayout.setHorizontalGroup(
                 _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataSetsGroupLayout.createSequentialGroup()
-                    .addComponent(_addDataSetButton, javax.swing.GroupLayout.PREFERRED_SIZE, 63, Short.MAX_VALUE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(_removeDataSetButton))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
             );
             _dataSetsGroupLayout.setVerticalGroup(
                 _dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(_dataSetsGroupLayout.createSequentialGroup()
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(_dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_removeDataSetButton)
-                        .addComponent(_addDataSetButton))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
-
-            _caseFileLabel.setText("Case File:"); // NOI18N
-
-            _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) {
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _caseFilenames.set(_inputDataSetsList.getSelectedIndex(), _caseFileTextField.getText());
-                }
-            });
-
-            _caseFileBrowseButton.setText("..."); // NOI18N
-            _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
-            _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                    if (!_settings_window._input_source_map.containsKey(key)) {
-                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
-                    }
-                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                    selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);
-                }
-            });
-
-            _controlFileLabel.setText("Control File:"); // NOI18N
-
-            _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) {
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _controlFilenames.set(_inputDataSetsList.getSelectedIndex(), _controlFileTextField.getText());
-                }
-            });
-
-            _controlFileBrowseButton.setText("..."); // NOI18N
-            _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
-            _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                    if (!_settings_window._input_source_map.containsKey(key)) {
-                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
-                    }
-                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                    selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);
-                }
-            });
-
-            _populationFileLabel.setText("Population File:"); // NOI18N
-
-            _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
-                public void changedUpdate(DocumentEvent e) {
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
-                }
-                public void insertUpdate(DocumentEvent e) {
-                    if (_inputDataSetsList.getSelectedIndex() != -1)
-                    _populationFilenames.set(_inputDataSetsList.getSelectedIndex(), _populationFileTextField.getText());
-                }
-            });
-
-            _populationFileBrowseButton.setText("..."); // NOI18N
-            _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
-            _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 2);
-                    if (!_settings_window._input_source_map.containsKey(key)) {
-                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
-                    }
-                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
-                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 2);
-                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
-                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
-                    selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);
-                }
-            });
-
-            javax.swing.GroupLayout _fileInputGroupLayout = new javax.swing.GroupLayout(_fileInputGroup);
-            _fileInputGroup.setLayout(_fileInputGroupLayout);
-            _fileInputGroupLayout.setHorizontalGroup(
-                _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                            .addComponent(_populationFileTextField)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(_caseFileLabel)
-                                .addComponent(_controlFileLabel)
-                                .addComponent(_populationFileLabel))
-                            .addGap(0, 389, Short.MAX_VALUE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileInputGroupLayout.createSequentialGroup()
-                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(_controlFileTextField)
-                                .addComponent(_caseFileTextField))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addContainerGap())
-            );
-            _fileInputGroupLayout.setVerticalGroup(
-                _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(_fileInputGroupLayout.createSequentialGroup()
-                    .addComponent(_caseFileLabel)
-                    .addGap(0, 0, 0)
-                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_caseFileBrowseButton)
-                        .addComponent(_caseFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(_controlFileLabel)
-                    .addGap(0, 0, 0)
-                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_controlFileBrowseButton)
-                        .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(_populationFileLabel)
-                    .addGap(0, 0, 0)
-                    .addGroup(_fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_populationFileBrowseButton)
-                        .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1)
             );
 
             _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
@@ -3562,7 +3408,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(_multipleSetPurposeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_multivariateAdjustmentsRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_multivariateAdjustmentsRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
                         .addGroup(_multipleSetPurposeGroupLayout.createSequentialGroup()
                             .addComponent(_multipleDataSetPurposeLabel)
                             .addGap(0, 0, Short.MAX_VALUE))
@@ -3581,6 +3427,182 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
+            _caseFileLabel.setText("Case File:"); // NOI18N
+
+            _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex());
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_caseFileTextField.getText(), InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex());
+                }
+            });
+
+            _caseFileBrowseButton.setText("..."); // NOI18N
+            _caseFileBrowseButton.setToolTipText("Open Case File Import Wizard"); // NOI18N
+            _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _controlFileLabel.setText("Control File:"); // NOI18N
+
+            _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex());
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_controlFileTextField.getText(), InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex());
+                }
+            });
+
+            _controlFileBrowseButton.setText("..."); // NOI18N
+            _controlFileBrowseButton.setToolTipText("Open Control File Import Wizard"); // NOI18N
+            _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _populationFileLabel.setText("Population File:"); // NOI18N
+
+            _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex());
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    setFileTypeFullpath(_populationFileTextField.getText(), InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex());
+                }
+            });
+
+            _populationFileBrowseButton.setText("..."); // NOI18N
+            _populationFileBrowseButton.setToolTipText("Open Population File Import Wizard"); // NOI18N
+            _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);
+                    if (!_settings_window._input_source_map.containsKey(key)) {
+                        _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));
+                    }
+                    InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
+                    inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);
+                    // invoke the FileSelectionDialog to guide user through process of selecting the source file.
+                    FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);
+                    selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);
+                }
+            });
+
+            _datasetNameLabel.setText("Data Set Name");
+
+            _dataSetNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+                public void changedUpdate(DocumentEvent e) {
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _datasetNames.set(_inputDataSetsList.getSelectedIndex(), _dataSetNameTextField.getText());
+                }
+                public void insertUpdate(DocumentEvent e) {
+                    if (_inputDataSetsList.getSelectedIndex() != -1)
+                    _datasetNames.set(_inputDataSetsList.getSelectedIndex(), _dataSetNameTextField.getText());
+                }
+            });
+
+            _addDataSetButton.setText("Add"); // NOI18N
+            _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    _dataSetsListModel.addElement("Data Set " + Integer.toString(_datasetNames.size() + 1));
+                    _datasetNames.add("Data Set #" + Integer.toString(_inputDataSetsList.getModel().getSize()));
+                    // enable and clear the edit boxes
+                    _caseFilenames.add("");
+                    _controlFilenames.add("");
+                    _populationFilenames.add("");
+                    _inputDataSetsList.setSelectedIndex(_datasetNames.size() - 1);
+                    _inputDataSetsList.ensureIndexIsVisible(_datasetNames.size() - 1);
+                    _caseFileTextField.setText("");
+                    _controlFileTextField.setText("");
+                    _populationFileTextField.setText("");
+                    _caseFileTextField.requestFocusInWindow();
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
+
+            _removeDataSetButton.setText("Remove"); // NOI18N
+            _removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    int iDeleteIndex = _inputDataSetsList.getSelectedIndex();
+
+                    ArrayList<InputSourceSettings.InputFileType> filetypes = new ArrayList<>();
+                    filetypes.add(InputSourceSettings.InputFileType.Case);
+                    filetypes.add(InputSourceSettings.InputFileType.Control);
+                    filetypes.add(InputSourceSettings.InputFileType.Population);
+                    for (InputSourceSettings.InputFileType type : filetypes) {
+                        String key = type.toString() + Integer.toString(iDeleteIndex + 1);
+                        // remove input source settings for file type
+                        if (_settings_window._input_source_map.containsKey(key)) {
+                            _settings_window._input_source_map.remove(key);
+                        }
+                        // update input source settings keys for greater indexes
+                        for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
+                            key = type.toString() + Integer.toString(i + 1);
+                            if (_settings_window._input_source_map.containsKey(key)) {
+                                String newKey = type.toString() + Integer.toString(i);
+                                _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));
+                            }
+                        }
+                    }
+
+                    // update remaining list box names
+                    for (int i=iDeleteIndex+1; i < _inputDataSetsList.getModel().getSize() ;i++) {
+                        String s = (String)_dataSetsListModel.getElementAt(i);
+                        s =	"Data Set " + Integer.toString(i);
+                        _dataSetsListModel.setElementAt(s, i);
+                    }
+                    // remove list box name
+                    _dataSetsListModel.remove(iDeleteIndex);
+
+                    // remove files
+                    _datasetNames.remove(iDeleteIndex);
+                    _caseFileTextField.setText("");
+                    _caseFilenames.remove(iDeleteIndex - 1);
+                    _controlFileTextField.setText("");
+                    _controlFilenames.remove(iDeleteIndex - 1);
+                    _populationFileTextField.setText("");
+                    _populationFilenames.remove(iDeleteIndex - 1);
+                    int selectIdx = Math.min(iDeleteIndex, _inputDataSetsList.getModel().getSize() - 1);
+                    _inputDataSetsList.setSelectedIndex(selectIdx);
+                    _inputDataSetsList.ensureIndexIsVisible(selectIdx);
+                    enableSettingsForAnalysisModelCombination();
+                }
+            });
+
             javax.swing.GroupLayout _additionalDataSetsGroupLayout = new javax.swing.GroupLayout(_additionalDataSetsGroup);
             _additionalDataSetsGroup.setLayout(_additionalDataSetsGroupLayout);
             _additionalDataSetsGroupLayout.setHorizontalGroup(
@@ -3588,20 +3610,68 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _additionalDataSetsGroupLayout.createSequentialGroup()
-                            .addComponent(_dataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                            .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_dataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                                    .addComponent(_addDataSetButton, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_removeDataSetButton, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_dataSetNameTextField, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                                    .addComponent(_populationFileTextField)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_caseFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(_controlFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_caseFileTextField)
+                                        .addComponent(_controlFileTextField))
+                                    .addGap(31, 31, 31))
+                                .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_datasetNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(_caseFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(_controlFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(_populationFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGap(0, 0, Short.MAX_VALUE))))
                         .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGap(2, 2, 2))
+                    .addContainerGap())
             );
             _additionalDataSetsGroupLayout.setVerticalGroup(
                 _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
                     .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_dataSetsGroup, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                            .addComponent(_datasetNameLabel)
+                            .addGap(0, 0, 0)
+                            .addComponent(_dataSetNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_caseFileLabel)
+                            .addGap(0, 0, 0)
+                            .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(_caseFileBrowseButton)
+                                .addComponent(_caseFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_controlFileLabel)
+                            .addGap(0, 0, 0)
+                            .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(_controlFileBrowseButton)
+                                .addComponent(_controlFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_populationFileLabel))
+                        .addComponent(_dataSetsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_populationFileBrowseButton)
+                        .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_removeDataSetButton)
+                        .addComponent(_addDataSetButton))
+                    .addGap(0, 6, Short.MAX_VALUE)
                     .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap())
             );
@@ -3620,7 +3690,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(220, Short.MAX_VALUE))
+                    .addContainerGap(176, Short.MAX_VALUE))
             );
 
             jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -3701,7 +3771,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addGap(17, 17, 17)
                             .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                        .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))
                     .addContainerGap())
             );
             _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
@@ -3802,17 +3872,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_specialNeighborFilesGroupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
-                        .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                        .addComponent(_specifiyNeighborsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
+                        .addComponent(_specifiyMetaLocationsFileCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
                             .addGap(17, 17, 17)
                             .addGroup(_specialNeighborFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                    .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                                    .addComponent(_metaLocationsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_metaLocationsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _specialNeighborFilesGroupLayout.createSequentialGroup()
-                                    .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 572, Short.MAX_VALUE)
+                                    .addComponent(_neighborsFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_neighborsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addContainerGap())
@@ -3904,12 +3974,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                        .addComponent(_atLeastOneRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                         .addComponent(_onePerLocationIdRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(_allLocationsRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _multipleSetsSpatialCoordinatesGroupLayout.createSequentialGroup()
                             .addGroup(_multipleSetsSpatialCoordinatesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(_multiple_locations_file, javax.swing.GroupLayout.DEFAULT_SIZE, 589, Short.MAX_VALUE)
+                                .addComponent(_multiple_locations_file, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                                 .addComponent(_multiple_locations_file_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_multiple_locations_file_browse, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -4078,7 +4148,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                    .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE))
+                                    .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
                                 .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
                                     .addComponent(_maxSpatialClusterSizeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -4457,7 +4527,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addContainerGap(192, Short.MAX_VALUE))
+                    .addContainerGap(196, Short.MAX_VALUE))
             );
             _windowCompletePanelLayout.setVerticalGroup(
                 _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4566,7 +4636,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_endGenericRangeToLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(_endRangeEndGenericTextField)))
-                    .addContainerGap(247, Short.MAX_VALUE))
+                    .addContainerGap(294, Short.MAX_VALUE))
             );
             _windowGenericPanelLayout.setVerticalGroup(
                 _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -4778,7 +4848,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                     .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                                .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE))
                             .addGap(2, 2, 2))
                         .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                             .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -4834,7 +4904,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap()
                     .addGroup(_spatialAdjustmentsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(_spatialAdjustmentsNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_spatialAdjustmentsNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                        .addComponent(_spatialAdjustmentsNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE))
                     .addGap(2, 2, 2))
             );
             _spatialAdjustmentsGroupLayout.setVerticalGroup(
@@ -4900,7 +4970,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_adjustmentsByRelativeRisksFileTextField)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_adjustmentsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE))
+                        .addComponent(_adjustForKnownRelativeRisksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))
                     .addContainerGap())
             );
             _knownAdjustmentsGroupLayout.setVerticalGroup(
@@ -5037,7 +5107,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_radioStandardPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
                             .addComponent(_radioGumbelPValues, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
                             .addComponent(_checkReportGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
                             .addComponent(_radioEarlyTerminationPValues)
@@ -5551,7 +5621,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _reportCriticalValuesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_reportCriticalValuesGroupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 669, Short.MAX_VALUE)
+                    .addComponent(_reportCriticalValuesCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                     .addContainerGap())
             );
             _reportCriticalValuesGroupLayout.setVerticalGroup(
@@ -5579,7 +5649,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _reportClusterRankGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_reportClusterRankGroupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(_reportClusterRankCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                     .addContainerGap())
             );
             _reportClusterRankGroupLayout.setVerticalGroup(
@@ -5607,7 +5677,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 620, Short.MAX_VALUE)
+                    .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                     .addContainerGap())
             );
             _additionalOutputFilesLayout.setVerticalGroup(
@@ -5895,7 +5965,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                             .addComponent(_totalPowerCases, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE)))
+                                            .addComponent(_powerEvaluationWithSpecifiedCasesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)))
                                     .addGap(17, 17, 17)))
                             .addGap(2, 2, 2))))
             );
@@ -6034,7 +6104,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                             .addContainerGap()
-                            .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE))
+                            .addComponent(_reportTemporalGraph, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE))
                         .addGroup(_graphOutputGroupLayout.createSequentialGroup()
                             .addGap(27, 27, 27)
                             .addGroup(_graphOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -6129,7 +6199,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_number_oliveira_data_sets_label)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(0, 203, Short.MAX_VALUE)))
+                            .addGap(0, 207, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             _oliveiras_f_groupLayout.setVerticalGroup(
@@ -6460,7 +6530,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                     .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGap(0, 161, Short.MAX_VALUE)))
+                            .addGap(0, 206, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             _drilldown_restrictions_groupLayout.setVerticalGroup(
@@ -6548,7 +6618,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_network_groupLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(_network_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_locations_network, javax.swing.GroupLayout.DEFAULT_SIZE, 624, Short.MAX_VALUE)
+                        .addComponent(_locations_network, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
                         .addGroup(_network_groupLayout.createSequentialGroup()
                             .addGap(14, 14, 14)
                             .addComponent(_network_file_label)
@@ -6816,7 +6886,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _cutoff_email_recipients;
     private javax.swing.JTextField _cutoff_value_email;
     private javax.swing.JPanel _dataCheckingTab;
+    private javax.swing.JTextField _dataSetNameTextField;
     private javax.swing.JPanel _dataSetsGroup;
+    private javax.swing.JLabel _datasetNameLabel;
     private javax.swing.JLabel _distancePrefixLabel;
     private javax.swing.JTextField _drilldown_restriction_cases;
     private javax.swing.JLabel _drilldown_restriction_cases_label;
@@ -6842,7 +6914,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JTextField _endRangeStartYearTextField;
     private javax.swing.JLabel _endRangeToLabel;
     private javax.swing.JLabel _endWindowRangeLabel;
-    private javax.swing.JPanel _fileInputGroup;
     private javax.swing.JPanel _flexibleTemporalWindowDefinitionGroup;
     private javax.swing.JPanel _flexible_window_cards;
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;

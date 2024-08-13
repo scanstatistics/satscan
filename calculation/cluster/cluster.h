@@ -37,9 +37,9 @@ class CCluster {
     mutable bool                  _hierarchical_cluster;   // indicates that cluster is hierarchical cluster
     mutable double                _span_of_locations;      // the distance between furthest locations in cluster
 
-    void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=0) const;
+    void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=std::numeric_limits<unsigned int>::max()) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
-    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx=0) const;
+    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx= std::numeric_limits<unsigned int>::max()) const;
 
   public:
     CCluster();
