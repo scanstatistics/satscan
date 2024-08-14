@@ -15,6 +15,8 @@ const std::string AnalysisDefinition::_YEAR = "year";
 const std::string AnalysisDefinition::_MONTH = "month";
 const std::string AnalysisDefinition::_DAY = "day";
 const std::string AnalysisDefinition::_GENERIC = "generic";
+const std::string AnalysisDefinition::_NEVER = "Never";
+const std::string AnalysisDefinition::_CANCELLED = "Cancelled";
 const std::string AnalysisDefinition::_SUCCESS = "Success";
 const std::string AnalysisDefinition::_FAILED = "Failed";
 
@@ -108,11 +110,12 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
     }
     std::string filename;
     std::stringstream analysesHTML, analysesPlain, failedAnalyses;
+    bool executionsCancelled = false;
     unsigned int executed = 0, clustersMeetingCutoff = 0, retrospectiveCount = 0, prospectiveCount = 0;
     std::vector<AnalysisDefinition*> failedRuns, prospectiveCutoffRuns, retrospectiveCutoffRuns;
-    // Iterate over each defined analysis and execute the analysis.
+    // Iterate over each defined analysis and compile summary results.
     for (AnalysesContainer_t::iterator itr = _analysis_defs.begin(); itr != _analysis_defs.end(); ++itr) {
-        if (!itr->selected && !includeUnSelected) {
+        if ((!itr->selected && !includeUnSelected) || itr->getCancelled()) {
             continue;
         } else if (itr->getFailed()) {
             failedRuns.push_back(&(*itr));
@@ -135,6 +138,8 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
             }
         }
     }
+    // Don't sent email if nothing to report.
+    if (!failedRuns.size() && !executed) return;
     // Build email subject and body.
     std::stringstream messageSubjectLine, messageBody;
     std::stringstream messagePlain, messageHTML;

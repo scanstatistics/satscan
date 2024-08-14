@@ -1100,8 +1100,6 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                         analysis.setLastResultsFilename(run_parameters.GetOutputFileName());
                     } else if (frame.userCancelled()) {
                         analysis.setLastExecutedStatus(BatchAnalysis.STATUS.CANCELLED);
-                        // Assume that if user cancelled current analysis, they wish to abort any further analyses.
-                        cancel(true);
                     } else if (frame.exceptionOccurred())
                         analysis.setLastExecutedStatus(BatchAnalysis.STATUS.FAILED);
                     else 

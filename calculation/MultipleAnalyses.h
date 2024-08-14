@@ -31,6 +31,8 @@ class AnalysisDefinition {
         static const std::string _MONTH;
         static const std::string _DAY;
         static const std::string _GENERIC;
+        static const std::string _NEVER;
+        static const std::string _CANCELLED;
         static const std::string _SUCCESS;
         static const std::string _FAILED;
 
@@ -58,6 +60,7 @@ class AnalysisDefinition {
 
     public:
 
+        bool getCancelled() const { return lastexecutionstatus == _CANCELLED; }
         bool getFailed() const { return lastexecutionstatus == _FAILED; }
         void signalSuccess() {
             lastexecutionstatus = _SUCCESS;
