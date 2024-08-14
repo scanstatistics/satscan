@@ -596,6 +596,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addContainerGap())
         );
 
+        _moveUp.getAccessibleContext().setAccessibleName("Move Analysis Up In List");
+        _moveDown.getAccessibleContext().setAccessibleName("Move Analysis Down In List");
+
         _analyses_table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
             new String [] { "", "Description", "Analysis", "Model", "Study Length", "Lag", "Status" }){
