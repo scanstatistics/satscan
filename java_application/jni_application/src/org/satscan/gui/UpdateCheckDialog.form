@@ -133,6 +133,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_checkFrequency"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Automatically check for updates:"/>
               </Properties>
             </Component>
@@ -197,6 +200,10 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Yes"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Yes, download installer."/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_doUpdateButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (UpdateCheckDialog.this._update_archivename == null) {&#xa;                CardLayout cl = (CardLayout) (_cardsPanel.getLayout());&#xa;                cl.show(_cardsPanel, CARD_DOWNLOAD);&#xa;                new UpdaterDownloadTask().execute();&#xa;            } else {&#xa;                _runUpdateOnTerminate = true;&#xa;                setVisible(false);&#xa;            }&#xa;        } catch (Exception ex) {&#xa;            throw new RuntimeException(ex.getMessage(), ex);&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -205,6 +212,10 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="No"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="No, don&apos;t download installer."/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_doNotUpdateButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        setVisible(false);&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -253,6 +264,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="_stepLabel">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_downloadProgressBar"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Contacting to host ..."/>
               </Properties>
             </Component>
@@ -265,6 +279,10 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Cancel"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Cancel Download"/>
+              </AccessibilityProperties>
             </Component>
           </SubComponents>
         </Container>
@@ -401,6 +419,9 @@
               <Properties>
                 <Property name="stringPainted" type="boolean" value="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Installer download progress."/>
+              </AccessibilityProperties>
             </Component>
           </SubComponents>
         </Container>

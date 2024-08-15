@@ -185,11 +185,13 @@ public class AboutDialog extends javax.swing.JDialog {
         );
 
         jTabbedPane1.addTab("SaTScan", jPanel1);
+        jPanel1.getAccessibleContext().setAccessibleName("SaTScan Information");
 
-        _textAreaSystemInformation.setColumns(20);
         _textAreaSystemInformation.setEditable(false);
+        _textAreaSystemInformation.setColumns(20);
         _textAreaSystemInformation.setRows(5);
         jScrollPane1.setViewportView(_textAreaSystemInformation);
+        _textAreaSystemInformation.getAccessibleContext().setAccessibleName("Java Information Details");
 
         jButton1.setText("Copy to Clipboard");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -234,6 +236,7 @@ public class AboutDialog extends javax.swing.JDialog {
         );
 
         jTabbedPane1.addTab("Java", jPanel2);
+        jPanel2.getAccessibleContext().setAccessibleName("Java Information");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

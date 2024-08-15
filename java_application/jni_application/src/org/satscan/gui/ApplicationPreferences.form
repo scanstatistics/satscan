@@ -70,6 +70,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="jPanel2">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="General Preferences tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="General">
@@ -158,6 +161,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel1">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_checkFrequency"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Automatically check for updates:"/>
                   </Properties>
                 </Component>
@@ -167,6 +173,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Use Alternative File Browsing Dialog"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience."/>
+              </AccessibilityProperties>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane2">
               <Properties>
@@ -195,12 +204,18 @@
                       <Insets value="[10, 10, 10, 10]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="jPanel3">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Mail Server Settings tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Mail Server Settings">
@@ -263,10 +278,16 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="_alert_label_smtp">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_alerts_smtp"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Server Name:"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_alerts_smtp">
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="mail server name"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpSMTP = new TextPrompt(&quot;ex. smtp.somecompany.com:25&quot;, _alerts_smtp);&#xa;tpSMTP.setForeground( Color.BLUE );&#xa;tpSMTP.changeAlpha(0.5f);&#xa;tpSMTP.changeStyle(Font.BOLD + Font.ITALIC);"/>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_smtp.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
@@ -274,20 +295,32 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_alert_label_add_curl">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_alerts_curl_additional"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="Additional curl Parameters:"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_alerts_curl_additional">
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="additional curl parameters"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpAddCurl = new TextPrompt(&quot;ex. --user &lt;user:password&gt; --ssl-reqd&quot;, _alerts_curl_additional);&#xa;tpAddCurl.setForeground( Color.BLUE );&#xa;tpAddCurl.changeAlpha(0.5f);&#xa;tpAddCurl.changeStyle(Font.BOLD + Font.ITALIC);"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JLabel" name="_alert_label_from">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_alert_label_from"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="&apos;From&apos; Address:"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_alerts_from">
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="mail &apos;from&apos; address"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpFrom = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_from); &#xd;&#xa;tpFrom.setForeground( Color.BLUE );&#xd;&#xa;tpFrom.changeAlpha(0.5f);&#xd;&#xa;tpFrom.changeStyle(Font.BOLD + Font.ITALIC);"/>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alerts_from.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        enableSendTextMail();&#xa;    }&#xa;});"/>
@@ -295,10 +328,16 @@
             </Component>
             <Component class="javax.swing.JLabel" name="_alert_label_reply">
               <Properties>
+                <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                  <ComponentRef name="_alerts_reply"/>
+                </Property>
                 <Property name="text" type="java.lang.String" value="&apos;Reply&apos; Address:"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_alerts_reply">
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="mail &apos;reply&apos; address"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="TextPrompt tpReply = new TextPrompt(&quot;ex. sender@domain.com&quot;, _alerts_reply); &#xd;&#xa;tpReply.setForeground( Color.BLUE );&#xd;&#xa;tpReply.changeAlpha(0.5f);&#xd;&#xa;tpReply.changeStyle(Font.BOLD + Font.ITALIC);"/>
               </AuxValues>
@@ -325,6 +364,9 @@
                     <Property name="columns" type="int" value="20"/>
                     <Property name="rows" type="int" value="5"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Send test mail response. "/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>

@@ -80,14 +80,17 @@
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="_errorMessage">
           <Properties>
-            <Property name="columns" type="int" value="20"/>
             <Property name="editable" type="boolean" value="false"/>
+            <Property name="columns" type="int" value="20"/>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Arial" size="12" style="0"/>
             </Property>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
           </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Details of exception."/>
+          </AccessibilityProperties>
         </Component>
       </SubComponents>
     </Container>
@@ -111,6 +114,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Email"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Email technical support"/>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="_emailButtonActionPerformed"/>
       </Events>

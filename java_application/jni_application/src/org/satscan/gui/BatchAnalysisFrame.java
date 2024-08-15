@@ -6,6 +6,7 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -595,6 +596,9 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 .addContainerGap())
         );
 
+        _moveUp.getAccessibleContext().setAccessibleName("Move Analysis Up In List");
+        _moveDown.getAccessibleContext().setAccessibleName("Move Analysis Down In List");
+
         _analyses_table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
             new String [] { "", "Description", "Analysis", "Model", "Study Length", "Lag", "Status" }){
@@ -609,6 +613,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 return !_batch_executing && canEdit[columnIndex];
             }
         });
+        _analyses_table.setSelectionBackground(new java.awt.Color(228, 228, 228));
+        _analyses_table.setSelectionForeground(new java.awt.Color(0, 0, 51));
         _analyses_table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         _analyses_table.getTableHeader().setOpaque(false);
         // Set custom header renderer for the row selection header.
@@ -621,7 +627,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _analyses_table.getTableHeader().addMouseListener(handler);
 
         _analyses_table.setRowHeight(35);
-        _analyses_table.setIntercellSpacing(new Dimension(10,1));
+        //_analyses_table.setIntercellSpacing(new Dimension(10,1));
         _analyses_table.setDefaultRenderer(Parameters.class, new ParametersRenderer());
         _analyses_table.setDefaultRenderer(BatchAnalysis.StudyPeriodOffset.class, new StudyPeriodOffsetRenderer());
         _analyses_table.setDefaultRenderer(BatchAnalysis.class, new BatchStatusRenderer());
@@ -629,7 +635,8 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
         _analyses_table.setDefaultEditor(String.class, new StringEditor());
         ((DefaultCellEditor)_analyses_table.getDefaultEditor(BatchAnalysis.StudyPeriodOffset.class)).setClickCountToStart(1);
         ((DefaultCellEditor)_analyses_table.getDefaultEditor(String.class)).setClickCountToStart(1);
-        _analyses_table.setRowSelectionAllowed(false);
+        //_analyses_table.setRowSelectionAllowed(false);
+        //_analyses_table.setSelectionBackground(java.awt.Color.decode("#EEEEEE"));
         _analyses_table.getTableHeader().setReorderingAllowed(false);
         setJTableColumnsWidth(_analyses_table, _analyses_table.getPreferredSize().width, 1, 30, 16, 8, 10, 6, 29);
         _analyses_table.getModel().addTableModelListener(new TableModelListener() {
@@ -656,6 +663,7 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
             }
         });
         _analysesScrollpane.setViewportView(_analyses_table);
+        _analyses_table.getAccessibleContext().setAccessibleName("Analyses");
 
         javax.swing.GroupLayout _actionitems_panelLayout = new javax.swing.GroupLayout(_actionitems_panel);
         _actionitems_panel.setLayout(_actionitems_panelLayout);
@@ -930,22 +938,41 @@ public class BatchAnalysisFrame extends javax.swing.JInternalFrame implements In
                 @Override public void mousePressed(java.awt.event.MouseEvent evt) {
                     int row = _analyses_table.rowAtPoint(evt.getPoint());
                     int col = _analyses_table.columnAtPoint(evt.getPoint());
-                    if (row >= 0 && col == STATUS_IDX) { 
-                        BatchAnalysis ba = _batch_analyses.get(row);
-                        if (ba.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS || ba.getLastExecutedStatus() == BatchAnalysis.STATUS.FAILED) {
-                            AnalysisRunInternalFrame frame = new AnalysisRunInternalFrame(ba);
-                            frame.disableAdditionalOutputAutoLaunch(true);
-                            // Add application as listener, set visiable and add frame to application document.
-                            frame.addInternalFrameListener(SaTScanApplication.getInstance());
-                            frame.setVisible(true);
-                            SaTScanApplication.getInstance().AddFrame(frame);
-                            try {
-                                frame.setSelected(true);
-                            } catch (java.beans.PropertyVetoException x) {}
-                        }
-                    }                
+                    showResultsFor(row, col);
                 }                                    
-            });               
+            });
+            _analyses_table.addKeyListener(new java.awt.event.KeyListener() {   
+                @Override
+                public void keyTyped(KeyEvent e) {}
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    int key = e.getKeyCode();
+                    if (key == KeyEvent.VK_SPACE) {
+                        int row = _analyses_table.getSelectedRow();
+                        int col = _analyses_table.getSelectedColumn();
+                        showResultsFor(row, col);
+                    }
+                }
+                @Override
+                public void keyReleased(KeyEvent e) {}
+            });
+        }
+        
+        public void showResultsFor(int row, int col) {
+            if (row >= 0 && col == STATUS_IDX) { 
+                BatchAnalysis ba = _batch_analyses.get(row);
+                if (ba.getLastExecutedStatus() == BatchAnalysis.STATUS.SUCCESS || ba.getLastExecutedStatus() == BatchAnalysis.STATUS.FAILED) {
+                    AnalysisRunInternalFrame frame = new AnalysisRunInternalFrame(ba);
+                    frame.disableAdditionalOutputAutoLaunch(true);
+                    // Add application as listener, set visiable and add frame to application document.
+                    frame.addInternalFrameListener(SaTScanApplication.getInstance());
+                    frame.setVisible(true);
+                    SaTScanApplication.getInstance().AddFrame(frame);
+                    try {
+                        frame.setSelected(true);
+                    } catch (java.beans.PropertyVetoException x) {}
+                }
+            }            
         }
         
         @Override public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

@@ -92,12 +92,13 @@ public class ExceptionDialog extends javax.swing.JDialog {
 
         _AlarmInfo.setText("An unexpected exception occurred in the program.");
 
-        _errorMessage.setColumns(20);
         _errorMessage.setEditable(false);
+        _errorMessage.setColumns(20);
         _errorMessage.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
         _errorMessage.setLineWrap(true);
         _errorMessage.setRows(5);
         jScrollPane.setViewportView(_errorMessage);
+        _errorMessage.getAccessibleContext().setAccessibleName("Details of exception.");
 
         _OkButton.setText("Ok");
         _OkButton.addActionListener(new java.awt.event.ActionListener() {
@@ -158,6 +159,8 @@ public class ExceptionDialog extends javax.swing.JDialog {
                     .addComponent(_printButton))
                 .addContainerGap())
         );
+
+        _emailButton.getAccessibleContext().setAccessibleName("Email technical support");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

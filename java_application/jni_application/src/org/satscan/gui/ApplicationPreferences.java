@@ -321,6 +321,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
 
         parallelProcessorsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Software Updates"));
 
+        jLabel1.setLabelFor(_checkFrequency);
         jLabel1.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout parallelProcessorsGroupLayout = new javax.swing.GroupLayout(parallelProcessorsGroup);
@@ -354,6 +355,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         _file_browse_options.setText("In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience.");
         _file_browse_options.setMargin(new java.awt.Insets(10, 10, 10, 10));
         jScrollPane2.setViewportView(_file_browse_options);
+        _file_browse_options.getAccessibleContext().setAccessibleName("");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -381,8 +383,12 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 .addContainerGap(94, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("General", jPanel2);
+        _alternative_browsing.getAccessibleContext().setAccessibleDescription("In some instances the dialog used to browse for parameter, input, and output files takes an excessive amount of time to browse the file system. Selecting the above option causes this application to use an alternative dialog which should help resolve the excessive file browsing time, although providing a slightly less rich experience.");
 
+        jTabbedPane1.addTab("General", jPanel2);
+        jPanel2.getAccessibleContext().setAccessibleName("General Preferences tab");
+
+        _alert_label_smtp.setLabelFor(_alerts_smtp);
         _alert_label_smtp.setText("Server Name:");
 
         _alerts_smtp.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -391,8 +397,10 @@ public class ApplicationPreferences extends javax.swing.JDialog {
             }
         });
 
+        _alert_label_add_curl.setLabelFor(_alerts_curl_additional);
         _alert_label_add_curl.setText("Additional curl Parameters:");
 
+        _alert_label_from.setLabelFor(_alert_label_from);
         _alert_label_from.setText("'From' Address:");
 
         _alerts_from.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -401,6 +409,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
             }
         });
 
+        _alert_label_reply.setLabelFor(_alerts_reply);
         _alert_label_reply.setText("'Reply' Address:");
 
         _send_test_mail.setText("Send Test Email");
@@ -410,6 +419,7 @@ public class ApplicationPreferences extends javax.swing.JDialog {
         _send_test_mail_response.setColumns(20);
         _send_test_mail_response.setRows(5);
         jScrollPane1.setViewportView(_send_test_mail_response);
+        _send_test_mail_response.getAccessibleContext().setAccessibleName("Send test mail response. ");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -457,7 +467,13 @@ public class ApplicationPreferences extends javax.swing.JDialog {
                 .addContainerGap())
         );
 
+        _alerts_smtp.getAccessibleContext().setAccessibleName("mail server name");
+        _alerts_curl_additional.getAccessibleContext().setAccessibleName("additional curl parameters");
+        _alerts_from.getAccessibleContext().setAccessibleName("mail 'from' address");
+        _alerts_reply.getAccessibleContext().setAccessibleName("mail 'reply' address");
+
         jTabbedPane1.addTab("Mail Server Settings", jPanel3);
+        jPanel3.getAccessibleContext().setAccessibleName("Mail Server Settings tab");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

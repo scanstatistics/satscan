@@ -48,6 +48,9 @@
                   <Connection code="_closeSessionAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Close Session"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_closeSessionMenuItem.setIcon(null);&#xd;&#xa;_closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
@@ -60,6 +63,9 @@
                   <Connection code="_saveSessionAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Save Session"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionMenuItem.setIcon(null);&#xd;&#xa;_saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
@@ -70,6 +76,10 @@
                   <Connection code="_saveSessionAsAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Save Session As"/>
+                <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value=""/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_saveSessionAsMenuItem.setIcon(null);&#xd;&#xa;_saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));"/>
               </AuxValues>
@@ -83,6 +93,9 @@
                 </Property>
                 <Property name="toolTipText" type="java.lang.String" value=""/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Batched Analyses"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
@@ -93,6 +106,9 @@
                   <Connection code="_applicationPreferencesAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Application Preferences"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_appPreferences.setIcon(null);&#xd;&#xa;_appPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
@@ -103,6 +119,9 @@
                   <Connection code="_printResultsAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Print Analysis Results"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_printMenuItem.setIcon(null);&#xd;&#xa;_printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));"/>
               </AuxValues>
@@ -116,6 +135,9 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Exit" noResource="true"/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Exit Application"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_exitMenuItem.setIcon(null);"/>
               </AuxValues>
@@ -146,6 +168,9 @@
                   <Connection code="_executeOptionsAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Execution Options"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_executeOptionsMenuItem.setIcon(null);&#xd;&#xa;_executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_DOWN_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()))));"/>
               </AuxValues>
@@ -158,6 +183,9 @@
                   <Connection code="_importMultipleAnalysesAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Multiple Analyses IMport"/>
+              </AccessibilityProperties>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="_exportMultipleAnalysisjMenuItem">
               <Properties>
@@ -165,6 +193,9 @@
                   <Connection code="_exportMultipleAnalysesAction" type="code"/>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Multiple Analyses Export"/>
+              </AccessibilityProperties>
             </MenuItem>
           </SubComponents>
         </Menu>

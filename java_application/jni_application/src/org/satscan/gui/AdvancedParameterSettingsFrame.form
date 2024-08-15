@@ -44,6 +44,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_pValueButtonGroup">
       <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_pValueButtonGroup.add(_radioDefaultPValues);&#xa;_pValueButtonGroup.add(_radioStandardPValues);&#xa;_pValueButtonGroup.add(_radioEarlyTerminationPValues);&#xa;_pValueButtonGroup.add(_radioGumbelPValues);&#xa;"/>
         <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="AdvancedParameterSettingsFrame__pValueButtonGroup"/>
       </AuxValues>
     </Component>
@@ -119,6 +120,9 @@
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
         <Container class="javax.swing.JPanel" name="_multipleDataSetsTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Multiple Data Sets tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Multiple Data Sets">
@@ -285,6 +289,9 @@
                             </Property>
                             <Property name="selectionMode" type="int" value="0"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Additional data sets selection"/>
+                          </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JList(_dataSetsListModel)"/>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {&#xa;    public void valueChanged(javax.swing.event.ListSelectionEvent e) {&#xa;        enableInputFileEdits();&#xa;        enableRemoveButton();&#xa;        if (_dataSetsListModel.getSize() &gt; 0 &amp;&amp; _inputDataSetsList.getSelectedIndex() != -1) {&#xa;            _dataSetNameTextField.setText(AdvancedParameterSettingsFrame.this._datasetNames.get(_inputDataSetsList.getSelectedIndex()));&#xa;            _caseFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Case, _inputDataSetsList.getSelectedIndex()));&#xa;            _controlFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex()));&#xa;            _populationFileTextField.setText(AdvancedParameterSettingsFrame.this.getFileTypeFullpath(InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex()));&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -373,6 +380,9 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="_caseFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_caseFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -386,12 +396,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Case File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Case.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Case));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_caseFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_controlFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_controlFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -405,12 +421,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Control File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Control.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Control));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_controlFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_populationFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_populationFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -424,12 +446,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Population File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Population.toString() + Integer.toString(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Population));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        inputSourceSettings.setDataSetIndex(_inputDataSetsList.getSelectedIndex() + 1);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_populationFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_datasetNameLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_dataSetNameTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Data Set Name"/>
                   </Properties>
                 </Component>
@@ -442,6 +470,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Add" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Add Data Set"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_datasetNames.size() + 1));&#xa;        _datasetNames.add(&quot;Data Set #&quot; + Integer.toString(_inputDataSetsList.getModel().getSize()));&#xa;        // enable and clear the edit boxes&#xa;        _caseFilenames.add(&quot;&quot;);&#xa;        _controlFilenames.add(&quot;&quot;);&#xa;        _populationFilenames.add(&quot;&quot;);&#xa;        _inputDataSetsList.setSelectedIndex(_datasetNames.size() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_datasetNames.size() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -450,6 +481,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Remove" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Remove Data Set"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;&#xa;        ArrayList&lt;InputSourceSettings.InputFileType&gt; filetypes = new ArrayList&lt;&gt;();&#xa;        filetypes.add(InputSourceSettings.InputFileType.Case);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Control);&#xa;        filetypes.add(InputSourceSettings.InputFileType.Population);&#xa;        for (InputSourceSettings.InputFileType type : filetypes) {&#xa;            String key = type.toString() + Integer.toString(iDeleteIndex + 1);&#xa;            // remove input source settings for file type&#xa;            if (_settings_window._input_source_map.containsKey(key)) {&#xa;                _settings_window._input_source_map.remove(key);&#xa;            }&#xa;            // update input source settings keys for greater indexes      &#xa;            for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;                key = type.toString() + Integer.toString(i + 1);&#xa;                if (_settings_window._input_source_map.containsKey(key)) {&#xa;                    String newKey = type.toString() + Integer.toString(i);&#xa;                    _settings_window._input_source_map.put(newKey, _settings_window._input_source_map.remove(key));&#xa;                }&#xa;            }&#xa;        }&#xa;&#xa;        // update remaining list box names&#xa;        for (int i=iDeleteIndex+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;&#xa;        // remove files&#xa;        _datasetNames.remove(iDeleteIndex);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex - 1);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex - 1);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex - 1);&#xa;        int selectIdx = Math.min(iDeleteIndex, _inputDataSetsList.getModel().getSize() - 1);&#xa;        _inputDataSetsList.setSelectedIndex(selectIdx);&#xa;        _inputDataSetsList.ensureIndexIsVisible(selectIdx);&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -459,6 +493,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_dataCheckingTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Data Checking tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Data Checking">
@@ -596,7 +633,7 @@
                                   <Component id="_strictCoordinatesLabel" max="32767" attributes="0"/>
                               </Group>
                               <Component id="_relaxedCoordinatesRadioButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="673" max="32767" attributes="0"/>
+                              <Component id="_strictCoordinatesRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -630,6 +667,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Check to ensure that all observations (cases, controls and populations) are within the specified geographical area."/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_strictCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -660,6 +700,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_spatialNeighborsTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Spatial Neighbors tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Spatial Neighbors">
@@ -715,18 +758,18 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="673" max="32767" attributes="0"/>
-                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="673" max="32767" attributes="0"/>
+                              <Component id="_specifiyNeighborsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
+                              <Component id="_specifiyMetaLocationsFileCheckBox" alignment="0" pref="620" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_metaLocationsFileTextField" pref="625" max="32767" attributes="0"/>
+                                          <Component id="_metaLocationsFileTextField" pref="572" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_metaLocationsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="1" attributes="0">
-                                          <Component id="_neighborsFileTextField" pref="625" max="32767" attributes="0"/>
+                                          <Component id="_neighborsFileTextField" pref="572" max="32767" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_neighborsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                       </Group>
@@ -762,7 +805,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_specifiyNeighborsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify neighbors through a non-Euclidean neighbors file." noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Specify neighbors through a non-Euclidean neighbors file" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -777,6 +820,9 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_neighborsFileTextField">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="non-euclidean neighbors file path"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileTextField.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -786,13 +832,16 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Neighbors File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.Neighbors);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_neighborsFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_specifiyMetaLocationsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify a meta location file." noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Specify a meta location file" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -807,6 +856,9 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_metaLocationsFileTextField">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="meta locations files path"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileTextField.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -816,6 +868,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Meta Locations File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.MetaLocations);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_metaLocationsFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -841,12 +896,12 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_atLeastOneRadioButton" alignment="0" pref="673" max="32767" attributes="0"/>
+                              <Component id="_atLeastOneRadioButton" alignment="0" pref="620" max="32767" attributes="0"/>
                               <Component id="_onePerLocationIdRadioButton" alignment="0" max="32767" attributes="0"/>
                               <Component id="_allLocationsRadioButton" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="_multiple_locations_file" pref="642" max="32767" attributes="0"/>
+                                      <Component id="_multiple_locations_file" pref="589" max="32767" attributes="0"/>
                                       <Component id="_multiple_locations_file_label" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -938,12 +993,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Multiple Locations Per Observation File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_multiple_locations_file_browse.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.Multiple_Locations.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;            _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.Multiple_Locations));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_multiple_locations_file, inputSourceSettings, _settings_window);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_multiple_locations_file_label">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_multiple_locations_file"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Multiple Locations Per Observation File:"/>
                   </Properties>
                 </Component>
@@ -952,6 +1013,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_spatialWindowTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Spatial Window tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Spatial Window">
@@ -1021,7 +1085,7 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_maxSpatialPercentFileTextField" min="-2" pref="55" max="-2" attributes="0"/>
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                          <Component id="_percentageOfPopFileLabel" pref="573" max="32767" attributes="0"/>
+                                          <Component id="_percentageOfPopFileLabel" pref="526" max="32767" attributes="0"/>
                                       </Group>
                                       <Group type="102" attributes="0">
                                           <Component id="_maxSpatialClusterSizeTextField" min="-2" pref="55" max="-2" attributes="0"/>
@@ -1100,7 +1164,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxSpatialClusterSizeTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_spatialPopulationFileCheckBox">
@@ -1114,6 +1181,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by max circle size file"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1128,16 +1198,25 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfPopFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxSpatialPercentFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxCirclePopulationFilenameTextField">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="file path of maximum circle size file"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JButton" name="_maxCirclePopFileBrowseButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Maximum Circle File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.MaxCirclePopulation.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.MaxCirclePopulation));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_maxCirclePopulationFilenameTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1153,6 +1232,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by distance"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1166,13 +1248,16 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="maximum radius by distance"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxSpatialRadiusTextField, e, 20);&#xa;    }&#xa;});&#xa;_maxSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxSpatialRadiusTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxSpatialRadiusTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius." noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="kilometer radius" noResource="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -1259,6 +1344,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Circular window shape"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_circularRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1275,16 +1363,25 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Elliptic window shape"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_ellipticRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableWindowShapeGroup(_spatialWindowShapeGroup.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_nonCompactnessPenaltyLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_nonCompactnessPenaltyComboBox"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Non-Compactness Penalty:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="java.awt.Choice" name="_nonCompactnessPenaltyComboBox">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Non-Compactness Penalty"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;None&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Medium&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Strong&quot;);"/>
                   </AuxValues>
@@ -1310,6 +1407,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_temporalWindowTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Temporal Window tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Temporal Window">
@@ -1424,6 +1524,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection of maximum temporal by percentage of population"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_percentageTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            //cause enabling to be refreshed based upon clicked radio button&#xa;            enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1440,6 +1543,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection of maximum temporal by time units"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            //cause enabling to be refreshed based upon clicked radio button&#xa;            enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;            enableSetDefaultsButton();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -1454,20 +1560,32 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfStudyPeriodLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the study period (&lt;= 90%, default = 50%)." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxTemporalClusterSizeTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="percent of the study period (&lt;= 90%, default = 50%)" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="percent of the study period (&lt;= 90, default = 50)"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxTemporalClusterSizeUnitsTextField">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="years (&lt;=90 of the study period)"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeUnitsTextField, e, 6);&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeUnitsTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxTemporalTimeUnitsLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="years (&lt;=90% of the study period)." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxTemporalClusterSizeUnitsTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="years (&lt;=90% of the study period)" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_includePureSpacClustCheckBox">
@@ -1529,7 +1647,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_restrictTemporalRangeCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include Only Windows With:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Include only windows with:" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1539,6 +1657,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Include only windows within specified range"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableDatesByTimePrecisionUnits();&#xa;        enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1565,18 +1686,18 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="_endRangeStartYearTextField" max="32767" attributes="0"/>
-                                      <Component id="_startRangeStartYearTextField" max="32767" attributes="0"/>
+                                      <Component id="_endRangeStartYearTextField" min="-2" pref="60" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartYearTextField" min="-2" pref="60" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="_endRangeStartMonthTextField" max="32767" attributes="0"/>
-                                      <Component id="_startRangeStartMonthTextField" max="32767" attributes="0"/>
+                                      <Component id="_endRangeStartMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartMonthTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="_endRangeStartDayTextField" pref="40" max="32767" attributes="0"/>
-                                      <Component id="_startRangeStartDayTextField" pref="40" max="32767" attributes="0"/>
+                                      <Component id="_endRangeStartDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -1585,8 +1706,8 @@
                                   </Group>
                                   <EmptySpace max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="_endRangeEndYearTextField" max="32767" attributes="0"/>
-                                      <Component id="_startRangeEndYearTextField" max="32767" attributes="0"/>
+                                      <Component id="_endRangeEndYearTextField" min="-2" pref="60" max="-2" attributes="0"/>
+                                      <Component id="_startRangeEndYearTextField" min="-2" pref="60" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
@@ -1601,7 +1722,7 @@
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="40" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="196" max="32767" attributes="0"/>
+                                  <EmptySpace pref="227" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1638,23 +1759,32 @@
                       <SubComponents>
                         <Component class="javax.swing.JLabel" name="_startWindowRangeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Start Time in Range:" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="Start time in range:" noResource="true"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, begin year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, begin month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, begin day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_startRangeToLabel">
                           <Properties>
@@ -1665,31 +1795,49 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, end year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, end month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="01" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="start range, end day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, end day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, end month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, end year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endRangeToLabel">
                           <Properties>
@@ -1700,20 +1848,29 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, begin day"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, begin month"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                           </Properties>
+                          <AccessibilityProperties>
+                            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="end range, begin year"/>
+                          </AccessibilityProperties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="End Time in Range:" noResource="true"/>
+                            <Property name="text" type="java.lang.String" value="End time in range:" noResource="true"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -1752,7 +1909,7 @@
                                           <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace pref="294" max="32767" attributes="0"/>
+                                  <EmptySpace pref="247" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -1880,6 +2037,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="minimum temporal cluster size in time units"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minTemporalClusterSizeUnitsTextField, e, 6);&#xa;    }&#xa;});&#xa;_minTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minTemporalClusterSizeUnitsTextField.getText().length() == 0 || Integer.parseInt(_minTemporalClusterSizeUnitsTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _minTemporalClusterSizeUnitsTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -1894,6 +2054,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_spaceTimeAjustmentsTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Space and Time Adjustments tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Space and Time Adjustments">
@@ -1966,7 +2129,7 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_logLinearLabel" max="32767" attributes="0"/>
                                       </Group>
-                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="677" max="32767" attributes="0"/>
+                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="628" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               </Group>
@@ -2014,6 +2177,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="no temporal adjustments"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                     <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="AdvancedParameterSettingsFrame__temporalTrendAdjNoneRadioButton"/>
@@ -2031,13 +2197,16 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Nonparametric temporal adjustment"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjNonparametric.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _spatialAdjustmentsNonparametric.setEnabled(true);&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinear">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log Linear Trend with" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log linear trend with" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2047,13 +2216,16 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Log linear trend adjustment"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            _logLinearTextField.setEnabled(true);&#xa;            enableSetDefaultsButton();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearCalc">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log Linear with Automatically Calculated Trend" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log linear with automatically calculated trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2071,18 +2243,21 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="log linear trend adjustment percentage"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_logLinearLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="%  per Year" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalc">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log Quadratic with Automatically Calculated Trend" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log quadratic with automatically calculated trend" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2118,7 +2293,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_spatialAdjustmentsNone" max="32767" attributes="0"/>
-                              <Component id="_spatialAdjustmentsNonparametric" alignment="0" pref="677" max="32767" attributes="0"/>
+                              <Component id="_spatialAdjustmentsNonparametric" alignment="0" pref="628" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                       </Group>
@@ -2150,6 +2325,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="no spatial adjustment"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -2166,6 +2344,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Nonparametric spatial adjustment"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsNonparametric.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -2199,7 +2380,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
-                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="673" max="32767" attributes="0"/>
+                              <Component id="_adjustForKnownRelativeRisksCheckBox" pref="620" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2224,7 +2405,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_adjustForKnownRelativeRisksCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjust for Known Relative Risks" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Adjust for known relative risks" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2248,12 +2429,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Adjustments File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.AdjustmentsByRR.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.AdjustmentsByRR));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_adjustmentsByRelativeRisksFileTextField, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_adjustmentsByRelativeRisksFileLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_adjustmentsByRelativeRisksFileTextField"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Adjustments File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -2261,8 +2448,11 @@
             </Container>
             <Component class="javax.swing.JCheckBox" name="_adjustDayOfWeek">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Adjust for Day-of-Week "/>
+                <Property name="text" type="java.lang.String" value="Adjust for day-of-week "/>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Adjust for day of week"/>
+              </AccessibilityProperties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustDayOfWeek.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});"/>
               </AuxValues>
@@ -2270,6 +2460,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_inferenceTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Inference tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Inference">
@@ -2321,6 +2514,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AccessibilityProperties>
+                <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="P-Value options"/>
+              </AccessibilityProperties>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2332,7 +2528,7 @@
                               <Component id="_radioStandardPValues" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioGumbelPValues" min="-2" pref="342" max="-2" attributes="0"/>
-                                  <EmptySpace pref="50" max="32767" attributes="0"/>
+                                  <EmptySpace pref="5" max="32767" attributes="0"/>
                                   <Component id="_checkReportGumbel" min="-2" pref="281" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -2370,22 +2566,19 @@
               <SubComponents>
                 <Component class="javax.swing.JRadioButton" name="_radioDefaultPValues">
                   <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_pValueButtonGroup"/>
-                    </Property>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Default"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Default combination"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_radioDefaultPValues.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {  &#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enablePValueOptionsGroup();&#xa;            enableSetDefaultsButton();&#xa;            updateMonteCarloTextCaptions();&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_radioEarlyTerminationPValues">
                   <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_pValueButtonGroup"/>
-                    </Property>
-                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early Termination Cutoff:"/>
+                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early termination cutoff:"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xd;&#xa;            enablePValueOptionsGroup();&#xd;&#xa;            enableSetDefaultsButton();&#xd;&#xa;            updateMonteCarloTextCaptions();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});"/>
@@ -2393,9 +2586,6 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_radioGumbelPValues">
                   <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_pValueButtonGroup"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Gumbel Approximation"/>
                   </Properties>
                   <AuxValues>
@@ -2404,9 +2594,6 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_radioStandardPValues">
                   <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_pValueButtonGroup"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="Standard Monte Carlo"/>
                   </Properties>
                   <AuxValues>
@@ -2415,7 +2602,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_checkReportGumbel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Also Report Gumbel Based P-values"/>
+                    <Property name="text" type="java.lang.String" value="Also report Gumbel based p-values"/>
                     <Property name="horizontalAlignment" type="int" value="4"/>
                   </Properties>
                 </Component>
@@ -2423,6 +2610,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="50"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="early termination cutoff"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {&#xd;&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xd;&#xa;        while (_earlyTerminationThreshold.getText().length() == 0 || Integer.parseInt(_earlyTerminationThreshold.getText()) &lt; 1)&#xd;&#xa;            if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText(&quot;50&quot;);&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {&#xd;&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xd;&#xa;        Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 10);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xd;&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xd;&#xa;        undo.addEdit(evt.getEdit());&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;        "/>
                   </AuxValues>
@@ -2499,7 +2689,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxIterativeScansLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Maximum Number of Iterations:" noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_numIterativeScansTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Maximum number of iterations:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numIterativeScansTextField">
@@ -2512,7 +2705,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_iterativeCutoffLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Stop When the P-value is Greater Than:" noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_iterativeScanCutoffTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Stop when the p-value is greater than:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_iterativeScanCutoffTextField">
@@ -2565,7 +2761,10 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_labelMonteCarloReplications">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Number of Replications (0, 9, 999, or value ending in 999):" noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_montCarloReplicationsTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Number of replications (0, 9, 999, or value ending in 999):" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_montCarloReplicationsTextField">
@@ -2581,6 +2780,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_spatialOutputTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Spatial Output tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Spatial Output">
@@ -2680,7 +2882,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_createCompressedKMZ">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Create Compressed KMZ File"/>
+                    <Property name="text" type="java.lang.String" value="Create compressed KMZ file"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_createCompressedKMZ.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -2688,7 +2890,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_launch_map_viewer">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Automatically Launch Requested Maps"/>
+                    <Property name="text" type="java.lang.String" value="Automatically launch requested maps"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_launch_map_viewer.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -2759,12 +2961,18 @@
               </Layout>
               <SubComponents>
                 <Component class="java.awt.Choice" name="_hierarchicalSecondaryClusters">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Criteria for Reporting Hierarchical Clusters"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Geographical Overlap&quot;);&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Cluster Centers in Other Clusters&quot;);&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Cluster Centers in More Likely Clusters&quot;);&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Cluster Centers in Less Likely Clusters&quot;);&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Pairs of Centers Both in Each Others Clusters&quot;);&#xd;&#xa;_hierarchicalSecondaryClusters.add(&quot;No Restrictions = Most Likely Cluster for Each Grid Point&quot;);&#xd;&#xa;&#xd;&#xa;&#xd;&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_hierarchicalLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_hierarchicalSecondaryClusters"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Criteria for Reporting Hierarchical Clusters"/>
                   </Properties>
                   <AccessibilityProperties>
@@ -2773,7 +2981,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_checkboxReportIndexCoefficients">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report Gini Indexes in Results File"/>
+                    <Property name="text" type="java.lang.String" value="Report Gini indexes in results file"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
@@ -2907,7 +3115,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxReportedSpatialClusterSizeTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialPopulationFileCheckBox">
@@ -2921,6 +3132,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by population in maximum circle size file"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -2935,7 +3149,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentageOfPopFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxReportedSpatialPercentFileTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialDistanceCheckBox">
@@ -2949,6 +3166,9 @@
                       <Insets value="[0, 0, 0, 0]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by distance"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -2968,7 +3188,10 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxReportedRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius." noResource="true"/>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_maxReportedSpatialRadiusTextField"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="kilometer radius" noResource="true"/>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -2976,6 +3199,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_otherOutputTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Other Output tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Other Output">
@@ -3037,7 +3263,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportCriticalValuesCheckBox" pref="673" max="32767" attributes="0"/>
+                          <Component id="_reportCriticalValuesCheckBox" pref="669" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3055,7 +3281,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_reportCriticalValuesCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report critical values for an observed cluster to be significant." noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Report critical values for an observed cluster to be significant" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -3089,7 +3315,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_reportClusterRankCheckBox" pref="673" max="32767" attributes="0"/>
+                          <Component id="_reportClusterRankCheckBox" pref="620" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3141,7 +3367,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_printAsciiColumnHeaders" pref="673" max="32767" attributes="0"/>
+                          <Component id="_printAsciiColumnHeaders" pref="620" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -3159,7 +3385,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_printAsciiColumnHeaders">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Print Column Headers in ASCII Output Files" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Print column headers in ASCII output files" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -3210,6 +3436,9 @@
               </Layout>
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="_printTitle">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="title for results files"/>
+                  </AccessibilityProperties>
                 </Component>
               </SubComponents>
             </Container>
@@ -3255,6 +3484,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Include clusters in line list CSV file meeting cutoff"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="initCutoffJTextField(_cluster_lineline_value, AppConstants.DEFAULT_RECURRENCE_CUTOFF_CSV_LINELIST, AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);"/>
                   </AuxValues>
@@ -3274,6 +3506,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_powerEvaluationTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Power Evaluation tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Power Evaluation">
@@ -3385,7 +3620,7 @@
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="_totalPowerCases" min="-2" pref="78" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="400" max="32767" attributes="0"/>
+                                                  <Component id="_powerEvaluationWithSpecifiedCasesLabel" pref="366" max="32767" attributes="0"/>
                                               </Group>
                                           </Group>
                                           <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
@@ -3475,6 +3710,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Power Evaluation Only, Use "/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Power Evaluation Only, Use total cases"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_powerEvaluationWithSpecifiedCases.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enablePowerEvaluationsGroup();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -3483,6 +3721,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="600"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="total cases in power evaluation"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_totalPowerCases.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_totalPowerCases.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _totalPowerCases.setText(&quot;600&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_totalPowerCases.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);&#xa;    }&#xa;});&#xa;_totalPowerCases.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -3494,6 +3735,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_alternativeHypothesisFilenameLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_alternativeHypothesisFilename"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Alternative Hypothesis File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -3507,12 +3751,18 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Alternative Hypothesis File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_alternativeHypothesisFilenameButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        InputSourceSettings inputSourceSettings = new InputSourceSettings(InputSourceSettings.InputFileType.AlternativeHypothesis);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_alternativeHypothesisFilename, inputSourceSettings, _settings_window);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_numberPowerReplicationsLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_numberPowerReplications"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Number of replications (100, 1000 or multiple of 100):" noResource="true"/>
                   </Properties>
                 </Component>
@@ -3536,6 +3786,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Monte Carlo"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Monte Carlo critical values"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_criticalValuesMonteCarlo.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -3547,6 +3800,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Gumbel"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Gumbel critical values"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_criticalValuesGumbel.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -3571,6 +3827,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Monte Carlo"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Monte Carlo power estimation"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_powerEstimationMonteCarlo.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -3582,6 +3841,9 @@
                     </Property>
                     <Property name="text" type="java.lang.String" value="Gumbel"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Gumbel power estimation"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_powerEstimationGumbel.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -3599,6 +3861,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_temporalOutputTab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Temporal Output tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Temporal Output">
@@ -3648,7 +3913,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_reportTemporalGraph" pref="673" max="32767" attributes="0"/>
+                                  <Component id="_reportTemporalGraph" pref="624" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
@@ -3725,6 +3990,9 @@
                       <ComponentRef name="_temporalGraphButtonGroup"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="select one graph for each cluster"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numMostLikelyClustersGraph">
                   <Properties>
@@ -3739,6 +4007,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_numMostLikelyClustersGraphLabel">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_numMostLikelyClustersGraph"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="most likely clusters, one graph for each"/>
                   </Properties>
                   <Events>
@@ -3760,6 +4031,9 @@
                       <Dimension value="[75, 22]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="All clusters, one graph for each cluster meeting cutoff"/>
+                  </AccessibilityProperties>
                   <Events>
                     <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_temporalGraphPvalueCutoffFocusGained"/>
                   </Events>
@@ -3772,6 +4046,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_miscellaneous_analysis_tab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Miscellaneous tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Miscellaneous" toolTip="">
@@ -3832,7 +4109,7 @@
                                   <Component id="_number_oliveira_data_sets_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_number_oliveira_data_sets" min="-2" pref="80" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="207" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="203" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -3864,6 +4141,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_number_oliveira_data_sets_label">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_number_oliveira_data_sets"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Number of bootstrap replications (minimum 100, multiple of 100):" noResource="true"/>
                   </Properties>
                 </Component>
@@ -3913,10 +4193,16 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_label_prospective_frequency">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_prospective_frequency"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="How frequently are analyses performed?"/>
                   </Properties>
                 </Component>
                 <Component class="java.awt.Choice" name="_prospective_frequency">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="How frequently are analyses performed?"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency.add(&quot;Same as Time Aggregation&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Daily&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Weekly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Monthly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Quarterly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Yearly&quot;);&#xd;&#xa;"/>
                   </AuxValues>
@@ -3926,6 +4212,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_cluster_restrictions_tab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Cluster Restrictions tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Cluster Restrictions">
@@ -4022,6 +4311,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0.25"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Restrict low rate clusters to relative risk less than or equal to:"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_low_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_low_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_low_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &lt; 0 ||&#xa;                Double.parseDouble(_limit_low_clusters_value.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_low_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_low_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4038,6 +4330,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="1.875"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Restrict high rate clusters to relative risk greater than or equal to:"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_limit_high_clusters_value.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_limit_high_clusters_value, e, 20);&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_limit_high_clusters_value.getText().length() == 0 ||&#xa;                Double.parseDouble(_limit_high_clusters_value.getText()) &lt; 1.0)&#xa;            if (undo.canUndo()) undo.undo(); else _limit_high_clusters_value.setText(&quot;1.0&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_limit_high_clusters_value.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4097,6 +4392,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="2" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Restrict high rate clusters to have at least X cases"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_minimum_number_cases_cluster.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_minimum_number_cases_cluster, e, 5);&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_minimum_number_cases_cluster.getText().length() == 0 ||&#xa;                Integer.parseInt(_minimum_number_cases_cluster.getText()) &lt; 2) {&#xa;            if (undo.canUndo()) undo.undo(); else _minimum_number_cases_cluster.setText(&quot;2&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_minimum_number_cases_cluster.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4111,6 +4409,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_drilldown_tab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Drilldown tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Drilldown">
@@ -4179,7 +4480,7 @@
                                           <Component id="_drilldown_restriction_dow" min="-2" pref="241" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="206" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="161" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4244,6 +4545,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="2"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Drilldown for Clusters having at least X locations"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_locations.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_locations.getText().length() == 0 ||&#xa;               Double.parseDouble(_drilldown_restriction_locations.getText()) &lt; 2&#xa;               )&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_locations.setText(&quot;2&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_locations.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_drilldown_restriction_locations, e, 10);&#xa;    }&#xa;});&#xa;_drilldown_restriction_locations.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4257,6 +4561,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="10"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Drilldown for Clusters having at least X cases"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_drilldown_restriction_cases.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_drilldown_restriction_cases.getText().length() == 0 ||&#xa;               Double.parseDouble(_drilldown_restriction_cases.getText()) &lt; 10&#xa;               )&#xa;            if (undo.canUndo()) undo.undo(); else _drilldown_restriction_cases.setText(&quot;10&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_drilldown_restriction_cases.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_totalPowerCases, e, 10);&#xa;    }&#xa;});&#xa;_drilldown_restriction_cases.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4270,6 +4577,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Drilldown for Clusters meeting cutoff"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_drilldown_restriction_cutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
@@ -4289,6 +4599,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_network_tab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Network tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Network">
@@ -4333,7 +4646,7 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_locations_network" pref="675" max="32767" attributes="0"/>
+                              <Component id="_locations_network" pref="624" max="32767" attributes="0"/>
                               <Group type="102" attributes="0">
                                   <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
                                   <Component id="_network_file_label" min="-2" max="-2" attributes="0"/>
@@ -4366,7 +4679,7 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_locations_network">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify locations through a network file:"/>
+                    <Property name="text" type="java.lang.String" value="Specify locations through a network file"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_locations_network.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -4374,6 +4687,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_network_file_label">
                   <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_network_filename"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Network File:" noResource="true"/>
                   </Properties>
                 </Component>
@@ -4387,6 +4703,9 @@
                     <Property name="text" type="java.lang.String" value="..." noResource="true"/>
                     <Property name="toolTipText" type="java.lang.String" value="Open Adjustments File Import Wizard" noResource="true"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_browse_network_filename.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        String key = InputSourceSettings.InputFileType.NETWORK.toString() + &quot;1&quot;;&#xa;        if (!_settings_window._input_source_map.containsKey(key)) {&#xa;          _settings_window._input_source_map.put(key, new InputSourceSettings(InputSourceSettings.InputFileType.NETWORK));&#xa;        }&#xa;        InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);&#xa;        // invoke the FileSelectionDialog to guide user through process of selecting the source file.&#xa;        FileSelectionDialog selectionDialog = new FileSelectionDialog(SaTScanApplication.getInstance(), inputSourceSettings.getInputFileType(), SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        selectionDialog.browse_inputsource(_network_filename, inputSourceSettings, _settings_window);&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -4396,6 +4715,9 @@
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_notificatons_tab">
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Notifications tab"/>
+          </AccessibilityProperties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Notifications">
@@ -4530,8 +4852,16 @@
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_always_email_recipients">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Always send email with summary results to email list"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_cutoff_email_recipients">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Send email with summary results to email list if analysis meets cutoff"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_attach_main_results_email">
                   <Properties>
@@ -4557,11 +4887,17 @@
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_custom_email_subject">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="email message subject"/>
+                  </AccessibilityProperties>
                 </Component>
                 <Component class="javax.swing.JButton" name="_custom_email_tags">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Message Tags"/>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Message Body Tags"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_custom_email_tags.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JTextPane textPane = new JTextPane();&#xa;        textPane.setEditable(false);&#xa;        //textPane.setBackground(new java.awt.Color(240, 240, 240));&#xa;        textPane.setContentType(&quot;text/html&quot;); // NOI18N&#xa;        textPane.setText(&quot;&quot;&quot;&#xa;            &lt;html&gt;&lt;head&gt;&lt;style&gt;body {font-size;15px;} div.header {margin-top:5px;font-size;15px;color:#2C3E50;font-weight:bold;} p.tag-row {margin: 0 0 0 0;} span.tag {color: ##333;font-weight: bold;} span.info {color:#34495e;font-style:normal;}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&#xa;            &lt;p style=&quot;margin-top:0px;font-weight:bold;color:#1B2631;&quot;&gt;Use these tags in your custom message and they will be substituted at the time the email is sent.&lt;/p&gt;&#xa;            &lt;div class=&quot;header&quot;&gt;Output Variables:&lt;/div&gt;&#x9;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;date&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - Today&apos;s date.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;results-directory&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - The directory to which the analysis result files were written.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;results-filename&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - The name and path of the main results file.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;results-name&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - The name of the main results file, without an extension.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;div class=&quot;header&quot;&gt;Output Paragraphs:&lt;/div&gt;&#x9;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;summary-paragraph&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - Summary information about the most likely cluster and potentially secondary clusters.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;linelist-paragraph&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - For prospective analyses, summary information about new and ongoing signals when reading line list data with individual IDs.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;location-paragraph&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - Location of the main results file and the directory to which other result files were written.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;p class=&quot;tag-row&quot;&gt;&lt;span class=&quot;tag&quot;&gt;&amp;lt;footer-paragraph&amp;gt;&lt;/span&gt;&lt;span class=&quot;info&quot;&gt; - Message indicating that this email is part of an automated process.&lt;/span&gt;&lt;/p&gt;&#xa;            &lt;/body&gt;&lt;/html&gt;&#xa;        &quot;&quot;&quot;);&#xa;        JOptionPane.showMessageDialog(null, new JScrollPane(textPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), &quot;Email Message Tags&quot;, JOptionPane.PLAIN_MESSAGE);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
@@ -4579,6 +4915,9 @@
                         <Property name="lineWrap" type="boolean" value="true"/>
                         <Property name="rows" type="int" value="5"/>
                       </Properties>
+                      <AccessibilityProperties>
+                        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="email message body"/>
+                      </AccessibilityProperties>
                     </Component>
                   </SubComponents>
                 </Container>
@@ -4605,6 +4944,9 @@
                       <Dimension value="[75, 22]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="send email summary cutoff"/>
+                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_cutoff_value_email, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>

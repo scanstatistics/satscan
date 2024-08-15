@@ -229,6 +229,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
             }
         });
 
+        jLabel3.setLabelFor(_checkFrequency);
         jLabel3.setText("Automatically check for updates:");
 
         javax.swing.GroupLayout _noUpdatePanelLayout = new javax.swing.GroupLayout(_noUpdatePanel);
@@ -318,8 +319,14 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 .addContainerGap(44, Short.MAX_VALUE))
         );
 
+        _doUpdateButton.getAccessibleContext().setAccessibleName("");
+        _doUpdateButton.getAccessibleContext().setAccessibleDescription("Yes, download installer.");
+        _doNotUpdateButton.getAccessibleContext().setAccessibleName("");
+        _doNotUpdateButton.getAccessibleContext().setAccessibleDescription("No, don't download installer.");
+
         _cardsPanel.add(_updatePanel, "update");
 
+        _stepLabel.setLabelFor(_downloadProgressBar);
         _stepLabel.setText("Contacting to host ...");
 
         _downloadProgressBar.setStringPainted(true);
@@ -351,6 +358,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                     .addComponent(_downloadProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(35, 35, 35))
         );
+
+        jButton3.getAccessibleContext().setAccessibleName("");
+        jButton3.getAccessibleContext().setAccessibleDescription("Cancel Download");
 
         _cardsPanel.add(_downloadPanel, "download");
 
@@ -460,6 +470,8 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                 .addComponent(_installer_download_progress, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32))
         );
+
+        _installer_download_progress.getAccessibleContext().setAccessibleDescription("Installer download progress.");
 
         _cardsPanel.add(_updateInfoOnlyPanel, "updateinfoonly");
 

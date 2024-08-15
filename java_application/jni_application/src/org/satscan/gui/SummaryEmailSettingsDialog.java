@@ -109,7 +109,6 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(layout.createSequentialGroup()
-                                        .addGap(6, 6, 6)
                                         .addComponent(_cutoff_value_ri, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(_cutoff_value_label_pval))
@@ -139,6 +138,9 @@ public class SummaryEmailSettingsDialog extends javax.swing.JDialog implements A
                     .addComponent(_cancel))
                 .addGap(22, 22, 22))
         );
+
+        _cutoff_value_ri.getAccessibleContext().setAccessibleName("");
+        _cutoff_value_ri.getAccessibleContext().setAccessibleDescription("Recurrance interval cutoff with prospective analyses.");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
