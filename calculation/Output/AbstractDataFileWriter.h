@@ -7,6 +7,7 @@
 #include "stsDBaseFileWriter.h"
 #include "FieldDef.h"
 #include "ptr_vector.h"
+#include <boost/optional.hpp>
 
 /** Collection of field values for buffering records of additional output files.*/
 class RecordBuffer {
@@ -14,6 +15,8 @@ class RecordBuffer {
       const ptr_vector<FieldDef>      & vFieldDefinitions;  /** field definitions */
       std::vector<FieldValue>           gvFieldValues;      /** record buffer of field values */
       std::vector<bool>                 gvBlankFields;      /** indicators whether relative field is blank */
+
+      boost::optional<unsigned int>    _getFieldIndex(const std::string& sFieldName) const;
 
    public:
       RecordBuffer(const ptr_vector<FieldDef>& vFields);
