@@ -108,8 +108,8 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                     if (chart.credits !== undefined) { \n \
                         if ($(this).is(':checked')) { \n \
                             chart.xAxis[0].addPlotBand({color: '#FFB3B3', from: $(this).attr('start-idx'), to: $(this).attr('end-idx'), id: 'band', zindex:0}); \n \
-                            chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', width: 1, value: $(this).attr('start-idx'), zIndex: 5 }); \n \
-                            chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', width: 1, value: $(this).attr('end-idx'), zIndex: 5 }); \n \
+                            chart.xAxis[0].addPlotLine({id:'start',color: '#FF0000', dashStyle: 'longdashdot', width: 1, value: $(this).attr('start-idx'), zIndex: 0 }); \n \
+                            chart.xAxis[0].addPlotLine({id:'end',color: '#FF0000', dashStyle: 'longdashdot', width: 1, value: $(this).attr('end-idx'), zIndex: 0 }); \n \
                         } else { \n \
                             chart.xAxis[0].removePlotBand('band' ); \n \
                             chart.xAxis[0].removePlotLine('start'); \n \
