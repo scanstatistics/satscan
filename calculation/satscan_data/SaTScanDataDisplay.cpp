@@ -184,7 +184,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     default                   : break;
   }
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    PrintFormat.PrintSectionLabel(fp, "Percent cases in area", true, false);
+    PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false);
     getValueAsString(100.0 * gDataSets->GetDataSet(0).getTotalCases() / gDataSets->GetDataSet(0).getTotalPopulation(), buffer, 1);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
         getValueAsString(100.0 * gDataSets->GetDataSet(i).getTotalCases() / gDataSets->GetDataSet(i).getTotalPopulation(), work2, 1);
@@ -251,7 +251,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
-        printString(label, "Percent cases in area, data set #%d ", i + 1);
+        printString(label, "Percent cases, data set #%d ", i + 1);
         PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
         buffer="";
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
