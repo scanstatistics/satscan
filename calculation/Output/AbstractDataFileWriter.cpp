@@ -55,24 +55,27 @@ bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
   return gvBlankFields[iFieldNumber];
 }
 
+/** Returns field index as optional - does not throw exception if field is not defined. */
+boost::optional<unsigned int> RecordBuffer::_getFieldIndex(const std::string& sFieldName) const {
+    boost::optional<unsigned int> idx = boost::none;
+    bool bFound = false;
+    for (unsigned int i=0; i < vFieldDefinitions.size() && !bFound; ++i) {
+        bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
+        idx = i;
+    }
+    return idx;
+}
+
 /** Returns field index for named field. */
 unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
-    bool                 bFound(false);
-    unsigned int         i, iPosition;
-
     try {
-        for (i = 0; i < vFieldDefinitions.size() && !bFound; ++i) {
-            bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
-            iPosition = i;
-        }
-        if (!bFound)
-            throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
-    }
-    catch (prg_exception& x) {
+        auto idx = _getFieldIndex(sFieldName);
+        if (!idx) throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
+        return *idx;
+    } catch (prg_exception& x) {
         x.addTrace("GetFieldIndex()", "RecordBuffer");
         throw;
     }
-    return iPosition;
 }
 
 /** Returns reference to field value for named field, setting field 'blank' indicator to false. */
@@ -149,9 +152,9 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
 /** Set named fields of type that are blank to a defaulted value. */
 void RecordBuffer::DefaultBlankFieldsOfType(FieldValue default_value, const std::vector<std::string>& file_names) {
     for (const auto& filename : file_names) {
-        unsigned int idx = GetFieldIndex(filename);
-        if (gvBlankFields[idx] && vFieldDefinitions[idx]->GetType() == default_value.GetType())
-            GetFieldValue(idx) = default_value;
+        auto idx = _getFieldIndex(filename);
+        if (idx && gvBlankFields[*idx] && vFieldDefinitions[*idx]->GetType() == default_value.GetType())
+            GetFieldValue(*idx) = default_value;
     }
 }
 
