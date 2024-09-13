@@ -178,11 +178,12 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
         // Assign field values for those at the cluster level.
         clusterRecord.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
         clusterRecord.GetFieldValue(GINI_CLUSTER_FIELD).AsBool() = theCluster.isGiniCluster();
-        if (theCluster.reportablePValue(gParameters, simVars))
+        if (theCluster.reportablePValue(gParameters, simVars)) {
             clusterRecord.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, gParameters.GetIsIterativeScanning() || iClusterNumber == 1);
-        if (gParameters.getIsReportingGumbelAsAddon()) {
-            std::pair<double, double> p = theCluster.GetGumbelPValue(simVars);
-            clusterRecord.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
+            if (gParameters.getIsReportingGumbelAsAddon()) {
+                std::pair<double, double> p = theCluster.GetGumbelPValue(simVars);
+                clusterRecord.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
+            }
         }
         if (theCluster.reportableRecurrenceInterval(gParameters, simVars))
             clusterRecord.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(DataHub, iClusterNumber, simVars).second;

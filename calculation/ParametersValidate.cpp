@@ -843,7 +843,24 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             const_cast<CParameters&>(gParameters).setMinimumCasesLowRateClusters(gParameters.GetProbabilityModelType() == NORMAL ? 2: 0);
             const_cast<CParameters&>(gParameters).setMinimumCasesHighRateClusters(2);
         }
-
+        if (gParameters.GetPValueReportingType() == GUMBEL_PVALUE && !(
+            (gParameters.GetIsSpaceTimeAnalysis() && (
+                gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+                gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+            )) ||
+            (gParameters.GetIsPurelySpatialAnalysis() && (
+                gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+                gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL
+            )))) {
+            // Gumbel approximation is only valid for a sub-set of the analyses and the models.
+            bValid = false;
+            PrintDirection.Printf(
+                "%s:\nThe Gumbel Approximation option is only permitted for:\n"
+                "purely spatial Poisson, Bernoulli, ordinal, and multinomial\n"
+                "space-time Poisson, Bernoulli, and space-time permutation.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+            );
+        }
         if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
             // Gumbel approximation is only permitted with high rate scans.
             if (gParameters.GetPValueReportingType() == GUMBEL_PVALUE) {

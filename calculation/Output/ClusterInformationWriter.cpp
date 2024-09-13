@@ -335,11 +335,12 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
-    if (theCluster.reportablePValue(gParameters, simVars))
+    if (theCluster.reportablePValue(gParameters, simVars)) {
         Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, gDataHub.GetParameters().GetIsIterativeScanning() || iClusterNumber == 1);
-    if (gParameters.getIsReportingGumbelAsAddon()) {
-        std::pair<double,double> p = theCluster.GetGumbelPValue(simVars);
-        Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
+        if (gParameters.getIsReportingGumbelAsAddon()) {
+            std::pair<double, double> p = theCluster.GetGumbelPValue(simVars);
+            Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
+        }
     }
     if (theCluster.reportableRecurrenceInterval(gParameters, simVars)) {
         Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(gDataHub, iClusterNumber, simVars).second;

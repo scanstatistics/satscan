@@ -697,9 +697,8 @@ bool CParameters::getIsReportingIndexBasedCoefficents() const {
 
 /** Returns indication of Gumbel value is reported. */
 bool CParameters::getIsReportingGumbelPValue() const {
-    return GetPValueReportingType() == DEFAULT_PVALUE ||  // clusters with rank < 10 report Gumbel p-value
-           getIsReportingGumbelAsAddon() ||
-           GetPValueReportingType() == GUMBEL_PVALUE;
+    return GetPValueReportingType() == DEFAULT_PVALUE ||
+           getIsReportingGumbelAsAddon() || GetPValueReportingType() == GUMBEL_PVALUE;
 }
 
 /** Returns indication of standard value is reported. */
@@ -712,6 +711,18 @@ bool CParameters::getIsReportingGumbelAsAddon() const {
     return GetReportGumbelPValue() && (
         GetPValueReportingType() == STANDARD_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE
     ); 
+}
+
+/** Returns whether analysis can report Gumbel as part of the default combination. */
+bool CParameters::getCanReportGumbelInDefaultCombination() const {
+    return GetAreaScanRateType() == HIGH && (
+        (GetIsSpaceTimeAnalysis() && (
+            GetProbabilityModelType() == POISSON || GetProbabilityModelType() == BERNOULLI || GetProbabilityModelType() == SPACETIMEPERMUTATION
+        )) ||
+        (GetIsPurelySpatialAnalysis() && (
+            GetProbabilityModelType() == POISSON || GetProbabilityModelType() == BERNOULLI || GetProbabilityModelType() == ORDINAL || GetProbabilityModelType() == CATEGORICAL
+        ))
+    );
 }
 
 /** Selects additional output file parameters - for current parameters state. */
