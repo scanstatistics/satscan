@@ -2064,7 +2064,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void enableInputFileEdits() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 1;
         
-        _dataSetNameTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
+        _dataSetNameTextField.setEnabled(bEnable);
         _caseFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
         _controlFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
         _populationFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
