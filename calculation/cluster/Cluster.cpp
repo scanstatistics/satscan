@@ -735,18 +735,16 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
 
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel
-    //PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
-    bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
-                                  parameters.GetAnalysisType() == SPACETIME || 
-                                  parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
-                                  && 
-                                 (parameters.GetProbabilityModelType() == POISSON || 
-                                  parameters.GetProbabilityModelType() == BERNOULLI ||
-                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
-								  );
-    bReportsDefaultGumbel |= parameters.GetAnalysisType() == PURELYSPATIAL &&
-                            (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL);
-    if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
+      bool reportsGumbelInDefault = parameters.GetPValueReportingType() == DEFAULT_PVALUE &&
+          parameters.GetAreaScanRateType() == HIGH && GetRank() < MIN_RANK_RPT_GUMBEL && (
+          (parameters.GetIsSpaceTimeAnalysis() && (
+              parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI || parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+          )) ||
+          (parameters.GetIsPurelySpatialAnalysis() && (
+              parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI || parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL
+          ))
+      );
+    if (reportsGumbelInDefault || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
         getValueAsString(p.second, buffer, 1).insert(0, "< ");
@@ -763,8 +761,7 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
     }
     DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
     //conditionally report gumbel p-value as supplement to reported p-value
-    if (parameters.GetReportGumbelPValue() &&
-        (parameters.GetPValueReportingType() == STANDARD_PVALUE || parameters.GetPValueReportingType() == TERMINATION_PVALUE)) {
+    if (parameters.getIsReportingGumbelAsAddon()) {
          //PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
          std::pair<double,double> p = GetGumbelPValue(simVars);
          if (p.first == 0.0) {

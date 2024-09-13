@@ -532,20 +532,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bPurelySpatial = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL,
                 bSpaceTime = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME
                 || _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
-
-        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP) && (bPurelySpatial || bSpaceTime);
-        modelGumbelEnabled |= (bCategorical || bOrdinal) && bPurelySpatial;
-        
-        _radioGumbelPValues.setEnabled(modelGumbelEnabled);
-        if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected()) {
+        boolean gumbelEnabled = _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH && (
+            ((bPoisson || bBernoulli || bCategorical || bOrdinal) && bPurelySpatial) ||
+            ((bPoisson || bBernoulli || bSTP) && bSpaceTime) 
+        );
+        _radioGumbelPValues.setEnabled(gumbelEnabled);
+        if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected())
             _radioDefaultPValues.setSelected(true);
-        }
-
-        _checkReportGumbel.setEnabled(modelGumbelEnabled && (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));
-        if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected()) {
+        _checkReportGumbel.setEnabled(gumbelEnabled && (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));
+        if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected())
             _checkReportGumbel.setSelected(false);
-        }
-
         _earlyTerminationThreshold.setEnabled(_radioEarlyTerminationPValues.isSelected());
     }
 

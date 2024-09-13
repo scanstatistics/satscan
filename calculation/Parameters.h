@@ -576,6 +576,7 @@ class CParameters {
     bool                                getIsReportingIndexBasedCoefficents() const;
     bool                                getIsReportingGumbelPValue() const;
     bool                                getIsReportingStandardPValue() const;
+    bool                                getIsReportingGumbelAsAddon() const;
     const std::string                 & GetTitleName() const {return gsTitleName;}
     void                                requestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
