@@ -876,6 +876,8 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                 );
             }
         }
+        if (gParameters.GetPValueReportingType() == DEFAULT_PVALUE || gParameters.GetPValueReportingType() == GUMBEL_PVALUE)
+            const_cast<CParameters&>(gParameters).SetReportGumbelPValue(false);
     } catch (prg_exception& x) {
         x.addTrace("ValidateInferenceParameters()","ParametersValidate");
         throw;
