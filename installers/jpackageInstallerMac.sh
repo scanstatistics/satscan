@@ -75,6 +75,14 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/libsatscan.jnilib
 codesign --entitlements  ${ENTITLEMENTS} --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/imagesrc/SaTScan.jar
 codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 
+# jna library started failing notorization, need to codesign manually
+mkdir $BUNDLEDIR/temp
+unzip $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar -d $BUNDLEDIR/temp
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin/libjnidispatch.jnilib
+rm $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar
+cd $BUNDLEDIR/temp
+zip -r -u $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar com META-INF
+
 # Technically we should be able to just call the following to create the app, codesign and build dmg.
 # Unfortunately the notarization fails - complaining about signatures on the launcher and dylib being invalid.
 # After a lot of trial and error, I decided to try just uploading the app for notarization -- motivated by the following link:
