@@ -838,12 +838,46 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                 PrintDirection.Printf("%s:\nThe option to specify the minimum number of cases, when scanning for high rate clusters, cannot be less than 2.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
             }
-
         } else {
             /* Default the values when these settings are not used -- the AbstractLikelihoodCalculator methods still reference the values in places. */
             const_cast<CParameters&>(gParameters).setMinimumCasesLowRateClusters(gParameters.GetProbabilityModelType() == NORMAL ? 2: 0);
             const_cast<CParameters&>(gParameters).setMinimumCasesHighRateClusters(2);
         }
+        if (gParameters.GetPValueReportingType() == GUMBEL_PVALUE && !(
+            (gParameters.GetIsSpaceTimeAnalysis() && (
+                gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+                gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+            )) ||
+            (gParameters.GetIsPurelySpatialAnalysis() && (
+                gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+                gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL
+            )))) {
+            // Gumbel approximation is only valid for a sub-set of the analyses and the models.
+            bValid = false;
+            PrintDirection.Printf(
+                "%s:\nThe Gumbel Approximation option is only permitted for:\n"
+                "purely spatial Poisson, Bernoulli, ordinal, and multinomial\n"
+                "space-time Poisson, Bernoulli, and space-time permutation.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+            );
+        }
+        if (gParameters.GetAreaScanRateType() == LOW || gParameters.GetAreaScanRateType() == HIGHANDLOW) {
+            // Gumbel approximation is only permitted with high rate scans.
+            if (gParameters.GetPValueReportingType() == GUMBEL_PVALUE) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe Gumbel Approximation option is permitted when scanning for high rate clusters only.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
+            if (gParameters.getIsReportingGumbelAsAddon()) {
+                const_cast<CParameters&>(gParameters).SetReportGumbelPValue(false);
+                PrintDirection.Printf("Parameter Setting Warning:\n"
+                    "The Gumbel Approximation add-on option is permitted when scanning for high rate clusters only (option was disabled).\n",
+                    BasePrint::P_WARNING
+                );
+            }
+        }
+        if (gParameters.GetPValueReportingType() == DEFAULT_PVALUE || gParameters.GetPValueReportingType() == GUMBEL_PVALUE)
+            const_cast<CParameters&>(gParameters).SetReportGumbelPValue(false);
     } catch (prg_exception& x) {
         x.addTrace("ValidateInferenceParameters()","ParametersValidate");
         throw;

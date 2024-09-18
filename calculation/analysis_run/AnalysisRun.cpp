@@ -1139,9 +1139,7 @@ void AnalysisExecution::printCriticalValuesStatus(FILE* fp) {
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
         bool printSelectiveGumbel = _parameters.GetPValueReportingType() == DEFAULT_PVALUE;
-        bool printAllGumbel = (_parameters.GetPValueReportingType() == GUMBEL_PVALUE ||
-            (_parameters.GetReportGumbelPValue() && (_parameters.GetPValueReportingType() == STANDARD_PVALUE || _parameters.GetPValueReportingType() == TERMINATION_PVALUE)));
-
+        bool printAllGumbel = _parameters.GetPValueReportingType() == GUMBEL_PVALUE || _parameters.getIsReportingGumbelAsAddon();
         if (printAllGumbel || (printSelectiveGumbel && (_sim_vars.get_sim_count() > 0 && _sim_vars.get_sim_count() < 99999))) {
             fprintf(fp, "\nGumbel Critical Values:\n");
         }

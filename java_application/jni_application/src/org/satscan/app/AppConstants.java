@@ -20,7 +20,7 @@ public final class AppConstants {
     public static final int MAX_GENERIC = 2921938;
     public static final int VERSION_MAJOR = 10;
     public static final int VERSION_MINOR = 2;
-    public static final int VERSION_RELEASE = 4;
+    public static final int VERSION_RELEASE = 5;
     public static final String VERSION_PHASE = "";
     
     public static String DEFAULT_PVALUE_CUTOFF = "0.05";

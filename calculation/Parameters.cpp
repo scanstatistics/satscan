@@ -537,7 +537,7 @@ bool CParameters::GetIsPurelyTemporalAnalysis() const {
 
 /** Returns whether analysis is space-time. */
 bool CParameters::GetIsSpaceTimeAnalysis() const {
-  return (geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME);
+  return geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME;
 }
 
 /** Returns description for LLR. */
@@ -700,15 +700,32 @@ bool CParameters::getIsReportingIndexBasedCoefficents() const {
 
 /** Returns indication of Gumbel value is reported. */
 bool CParameters::getIsReportingGumbelPValue() const {
-    return GetPValueReportingType() == DEFAULT_PVALUE ||  // clusters with rank < 10 report Gumbel p-value
-          (GetPValueReportingType() == STANDARD_PVALUE && GetReportGumbelPValue()) ||
-          (GetPValueReportingType() == TERMINATION_PVALUE && GetReportGumbelPValue()) ||           
-           GetPValueReportingType() == GUMBEL_PVALUE;
+    return GetPValueReportingType() == DEFAULT_PVALUE ||
+           getIsReportingGumbelAsAddon() || GetPValueReportingType() == GUMBEL_PVALUE;
 }
 
 /** Returns indication of standard value is reported. */
 bool CParameters::getIsReportingStandardPValue() const {
     return GetPValueReportingType() != GUMBEL_PVALUE;
+}
+
+/** Returns whether we're reporting the gumbel approximation p-value as a add-on to the standard monte carlo p-value. */
+bool CParameters::getIsReportingGumbelAsAddon() const { 
+    return GetReportGumbelPValue() && (
+        GetPValueReportingType() == STANDARD_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE
+    ); 
+}
+
+/** Returns whether analysis can report Gumbel as part of the default combination. */
+bool CParameters::getCanReportGumbelInDefaultCombination() const {
+    return GetAreaScanRateType() == HIGH && (
+        (GetIsSpaceTimeAnalysis() && (
+            GetProbabilityModelType() == POISSON || GetProbabilityModelType() == BERNOULLI || GetProbabilityModelType() == SPACETIMEPERMUTATION
+        )) ||
+        (GetIsPurelySpatialAnalysis() && (
+            GetProbabilityModelType() == POISSON || GetProbabilityModelType() == BERNOULLI || GetProbabilityModelType() == ORDINAL || GetProbabilityModelType() == CATEGORICAL
+        ))
+    );
 }
 
 /** Selects additional output file parameters - for current parameters state. */

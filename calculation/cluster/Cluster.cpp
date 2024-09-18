@@ -707,18 +707,8 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
 
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel
-    //PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
-    bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
-                                  parameters.GetAnalysisType() == SPACETIME || 
-                                  parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
-                                  && 
-                                 (parameters.GetProbabilityModelType() == POISSON || 
-                                  parameters.GetProbabilityModelType() == BERNOULLI ||
-                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
-								  );
-    bReportsDefaultGumbel |= parameters.GetAnalysisType() == PURELYSPATIAL &&
-                            (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL);
-    if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
+    bool canRptInDefault = parameters.getCanReportGumbelInDefaultCombination() && GetRank() < MIN_RANK_RPT_GUMBEL;
+    if ((parameters.GetPValueReportingType() == DEFAULT_PVALUE && canRptInDefault) || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
         getValueAsString(p.second, buffer, 1).insert(0, "< ");
@@ -730,14 +720,11 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
       printString(replicas, "%u", simVars.get_sim_count());
       printString(format, "%%.%dlf", replicas.size());
       printString(buffer, format.c_str(), GetMonteCarloPValue(parameters,simVars, DataHub.GetParameters().GetIsIterativeScanning() || iReportedCluster == 1));
-      //fprintf(fp, buffer.c_str());
       printClusterData(fp, PrintFormat, "P-value", buffer, true);
     }
     DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
     //conditionally report gumbel p-value as supplement to reported p-value
-    if (parameters.GetReportGumbelPValue() &&
-        (parameters.GetPValueReportingType() == STANDARD_PVALUE || parameters.GetPValueReportingType() == TERMINATION_PVALUE)) {
-         //PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
+    if (parameters.getIsReportingGumbelAsAddon()) {
          std::pair<double,double> p = GetGumbelPValue(simVars);
          if (p.first == 0.0) {
            getValueAsString(p.second, buffer, 1).insert(0, "< ");
@@ -757,12 +744,8 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
     if (!parameters.GetIsProspectiveAnalysis())
         throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
     dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
-    bool bReportsDefaultGumbel = (
-        parameters.GetAnalysisType() == PURELYSPATIAL || parameters.GetAnalysisType() == SPACETIME || parameters.GetAnalysisType() == PROSPECTIVESPACETIME
-    ) && (
-        parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI || parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
-    );
-    if ((bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
+    bool canRrtInDefault = parameters.getCanReportGumbelInDefaultCombination() && GetRank() < MIN_RANK_RPT_GUMBEL;
+    if ((parameters.GetPValueReportingType() == DEFAULT_PVALUE && canRrtInDefault) || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
         std::pair<double,double> p = GetGumbelPValue(simVars);
         dPValue = std::max(p.first, p.second);
         dAdjustedP_Value = std::max(1.0 - pow(1.0 - dPValue, 1.0/dIntervals),p.second);
@@ -804,7 +787,6 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
 
   try {
       if (reportableRecurrenceInterval(Data.GetParameters(), simVars)) {
-         //PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
          RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
          if (ri.first < 1.0) {
             printString(
@@ -1102,21 +1084,8 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
         }
         break;
     case DEFAULT_PVALUE     :
-    default                 :
-        {
-            bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
-                                          parameters.GetAnalysisType() == SPACETIME ||
-                                          parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
-                                          && 
-                                         (parameters.GetProbabilityModelType() == POISSON ||
-                                          parameters.GetProbabilityModelType() == BERNOULLI ||
-                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
-										  );
-            bReportsDefaultGumbel |= parameters.GetAnalysisType() == PURELYSPATIAL &&
-                                    (parameters.GetProbabilityModelType() == ORDINAL ||
-                                      parameters.GetProbabilityModelType() == CATEGORICAL
-                                    );
-            if (bReportsDefaultGumbel && reportableGumbelPValue(parameters, simVars)) {
+    default                 : {
+            if (parameters.getCanReportGumbelInDefaultCombination() && reportableGumbelPValue(parameters, simVars)) {
                 std::pair<double,double> p = GetGumbelPValue(simVars);
                 return std::max(p.first, p.second);
             }
@@ -1124,7 +1093,6 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
                 return GetMonteCarloPValue(parameters, simVars, bMLC);
         }
   }
-
   return p_value;
 }
 
