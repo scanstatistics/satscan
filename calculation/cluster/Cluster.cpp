@@ -337,7 +337,10 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      //print data set name if analyzing more than one
      if (DataHub.GetParameters().getNumFileSets() > 1)
        PrintFormat.PrintSectionStatement(fp,
-           DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+           printString(buffer, "%s (set %i)",
+               DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
+               (set_number + 1)
+           ).c_str()
        );
      //print total individuals (censored and non-censored)
      GetPopulationAsString(buffer, DataHub.GetProbabilityModel().GetPopulation(set_number, *this, DataHub));
@@ -365,7 +368,10 @@ void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, con
         //print data set number if analyzing more than data set
         if (DataHub.GetParameters().getNumFileSets() > 1)
             PrintFormat.PrintSectionStatement(fp,
-                DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+                printString(buffer, "%s (set %i)",
+                    DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
+                    (set_number + 1)
+                ).c_str()
             );
         //print total cases
         printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
@@ -408,7 +414,10 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      //print data set number if analyzing more than data set
      if (DataHub.GetParameters().getNumFileSets() > 1) 
        PrintFormat.PrintSectionStatement(fp,
-           DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+           printString(buffer, "%s (set %i)",
+               DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
+               (set_number + 1)
+           ).c_str()
        );
      //print total cases
      printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
@@ -452,7 +461,10 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      //print data set name if analyzing more than one
      if (DataHub.GetParameters().getNumFileSets() > 1)
        PrintFormat.PrintSectionStatement(fp,
-           DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+           printString(buffer, "%s (set %i)",
+               DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
+               (set_number + 1)
+           ).c_str()
        );
      //print total cases per data set
      dTotalCasesInClusterDataSet = DataHub.GetProbabilityModel().GetPopulation(set_number, *this, DataHub);
@@ -552,7 +564,10 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      //print data set number if analyzing more than data set
      if (params.getNumFileSets() > 1)
        PrintFormat.PrintSectionStatement(fp,
-           params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+           printString(buffer, "%s (set %i)",
+               params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
+               (set_number + 1)
+           ).c_str()
        );
      //print cluster population
      if ((params.GetProbabilityModelType() == POISSON && params.UsePopulationFile() && GetClusterType() != PURELYTEMPORALCLUSTER) ||
@@ -594,7 +609,10 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      //print data set number if analyzing more than data set
      if (DataHub.GetParameters().getNumFileSets() > 1)
        PrintFormat.PrintSectionStatement(fp,
-           DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str()
+           printString(buffer, "%s (set %i)",
+               DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
+               (set_number + 1)
+           ).c_str()
        );
      AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
      statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, tractIndexes);

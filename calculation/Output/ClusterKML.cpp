@@ -242,8 +242,8 @@ std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster,
                     clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
                     clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
                     clusterDataSetLines << getWrappedText(
-                        encode(parameters.getDataSourceNames()[
-                        _dataHub.GetDataSetHandler().getDataSetRelativeIndex(itr->second.second)], buffer2), 0, 40, "<br>", buffer3
+                        encode(printString(buffer4, "%s (set %i)", parameters.getDataSourceNames()[
+                        _dataHub.GetDataSetHandler().getDataSetRelativeIndex(itr->second.second)].c_str(), (itr->second.second + 1)), buffer2), 0, 40, "<br>", buffer3
                     );
                     clusterDataSetLines << "</caption>";
                     currSetIdx = itr->second.second;
