@@ -375,7 +375,7 @@ void TemporalChartGenerator::generateChart() const {
                     if (cluster.m_nRatio < MIN_CLUSTER_LLR_REPORT || cluster.GetRank() > _simVars.get_sim_count()) continue;
                     if (parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {
                         if (cluster.reportableRecurrenceInterval(parameters, _simVars) && // round RI to whole days
-                            std::round(cluster.GetRecurrenceInterval(_dataHub, i, _simVars).second) >= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
+                            std::round(cluster.GetRecurrenceInterval(_dataHub, i + 1, _simVars).second) >= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
                             graphClusters.push_back(&cluster);
                     } else if (cluster.getReportingPValue(_dataHub.GetParameters(), _simVars, i == 0) <= _dataHub.GetParameters().getTemporalGraphSignificantCutoff()) {
                         graphClusters.push_back(&cluster);
