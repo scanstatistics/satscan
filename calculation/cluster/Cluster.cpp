@@ -801,7 +801,7 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
 
 /** Writes clusters null occurance rate in format required by result output file. */
 void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars, const AsciiPrintFormat& PrintFormat) const {
-  std::string   buffer;
+  std::string buffer, buffer2;
 
   try {
       if (reportableRecurrenceInterval(Data.GetParameters(), simVars)) {
@@ -817,7 +817,7 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
                 Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "year", (ri.first < 1.05 ? "" : "s")
             );
          } else {
-            printString(buffer, "%.0lf %s", ri.first, Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "units" : "years");
+            printString(buffer, "%s %s", humanize(ri.first, buffer2, 1).c_str(), Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "units" : "years");
          }
          //print data to file stream
          printClusterData(fp, PrintFormat, "Recurrence interval", buffer, true);

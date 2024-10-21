@@ -122,5 +122,6 @@ class EmailText {
         static std::string getSummaryLinkText(const std::string& messagebody, const std::string& resultsPath, const std::string& label, bool asHTML);
         static std::string getPathLink(std::string& path, const std::string& label, bool asHTML);
 };
+std::string& humanize(double n, std::string& humanized, int decimals = 1);
 //******************************************************************************
 #endif
