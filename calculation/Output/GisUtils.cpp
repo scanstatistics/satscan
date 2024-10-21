@@ -61,15 +61,9 @@ GisUtils::pointpair_t GisUtils::getClusterRadiusSegmentPoints(const CSaTScanData
 	}
 
     if (prLatitudeLongitude == pointOnCircumference) {
-        /* If the cluster only has one location, the centroid, then get the nearest neighbor - per Martin.
-           This is more difficult than I initially thought. First, I'm not sure he meant nearest point in 
-           terms of any point defined. I think he meant in terms of clusters reported in kml. I'm also thinking
-           that this includes points on drawn circles -- otherwise if the cluster locations of neighboring cluster
-           are on it's farside, then the clusters could overlap.
-        */
-        // Temporary implementation until we figure out the best course here.  Move north 5 degrees to create a point on circumference.
-        //pointOnCircumference.first += (1.0/180.0 * 5.0);
-        pointOnCircumference.first += (0.000278 * 5.0); // 1 arcsec = 0.000278, 5 degrees is too large in many situations
+        // 1 arcsec = 0.000278
+        // 1/2 arcsec translates into roughly 26 meters in Google Earth, basically one house/small apartment
+        pointOnCircumference.first += (0.000278 * 0.5);
     }
     return std::make_pair(prLatitudeLongitude,pointOnCircumference);
 }
