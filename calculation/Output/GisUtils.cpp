@@ -253,15 +253,65 @@ std::string VisualizationUtils::toHtmlColor(const std::string& colorKML) const {
 double VisualizationUtils::getSliderValue(const CSaTScanData& datahub, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
     const auto& parameters = datahub.GetParameters();
     if (parameters.GetIsProspectiveAnalysis() && !datahub.isDrilldown()) {
-        const double MIN_RECURRANCE_VALUE = 0.0, MAX_RECURRANCE_VALUE = 730000000;
+        const double MIN_RECURRANCE_VALUE = 1.0, MAX_RECURRANCE_VALUE = 730000000;
         if (cluster.reportableRecurrenceInterval(parameters, simVars))
-            return std::min(cluster.GetRecurrenceInterval(datahub, iReportedCluster, simVars).second, MAX_RECURRANCE_VALUE);
+            return std::round(std::min(cluster.GetRecurrenceInterval(datahub, iReportedCluster, simVars).second, MAX_RECURRANCE_VALUE));
         return MIN_RECURRANCE_VALUE;
     } 
     const double MIN_PVALUE_VALUE = 0.000001, MAX_PVALUE_VALUE = 1.0;
     if (cluster.reportablePValue(parameters, simVars))
         return std::max(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1), MIN_PVALUE_VALUE);
     return MAX_PVALUE_VALUE;
+}
+
+/** Returns the range used by the noUiSlider control of visualizations such as Google Maps and Cartesian graph. */
+std::string VisualizationUtils::getSliderRange(const CSaTScanData& datahub) {
+    std::stringstream jsHash;
+    const auto& parameters = datahub.GetParameters();
+    if (parameters.GetIsProspectiveAnalysis()) {
+        unsigned int default_RI = parameters.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(parameters.getCutoffLineListCSV()) : 365;
+        std::vector<unsigned int> ticks = {
+           1, 20, 50, 100, 183, 365, 730, 1825, 3650, 7300, 18250, 36500, 73000, 365000, 3650000, 365000000, 730000000
+        };
+        auto itr = std::lower_bound(ticks.begin(), ticks.end(), default_RI);
+        if (*itr < ticks.front())
+            default_RI = ticks.front();
+        else if (*itr > ticks.back())
+            default_RI = ticks.front();
+        else if (*itr != default_RI)
+            ticks.insert(itr, default_RI);
+        jsHash << "'min': [" << *(ticks.begin());
+        const double increment = ticks.size() == 17 ? (100.0 / 16.0) : (100.0 / 17.0) /*5.8823*/;
+        double percent = increment;
+        for (auto tick = ticks.begin()+1; tick != ticks.end()-1; ++tick) {
+            jsHash << "," << (*tick - *(tick - 1)) << "],";
+            jsHash << "'" << percent << "%':[" << *tick;
+            percent += increment;
+        }
+        jsHash << ","  << (ticks.back() - *(ticks.end() - 2)) << "],'max':[" << ticks.back() << "]";
+    } else {
+        double default_PV = parameters.getReadingLineDataFromCasefile() ? parameters.getCutoffLineListCSV() : 1.0;
+        std::vector<double> ticks = {
+           0.0000001, 0.000001, 0.00001, 0.00005, 0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1
+        };
+        auto itr = std::lower_bound(ticks.begin(), ticks.end(), default_PV);
+        if (*itr < ticks.front())
+            default_PV = ticks.front();
+        else if (*itr > ticks.back())
+            default_PV = ticks.front();
+        else if (*itr != default_PV)
+            ticks.insert(itr, default_PV);
+        jsHash << "'min': [" << *(ticks.begin());
+        const double increment = ticks.size() == 17 ? (100.0 / 16.0) : (100.0 / 17.0) /*5.8823*/;
+        double percent = increment;
+        for (auto tick = ticks.begin() + 1; tick != ticks.end() - 1; ++tick) {
+            jsHash << "," << (*tick - *(tick - 1)) << "],";
+            jsHash << "'" << percent << "%':[" << *tick;
+            percent += increment;
+        }
+        jsHash << "," << (ticks.back() - *(ticks.end() - 2)) << "],'max':[" << ticks.back() << "]";
+    }
+    return jsHash.str();
 }
 
 /** Returns cluster legend to be used as popup in html page. */

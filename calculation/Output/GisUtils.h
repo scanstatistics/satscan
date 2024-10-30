@@ -46,6 +46,7 @@ class VisualizationUtils {
         const char * getAggregationShape() const { return "circle";  }
         std::string toHtmlColor(const std::string& kmlColor) const;
         static double getSliderValue(const CSaTScanData& datahub, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
+        static std::string getSliderRange(const CSaTScanData& datahub);
         static std::string& getHtmlClusterLegend(const CCluster& cluster, int iCluster, const CSaTScanData& datahub, std::string& legend);
 };
 

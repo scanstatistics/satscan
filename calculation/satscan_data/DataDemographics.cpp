@@ -103,24 +103,28 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
     :_handler(handler), _clusters(&clusters), _sim_vars(&sim_vars), _parameters(handler.gDataHub.GetParameters()) {
 
     // Iterate over the most likely clusters, creating structures that will facilitate compiling data.
+    auto recordClusterLocations = [this](int idx, const CCluster& cluster, bool isReportedCsv) {
+        // Define which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
+        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+            _cluster_locations[idx] = std::make_pair(boost::dynamic_bitset<>(_handler.gDataHub.GetNumIdentifiers()), isReportedCsv);
+            std::vector<tract_t> tractIndexes;
+            boost::dynamic_bitset<>& locations = _cluster_locations[idx].first;
+            for (auto tractIdx : cluster.getIdentifierIndexes(_handler.gDataHub, tractIndexes, true))
+                locations.set(tractIdx);
+        }
+    };
     std::string buffer;
     for (int i = 0; i < _clusters->GetNumClustersRetained(); ++i) {
         _cluster_event_totals[i] = std::make_pair(0, 0);
         const CCluster& cluster = _clusters->GetCluster(i);
-        if (isReported(handler.gDataHub, cluster, i, sim_vars)) {
-            // Defined which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
-            boost::dynamic_bitset<> locations(handler.gDataHub.GetNumIdentifiers());
-            std::vector<tract_t> tractIndexes;
-            if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-                for (auto tractIdx : cluster.getIdentifierIndexes(handler.gDataHub, tractIndexes, true))
-                    locations.set(tractIdx);
-            }
-            _cluster_locations[i] = locations;
+        if (isReportedInCsv(handler.gDataHub, cluster, i, sim_vars)) {
+            recordClusterLocations(i, cluster, true);
             // Create collection of demographic attributes for this cluster.
             _cluster_demographics_by_dataset[i] = std::deque<DemographicAttributeSet>();
             // Create unique temporary filename to store linelist data for this cluster - we want the records grouped by cluster.
             _cluster_location_files[i] = GetUserTemporaryFilename(buffer);
-        }
+        } else if (meetsMainResultsCutoff(cluster, i, sim_vars))
+            recordClusterLocations(i, cluster, false);
     }
     // Read individual ids from file cache - these signalled in significant clusters of previous analysis(es).
     if (boost::filesystem::exists(_parameters.getLinelistIndividualsCacheFileName().c_str())) {
@@ -157,29 +161,35 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
 }
 
 /** Returns whether a cluster is reported in the cluster line-list output file. */
-bool DataDemographicsProcessor::isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
+bool DataDemographicsProcessor::isReportedInCsv(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
     const auto& parameters = Data.GetParameters();
-    auto mainResultsCutoff = [&]() {
-        return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
-    };
     if (cluster.reportableRecurrenceInterval(parameters, simVars) && !Data.isDrilldown())
         return parameters.getCutoffLineListCSV() <= std::round(cluster.GetRecurrenceInterval(Data, iReportedCluster + 1, simVars).second) // round RI to whole days
-        && mainResultsCutoff();
+        && meetsMainResultsCutoff(cluster, iReportedCluster, simVars);
     if (cluster.reportablePValue(parameters, simVars))
         return macro_less_than_or_equal(cluster.getReportingPValue(parameters, simVars, parameters.GetIsIterativeScanning() || (iReportedCluster + 1) == 1), parameters.getCutoffLineListCSV(), DBL_CMP_TOLERANCE) 
-        && mainResultsCutoff();
+        && meetsMainResultsCutoff(cluster, iReportedCluster, simVars);
     // Otherwise match reporting criteria of main results file.
-    return mainResultsCutoff();
+    return meetsMainResultsCutoff(cluster, iReportedCluster, simVars);
+}
+
+/** Returns whether cluster meets main results file cutoff. */
+bool DataDemographicsProcessor::meetsMainResultsCutoff(const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars) {
+    return iReportedCluster == 0 || (cluster.m_nRatio >= MIN_CLUSTER_LLR_REPORT && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()));
 }
 
 /* Returns bitset which indicates the clusters indexes which contain location/date in their cluster window. */
-boost::dynamic_bitset<>& DataDemographicsProcessor::getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters) const {
-    // Determine which clusters this record applys to.
-    applicable_clusters.reset();
+boost::dynamic_bitset<>& DataDemographicsProcessor::getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters, bool reportedOnly) const {
+    if (applicable_clusters.empty())
+        applicable_clusters.resize(_cluster_locations.size());
+    else
+        applicable_clusters.reset();
     int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate), endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
+    // Determine which clusters this record applys to.
     for (const auto& cluster_locs : _cluster_locations) {
+        if (reportedOnly && !cluster_locs.second.second) continue;
         const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
-        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.test(tid))
+        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.first.test(tid))
             continue;
         if (startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
             applicable_clusters.set(cluster_locs.first);
@@ -227,7 +237,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate);
             int endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
             // Determine which clusters this record applys to.
-            getApplicableClusters(tid, nDate, applicable_clusters);
+            getApplicableClusters(tid, nDate, applicable_clusters, true);
             boost::logic::tribool is_new_event(boost::logic::indeterminate); // unknown, false, true
             const char * value = 0; std::vector<std::string> values; std::string individual;
             for (auto const& fieldMap: linelistFieldsMap) {
@@ -309,7 +319,7 @@ bool DataDemographicsProcessor::hasIndividualGeographically() const {
 /** Returns whether a record (tid and nDate) is within a cluster. */
 bool DataDemographicsProcessor::inCluster(tract_t tid, Julian nDate) const {
     boost::dynamic_bitset<> applicable_clusters(_cluster_locations.size());
-    return getApplicableClusters(tid, nDate, applicable_clusters).any();
+    return getApplicableClusters(tid, nDate, applicable_clusters, true).any();
 }
 
 /* Finalize usage of this object - overwriting events signal file. */

@@ -115,7 +115,7 @@ class DataDemographicsProcessor{
         const SimulationVariables * _sim_vars;
 
         std::vector<DemographicAttributeSet> _demographics_by_dataset; // accumulates demographics by data
-        std::map<int, boost::dynamic_bitset<>> _cluster_locations; // cluster locations <mlc cluster index, locations of cluster bitset>
+        std::map<int, std::pair<boost::dynamic_bitset<>, bool>> _cluster_locations; // cluster locations <mlc cluster index, locations of cluster bitset, reported-in-csv>
         std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset; // cluster demographics <mlc cluster index, demographics set>
         std::set<std::string> _existing_individuals; // individuals from previous analyses
         boost::shared_ptr<bloom_filter> _individuals_filter;
@@ -125,7 +125,6 @@ class DataDemographicsProcessor{
         ClusterEventCounts_t _cluster_event_totals; // cluster event totals <mlc cluster index, <total new individuals, total events/individuals>>
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times, unsigned int analysis_count);
-        boost::dynamic_bitset<> & getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters) const;
         bool processCaseFileLinelist(const RealDataSet& DataSet, unsigned int analysis_count);
         void removeTempClusterFiles();
         void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet, unsigned int analysis_count);
@@ -136,6 +135,7 @@ class DataDemographicsProcessor{
         ~DataDemographicsProcessor();
 
         void                             finalize();
+        boost::dynamic_bitset<>        & getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters, bool reportedOnly) const;
         const ClusterEventCounts_t     & getClusterEventTotals() const { return _cluster_event_totals; }
         const DemographicAttributeSet  & getDataSetDemographics(unsigned int idx) const { return _demographics_by_dataset.at(idx); }
         bool                             hasIndividualAttribute() const;
@@ -143,7 +143,8 @@ class DataDemographicsProcessor{
         bool                             inCluster(tract_t tid, Julian nDate) const;
         bool                             isExistingIndividual(const std::string& s) const { return _existing_individuals.find(s) != _existing_individuals.end(); }
         bool                             isNewIndividual(const std::string& s) const { return _new_individuals.find(s) != _new_individuals.end(); }
-        static                           bool isReported(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
+        static                           bool isReportedInCsv(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
+        static                           bool meetsMainResultsCutoff(const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
         void                             print();
         void                             process(unsigned int analysis_count);
 };

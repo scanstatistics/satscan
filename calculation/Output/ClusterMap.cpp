@@ -65,11 +65,10 @@ std::string& EventType::toJson(std::string& json_str) {
     return json_str;
 }
 
-/* Sorts categories by times encountered, falling back to label as tie breaker. */
+/* Sorts categories by label. */
 const EventType::CategoriesContainer_t& EventType::sortCategories() {
     std::sort(_categories.begin(), _categories.end(), [](const CategoryTuple_t &left, const CategoryTuple_t &right) {
-        if (left.get<2>() == right.get<2>()) return left.get<1>() < right.get<1>();
-        return left.get<2>() > right.get<2>();
+        return left.get<1>() < right.get<1>();
     });
     return _categories;
 }
@@ -88,7 +87,7 @@ const char * ClusterMap::TEMPLATE = " \
         <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" charset=\"utf-8\"> \n \
         <link href=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/nouislider.css\"> \n \
-        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/mapgoogle-1.0.css\"> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/mapgoogle-1.1.css\"> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/clustercharts/jQuery.resizeEnd.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.js\"></script> \n \
@@ -98,7 +97,60 @@ const char * ClusterMap::TEMPLATE = " \
         <script src=\"--resource-path--javascript/clustercharts/OverlappingMarkerSpiderfier_1.0.3_oms.min.js\"></script> \n \
     </head> \n \
     <body> \n \
-		<div id='load_error'></div> \n \
+    <div id='load_error'></div> \n \
+    <div class='modal fade' id='graphs-modal-modal' data-backdrop='static' data-keyboard='false'> \n \
+    <div class='modal-dialog modal-lg'>  \n \
+    <div class='modal-content'> \n \
+    <div class='modal-header'> \n \
+    <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button> \n \
+    <h4 class='modal-title'>Advanced Options</h4></div> \n \
+    <div class='modal-body'> \n \
+    <div class='options-row'> \n \
+    <div style='display: table;'> \n \
+    <div class='btn-group' style='display: table-cell;'> \n \
+    <h5>Map Options</h5> \n \
+    <label><input type='checkbox' id='id_show_location_points'/>Show all location points</label> \n \
+    <label><input type='checkbox' id='id_show_all_edges'/>Show all network edges</label> \n \
+    <div id='id_individuals_options' style='display:none;'> \n \
+    <h5>Display Individual Characteristics</h5> \n \
+    <label><input type='checkbox' id='id_show_legend' checked=checked/>Display Individuals Legend</label> \n \
+    <div id='id_color_events'> \n \
+        <label for='id_color_event_type'>Colors By:</label> \n \
+        <select name='color_event_type' id='id_color_event_type' class='events-color' multiple='multiple'> \n \
+            <option value='none' class='none'>All White</option> \n \
+            <optgroup label='Cluster and Time Period' class='cluster_time_period'> \n \
+                <option value='inside_cluster' class='cluster_time_period'>Inside Cluster</option> \n \
+                <option value='new_report' class='cluster_time_period'>First Time in Cluster</option> \n \
+                <option value='recent_cases' class='cluster_time_period'>Recent</option> \n \
+            </optgroup> \n \
+            --color-event-groups-- \n \
+        </select> \n \
+    </div> \n \
+    <div id='id_shape_events'> \n \
+        <label for='id_shape_event_type'>Shapes By:</label> \n \
+        <select name='shape_event_type' id='id_shape_event_type' class='events-shape'multiple='multiple'> \n \
+            <option value='none' class='none'>All Circles</option> \n \
+            <optgroup label='Cluster and Time Period' class='cluster_time_period'> \n \
+                <option value='inside_cluster' class='cluster_time_period'>Inside Cluster</option> \n \
+                <option value='new_report' class='cluster_time_period'>First Time in Cluster</option> \n \
+                <option value='recent_cases' class='cluster_time_period'>Recent</option> \n \
+            </optgroup> \n \
+            --shape-event-groups-- \n \
+        </select> \n \
+    </div> \n \
+    <div id='id_distinguish_recent_div' style='margin-top:5px;display:none;'> \n \
+        <label>Recent Individuals</label> \n \
+        <div id='id_recent_section' style='padding-left:10px;padding-right:10px;'> \n \
+            <label for='slider_recent' style='display:none;'>Recent Individuals</label> \n \
+            <div class='slider-styled slider-round' id='slider_recent'></div> \n \
+            <div id='id_recent_range'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
+        </div> \n \
+    </div> \n \
+    <div id='id_icon_size'><label>Individuals Icon Size</label></div> \n \
+    <div class='slider-styled slider-round' id='slider_size'></div> \n \
+    <div id='id_icon_range'><span>&#129048; smaller</span><span>larger&#x1F81A;</span></div> \n \
+    </div> \n \
+    </div></div></div></div></div></div></div> \n \
     <div class='container-fluid main-content'> \n \
         <div class='row'> \n \
             <div id='map-outer' class='col-md-12'> \n \
@@ -109,7 +161,7 @@ const char * ClusterMap::TEMPLATE = " \
                 </div>\n \
                 <div class='options-row'> \n \
                     <div id='id_clusters'>\n \
-                        <div><label>Display Clusters By:</label></div> \n \
+                        <div><label>Select Clusters By:</label></div> \n \
                         <input type='radio' name='cluster_display_type' id='cl_value' value='value' checked=checked/><label for='cl_value'>P-Value</label> \n \
                         <label for='slider_clusters'>P-Value</label> \n \
                         <div class='slider-styled slider-round' id='slider_clusters'></div> \n \
@@ -119,69 +171,45 @@ const char * ClusterMap::TEMPLATE = " \
                         <select name='select_clusters' id='id_select_clusters' multiple='multiple' class='clusters-select'> \n \
                             --cluster-options--\n \
                         </select> \n \
-                        <p class='help-block'>Toggle display of clusters.</p> \n \
                     </div>\n \
                     <div id='id_rates_option'> \n \
                         <label><input type='radio' class='standard' name='view_rate' id='id_view_highlow' value='entire' checked=checked />High and low clusters</label>\n \
                         <label><input type='radio' class='standard' name='view_rate' id='id_view_high' value='cluster'/>High only</label>\n \
                         <label><input type='radio' class='standard' name='view_rate' id='id_view_low' value='cluster'/>Low only</label>\n \
-                        <p class='help-block'>Toggle display of clusters for scan rate.</p>\n \
                     </div> \n \
                     <div id='id_secondary_clusters_option'> \n \
                         <div>Secondary Clusters:</div>\n \
                         <label><input type='checkbox' id='id_hierarchical' value='secondary' />Hierarchical</label>\n \
                         <label><input type='checkbox' id='id_gini' value='secondary' />Gini</label>\n \
-                        <p class='help-block'>Display options for secondary clusters.</p>\n \
                     </div> \n \
                     <div>Show clusters using:</div>\n \
                     <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />--cluster-display--</label>\n \
                     <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_locations' value='cluster' />Locations</label>\n \
-                    <p class='help-block'>Display options for clusters.</p>\n \
-                    <label><input type='checkbox' id='id_show_location_points' />Show all location points</label>\n \
-                    <p class='help-block'>Toggle display of location points.</p>\n \
-                    <label><input type='checkbox' id='id_show_all_edges' />Show all network edges</label>\n \
-                    <p class='help-block'>Toggle display of all network edges.</p>\n \
                 </div> \n \
                 <div class='options-row event-controls'> \n \
-                    <div id='id_display_events'> \n \
-                        <label for='id_select_event_type'>Display Individuals By:</label> \n \
-                        <select name='select_event_type' id='id_select_event_type' multiple='multiple' class='events-select'> \n \
-                        --select-groups-event-type-display-- \n \
+                    <div id='id_display_events' style='margin-bottom: 8px;'> \n \
+                        <label><input type='checkbox' id='id_display_individuals' value='cluster'/>Display Individuals</label> \n \
+                    </div> \n \
+                    <div id='id_events_display_options' style='display:none;'> \n \
+                        <div class='slider-styled slider-round' id='slider_display'></div> \n \
+                        <div class='slider_display_range'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
+                        <div class='pull-left'> \n \
+                            <button type='button' class='btn btn-success btn-sm' id='id_run_timeline'>Run</button> \n \
+                            <button type='button' class='btn btn-primary btn-sm' id='id_pause_timeline'>Pause</button> \n \
+                            <button type='button' class='btn btn-secondary btn-sm btn-warning' id='id_run_timeline_reset'>Reset</button> \n \
+                        </div> \n \
+                        <div class='clearfix'></div> \n \
+                        <label for='slider_speed'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
+                        <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
+                        <label for='id_exclude_event_type' style='margin-top: 5px;'>Exclude Individuals:</label> \n \
+                        <select name='exclude_event_type' id='id_exclude_event_type' multiple='multiple' class='events-select' disabled='disabled'> \n \
+                            <option value='outside_cluster' class='outside_cluster' >Outside Cluster</option> \n \
+                            --exclude-event-groups--\n \
                         </select> \n \
                     </div> \n \
-                    <p class='help-block'>Displays markers for selected groups.</p> \n \
-                    <div id='id_group_events'>  \n \
-                    <label for='id_group_event_type'>Separate Icons:</label> \n \
-                    <select name='group_event_type' id='id_group_event_type' multiple='multiple' class='events-group'></select> \n \
-                    </div> \n \
-                    <p class='help-block'>Maximum of 8 can be distinguished by icon.</p> \n \
-                    <div id='id_filter_events'> \n \
-                        <label for='id_filter_event_type'>Exclude Individuals:</label> \n \
-                        <select name='filter_event_type' id='id_filter_event_type' multiple='multiple' class='events-filter'> \n \
-                        --select-groups-event-type-exclude-- \n \
-                        </select> \n \
-                    </div> \n \
-                    <p class='help-block'>Filter to exclude markers of displayed individuals.</p> \n \
-                    <label for='slider_display'>Individuals In Period</label> \n \
-                    <div class='slider-styled slider-round' id='slider_display'></div> \n \
-                    <div class='slider_display_range'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
-                    <div class='pull-left'> \n \
-                    <button type='button' class='btn btn-success btn-sm' id='id_run_timeline'>Run</button> \n \
-                    <button type='button' class='btn btn-primary btn-sm' id='id_pause_timeline'>Pause</button> \n \
-                    <button type='button' class='btn btn-secondary btn-sm btn-warning' id='id_run_timeline_reset'>Reset</button> \n \
-                    </div> \n \
-                    <div class='clearfix'></div> \n \
-                    <label for='slider_speed'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
-                    <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
-                    <label for='slider_display'>Recent Individuals</label> \n \
-                    <div class='slider-styled slider-round' id='slider_recent'></div> \n \
-                    <div id='id_recent_range'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
-                    <label><input type='checkbox' id='id_show_legend' checked=checked />Display Individuals Legend</label> \n \
-                    <div id='id_icon_size'><label>Individuals Icon Size</label></div> \n \
-                     <div class='slider-styled slider-round' id='slider_size' ></div> \n \
-                     <div id='id_icon_range'><span>&#129048; smaller</span><span>larger &#x1F81A;</span></div> \n \
-                    <div class='clearfix'></div> \n \
                 </div> \n \
+                <div id='id_additional_options'><a href='#' data-toggle='modal' data-target='#graphs-modal-modal'>Additional Options</a></div> \n \
+                <div class='clearfix'></div> \n \
                 <div id='id_display_count'>\n \
                     <fieldset>\n \
                             <legend>Display Data:</legend>\n \
@@ -212,7 +240,9 @@ const char * ClusterMap::TEMPLATE = " \
             const true_dates = --true-dates--; \n \
             var event_types = [--event-types-definitions--]; \n \
             var events = [--event-definitions--]; \n \
-            var parameters = {--parameters--};\n \
+            const parameters = {--parameters--};\n \
+            const slider_range = {--slider-range--};\n \
+            const slider_range_start = --slider-range-start--;\n \
             if (parameters.scanrate != 3) { $('#id_rates_option').hide(); }\n \
             if (!parameters.giniscan) { $('#id_secondary_clusters_option').hide(); }\n \
             var entire_region_points = [--entire-region-points--]; \n \
@@ -222,7 +252,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.3.2.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.4.0.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -367,6 +397,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
         std::stringstream event_types;
         std::vector<std::pair<std::string, std::string>> event_attrs;
         std::set<const EventType*> unseen_events; // tracks which event types haven't been seen in this record
+        boost::dynamic_bitset<> applicable_clusters;
         while (Source->ReadRecord()) {
             DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
             if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
@@ -374,6 +405,8 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
             readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
             if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            // Determine which clusters this record applys to.
+            demographics.getApplicableClusters(tid, case_date, applicable_clusters, false);
             // Compile individual attributes from this record.
             event_types.str("");
             event_attrs.clear();
@@ -415,7 +448,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
             // Determine status of this individual.
             if (demographics.isNewIndividual(individual))
                 status = "new";
-            else if (demographics.inCluster(tid, case_date) && demographics.isExistingIndividual(individual))
+            else if (applicable_clusters.any()/*demographics.inCluster(tid, case_date)*/ && demographics.isExistingIndividual(individual))
                 status = "ongoing";
             else
                 status = "outside";
@@ -428,12 +461,32 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 JulianToMDY(&jmonth, &jday, &jyear, case_date);
                 _event_definitions << "date: new Date(" << jyear << ", " << (jmonth - 1) << ", " << jday << "),";
             }
+            if (applicable_clusters.any()) {
+                size_t index = applicable_clusters.find_first();
+                _event_definitions << " clusters: [" << (index + 1);
+                index = applicable_clusters.find_next(index);
+                while (index != applicable_clusters.npos) {
+                    _event_definitions << "," << (index + 1);
+                    index = applicable_clusters.find_next(index);
+                }
+                _event_definitions << "], ";
+            }
             for (auto& unseen : unseen_events) { // now add unseen event types so that each record in the javascript hash is complete
                 if (event_types.tellp()) event_types << ",";
                 event_types << "'" << unseen->className() << "': '" << unseen->className() << "-not-applicable-'";
             }
             if (event_types.tellp()) { _event_definitions << event_types.str(); }
             _event_definitions << ", info: '<div style=\"padding:5px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << individual << "</div>Date: " << JulianToString(event_date, case_date, parameters.GetPrecisionOfTimesType()) << "<br>";
+            if (applicable_clusters.any()) { // Report which clusters this individual belongs in.
+                size_t index = applicable_clusters.find_first();
+                _event_definitions << "Inside Clusters: " << (index + 1);
+                index = applicable_clusters.find_next(index);
+                while (index != applicable_clusters.npos) {
+                    _event_definitions << ", " << (index + 1);
+                    index = applicable_clusters.find_next(index);
+                }
+                _event_definitions << "<br>";
+            }
             std::sort(event_attrs.begin(), event_attrs.end(), [](const std::pair<std::string, std::string> &left, const std::pair<std::string, std::string> &right) {
                 return left.first < right.first;
             });
@@ -503,8 +556,9 @@ void ClusterMap::finalize() {
             }
             stream_buffer << "</optgroup>";
         }
-        templateReplace(html, "--select-groups-event-type-display--", stream_buffer.str());
-        templateReplace(html, "--select-groups-event-type-exclude--", stream_buffer.str());
+        templateReplace(html, "--exclude-event-groups--", stream_buffer.str());
+        templateReplace(html, "--color-event-groups--", stream_buffer.str());
+        templateReplace(html, "--shape-event-groups--", stream_buffer.str());
         stream_buffer.str("");
         for (auto eventtype=_event_types.begin(); eventtype != _event_types.end(); ++eventtype) {
             stream_buffer << std::endl << eventtype->toJson(str_buffer) << ((eventtype + 1) == _event_types.end() ? "" : ",");
@@ -527,11 +581,22 @@ void ClusterMap::finalize() {
             templateReplace(html, "--true-dates--", "true");
         }
         templateReplace(html, "--parameters--", printString( // replace parameters hash
-            str_buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,prospective:%s",
-            params.GetAreaScanRateType(), params.getReportGiniOptimizedClusters() ? "true" : "false", params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false"
+            str_buffer, "scanrate:%d,giniscan:%s,prospective:%s,firsttimers:%s",
+            params.GetAreaScanRateType(),
+            params.getReportGiniOptimizedClusters() ? "true" : "false", 
+            params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false",
+            params.GetIsProspectiveAnalysis() && params.getLinelistIndividualsCacheFileName().size() && !_dataHub.isDrilldown() ? "true" : "false"
         ));
+        templateReplace(html, "--slider-range--", VisualizationUtils::getSliderRange(_dataHub));
+        if (params.GetIsProspectiveAnalysis()) {
+            unsigned int default_RI = params.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(params.getCutoffLineListCSV()) : 365;
+            templateReplace(html, "--slider-range-start--", printString(str_buffer, "%u", default_RI));
+        } else {
+            double default_PV = params.getReadingLineDataFromCasefile() ? params.getCutoffLineListCSV() : 1.0;
+            templateReplace(html, "--slider-range-start--", printString(str_buffer, "%g", default_PV));
+        }
         templateReplace(html, "--satscan-version--", AppToolkit::getToolkit().GetVersion());
-		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Circles/Edges" : "Circles"));
+		templateReplace(html, "--cluster-display--", std::string(_dataHub.GetParameters().getUseLocationsNetworkFile() ? "Edges" : "Circles"));
         html_out << html.str() << std::endl;
         html_out.close();
     } catch (prg_exception& x) {

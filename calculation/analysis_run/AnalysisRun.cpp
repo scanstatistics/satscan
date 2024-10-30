@@ -430,7 +430,7 @@ void AnalysisExecution::finalize() {
                 if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
                     const auto& cluster_counts = _data_demographic_processor->getClusterEventTotals();
                     for (tract_t i = 0; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                        if (!DataDemographicsProcessor::isReported(_data_hub, _reportClusters.GetCluster(i), i + 1, _sim_vars))
+                        if (!DataDemographicsProcessor::isReportedInCsv(_data_hub, _reportClusters.GetCluster(i), i + 1, _sim_vars))
                             continue; // Use same cutoff as line list cluster csv
                         unsigned int newcases = cluster_counts.at(static_cast<int>(i)).first;
                         signaltext << (signaltext.str().size() ? "" : "All clusters in the line list file:") << EmailText::LINEBREAK << "Cluster #" << (i + 1);

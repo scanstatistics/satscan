@@ -26,7 +26,7 @@ const char * CartesianGraph::TEMPLATE = " \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/jQuery.resizeEnd.js'></script> \n \
         <script type=\"text/javascript\">jQuery.noConflict();</script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.3.1.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.3.2.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
@@ -40,7 +40,9 @@ const char * CartesianGraph::TEMPLATE = " \
             --cluster-definitions-- \n \
             ]; \n \
             var chart = null; \n \
-            var parameters = {--parameters--};\n \
+            const parameters = {--parameters--};\n \
+            const slider_range = {--slider-range--};\n \
+            const slider_range_start = --slider-range-start--;\n \
             var cluster_region = {--cluster-region-hash--}; \n \
             var cluster_region_points = [--cluster-region-points--]; \n \
             var entire_region = {--entire-region-hash--}; \n \
@@ -329,6 +331,14 @@ void CartesianGraph::finalize() {
             parameters.GetAreaScanRateType(), parameters.getReportGiniOptimizedClusters() ? "true": "false", parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false"
         );
         templateReplace(html, "--parameters--", buffer.c_str());
+        templateReplace(html, "--slider-range--", VisualizationUtils::getSliderRange(_dataHub));
+        if (parameters.GetIsProspectiveAnalysis()) {
+            unsigned int default_RI = parameters.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(parameters.getCutoffLineListCSV()) : 365;
+            templateReplace(html, "--slider-range-start--", printString(buffer, "%u", default_RI));
+        } else {
+            double default_PV = parameters.getReadingLineDataFromCasefile() ? parameters.getCutoffLineListCSV() : 1.0;
+            templateReplace(html, "--slider-range-start--", printString(buffer, "%g", default_PV));
+        }
 
         std::vector<double> vCoordinates;
         // Create collections of connections between the cluster nodes - we'll use them to create edges in display.

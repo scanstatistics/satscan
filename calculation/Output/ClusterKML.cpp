@@ -454,6 +454,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         if (parameters.GetIsSpaceTimeAnalysis())
             JulianToString(end_date, _dataHub.GetStudyPeriodEndDate(), parameters.GetPrecisionOfTimesType(), "-", true, false, true);
 		tract_t tid; count_t count; Julian case_date;
+        boost::dynamic_bitset<> applicable_clusters;
         while (Source->ReadRecord()) {
 			DataSetHandler::RecordStatusType readStatus = _dataHub.GetDataSetHandler().RetrieveIdentifierIndex(*Source, tid); //read and validate that tract identifier
 			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
@@ -461,6 +462,8 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
 			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
 			readStatus = _dataHub.GetDataSetHandler().RetrieveCountDate(*Source, case_date);
 			if (readStatus != DataSetHandler::Accepted) continue; // should only be either Accepted or Ignored since we have already read this file
+            // Determine which clusters this record applys to.
+            demographics.getApplicableClusters(tid, case_date, applicable_clusters, false);
             category = ""; individual = ""; latitude = ""; longitude = "";
             placemark.str(""); extended.str(""); coordinates.str("");
             placemark << "<Placemark>" << std::endl;
@@ -500,7 +503,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "<styleUrl>#events-" << toHex(category) << idx; // define the style for this category and current set index
             if (demographics.isNewIndividual(individual)) // individual status is also part of the style
                 placemark << "-new";
-            else if (demographics.inCluster(tid, case_date) && demographics.isExistingIndividual(individual))
+            else if (applicable_clusters.any()/*demographics.inCluster(tid, case_date)*/ && demographics.isExistingIndividual(individual))
                 placemark << "-ongoing";
             else
                 placemark << "-outside";
