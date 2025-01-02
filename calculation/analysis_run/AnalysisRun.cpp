@@ -1303,6 +1303,7 @@ void AnalysisExecution::printRetainedClustersStatus(FILE* fp, bool bClusterRepor
                 }
                 break;
             }
+        case BATCHED:
         case RANK:
         case BERNOULLI:
         case SPACETIMEPERMUTATION:
@@ -2061,7 +2062,7 @@ AnalysisDrilldown::AnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, CSaTScanData& source_data_hub, 
     const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type, BasePrint& print, unsigned int downlevel, boost::optional<std::string&> cluster_path
 ): AbstractAnalysisDrilldown(source_parameters, base_output, executing_type, print, downlevel, cluster_path) {
-    // Restrict to purely spatial or space-time analyses - ParametersValidate shold be guarding most invalid parameter settings.
+    // Restrict to purely spatial or space-time analyses - ParametersValidate should be guarding most invalid parameter settings.
     if (!(_parameters.GetIsPurelySpatialAnalysis() || _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND))
         throw prg_error("AnalysisDrilldown is not implemented for Analysis Type '%d'.", "constructor()", _parameters.GetAnalysisType());
     // Create new data hub that is will be only data from detected cluster.
@@ -2416,6 +2417,7 @@ std::pair<double, double> AnalysisRunner::getMemoryApproxiation(const CParameter
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case CATEGORICAL:
     case ORDINAL: b = sizeof(count_t); break;
+    case BATCHED:
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
     case HOMOGENEOUSPOISSON: b = 1; break; // ??
     case RANK: b = sizeof(count_t) + sizeof(measure_t); break;
@@ -2426,7 +2428,7 @@ std::pair<double, double> AnalysisRunner::getMemoryApproxiation(const CParameter
   for (size_t i=0; i < data_hub.GetDataSetHandler().GetNumDataSets(); ++i)
      CAT += data_hub.GetDataSetHandler().GetDataSet(i).getPopulationData().GetNumOrdinalCategories();
   //for exponential model, EXP =1 one for all other models
-  double EXP = 1; //EXP is mulitplied by 4 bytes
+  double EXP = 1; //EXP is multiplied by 4 bytes
   switch (parameters.GetProbabilityModelType()) {
     case POISSON:
     case SPACETIMEPERMUTATION:
@@ -2437,6 +2439,7 @@ std::pair<double, double> AnalysisRunner::getMemoryApproxiation(const CParameter
     case UNIFORMTIME:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
+    case BATCHED:
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
     default : throw prg_error("Unknown model type '%d'.\n", "getMemoryApproxiation()", parameters.GetProbabilityModelType());
   };

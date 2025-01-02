@@ -22,7 +22,8 @@ class DataSetInterface {
     count_t                     gTotalCases;            /** number of cases in dataset */
     count_t                     gTotalControls;         /** number of controls in dataset */
     measure_t                   gTotalMeasure;          /** number of expected cases in dataset */
-    measure_t                   gTotalMeasureAux;        /** number of auxillary entries in dataset */
+    measure_t                   gTotalMeasureAux;       /** number of auxillary entries in dataset */
+    measure_t                   gTotalMeasureAux2;      /** number of auxillary entries in dataset */
     unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
     const AbstractRandomizer  * _randomizer;            /** pointer to data set randomizer */
 
@@ -46,8 +47,17 @@ class DataSetInterface {
     measure_t                 * gpPTMeasureArray;       /** pointer to dataset temporal measure array */
     measure_t                 * gpPSMeasureArray;       /** pointer to dataset spatial measure array */
     measure_t                ** gppMeasureAuxArray;      /** */
+    measure_t                ** gppMeasureAux2Array;      /** */
+
+    boost::dynamic_bitset<>  ** gppBatchIndexesArray;
+    boost::dynamic_bitset<>  ** gppPositiveBatchIndexesArray;
+    boost::dynamic_bitset<>  * gpPsPositiveBatchIndexesArray;
+    boost::dynamic_bitset<>  * gpPtPositiveBatchIndexesArray;
+
     measure_t                 * gpPTMeasureAuxArray;      /** */
+    measure_t                 * gpPTMeasureAux2Array;      /** */
     measure_t                 * gpPSMeasureAuxArray;     /** spatial */
+    measure_t                 * gpPSMeasureAux2Array;     /** spatial */
     const AbstractTimeTrend   * gpTimeTrend;            /** pointer to dataset time trend structure */
 
     inline count_t                    ** GetCaseArray() const {return gppCaseArray;}
@@ -63,8 +73,22 @@ class DataSetInterface {
     inline measure_t                   * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t                   * GetPTMeasureArray() const {return gpPTMeasureArray;}
     inline measure_t                  ** GetMeasureAuxArray() const {return gppMeasureAuxArray;}
+    inline measure_t                  ** GetMeasureAux2Array() const { return gppMeasureAux2Array; }
     inline measure_t                   * GetPSMeasureAuxArray() const {return gpPSMeasureAuxArray;}
+    inline measure_t                   * GetPSMeasureAux2Array() const { return gpPSMeasureAux2Array; }
     inline measure_t                   * GetPTMeasureAuxArray() const {return gpPTMeasureAuxArray;}
+    inline measure_t                   * GetPTMeasureAux2Array() const { return gpPTMeasureAux2Array; }
+
+    boost::dynamic_bitset<>           ** getBatchIndexesArray() const { return gppBatchIndexesArray; }
+    boost::dynamic_bitset<>           ** getPositiveBatchIndexesArray() const { return gppPositiveBatchIndexesArray; }
+    boost::dynamic_bitset<>            * getPsPositiveBatchIndexesArray() const { return gpPsPositiveBatchIndexesArray; }
+    boost::dynamic_bitset<>            * getPtPositiveBatchIndexesArray() const { return gpPtPositiveBatchIndexesArray; }
+
+    void                                 setBatchIndexesArray(boost::dynamic_bitset<>** pp) { gppBatchIndexesArray = pp; }
+    void                                 setPositiveBatchIndexesArray(boost::dynamic_bitset<>** pp) { gppPositiveBatchIndexesArray = pp; gpPsPositiveBatchIndexesArray = pp[0]; }
+    void                                 setPtPositiveBatchIndexesArray(boost::dynamic_bitset<>* p) { gpPtPositiveBatchIndexesArray = p; }
+
+
     inline const AbstractRandomizer    * GetRandomizer() const {return _randomizer;}
     unsigned int                         getDataStartIndex() const { return _add_data_start_index; }
     inline const AbstractTimeTrend     * GetTimeTrend() const {return gpTimeTrend;}
@@ -72,6 +96,7 @@ class DataSetInterface {
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}
     inline measure_t                     GetTotalMeasureCount() const {return gTotalMeasure;}
     inline measure_t                     GetTotalMeasureAuxCount() const {return gTotalMeasureAux;}
+    inline measure_t                     GetTotalMeasureAux2Count() const { return gTotalMeasureAux2; }
     void                                 ResetCaseArray(count_t t);
     void                                 SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
     void                                 SetNumOrdinalCategories(unsigned int u) {giNumOrdinalCategories = u;}
@@ -83,13 +108,16 @@ class DataSetInterface {
     void                                 SetNCMeasureArray(measure_t ** ppMeasure) {gppNCMeasureArray = ppMeasure;}
     void                                 SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
     void                                 SetPTMeasureAuxArray(measure_t * pPTMeasureAux) {gpPTMeasureAuxArray = pPTMeasureAux;}
+    void                                 SetPTMeasureAux2Array(measure_t* pPTMeasureAux) { gpPTMeasureAux2Array = pPTMeasureAux; }
     void                                 SetMeasureAuxArray(measure_t ** ppMeasureAux) {gppMeasureAuxArray = ppMeasureAux;gpPSMeasureAuxArray = ppMeasureAux[0];}
+    void                                 SetMeasureAux2Array(measure_t** ppMeasureAux) { gppMeasureAux2Array = ppMeasureAux; gpPSMeasureAux2Array = ppMeasureAux[0]; }
     void                                 SetRandomizer(const AbstractRandomizer& randomizer) {_randomizer = &randomizer;}
     void                                 SetTimeTrend(const AbstractTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
     void                                 SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                                 SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
     void                                 SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
     void                                 SetTotalMeasureAuxCount(measure_t tMeasureAux) {gTotalMeasureAux = tMeasureAux;}
+    void                                 SetTotalMeasureAux2Count(measure_t tMeasureAux) { gTotalMeasureAux2 = tMeasureAux; }
 };
 //******************************************************************************
 #endif

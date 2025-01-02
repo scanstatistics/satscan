@@ -31,6 +31,7 @@ class SaTScanDataReader {
     std::deque<void*>           gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
     bool                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
+    bool                        ReadBatchedData();
     bool                        ReadBernoulliData();
     bool                        ReadCoordinatesFile();
     bool                        ReadCoordinatesFileAsCartesian(DataSource& Source, bool closeAdditions = true);

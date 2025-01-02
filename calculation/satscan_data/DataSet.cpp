@@ -30,9 +30,9 @@ void printMeasureArray(const TwoDimMeasureArray_t& arrayClass, FILE * stream) {
 DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
            : giIntervalsDimensions(iNumTimeIntervals), giLocationDimensions(iNumTracts), giMetaLocations(iMetaLocations), giSetIndex(iSetIndex),
              gpCaseData_PT(0), gpCaseData(0), gpCaseData_NC(0), gpMeasureData(0), gpMeasureData_NC(0),
-             gpMeasureData_Aux(0), gpMeasureData_PT(0), gpMeasureData_PT_Aux(0), gpCaseData_PT_NC(0),
-             gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0), 
-			 gpTimeTrend(AbstractTimeTrend::getTimeTrend(parameters)) {}
+             gpMeasureData_Aux(0), gpMeasureData_Aux2(0), gpMeasureData_PT(0), gpMeasureData_PT_Aux(0), gpCaseData_PT_NC(0),
+             gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0), gpPositiveBatchIndexes(0), gpMeasureData_PT_Aux2(0), gpPositiveBatchIndexes_PT(0),
+			 gpTimeTrend(AbstractTimeTrend::getTimeTrend(parameters)), gtTotalMeasureAux(0), gtTotalMeasureAux2(0){}
 
 /** copy constructor */
 DataSet::DataSet(const DataSet& thisSet) {
@@ -50,10 +50,14 @@ DataSet::~DataSet() {
     delete gpMeasureData;
     delete gpMeasureData_NC;
     delete gpMeasureData_Aux;
+    delete gpMeasureData_Aux2;
     delete[] gpMeasureData_PT;
     delete[] gpMeasureData_PT_Aux;
+    delete[] gpMeasureData_PT_Aux2;
     delete[] gpMeasureData_PT_NC;
 	delete gpTimeTrend;
+    delete gpPositiveBatchIndexes;
+    delete[] gpPositiveBatchIndexes_PT;
   }
   catch(...){}
 }
@@ -251,6 +255,42 @@ measure_t * DataSet::allocateMeasureData_PT_Aux() {
   return gpMeasureData_PT_Aux;
 }
 
+/** Allocates one dimensional array which will represent not cumulative auxillary measure
+    data, time only. Initializes all elements of array to zero. */
+BatchIndexes_t * DataSet::allocatePositiveBatchData_PT(unsigned int setSize) {
+    try {
+        if (!gpPositiveBatchIndexes_PT)
+            //allocate to # time intervals plus one -- a pointer to this array will be
+            //passed directly CTimeIntervals object, where it is assumed element at index
+            //'giIntervalsDimensions' is accessible and set to zero
+            gpPositiveBatchIndexes_PT = new BatchIndexes_t[giIntervalsDimensions + 1];
+        boost::dynamic_bitset<> theset(setSize);
+        for (unsigned int i = 0; i < giIntervalsDimensions + 1; ++i)
+            gpPositiveBatchIndexes_PT[i] = theset;
+    } catch (prg_exception& x) {
+        x.addTrace("allocatePositiveBatchData_PT()", "DataSet");
+        throw;
+    }
+    return gpPositiveBatchIndexes_PT;
+}
+
+/** Allocates one dimensional array which will represent not cumulative auxillary measure
+    data, time only. Initializes all elements of array to zero. */
+measure_t* DataSet::allocateMeasureData_PT_Aux2() {
+    try {
+        if (!gpMeasureData_PT_Aux2)
+            //allocate to # time intervals plus one -- a pointer to this array will be
+            //passed directly CTimeIntervals object, where it is assumed element at index
+            //'giIntervalsDimensions' is accessible and set to zero
+            gpMeasureData_PT_Aux2 = new measure_t[giIntervalsDimensions + 1];
+        memset(gpMeasureData_PT_Aux2, 0, (giIntervalsDimensions + 1) * sizeof(measure_t));
+    } catch (prg_exception& x) {
+        x.addTrace("allocateMeasureData_PT_Aux2()", "DataSet");
+        throw;
+    }
+    return gpMeasureData_PT_Aux2;
+}
+
 /** Allocates two dimensional array which will represent cumulative auxillary measure data,
     time by space. Initializes all elements of array to zero. */
 TwoDimMeasureArray_t & DataSet::allocateMeasureData_Aux() {
@@ -264,6 +304,33 @@ TwoDimMeasureArray_t & DataSet::allocateMeasureData_Aux() {
     throw;
   }
   return *gpMeasureData_Aux;
+}
+
+/** Allocates two dimensional array which will represent cumulative auxillary measure data,
+    time by space. Initializes all elements of array to zero. */
+TwoDimMeasureArray_t& DataSet::allocateMeasureData_Aux2() {
+    try {
+        if (!gpMeasureData_Aux2)
+            gpMeasureData_Aux2 = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
+        gpMeasureData_Aux2->Set(0);
+    } catch (prg_exception& x) {
+        x.addTrace("allocateMeasureData_Aux2()", "DataSet");
+        throw;
+    }
+    return *gpMeasureData_Aux2;
+}
+
+TwoDimBitsetArray_t& DataSet::allocatePositiveBatchData(unsigned int setSize) {
+    try {
+        if (!gpPositiveBatchIndexes)
+            gpPositiveBatchIndexes = new TwoDimensionArrayHandler<BatchIndexes_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
+        boost::dynamic_bitset<> theset(setSize);
+        gpPositiveBatchIndexes->Set(theset);
+    } catch (prg_exception& x) {
+        x.addTrace("allocatePositiveBatchData()", "DataSet");
+        throw;
+    }
+    return *gpPositiveBatchIndexes;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
@@ -336,11 +403,35 @@ measure_t * DataSet::getMeasureData_PT_Aux() const {
   return gpMeasureData_PT_Aux;
 }
 
+/** Returns pointer to allocated array that represents cumulative auxillary measure data
+    time only. Throws prg_error if not allocated. */
+measure_t* DataSet::getMeasureData_PT_Aux2() const {
+    if (!gpMeasureData_PT_Aux2) throw prg_error("gpMeasureData_PT_Aux2 not allocated.", "getMeasureData_PT_Aux2()");
+    return gpMeasureData_PT_Aux2;
+}
+
+/** Returns pointer to allocated array that represents cumulative auxillary measure data
+    time only. Throws prg_error if not allocated. */
+BatchIndexes_t * DataSet::getPositiveBatchIndexes_PT() const {
+    if (!gpPositiveBatchIndexes_PT) throw prg_error("gpPositiveBatchIndexes_PT not allocated.", "getPositiveBatchIndexes_PT()");
+    return gpPositiveBatchIndexes_PT;
+}
+
 /** Returns reference to object which manages a two dimensional array that represents
     cumulative auxillary measure data, time by space. Throws prg_error if not allocated. */
 TwoDimMeasureArray_t & DataSet::getMeasureData_Aux() const {
   if (!gpMeasureData_Aux) throw prg_error("gpMeasureData_Aux not allocated.","getMeasureData_Aux()");
   return *gpMeasureData_Aux;
+}
+
+TwoDimMeasureArray_t& DataSet::getMeasureData_Aux2() const {
+    if (!gpMeasureData_Aux2) throw prg_error("gpMeasureData_Aux2 not allocated.", "getMeasureData_Aux2()");
+    return *gpMeasureData_Aux2;
+}
+
+TwoDimBitsetArray_t& DataSet::getPositiveBatchData() const {
+    if (!gpPositiveBatchIndexes) throw prg_error("gpPositiveBatchIndexes not allocated.", "getPositiveBatchData()");
+    return *gpPositiveBatchIndexes;
 }
 
 /** For each allocated data structure which could contain meta data, reallocates and
@@ -371,6 +462,11 @@ void DataSet::reassignMetaData(const MetaManagerProxy& MetaProxy) {
   if (gpMeasureData_Aux) {
     gpMeasureData_Aux->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
     setMeasureDataAuxMeta(MetaProxy);
+  }
+  if (gpMeasureData_Aux2) {
+      gpMeasureData_Aux2->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+      // TODO - refactor setMeasureDataAuxMeta(...) to work on TwoDimMeasureArray_t?
+      setMeasureDataAuxMeta(MetaProxy);
   }
 }
 
@@ -446,6 +542,42 @@ void DataSet::setMeasureDataAuxMeta(const MetaManagerProxy& MetaLocations) {
            ppMeasure[i][MetaIndex] += ppMeasure[i][Atomic];
      }
   }
+}
+
+/** Sets measure auxillary data at meta location indexes. */
+void DataSet::setMeasureDataAux2Meta(const MetaManagerProxy& MetaLocations) {
+    std::vector<tract_t>  AtomicIndexes;
+    measure_t** ppMeasure = getMeasureData_Aux2().GetArray();
+
+    for (unsigned int m = 0; m < giMetaLocations; ++m) {
+        MetaLocations.getIndexes(m, AtomicIndexes);
+        tract_t MetaIndex = m + giLocationDimensions;
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+            ppMeasure[i][MetaIndex] = 0;
+        for (size_t t = 0; t < AtomicIndexes.size(); ++t) {
+            tract_t Atomic = AtomicIndexes[t];
+            for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+                ppMeasure[i][MetaIndex] += ppMeasure[i][Atomic];
+        }
+    }
+}
+
+/** Sets batch bit set data at meta location indexes. */
+void DataSet::setPositiveBitsetDataMeta(const MetaManagerProxy& MetaLocations) {
+    std::vector<tract_t>  AtomicIndexes;
+    BatchIndexes_t ** ppBitset = getPositiveBatchData().GetArray();
+
+    for (unsigned int m = 0; m < giMetaLocations; ++m) {
+        MetaLocations.getIndexes(m, AtomicIndexes);
+        tract_t MetaIndex = m + giLocationDimensions;
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+            ppBitset[i][MetaIndex].reset();
+        for (size_t t = 0; t < AtomicIndexes.size(); ++t) {
+            tract_t Atomic = AtomicIndexes[t];
+            for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+                ppBitset[i][MetaIndex] |= ppBitset[i][Atomic];
+        }
+    }
 }
 
 /** Allocates and sets not cumulative case data (time by space) from cumulative
@@ -586,6 +718,38 @@ void DataSet::setMeasureData_PT_Aux() {
   }
 }
 
+/** Allocates and sets cumulative auxillary measure data (time only) from cumulative
+    auxillry measure data (time by space). */
+void DataSet::setMeasureData_PT_Aux2() {
+    try {
+        allocateMeasureData_PT_Aux2();
+        measure_t** ppMeasure = getMeasureData_Aux2().GetArray();
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+            for (unsigned int t = 0; t < giLocationDimensions; ++t)
+                gpMeasureData_PT_Aux2[i] += ppMeasure[i][t];
+    }
+    catch (prg_exception& x) {
+        x.addTrace("setMeasureData_PT_Aux2()", "DataSet");
+        throw;
+    }
+}
+
+/** Allocates and sets cumulative auxillary measure data (time only) from cumulative
+    auxillry measure data (time by space). */
+void DataSet::setPositiveBatchIndexes_PT(unsigned int setSize) {
+    try {
+        allocatePositiveBatchData_PT(setSize);
+        BatchIndexes_t ** ppBitset = getPositiveBatchData().GetArray();
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i) {
+            for (unsigned int t = 0; t < giLocationDimensions; ++t)
+                gpPositiveBatchIndexes_PT[i] |= ppBitset[i][t];
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("setPositiveBatchIndexes_PT()", "DataSet");
+        throw;
+    }
+}
+
 /** Sets cumulative case data from self, assuming self is currently not cumulative.
     Repeated calls to this method or calling when data is not in a not cumulative state
     will produce erroneous data. */
@@ -621,6 +785,12 @@ void DataSet::setMeasureData_Aux(TwoDimMeasureArray_t& other) {
         *gpMeasureData_Aux = other;
 }
 
+void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
+    if (!gpMeasureData_Aux2)
+        gpMeasureData_Aux2 = new TwoDimensionArrayHandler<measure_t>(other);
+    else
+        *gpMeasureData_Aux2 = other;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// RealDataSet ///////////////////////////////////////
@@ -629,9 +799,8 @@ void DataSet::setMeasureData_Aux(TwoDimMeasureArray_t& other) {
 /** constructor */
 RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
             :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
-             gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
-             gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
-             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {
+             gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0), gpControlData(0), gtTotalMeasure(0),
+             gtTotalMeasureAtStart(0), gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gpBatchIndexes(0) {
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
     boost::gregorian::greg_weekday week_day = boost::date_time::Sunday;
@@ -648,17 +817,30 @@ RealDataSet::RealDataSet(const RealDataSet& thisSet) : DataSet(thisSet) {}
 
 /** destructor */
 RealDataSet::~RealDataSet() {
-  try {
-    delete gpControlData;
-    delete gpCaseData_Censored;
-  }
-  catch(...){}
+    try {
+        delete gpControlData;
+        delete gpCaseData_Censored;
+        delete gpBatchIndexes;
+    } catch (...){}
 }
 
 /** Resets population data structure, clearing all data and settings. */
 void RealDataSet::resetPopulationData() {
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
+}
+
+TwoDimBitsetArray_t& RealDataSet::allocateBatchData(unsigned int setSize) {
+    try {
+        if (!gpBatchIndexes)
+            gpBatchIndexes = new TwoDimensionArrayHandler<BatchIndexes_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
+        boost::dynamic_bitset<> theset(setSize);
+        gpBatchIndexes->Set(theset);
+    } catch (prg_exception& x) {
+        x.addTrace("allocateBatchData()", "DataSet");
+        throw;
+    }
+    return *gpBatchIndexes;
 }
 
 /** Allocates two dimensional array which will represent cumulative censored case
@@ -742,6 +924,11 @@ TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryInde
   return *gvCaseData_Cat.at(iCategoryIndex);
 }
 
+TwoDimBitsetArray_t& RealDataSet::getBatchData() const {
+    if (!gpBatchIndexes) throw prg_error("gpBatchIndexes not allocated.", "getBatchData()");
+    return *gpBatchIndexes;
+}
+
 /** Returns reference to object which manages a two dimensional array that represents
     cumulative censored case data, time by space. */
 TwoDimCountArray_t & RealDataSet::getCaseData_Censored() const {
@@ -768,6 +955,24 @@ void RealDataSet::reassignMetaData(const MetaManagerProxy& MetaProxy) {
     gpControlData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
     setControlData_MetaLocations(MetaProxy);
   }
+}
+
+/** Sets batch bit set data at meta location indexes. */
+void RealDataSet::setBitsetDataMeta(const MetaManagerProxy& MetaLocations) {
+    std::vector<tract_t>  AtomicIndexes;
+    BatchIndexes_t** ppBitset = getBatchData().GetArray();
+
+    for (unsigned int m = 0; m < giMetaLocations; ++m) {
+        MetaLocations.getIndexes(m, AtomicIndexes);
+        tract_t MetaIndex = m + giLocationDimensions;
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+            ppBitset[i][MetaIndex].reset();
+        for (size_t t = 0; t < AtomicIndexes.size(); ++t) {
+            tract_t Atomic = AtomicIndexes[t];
+            for (unsigned int i = 0; i < giIntervalsDimensions; ++i)
+                ppBitset[i][MetaIndex] |= ppBitset[i][Atomic];
+        }
+    }
 }
 
 /* Sets the quadratic trend used for data set during measure adjustment. */
@@ -836,7 +1041,6 @@ RealDataSet::PopulationDataPair_t RealDataSet::getPopulationMeasureData() const 
   }
   return populationPair;
 }
-
 
 void RealDataSet::reassign(TwoDimCountArray_t& cases, TwoDimMeasureArray_t& measure) {
     if (giMetaLocations != 0)

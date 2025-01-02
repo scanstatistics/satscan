@@ -20,17 +20,18 @@ class AbstractAnalysis {
         const CParameters & _parameters;
         const CSaTScanData & _data_hub;
         BasePrint & _print;
-        AbstractClusterDataFactory * _cluster_data_factory;
-        AbstractLikelihoodCalculator * _likelihood_calculator;
+        boost::shared_ptr<AbstractClusterDataFactory> _cluster_data_factory;
+        boost::shared_ptr<AbstractLikelihoodCalculator> _likelihood_calculator;
         ReplicationsProcessType _replica_process_type;
 
-        CMeasureList                        * GetNewMeasureListObject() const;
-        CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType, ExecutionType eExecutionType) const;
+        CMeasureList   * GetNewMeasureListObject() const;
+        CTimeIntervals * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType, ExecutionType eExecutionType) const;
 
     public:
         AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
-        virtual ~AbstractAnalysis();
+        virtual ~AbstractAnalysis() {}
 
+        AbstractLikelihoodCalculator * getLikelihoodCalculator() const { return _likelihood_calculator.get(); }
         static AbstractLikelihoodCalculator * GetNewLikelihoodCalculator(const CSaTScanData& DataHub);
 };    
 //******************************************************************************

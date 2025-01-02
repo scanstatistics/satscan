@@ -13,6 +13,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include "MetaTractManager.h"
 #include "DateStringParser.h"
+#include "BatchedRandomizer.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -532,7 +533,15 @@ void CSaTScanData::PostDataRead() {
 		CalculateExpectedCases();
         if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
-		if (gParameters.UseMetaLocationsFile())
+
+        if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetProbabilityModelType() == BATCHED) {
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
+            for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
+                gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
+        }
+        if (gParameters.UseMetaLocationsFile())
 			gDataSets->assignMetaData(gDataSets->getDataSets());
 	} catch (prg_exception& x) {
 		x.addTrace("PostDataRead()", "CSaTScanData");
@@ -603,6 +612,21 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gtTotalMeasure += DataSet.getTotalMeasure();
       }
     }
+    if (gParameters.GetProbabilityModelType() == BATCHED) {
+        // obtain data sets from updated randomizer
+        BatchedRandomizer* pRandomizer;
+        gtTotalCases = 0;
+        gtTotalMeasure = 0;
+        gtTotalMeasureAux = 0;
+        for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+            RealDataSet& DataSet = gDataSets->GetDataSet(t);
+            if ((pRandomizer = dynamic_cast<BatchedRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                throw prg_error("Randomizer could not be dynamically casted to BatchedRandomizer type.\n", "RemoveClusterSignificance()");
+            pRandomizer->AssignFromAttributes(DataSet);
+            gtTotalCases += DataSet.getTotalCases();
+            gtTotalMeasure += DataSet.getTotalMeasure();
+        }
+    }
     if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
       //recalculate the data set cases/measure given updated randomizer data
       AbstractNormalRandomizer *pRandomizer;
@@ -637,20 +661,24 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     }
     //now recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
-      switch (gParameters.GetProbabilityModelType()) {
-       case NORMAL         : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
-       case EXPONENTIAL    :
-       case BERNOULLI      :
-       case POISSON        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
-                             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
-       case CATEGORICAL    :
-       case ORDINAL        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
-       default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
-      }
+        switch (gParameters.GetProbabilityModelType()) {
+            case BATCHED        : for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
+                                    gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
+                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
+            case NORMAL         : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+            case EXPONENTIAL    :
+            case BERNOULLI      :
+            case POISSON        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
+                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+            case CATEGORICAL    :
+            case ORDINAL        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+            default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
         }
-        //now recalculate meta data as needed
-        if (gParameters.UseMetaLocationsFile())
-            gDataSets->assignMetaData(gDataSets->getDataSets());
+    }
+    //now recalculate meta data as needed
+    if (gParameters.UseMetaLocationsFile())
+    gDataSets->assignMetaData(gDataSets->getDataSets());
+    
     } catch (prg_exception& x) {
         x.addTrace("RemoveClusterSignificance()", "CSaTScanData");
         throw;
@@ -740,15 +768,24 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
                 pRandomizer->RemoveCase(i, tTractIndex);
         }
     } else if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
-        AbstractExponentialRandomizer *pRandomizer;
-        for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-            if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-             throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
-           //zero out cases/measure in clusters defined spatial/temporal window
-            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
-                pRandomizer->RemoveCase(i, tTractIndex);
-        }
-    } else
+           AbstractExponentialRandomizer* pRandomizer;
+           for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+               if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                   throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
+               //zero out cases/measure in clusters defined spatial/temporal window
+               for (int i = Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
+                   pRandomizer->RemoveCase(i, tTractIndex);
+           }
+     } else if (gParameters.GetProbabilityModelType() == BATCHED) {
+         BatchedRandomizer* pRandomizer;
+         for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+             if ((pRandomizer = dynamic_cast<BatchedRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                 throw prg_error("Randomizer could not be dynamically casted to BatchedRandomizer type.\n", "RemoveClusterSignificance()");
+             //zero out cases/measure in clusters defined spatial/temporal window
+             for (int i = Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
+                 pRandomizer->RemoveCase(i, tTractIndex);
+         }
+     } else
         throw prg_error("RemoveClusterSignificance() not implemented for %s model.", "RemoveClusterSignificance()", ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
 
     // Remove location population data as specified in maximum circle population file

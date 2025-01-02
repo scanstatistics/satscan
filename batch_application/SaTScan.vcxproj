@@ -290,9 +290,12 @@
     <ClCompile Include="..\calculation\cluster\MultiSetClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\MultiSetNormalClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\NormalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\MultiSetBatchedClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\BatchedClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp" />
     <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\BatchedClusterDataFactory.cpp" />
     <ClCompile Include="..\calculation\cluster\PurelySpatialCluster.cpp" />
     <ClCompile Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.cpp" />
     <ClCompile Include="..\calculation\cluster\PurelySpatialMonotoneCluster.cpp" />
@@ -308,6 +311,7 @@
     <ClCompile Include="..\calculation\loglikelihood\LikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\BatchedLikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp" />
@@ -347,6 +351,7 @@
     <ClCompile Include="..\calculation\satscan_data\DataDemographics.cpp" />
     <ClCompile Include="..\calculation\utility\DateStringParser.cpp" />
     <ClCompile Include="..\calculation\satscan_data\ExponentialDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\BatchedDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\GridTractCoordinates.cpp" />
     <ClCompile Include="..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.cpp" />
     <ClCompile Include="..\calculation\satscan_data\MakeNeighbors.cpp" />
@@ -371,6 +376,7 @@
     <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\ExponentialRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\BatchedRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\HomogeneousPoissonRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\NormalRandomizer.cpp" />
     <ClCompile Include="..\calculation\randomization\OrdinalDataRandomizer.cpp" />
@@ -382,6 +388,7 @@
     <ClCompile Include="..\calculation\randomization\WeightedNormalRandomizer.cpp" />
     <ClCompile Include="..\calculation\probability_model\BernoulliModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\ExponentialModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\BatchedModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\HomogeneousPoissonModel.cpp" />
     <ClCompile Include="..\calculation\probability_model\NormalModel.cpp" />
@@ -463,9 +470,12 @@
     <ClInclude Include="..\calculation\cluster\MultiSetClusterData.h" />
     <ClInclude Include="..\calculation\cluster\MultiSetNormalClusterData.h" />
     <ClInclude Include="..\calculation\cluster\NormalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetBatchedClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\BatchedClusterData.h" />
     <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h" />
     <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h" />
     <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\BatchedClusterDataFactory.h" />
     <ClInclude Include="..\calculation\cluster\PurelySpatialCluster.h" />
     <ClInclude Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.h" />
     <ClInclude Include="..\calculation\cluster\PurelySpatialMonotoneCluster.h" />
@@ -496,6 +506,7 @@
     <ClInclude Include="..\calculation\loglikelihood\LikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.h" />
     <ClInclude Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\BatchedLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\PoissonLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.h" />
@@ -504,6 +515,7 @@
     <ClInclude Include="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.h" />
     <ClInclude Include="..\calculation\probability_model\BernoulliModel.h" />
     <ClInclude Include="..\calculation\probability_model\ExponentialModel.h" />
+    <ClInclude Include="..\calculation\probability_model\BatchedModel.h" />
     <ClInclude Include="..\calculation\probability_model\HomogeneousPoissonModel.h" />
     <ClInclude Include="..\calculation\probability_model\UniformTimeModel.h" />
     <ClInclude Include="..\calculation\probability_model\NormalModel.h" />
@@ -514,6 +526,7 @@
     <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\ExponentialRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\BatchedRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\HomogeneousPoissonRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\NormalRandomizer.h" />
     <ClInclude Include="..\calculation\randomization\OrdinalDataRandomizer.h" />
@@ -538,6 +551,7 @@
     <ClInclude Include="..\calculation\satscan_data\DataDemographics.h" />
     <ClInclude Include="..\calculation\utility\DateStringParser.h" />
     <ClInclude Include="..\calculation\satscan_data\ExponentialDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\BatchedDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\GridTractCoordinates.h" />
     <ClInclude Include="..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.h" />
     <ClInclude Include="..\calculation\satscan_data\MakeNeighbors.h" />

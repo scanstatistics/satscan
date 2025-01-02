@@ -11,49 +11,49 @@
 #include "boost/date_time/gregorian/gregorian.hpp"
 
 //typedefs for multiple dimension arrays
-typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
-typedef ThreeDimensionArrayHandler<count_t>    ThreeDimCountArray_t;
-typedef TwoDimensionArrayHandler<measure_t>    TwoDimMeasureArray_t;
-typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
-typedef ptr_vector<TwoDimCountArray_t>         CasesByCategory_t;
+typedef TwoDimensionArrayHandler<count_t>        TwoDimCountArray_t;
+typedef ThreeDimensionArrayHandler<count_t>      ThreeDimCountArray_t;
+typedef TwoDimensionArrayHandler<measure_t>      TwoDimMeasureArray_t;
+typedef ThreeDimensionArrayHandler<measure_t>    ThreeDimMeasureArray_t;
+typedef ptr_vector<TwoDimCountArray_t>           CasesByCategory_t;
+typedef boost::dynamic_bitset<>                  BatchIndexes_t;
+typedef TwoDimensionArrayHandler<BatchIndexes_t> TwoDimBitsetArray_t;
 
 void printCountArray(const TwoDimCountArray_t& arrayClass, FILE * stream=stdout);
 void printMeasureArray(const TwoDimMeasureArray_t& arrayClass, FILE * stream=stdout);
 
 class CSaTScanData; /** forward class declaration */
 class DataSetHandler; /** forward class declaration */
-class MetaManagerProxy;
+class MetaManagerProxy; /** forward class declaration */
 
-/** Encapsulates data for each input data set. */
+/** Encapsulates data for each input data set. 
+    PT = purely temporal,  NC = non-cummulative,  Aux = auxillary,  Cat = Category */
 class DataSet {
   friend class DataSetHandler;
   protected:
-    unsigned int                giIntervalsDimensions;                     /** number of time intervals */
-    unsigned int                giLocationDimensions;                            /** number of tracts*/
-    unsigned int                giMetaLocations;                            /** number of meta-tracts*/
-
-    count_t                   * gpCaseData_PT;                         /** number of cases, cumulatively stratified by time intervals */
-    count_t                   * gpCaseData_PT_NC;                       /** number of cases in each time interval */
-    TwoDimCountArray_t        * gpCaseData;                         /** number of cases stratified with respect to time intervals by tract index
-                                                                            - cases are distributed in time intervals cumulatively */
-    TwoDimCountArray_t        * gpCaseData_NC;                       /** number of cases stratified with respect to time intervals by tract index
-                                                                            - cases are NOT distributed in time intervals cumulatively */
-    measure_t                 * gpMeasureData_PT;                       /** number of expected cases, cumulatively stratified by time intervals */
-    measure_t                 * gpMeasureData_PT_NC;              /** number of expected cases in each time interval */
-    measure_t                 * gpMeasureData_PT_Aux;                     /** number of expected cases , cumulatively stratified by time intervals and
-                                                                            as gotten from gpMeasureData_Aux */
-    TwoDimMeasureArray_t      * gpMeasureData;                       /** number of expected cases stratified with respect to time intervals by tract index
-                                                                            - expected cases are distributed in time intervals cumulatively */
-    TwoDimMeasureArray_t      * gpMeasureData_Aux;                     /** number of expected cases stratified with respect to time intervals by tract index
-                                                                            - expected cases are distributed in time intervals cumulatively  */
-    TwoDimMeasureArray_t      * gpMeasureData_NC;                     /** number of expected cases stratified with respect to time intervals by tract index
-                                                                            - expected cases are NOT distributed in time intervals cumulatively */
-    CasesByCategory_t           gvCaseData_Cat;                      /** number of cases stratified with respect to time intervals by tract index for each category
-                                                                            - cases are distributed in time intervals cumulatively */
-    TwoDimCountArray_t        * gpCaseData_PT_Cat;               /** number of cases stratified with respect to time intervals by category index
-                                                                            - cases are distributed in time intervals cumulatively */
-    AbstractTimeTrend         * gpTimeTrend;                             /** time trend data */
-    unsigned int                giSetIndex;
+    unsigned int                giIntervalsDimensions; // number of time intervals
+    unsigned int                giLocationDimensions; // number of tracts
+    unsigned int                giMetaLocations; // number of meta-tracts
+    measure_t                   gtTotalMeasureAux; // sum auxillary entries in data set
+    measure_t                   gtTotalMeasureAux2; // sum auxillary 2 entries in data set
+    TwoDimCountArray_t        * gpCaseData; // case data by time interval and location, cumulative by intervals
+    count_t                   * gpCaseData_PT; // case data by time interval, cumulatively by intervals
+    TwoDimCountArray_t        * gpCaseData_NC; // case data by time interval and location, non-cumulative
+    count_t                   * gpCaseData_PT_NC; // case data by time interval, non-cumulatively
+    TwoDimMeasureArray_t      * gpMeasureData; // measured data by time interval and location, cumulative by intervals
+    measure_t                 * gpMeasureData_PT; // measure data by time interval and location, cumulative by intervals
+    TwoDimMeasureArray_t      * gpMeasureData_NC; // measured data by time interval and location, non-cumulative
+    measure_t                 * gpMeasureData_PT_NC; // measure data by time interval, non-cumulatively
+    TwoDimMeasureArray_t      * gpMeasureData_Aux; // auxillary data by time interval and location, cumulative by intervals
+    measure_t                 * gpMeasureData_PT_Aux; // auxillary data by time interval, cumulative by intervals
+    TwoDimMeasureArray_t      * gpMeasureData_Aux2; // auxillary 2 data by time interval and location, cumulative by intervals
+    measure_t                 * gpMeasureData_PT_Aux2; // auxillary 2 data by time interval, cumulative by intervals
+    TwoDimBitsetArray_t       * gpPositiveBatchIndexes; // positive batch index data by time interval and location, cumulative by intervals 
+    BatchIndexes_t            * gpPositiveBatchIndexes_PT; // positive batch index data by time interval, cumulative by intervals 
+    CasesByCategory_t           gvCaseData_Cat; // category case data by time interval and location, cumulatively by intervals 
+    TwoDimCountArray_t        * gpCaseData_PT_Cat; // category case data by time interval, cumulatively by intervals 
+    AbstractTimeTrend         * gpTimeTrend; // time trend data
+    unsigned int                giSetIndex; // index of this data set
 
                                 DataSet(const DataSet& thisSet);
     DataSet                   & operator=(const DataSet& rhs);
@@ -61,10 +61,7 @@ class DataSet {
   public:
     DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
     virtual ~DataSet();
-
-    virtual DataSet           * Clone() const;
-
-    // PT = purely temporal,  NC = non-cummulative,  Aux = auxillary,  Cat = Category
+    virtual DataSet * Clone() const;
 
     TwoDimCountArray_t        & allocateCaseData();
     CasesByCategory_t         & allocateCaseData_Cat(unsigned int iNumCategories);
@@ -77,7 +74,11 @@ class DataSet {
     measure_t                 * allocateMeasureData_PT();
     measure_t                 * allocateMeasureData_PT_NC();
     measure_t                 * allocateMeasureData_PT_Aux();
+    measure_t                 * allocateMeasureData_PT_Aux2();
     TwoDimMeasureArray_t      & allocateMeasureData_Aux();
+    TwoDimMeasureArray_t      & allocateMeasureData_Aux2();
+    TwoDimBitsetArray_t       & allocatePositiveBatchData(unsigned int setSize);
+    BatchIndexes_t            * allocatePositiveBatchData_PT(unsigned int setSize);
     TwoDimCountArray_t        & getCaseData() const;
     const CasesByCategory_t   & getCaseData_Cat() const {return gvCaseData_Cat;}
     TwoDimCountArray_t        & getCaseData_NC() const;
@@ -89,10 +90,16 @@ class DataSet {
     measure_t                 * getMeasureData_PT(bool check=true) const;
     measure_t                 * getMeasureData_PT_NC(bool check=true) const;
     measure_t                 * getMeasureData_PT_Aux() const;
+    measure_t                 * getMeasureData_PT_Aux2() const;
     TwoDimMeasureArray_t      & getMeasureData_Aux() const;
+    TwoDimMeasureArray_t      & getMeasureData_Aux2() const;
     unsigned int                getIntervalDimension() const {return giIntervalsDimensions;}
     unsigned int                getLocationDimension() const {return giLocationDimensions;}
     unsigned int                getMetaLocationDimension() const {return giMetaLocations;}
+    TwoDimBitsetArray_t       & getPositiveBatchData() const;
+    BatchIndexes_t            * getPositiveBatchIndexes_PT() const;
+    measure_t                   getTotalMeasureAux() const { return gtTotalMeasureAux; }
+    measure_t                   getTotalMeasureAux2() const { return gtTotalMeasureAux2; }
     AbstractTimeTrend         & getTimeTrend() {return *gpTimeTrend;}
     const AbstractTimeTrend   & getTimeTrend() const {return *gpTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
@@ -106,12 +113,20 @@ class DataSet {
     void                        setCaseData_PT_NC();
     void                        setMeasureDataMeta(const MetaManagerProxy& MetaProxy);
     void                        setMeasureDataAuxMeta(const MetaManagerProxy& MetaProxy);
+    void                        setMeasureDataAux2Meta(const MetaManagerProxy& MetaProxy);
+    void                        setPositiveBatchIndexes_PT(unsigned int setSize);
+    void                        setPositiveBitsetDataMeta(const MetaManagerProxy& MetaProxy);
     void                        setMeasureData_NC();
     void                        setMeasureData_PT();
     void                        setMeasureData_PT_NC();
     void                        setMeasureData_PT_Aux();
+    void                        setMeasureData_PT_Aux2();
     void                        setMeasureDataToCumulative();
     void                        setMeasureData_Aux(TwoDimMeasureArray_t& other);
+    void                        setMeasureData_Aux2(TwoDimMeasureArray_t& other);
+    void                        setTotalMeasureAux(measure_t tTotalMeasureAux) { gtTotalMeasureAux = tTotalMeasureAux; }
+    void                        setTotalMeasureAux2(measure_t tTotalMeasureAux) { gtTotalMeasureAux2 = tTotalMeasureAux; }
+
 };
 
 /** Encapsulates real data of dataset. */
@@ -129,33 +144,32 @@ class RealDataSet : public DataSet {
 
   protected:
     boost::shared_ptr<PopulationData> _population;
-    //PopulationData              gPopulation;                          /** population data */
-    measure_t                   gtTotalMeasure;                         /** number of expected cases in data set */
-    measure_t                   gtTotalMeasureAux;                      /** number of auxillary entries in data set */
-    count_t                     gtTotalCases;                           /** number of cases in data set */
+    measure_t                   gtTotalMeasure; // sum measure data
+    count_t                     gtTotalCases; // sum case data
     CountsByWeekDay_t           _totalCasesByWeekDay;
     CountsByWeekDay_t           _totalControlsByWeekDay;
     CategoryCountsByWeekDay_t   _totalCategoryCasesByWeekDay;
-    double                      gdTotalPop;                             /** population in data set */
-    count_t                     gtTotalCasesAtStart;                    /** number of cases as defined at analysis start */
-    count_t                     gtTotalControls;                        /** number of controls in data set */
-    measure_t                   gtTotalMeasureAtStart;                  /** number of expected cases as defined at analysis start */
-    TwoDimCountArray_t        * gpControlData;                          /** number of controls stratified with respect to time intervals by tract index
-                                                                            - controls are distributed in time intervals cumulatively */
-    TwoDimCountArray_t        * gpCaseData_Censored;                    /** number of censored individuals stratified with respect to time intervals by tract index
-                                                                            - cases are distributed in time intervals cumulatively */
-    double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases */
-    std::string                 _calculatedQuadraticTrend;              /* calculated quadratic trend used to adjust temporal expected cases */
-    PopulationDataPair_t        _populationData;                        /* population measure data and PopulationData */
+    double                      gdTotalPop; // sum population
+    count_t                     gtTotalCasesAtStart; // sum case data at analysis start
+    count_t                     gtTotalControls; // sum control data
+    measure_t                   gtTotalMeasureAtStart; // sum measure data at analysis start
+    TwoDimCountArray_t        * gpControlData; // control data by time interval and location, cumulative by intervals
+    TwoDimCountArray_t        * gpCaseData_Censored; // censored case data by time interval and location, cumulative by intervals
+    double                      gdCalculatedTimeTrendPercentage; // calculated time trend percentage used to temporal adjust expected cases
+    std::string                 _calculatedQuadraticTrend; // calculated quadratic trend used to adjust temporal expected cases
+    PopulationDataPair_t        _populationData; // population measure data and PopulationData
+    TwoDimBitsetArray_t        * gpBatchIndexes; // batch index data by time interval and location, cumulative by intervals 
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
     virtual ~RealDataSet();
 
+    TwoDimBitsetArray_t       & allocateBatchData(unsigned int setSize);
     TwoDimCountArray_t        & allocateCaseData_Censored();
     TwoDimCountArray_t        & allocateControlData();
     TwoDimCountArray_t        & addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, Julian date, bool asOrdinal);
     void                        checkPopulationDataCases(CSaTScanData& Data);
+    TwoDimBitsetArray_t       & getBatchData() const;
     double                      getCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     const std::string         & getCalculatedQuadraticTimeTrend() const { return _calculatedQuadraticTrend; }
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex) const;
@@ -168,12 +182,12 @@ class RealDataSet : public DataSet {
     count_t                     getTotalCasesAtStart() const {return gtTotalCasesAtStart;}
     count_t                     getTotalControls() const {return gtTotalControls;}
     measure_t                   getTotalMeasure() const {return gtTotalMeasure;}
-    measure_t                   getTotalMeasureAux() const {return gtTotalMeasureAux;}
     measure_t                   getTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      getTotalPopulation() const {return gdTotalPop;}
     virtual void                reassignMetaData(const MetaManagerProxy& MetaLocations);
     void                        resetPopulationData();
     void                        setAggregateCovariateCategories(bool b) {_population->SetAggregateCovariateCategories(b);}
+    void                        setBitsetDataMeta(const MetaManagerProxy& MetaProxy);
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
     void                        setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr);
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
@@ -185,16 +199,14 @@ class RealDataSet : public DataSet {
     void                        setTotalCategoryCasesByWeekDay(CategoryCountsByWeekDay_t weekDayCategoryCounts) {_totalCategoryCasesByWeekDay = weekDayCategoryCounts;}
     CategoryCountsByWeekDay_t   getTotalCategoryCasesByWeekDay() const {return _totalCategoryCasesByWeekDay;}
     CountsByWeekDay_t           getTotalControlByWeekDay() const {return _totalControlsByWeekDay;}
+    void                        reassign(TwoDimCountArray_t& cases, TwoDimMeasureArray_t& measure);
     void                        setTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
     void                        setTotalControlByWeekDay(CountsByWeekDay_t weekDayCounts) {_totalControlsByWeekDay = weekDayCounts;}
     void                        setTotalMeasure(measure_t tTotalMeasure) {gtTotalMeasure = tTotalMeasure;}
-    void                        setTotalMeasureAux(measure_t tTotalMeasureAux) {gtTotalMeasureAux = tTotalMeasureAux;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
     void                        setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation=0);
     PopulationDataPair_t        getPopulationMeasureData() const;
-
-    void                        reassign(TwoDimCountArray_t& cases, TwoDimMeasureArray_t& measure);
 };
 //*****************************************************************************
 #endif

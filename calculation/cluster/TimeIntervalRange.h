@@ -43,6 +43,21 @@ class TimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
+/** Temporal window evaluator for the batched model and time stratified adjustment. */
+class TimeStratifiedBatchedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+
+public:
+    TimeStratifiedBatchedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
 /** Temporal window evaluator used when adjusting for temporal trends nonparametrically with multiple data sets. */
 class MultiSetTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
     private:
@@ -248,6 +263,77 @@ class ClosedLoopMultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
         virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the batched model. */
+class BatchedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+
+public:
+    BatchedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the batched model and multiple data sets. */
+class MultiSetBatchedTemporalDataEvaluator : public CTimeIntervals {
+public:
+    MultiSetBatchedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the batched model, time stratified adjustment and multiple data sets. */
+class MultiSetTimeStratifiedBatchedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
+
+public:
+    MultiSetTimeStratifiedBatchedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the batched model and seasonal analysis. */
+class ClosedLoopBatchedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
+    int _extended_period_start;
+
+public:
+    ClosedLoopBatchedTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+        IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Temporal window evaluator for the batched model, seasonal analysis and multiple data sets. */
+class ClosedLoopMultiSetBatchedTemporalDataEvaluator : public CTimeIntervals {
+private:
+    int _extended_period_start;
+
+public:
+    ClosedLoopMultiSetBatchedTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 //******************************************************************************
 #endif

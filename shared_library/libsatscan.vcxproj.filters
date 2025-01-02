@@ -264,6 +264,12 @@
     <ClCompile Include="..\calculation\cluster\NormalClusterData.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\cluster\MultiSetBatchedClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
@@ -271,6 +277,9 @@
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterDataFactory.cpp">
       <Filter>Source Files\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\PurelySpatialCluster.cpp">
@@ -316,6 +325,9 @@
       <Filter>Source Files\calculation\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\BatchedLikelihoodCalculation.cpp">
       <Filter>Source Files\calculation\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp">
@@ -450,6 +462,9 @@
     <ClCompile Include="..\calculation\satscan_data\NormalDataSetHandler.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\BatchedDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\ObservableRegion.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
@@ -513,6 +528,9 @@
     <ClCompile Include="..\calculation\randomization\NormalRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\randomization\BatchedRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\randomization\OrdinalDataRandomizer.cpp">
       <Filter>Source Files\calculation\randomization</Filter>
     </ClCompile>
@@ -544,6 +562,9 @@
       <Filter>Source Files\calculation\probability_model</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\probability_model\NormalModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\probability_model\BatchedModel.cpp">
       <Filter>Source Files\calculation\probability_model</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\probability_model\OrdinalModel.cpp">
@@ -836,6 +857,12 @@
     <ClInclude Include="..\calculation\cluster\NormalClusterData.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\cluster\MultiSetBatchedClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\BatchedClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
@@ -843,6 +870,9 @@
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\BatchedClusterDataFactory.h">
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\cluster\PurelySpatialCluster.h">
@@ -935,6 +965,9 @@
     <ClInclude Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.h">
       <Filter>Header Files\calculation\loglikelihood</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\loglikelihood\BatchedLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.h">
       <Filter>Header Files\calculation\loglikelihood</Filter>
     </ClInclude>
@@ -965,6 +998,9 @@
     <ClInclude Include="..\calculation\probability_model\NormalModel.h">
       <Filter>Header Files\calculation\probability_model</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\probability_model\BatchedModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\probability_model\PoissonModel.h">
       <Filter>Header Files\calculation\probability_model</Filter>
     </ClInclude>
@@ -993,6 +1029,9 @@
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\NormalRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\randomization\BatchedRandomizer.h">
       <Filter>Header Files\calculation\randomization</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\randomization\OrdinalDataRandomizer.h">
@@ -1074,6 +1113,9 @@
       <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\NormalDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\BatchedDataSetHandler.h">
       <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\ObservableRegion.h">

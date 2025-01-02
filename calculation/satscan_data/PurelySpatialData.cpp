@@ -13,6 +13,7 @@
 #include "SSException.h"
 #include "HomogeneousPoissonModel.h"
 #include "UniformTimeModel.h"
+#include "BatchedModel.h"
 
 /** class constructor */
 CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -50,10 +51,9 @@ void CPurelySpatialData::SetProbabilityModel() {
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
      case UNIFORMTIME          : m_pModel = new UniformTimeModel(*this); break;
+     case BATCHED              : m_pModel = new BatchedModel(); break;
      case HOMOGENEOUSPOISSON   : m_pModel = new HomogenousPoissonModel(); break;
-     case SPACETIMEPERMUTATION : throw prg_error("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
-                                                 "SetProbabilityModel()");
-     default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                               gParameters.GetProbabilityModelType());
+     case SPACETIMEPERMUTATION : throw prg_error("Purely Spatial analysis not implemented for Space-Time Permutation model.\n", "SetProbabilityModel()");
+     default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()", gParameters.GetProbabilityModelType());
   }
 }

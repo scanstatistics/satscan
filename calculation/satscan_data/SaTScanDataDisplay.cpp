@@ -2,6 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
+#include <inttypes.h>
 #include <vector>
 #include "SaTScanData.h"
 #include "LocationRiskEstimateWriter.h"
@@ -16,7 +17,8 @@
 void CSaTScanData::DisplayCases(FILE* pFile, bool nonCumulative) const {
   fprintf(pFile, "%s Case counts (Cases Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
-     fprintf(pFile, "Data Set %u:\n", j);
+      
+     fprintf(pFile, "Data Set %" PRId64 "\n", j);
      count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
         for (int t=0; t < _num_identifiers; ++t)
@@ -32,7 +34,7 @@ void CSaTScanData::DisplayCases(FILE* pFile, bool nonCumulative) const {
 void CSaTScanData::DisplayControls(FILE* pFile, bool nonCumulative) const {
   fprintf(pFile, "%s Control counts (Controls Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
-     fprintf(pFile, "Data Set %u:\n", j);
+     fprintf(pFile, "Data Set %" PRId64 "\n", j);
      count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < _num_identifiers; ++t)
@@ -48,7 +50,7 @@ void CSaTScanData::DisplayControls(FILE* pFile, bool nonCumulative) const {
 void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile, bool nonCumulative) const {
   fprintf(pFile, "%s Simulated Case counts (Simulated Cases Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
   for (size_t j=0; j < Container.size(); ++j) {
-     fprintf(pFile, "Data Set %u:\n", j);
+     fprintf(pFile, "Data Set %" PRId64 "\n", j);
      count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
      for (int i=0; i < GetNumTimeIntervals(); ++i)
        for (int t=0; t < _num_identifiers; ++t)
@@ -65,8 +67,8 @@ void CSaTScanData::DisplayMeasure(FILE* pFile, bool nonCumulative) const {
     std::string dateString;
     fprintf(pFile, "%s Measures (Measure Array)\n\n", nonCumulative ? "Non-Cumulative" : "Cumulative");
     for (size_t j = 0; j < gDataSets->GetNumDataSets(); ++j) {
-        fprintf(pFile, "Data Set %u:\n", j);
-        fprintf(pFile, "Location,IntervalIdx,Measure,population\n", j);
+        fprintf(pFile, "Data Set %" PRId64 "\n", j);
+        fprintf(pFile, "Location,IntervalIdx,Measure,population\n");
         measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
         PopulationData & population = gDataSets->GetDataSet(j).getPopulationData();
         for (int t = 0; t < _num_identifiers; ++t) {
@@ -135,12 +137,12 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     //print number locations scanned
       if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
           PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%ld\n", (long)_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers());
+          fprintf(fp, "%u\n", static_cast<unsigned int>(_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers()));
       } else {
           PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%u\n", getLocationsManager().locations().size());
+          fprintf(fp, "%u\n", static_cast<unsigned int>(getLocationsManager().locations().size()));
           PrintFormat.PrintSectionLabel(fp, "Number of identifiers", false, false);
-          fprintf(fp, "%u\n", getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size());
+          fprintf(fp, "%u\n", static_cast<unsigned int>(getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size()));
       }
   }  
   //print total population per data set
@@ -150,12 +152,14 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
                        PrintFormat.PrintSectionLabel(fp, "Population, averaged over time", true, false); break;
     case BERNOULLI   : PrintFormat.PrintSectionLabel(fp, "Total population", true, false); break;
     case EXPONENTIAL : PrintFormat.PrintSectionLabel(fp, "Total individuals", true, false); break;
+    case BATCHED     : PrintFormat.PrintSectionLabel(fp, "Total batches", true, false); break;
     default          : break;
   }
   switch (gParameters.GetProbabilityModelType()) {
     case POISSON     : if (!gParameters.UsePopulationFile()) break;
     case BERNOULLI   :
-    case EXPONENTIAL : printString(buffer, "%.0f", gDataSets->GetDataSet(0).getTotalPopulation());
+    case EXPONENTIAL : 
+    case BATCHED     : printString(buffer, "%.0f", gDataSets->GetDataSet(0).getTotalPopulation());
                        for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
                          printString(work, ", %.0f", gDataSets->GetDataSet(i).getTotalPopulation());
                          buffer += work;
@@ -166,22 +170,34 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   }
   // print total cases per data set
   switch (gParameters.GetProbabilityModelType()) {
+    case BATCHED: PrintFormat.PrintSectionLabel(fp, "Number positive batches", true, false); break;
+    case POISSON:
+    case BERNOULLI:
+    case SPACETIMEPERMUTATION:
+    case CATEGORICAL:
+    case ORDINAL:
+    case NORMAL:
+    case EXPONENTIAL:
+    case HOMOGENEOUSPOISSON: PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false); break;
+    default: break;
+  }
+  switch (gParameters.GetProbabilityModelType()) {
     case POISSON              :
     case BERNOULLI            :
     case SPACETIMEPERMUTATION :
     case CATEGORICAL          :
     case ORDINAL              :
     case NORMAL               :
-    case EXPONENTIAL          : 
-    case HOMOGENEOUSPOISSON   : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
-                                printString(buffer, "%ld", gDataSets->GetDataSet(0).getTotalCases());
+    case EXPONENTIAL          :
+    case BATCHED              :
+    case HOMOGENEOUSPOISSON   : printString(buffer, "%ld", gDataSets->GetDataSet(0).getTotalCases());
                                 for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
                                   printString(work, ", %ld", gDataSets->GetDataSet(i).getTotalCases());
                                   buffer += work;
                                 }
                                 PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
                                 break;
-    default                   : break;
+    default: break;
   }
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false);

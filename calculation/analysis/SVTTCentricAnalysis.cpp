@@ -12,7 +12,7 @@ SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(
 :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _top_clusters(Data) {
     try {
         //allocate objects used to evaluate real data
-        _cluster_compare.reset(new CSVTTCluster(_cluster_data_factory, RealDataGateway));
+        _cluster_compare.reset(new CSVTTCluster(_cluster_data_factory.get(), RealDataGateway));
         _top_clusters.setTopClusters(*_cluster_compare.get());
         //allocate objects used to evaluate simulation data
         if (_parameters.GetNumReplicationsRequested()) {

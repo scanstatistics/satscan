@@ -11,7 +11,7 @@ class AbstractLikelihoodCalculator;
     is to make the performance of monte carlo simulations faster than process used
     to calculate most likely clusters. There are caveats to its use:
       - analyses with multiple data sets can not use this method to perform simulations
-      - analyses that use the Normal probability model can not use this method to
+      - analyses that use the Normal or batched probability model can not use this method to
         perform simulations
       - this method might actually cause a decrease in performance with a large
         number of cases versus centroids/locations; future feature could be a

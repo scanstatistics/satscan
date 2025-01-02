@@ -6,7 +6,13 @@
 #include "LikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "SaTScanData.h"
+#include "BatchedLikelihoodCalculation.h"
 
+////////////////////////////////// AbstractLoglikelihoodRatioUnifier ////////////////////////////////
+
+bool AbstractLoglikelihoodRatioUnifier::isScanRate() const {
+    throw prg_error("isScanRate() not implementated for this class.", "AbstractLoglikelihoodRatioUnifier");
+}
 
 ////////////////////////////////// MultivariateUnifierHighRate //////////////////////////////////////
 
@@ -60,6 +66,30 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
             _data_stream_accumulator._sum_observed += tCases;
             _unified_sets.set(tSetIndex);
         }
+    }
+}
+
+/** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction. */
+void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probabilities;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probabilities._pinside > probabilities._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
+/** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction. */
+void MultivariateUnifierHighRate::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probabilities;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probabilities._pinside > probabilities._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.set(tSetIndex);
     }
 }
 
@@ -124,6 +154,30 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
     }
 }
 
+/** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction. */
+void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probabilities;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probabilities._pinside < probabilities._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
+/** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction. */
+void MultivariateUnifierLowRate::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probabilities;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probabilities._pinside < probabilities._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
 /** Calculates loglikelihood ratio given ordinal data; adding log likelihood ratio to accumulation. */
 void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     _llr += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
@@ -153,6 +207,18 @@ void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& C
 void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) {
     _high_rate.AdjoinRatio(Calculator, tCases, tMeasure, tMeasureAux, tSetIndex);
     _low_rate.AdjoinRatio(Calculator, tCases, tMeasure, tMeasureAux, tSetIndex);
+}
+
+/** Calculates loglikelihood ratio given cluster data; accumulating like high and low rate separately. */
+void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    _high_rate.AdjoinRatio(Calculator, tCases, tMeasure, tMeasureAux, tMeasureAux2, positiveBatches, tSetIndex);
+    _low_rate.AdjoinRatio(Calculator, tCases, tMeasure, tMeasureAux, tMeasureAux2, positiveBatches, tSetIndex);
+}
+
+/** Calculates loglikelihood ratio given cluster data; accumulating like high and low rate separately. */
+void MultivariateUnifierHighLowRate::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    _high_rate.AdjoinRatioSimulation(Calculator, tCases, tMeasure, tMeasureAux, tMeasureAux2, positiveBatches, tSetIndex);
+    _low_rate.AdjoinRatioSimulation(Calculator, tCases, tMeasure, tMeasureAux, tMeasureAux2, positiveBatches, tSetIndex);
 }
 
 /** Calculates loglikelihood ratio given ordinal data; accumulating like high and low rate separately. */
@@ -199,6 +265,34 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
     }
 }
 
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probabilities;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probabilities._pinside > probabilities._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+    } else if (probabilities._pinside < probabilities._poutside) {
+        _llr += -1 * ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+    }
+}
+
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifier::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    ProbabilitiesAOI probability;
+    ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(probability, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
+    if (probability._pinside > probability._poutside) {
+        _llr += ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probability, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+    } else if (probability._pinside < probability._poutside) {
+        _llr += -1 * ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probability, tSetIndex);
+        _data_stream_accumulator._sum_observed += tCases;
+    }
+}
+
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
     throw prg_error("AdjoinRatio() not implementated yet for Adjustment option!","AdjustmentUnifier");
 }
@@ -221,6 +315,62 @@ double AdjustmentUnifier::GetLoglikelihoodRatio() const {
         case HIGHANDLOW : return std::fabs(_llr);
         case LOW        : return _llr * -1;
         default         : return _llr;
+    };
+}
+
+///////////////////////////////////// AdjustmentUnifierBatchModelTimeStratified /////////////////////////////////////////
+
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+/** Calculates loglikelihood ratio give current observed and expected of data stream and adds to accumulation.
+    Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure) {
+    _llr += llr;
+    _data_stream_accumulator._sum_observed += tCases;
+    _data_stream_accumulator._sum_expected += tMeasure;
+}
+
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) {
+    throw prg_error("AdjoinRatio() not implementated for this Adjustment class.", "AdjustmentUnifier");
+}
+
+/** Returns calculated loglikelihood ratio that is the sum of adjoined values. */
+double AdjustmentUnifierBatchModelTimeStratified::GetLoglikelihoodRatio() const {
+    return _llr;
+}
+
+/* Returns whether the unified log-likelihood ratio is in the scan area of interest. */
+bool AdjustmentUnifierBatchModelTimeStratified::isScanRate() const {
+    switch (_scan_area) {
+        case HIGHANDLOW: return _data_stream_accumulator._sum_observed != _data_stream_accumulator._sum_expected;
+        case LOW: return _data_stream_accumulator._sum_observed < _data_stream_accumulator._sum_expected;
+        default: return _data_stream_accumulator._sum_observed > _data_stream_accumulator._sum_expected;
     };
 }
 

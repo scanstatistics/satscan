@@ -38,7 +38,7 @@ void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGatewa
         if (_print.GetIsCanceled()) return;
         //create comparator cluster
         CPurelyTemporalCluster ClusterComparator(
-            _cluster_data_factory, DataGateway, 
+            _cluster_data_factory.get(), DataGateway,
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), _data_hub
         );
         boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));

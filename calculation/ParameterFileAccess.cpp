@@ -107,7 +107,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PURESPATIAL                  : return "include purely spatial clusters? (y/n)";
       case TIMESIZE                     : return "maximum temporal cluster size (<=90%)";
       case REPLICAS                     : return "Monte Carlo replications (0, 9, 999, n999)";
-      case MODEL                        : return "model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial, 8=Rank, 9=UniformTime)";
+      case MODEL                        : return "model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial, 8=Rank, 9=UniformTime, 10=Batched)";
       case RISKFUNCTION                 : return "isotonic scan (0=Standard, 1=Monotone)";
       case POWER_EVALUATION             : return "perform power evaluation - Poisson only (y/n)";
       case POWER_05                     : return "power evaluation critical value .05 (> 0)";
@@ -704,7 +704,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PURESPATIAL                  : gParameters.SetIncludePurelySpatialClusters(ReadBoolean(sParameter, eParameterType)); break;
       case TIMESIZE                     : gParameters.SetMaximumTemporalClusterSize(ReadDouble(sParameter, eParameterType)); break;
       case REPLICAS                     : gParameters.SetNumberMonteCarloReplications(ReadUnsignedInt(sParameter, eParameterType)); break;
-      case MODEL                        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, POISSON, UNIFORMTIME);
+      case MODEL                        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, POISSON, BATCHED);
                                           gParameters.SetProbabilityModelType((ProbabilityModelType)iValue); break;
       case RISKFUNCTION                 : gParameters.SetRiskType((RiskType)ReadInt(sParameter, eParameterType)); break;
       case POWER_EVALUATION             : gParameters.setPerformPowerEvaluation(ReadBoolean(sParameter, eParameterType)); break;

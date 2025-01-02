@@ -208,6 +208,7 @@ void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, Proba
     case UNIFORMTIME:  sTempValue = "Uniform Time"; break;
     case CATEGORICAL : sTempValue = "Multinomial"; break;
     case ORDINAL : sTempValue = "Ordinal"; break;
+    case BATCHED:  sTempValue = "Batched"; break;
     case HOMOGENEOUSPOISSON : sTempValue = "Continuous Poisson"; break;
     default : throw prg_error("Invalid probability model in the run history file.", "stsRunHistoryFile");
   }

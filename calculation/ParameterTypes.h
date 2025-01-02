@@ -229,7 +229,8 @@ enum ProbabilityModelType
     HOMOGENEOUSPOISSON, 
     CATEGORICAL, 
     RANK,
-    UNIFORMTIME
+    UNIFORMTIME,
+    BATCHED
 };
 enum IncludeClustersType
 {

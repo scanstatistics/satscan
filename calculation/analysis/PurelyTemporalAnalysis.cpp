@@ -37,7 +37,7 @@ void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& Data
         // Determine the type of clusters to compare
         IncludeClustersType includeType = _parameters.GetIsProspectiveAnalysis() ? ALIVECLUSTERS : _parameters.GetIncludeClustersType();
         // Create cluster objects
-        CPurelyTemporalCluster clusterCompare(_cluster_data_factory, DataGateway, includeType, _data_hub);
+        CPurelyTemporalCluster clusterCompare(_cluster_data_factory.get(), DataGateway, includeType, _data_hub);
         boost::shared_ptr<CTimeIntervals> timeIntervals(GetNewTemporalDataEvaluatorObject(includeType, SUCCESSIVELY));
         boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(clusterCompare, _data_hub));
         CClusterObject clusterObject(clusterCompare);

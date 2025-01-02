@@ -8,6 +8,7 @@
 #include "stsMCSimJobSource.h"
 #include "DataSetWriter.h"
 #include "AbstractBruteForceAnalysis.h"
+#include "BatchedLikelihoodCalculation.h"
 
 //runs jobs for the "successive" algorithm
 class stsMCSimSuccessiveFunctor
@@ -41,7 +42,6 @@ public:
    , gpAnalysis(pAnalysis)
    , gpSimulationDataContainer(pSimulationDataContainer)
    , _simulation_output_filename(simulation_output_filename)
-   //, gpRandomizationContainer(pRandomizationContainer)
   {
     //get container for simulation data - this data will be modified in the randomize process
     gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
@@ -65,13 +65,11 @@ public:
     //allocate additional data structures for homogeneous poisson model
     if (gDataHub.GetParameters().GetProbabilityModelType() == HOMOGENEOUSPOISSON) 
        dynamic_cast<AbstractBruteForceAnalysis&>(*gpAnalysis).AllocateAdditionalSimulationObjects(*gpRandomizationContainer);
+    if (gDataHub.GetParameters().GetProbabilityModelType() == BATCHED)
+        dynamic_cast<BatchedLikelihoodCalculator*>(gpAnalysis->getLikelihoodCalculator())->associateRandomizers(gpRandomizationContainer);
     if (!_simulation_output_filename.empty())
       gDataWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gDataHub.GetParameters()));
   }
-
-//  ~stsMonteCarloSimFunctor()
-//  {
-//  }
 
   result_type operator() (param_type const & param);
 

@@ -35,7 +35,7 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
         //create top cluster objects for space-time portion
         CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
         //create comparator cluster for purely spatial cluster
-        _ps_cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory, DataGateway));
+        _ps_cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory.get(), DataGateway));
         _ps_top_clusters.setTopClusters(*_ps_cluster_compare);
     } catch (prg_exception& x) {
         x.addTrace("AllocateTopClustersObjects()","C_ST_PS_Analysis");

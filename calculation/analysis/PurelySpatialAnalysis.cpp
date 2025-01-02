@@ -28,7 +28,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGate
     of repeated allocations. This method must be called prior to CalculateTopCluster(). */
 void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
     try {
-        _cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory, DataGateway));
+        _cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory.get(), DataGateway));
         _top_clusters.setTopClusters(*_cluster_compare.get());
     } catch (prg_exception& x) {
         x.addTrace("AllocateTopClustersObjects()","CPurelySpatialAnalysis");

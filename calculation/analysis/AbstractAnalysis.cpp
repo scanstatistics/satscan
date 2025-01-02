@@ -6,6 +6,7 @@
 #include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
 #include "NormalClusterDataFactory.h"
+#include "BatchedClusterDataFactory.h"
 #include "CategoricalClusterDataFactory.h"
 #include "UniformTimeClusterDataFactory.h"
 #include "LikelihoodCalculation.h"
@@ -14,6 +15,7 @@
 #include "BernoulliLikelihoodCalculation.h"
 #include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
+#include "BatchedLikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "WeightedNormalLikelihoodCalculation.h"
 #include "WeightedNormalCovariatesLikelihoodCalculation.h"
@@ -23,35 +25,40 @@
 
 /** constructor */
 AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-:_parameters(Parameters), _data_hub(DataHub), _print(PrintDirection), _cluster_data_factory(0),
- _likelihood_calculator(0), _replica_process_type(MeasureListEvaluation) {
+:_parameters(Parameters), _data_hub(DataHub), _print(PrintDirection), _likelihood_calculator(GetNewLikelihoodCalculator(_data_hub)), _replica_process_type(MeasureListEvaluation) {
     try {
         //createSetup cluster data factory
-        if (_parameters.GetProbabilityModelType() == NORMAL) {
+        if (_parameters.GetProbabilityModelType() == BATCHED) {
             _replica_process_type = ClusterEvaluation;
             if (_data_hub.GetNumDataSets() == 1)
-                _cluster_data_factory = new NormalClusterDataFactory(_data_hub);
+                _cluster_data_factory.reset(new BatchedClusterDataFactory(_data_hub));
             else
-                _cluster_data_factory = new MultiSetNormalClusterDataFactory(_data_hub);
+                _cluster_data_factory.reset(new MultiSetBatchedClusterDataFactory(_data_hub));
+        } else if (_parameters.GetProbabilityModelType() == NORMAL) {
+            _replica_process_type = ClusterEvaluation;
+            if (_data_hub.GetNumDataSets() == 1)
+                _cluster_data_factory.reset(new BatchedClusterDataFactory(_data_hub));
+            else
+                _cluster_data_factory.reset(new MultiSetNormalClusterDataFactory(_data_hub));
         } else if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
             _replica_process_type = ClusterEvaluation;
             if (_data_hub.GetNumDataSets() == 1)
-                _cluster_data_factory = new CategoricalClusterDataFactory();
+                _cluster_data_factory.reset(new CategoricalClusterDataFactory());
             else
-                _cluster_data_factory = new MultiSetsCategoricalClusterDataFactory(_parameters);
+                _cluster_data_factory.reset(new MultiSetsCategoricalClusterDataFactory(_parameters));
         } else if (_parameters.GetProbabilityModelType() == UNIFORMTIME) {
             _replica_process_type = MeasureListEvaluation;
             if (_data_hub.GetNumDataSets() == 1)
-                _cluster_data_factory = new UniformTimeClusterDataFactory();
+                _cluster_data_factory.reset(new UniformTimeClusterDataFactory());
             else {
                 _replica_process_type = ClusterEvaluation;
-                _cluster_data_factory = new MultiSetUniformTimeClusterDataFactory();
+                _cluster_data_factory.reset(new MultiSetUniformTimeClusterDataFactory());
             }
         } else if (_data_hub.GetNumDataSets() > 1) {
-            _cluster_data_factory = new MultiSetClusterDataFactory(_parameters);
+            _cluster_data_factory.reset(new MultiSetClusterDataFactory(_parameters));
             _replica_process_type = ClusterEvaluation;
         } else {
-            _cluster_data_factory = new ClusterDataFactory();
+            _cluster_data_factory.reset(new ClusterDataFactory());
             if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND || (_parameters.GetAnalysisType() == PURELYSPATIAL && _parameters.GetRiskType() == MONOTONERISK))
                 _replica_process_type = ClusterEvaluation;
             else if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
@@ -59,21 +66,10 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
             else
                 _replica_process_type = MeasureListEvaluation;
         }
-        //create likelihood calculator
-        _likelihood_calculator = GetNewLikelihoodCalculator(_data_hub);
     } catch (prg_exception& x) {
-        delete _cluster_data_factory; delete _likelihood_calculator;
         x.addTrace("constructor()","AbstractAnalysis");
         throw;
     }
-}
-
-/** destructor */
-AbstractAnalysis::~AbstractAnalysis() {
-    try {
-        delete _cluster_data_factory;
-        delete _likelihood_calculator;
-    } catch(...){}
 }
 
 /** Returns newly allocated log likelihood ratio calculator based upon requested
@@ -91,6 +87,7 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
         case HOMOGENEOUSPOISSON   :
         case SPACETIMEPERMUTATION :
         case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
+        case BATCHED              : return new BatchedLikelihoodCalculator(DataHub);
         case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
         case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
         case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
@@ -142,6 +139,20 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
     switch (_parameters.GetProbabilityModelType()) {
+        case BATCHED:
+            if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new TimeStratifiedBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new MultiSetTimeStratifiedBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            }
+            if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new ClosedLoopBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new ClosedLoopMultiSetBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
+            }
+            if (_data_hub.GetNumDataSets() == 1)
+                return new BatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+            return new MultiSetBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
         case NORMAL:
             if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {
                 if (_data_hub.GetNumDataSets() == 1)

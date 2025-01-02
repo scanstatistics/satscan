@@ -26,18 +26,25 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         //before version 3, there were no restrictions for secondary clusters
         if (gParameters.GetCreationVersion().iMajor < 3)
             const_cast<CParameters&>(gParameters).SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS);
-
         // prevent unintended conflicts
         if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
             // reporting gini optimized clusters is disabled for all analyses except purely spatial
             const_cast<CParameters&>(gParameters).setReportGiniOptimizedClusters(false);
         }
-
         if ((gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
             && gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
             bValid = false;
-            PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
+            PrintDirection.Printf("%s:\nAdjustment purpose for multiple data sets is not permitted with the %s model.\n",
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+        }
+        if (gParameters.GetProbabilityModelType() == BATCHED && 
+            gParameters.GetIsSpaceTimeAnalysis() && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION &&
+            gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
+            bValid = false;
+            PrintDirection.Printf(
+                "%s:\Multivariate purpose for multiple data sets is not permitted with the %s model \nwhen performing a temporal trend adjustment.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
+            );
         }
         //validate model parameters
         if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
@@ -534,6 +541,10 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
            bValid = false;
            PrintDirection.Printf("%s:\nThe alternative memory allocation is not implemented with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
+        if (gParameters.GetProbabilityModelType() == BATCHED) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe alternative memory allocation is not implemented with the batched probability model.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        }
      }
   } catch (prg_exception& x) {
     x.addTrace("ValidateExecutionTypeParameters()","ParametersValidate");
@@ -789,6 +800,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
         if (gParameters.getRiskLimitHighClusters() || gParameters.getRiskLimitLowClusters()) {
             // Validate the risk thresholds by probability model.
             switch (gParameters.GetProbabilityModelType()) {
+            case BATCHED:
             case EXPONENTIAL:
             case SPACETIMEPERMUTATION:
             case POISSON:
@@ -909,7 +921,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == BATCHED)) {
         PrintDirection.Printf("%s:\nThe iterative scan feature is not implemented for %s model.\n",
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         return false;
@@ -2060,7 +2072,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     }
     //validate time trend adjustment
     switch (gParameters.GetProbabilityModelType()) {
-      case BERNOULLI            :
+    case BATCHED              :
+    case BERNOULLI            :
         if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
             if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
                 if (gParameters.GetIsPurelyTemporalAnalysis()) {
@@ -2078,7 +2091,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                 }*/
             } else {
                 bValid = false;
-                PrintDirection.Printf("%s:\nThe Bernoulli model permits only the nonparametric temporal trends adjustment. Other temporal trend adjustments are not implemented.\n",
+                PrintDirection.Printf("%s:\nThe selected model permits only the nonparametric temporal trends adjustment. Other temporal trend adjustments are not implemented.\n",
                     BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
             }
         }
@@ -2090,7 +2103,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case RANK                 :
       case UNIFORMTIME          :
         if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
-          PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
+          PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted.\n"
                                 "Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
@@ -2099,8 +2112,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         break;
       case SPACETIMEPERMUTATION :
         if (gParameters.GetTimeTrendAdjustmentType() != TEMPORAL_NOTADJUSTED) {
-          PrintDirection.Printf("Notice:\nFor the space-time permutation model, adjusting for temporal trends "
-                                "is not permitted nor needed, as this model automatically adjusts for "
+          PrintDirection.Printf("Notice:\nFor the space-time permutation model, adjusting for temporal trends\n"
+                                "is not permitted nor needed, as this model automatically adjusts for\n"
                                 "any temporal variation. Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);

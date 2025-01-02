@@ -63,6 +63,7 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             case BERNOULLI :
             case SPACETIMEPERMUTATION :
             case UNIFORMTIME :
+            case BATCHED :
                 switch (_parameters.GetAreaScanRateType()) {
                     case HIGH       : return "High Rates";
                     case LOW        : return "Low Rates";
@@ -95,27 +96,25 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
 
 /** Returns probability model type as a character array. */
 const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
-    const char * sProbabilityModel;
-
     try {
         switch (_parameters.GetProbabilityModelType()) {
-            case POISSON              : sProbabilityModel = "Discrete Poisson"; break;
-            case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
-            case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
-            case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
-            case ORDINAL              : sProbabilityModel = "Ordinal"; break;
-            case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
-            case NORMAL               : sProbabilityModel = "Normal"; break;
-            case RANK                 : sProbabilityModel = "Rank"; break;
-            case UNIFORMTIME          : sProbabilityModel = "Uniform Time"; break;
-            case HOMOGENEOUSPOISSON   : sProbabilityModel = "Continuous Poisson"; break;
+            case POISSON              : return "Discrete Poisson"; break;
+            case BERNOULLI            : return "Bernoulli"; break;
+            case SPACETIMEPERMUTATION : return "Space-Time Permutation"; break;
+            case CATEGORICAL          : return "Multinomial"; break;
+            case ORDINAL              : return "Ordinal"; break;
+            case EXPONENTIAL          : return "Exponential"; break;
+            case NORMAL               : return "Normal"; break;
+            case RANK                 : return "Rank"; break;
+            case UNIFORMTIME          : return "Uniform Time"; break;
+            case BATCHED              : return "Batched"; break;
+            case HOMOGENEOUSPOISSON   : return "Continuous Poisson"; break;
             default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", _parameters.GetProbabilityModelType());
         }
     } catch (prg_exception& x) {
         x.addTrace("GetProbabilityModelTypeAsString()","ParametersPrint");
         throw;
     }
-    return sProbabilityModel;
 }
 
 const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
@@ -369,6 +368,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
             case NORMAL               : statements.push_back("using the Normal model"); break;
             case RANK                 : statements.push_back("using the Rank model"); break;
             case UNIFORMTIME          : statements.push_back("using the Uniform Time model"); break;
+            case BATCHED              : statements.push_back("using the Batched model"); break;
             case HOMOGENEOUSPOISSON   : statements.push_back("using the Continuous Poisson model"); break;
             default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetProbabilityModelType());
         }
@@ -736,6 +736,7 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
         case POISSON:
         case HOMOGENEOUSPOISSON:
         case BERNOULLI:
+        case BATCHED:
             if (_parameters.GetAreaScanRateType() == HIGH || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
                 settings.push_back(std::make_pair("Restrict High Rate Clusters", (_parameters.getRiskLimitHighClusters() ? "Yes" : "No")));
                 if (_parameters.getRiskLimitHighClusters())
@@ -833,9 +834,9 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
             case NORMAL               :
             case RANK                 :
             case UNIFORMTIME          :
+            case BATCHED              :
             case HOMOGENEOUSPOISSON   :  break;
-            default : 
-                throw prg_error("Unknown probability model type '%d'.\n", "PrintInputParameters()", _parameters.GetProbabilityModelType());
+            default : throw prg_error("Unknown probability model type '%d'.\n", "PrintInputParameters()", _parameters.GetProbabilityModelType());
         }
         if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
             //Display precision, keeping in mind the v4 behavior.
@@ -900,9 +901,9 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
                 case NORMAL               :
                 case RANK                 :
                 case UNIFORMTIME          :
+                case BATCHED              :
                 case HOMOGENEOUSPOISSON   : break;
-                default : 
-                    throw prg_error("Unknown probability model type '%d'.\n", "PrintMultipleDataSetParameters()", _parameters.GetProbabilityModelType());
+                default : throw prg_error("Unknown probability model type '%d'.\n", "PrintMultipleDataSetParameters()", _parameters.GetProbabilityModelType());
             }
         }
         switch (_parameters.GetMultipleDataSetPurposeType()) {
@@ -1192,15 +1193,16 @@ void ParametersPrint::PrintLocationNetworkParameters(FILE* fp) const {
 
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */
 void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
-    bool bPrintingTemporalAdjustment = (_parameters.GetAnalysisType() == PURELYTEMPORAL ||
-                                        _parameters.GetAnalysisType() == SPACETIME ||
-                                        _parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL ||
-                                        _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ||
-                                        _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) &&
-                                        (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI);
-    bool bPrintingSpatialAdjustment =  (_parameters.GetAnalysisType() == SPACETIME ||
-                                        _parameters.GetAnalysisType() == PROSPECTIVESPACETIME) &&
-                                        _parameters.GetProbabilityModelType() == POISSON;
+    bool bPrintingTemporalAdjustment = (
+        _parameters.GetAnalysisType() == PURELYTEMPORAL || _parameters.GetAnalysisType() == SPACETIME ||
+        _parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ||
+        _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) && (
+        _parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI ||
+        _parameters.GetProbabilityModelType() == BATCHED
+    );
+    bool bPrintingSpatialAdjustment = (
+        _parameters.GetAnalysisType() == SPACETIME || _parameters.GetAnalysisType() == PROSPECTIVESPACETIME
+    ) && _parameters.GetProbabilityModelType() == POISSON;
 
     SettingContainer_t settings;
     std::string buffer, worker;

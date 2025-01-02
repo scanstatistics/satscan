@@ -12,7 +12,8 @@
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub): gDataHub(DataHub), _measure_adjustment(1.0),
     _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()), _low_risk_threshold(DataHub.GetParameters().getRiskThresholdLowClusters()),
     _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()), _high_risk_threshold(DataHub.GetParameters().getRiskThresholdHighClusters()),
-    gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _risk_function(0), _risk_multiset_function(0), _rate_of_interest_multiset(0) {
+    gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _risk_function(0), _risk_multiset_function(0), _rate_of_interest_multiset(0),
+    gpRateOfInterestBatched(0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -20,9 +21,17 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
             gvDataSetTotals.push_back(std::make_pair(DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(), DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
             gvDataSetMeasureAuxTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux());
+            gvDataSetMeasureAux2Totals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux2());
         }
         /* Assign the class function pointers that will determine if cluster passes scan area test. */
-        if (parameters.GetProbabilityModelType() == NORMAL) {
+        if (parameters.GetProbabilityModelType() == BATCHED) {
+            switch (parameters.GetExecuteScanRateType()) {
+                case LOW: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::LowRateBatched; break;
+                case HIGHANDLOW: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighOrLowRateBatched; break;
+                case HIGH:
+                default: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRateBatched;
+            }
+        } else if (parameters.GetProbabilityModelType() == NORMAL) {
             /* The normal model is specialized. */
             if (!parameters.getIsWeightedNormal()) {
                 switch (parameters.GetExecuteScanRateType()) {
@@ -194,7 +203,9 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                         default: throw prg_error("Unknown area scan type '%d'.", "constructor()", parameters.GetExecuteScanRateType());
                     } break;
                 case ADJUSTMENT :
-                    if (parameters.getRiskLimitHighClusters() || parameters.getRiskLimitLowClusters())
+                    if (parameters.GetIsSpaceTimeAnalysis() && parameters.GetProbabilityModelType() == BATCHED && parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                        _unifier.reset(new AdjustmentUnifierBatchModelTimeStratified(parameters.GetExecuteScanRateType()));
+                    else if (parameters.getRiskLimitHighClusters() || parameters.getRiskLimitLowClusters())
                         _unifier.reset(new AdjustmentUnifierRiskThreshold(parameters.GetExecuteScanRateType(), parameters.GetProbabilityModelType()));
                     else
                         _unifier.reset(new AdjustmentUnifier(parameters.GetExecuteScanRateType(), parameters.GetProbabilityModelType()));
@@ -285,7 +296,7 @@ double AbstractLikelihoodCalculator::CalculateMaximizingValueUniformTime(count_t
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodTimeStratified(count_t n, measure_t u, count_t N, measure_t U) const {
-    throw prg_error("CalcLogLikelihoodBernoulliTimeStratified(count_t, measure_t, count_t, measure_t) not implementated.", "AbstractLikelihoodCalculator");
+    throw prg_error("CalcLogLikelihoodTimeStratified(count_t, measure_t, count_t, measure_t) not implementated.", "AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */

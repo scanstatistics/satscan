@@ -6,6 +6,7 @@
 #include "cluster.h"
 #include "MostLikelyClustersContainer.h"
 #include "PrintQueue.h"
+#include "BatchedLikelihoodCalculation.h"
 
 /** constructor */
 CAnalysis::CAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -14,18 +15,20 @@ CAnalysis::CAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub,
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
     TMeasureList class or perform simulations by the same algorithm as the real data. */
 double CAnalysis::ExecuteSimulation(const AbstractDataSetGateway& DataGateway) {
+    // Clear the all log-likelihood for the next iteration since each randomization causes these values to change.
+    if (_parameters.GetProbabilityModelType() == BATCHED)
+        dynamic_cast<BatchedLikelihoodCalculator*>(_likelihood_calculator.get())->calculateLoglikelihoodsForAll();
 
-  if (_replica_process_type == MeasureListEvaluation)
-    return MonteCarlo(DataGateway.GetDataSetInterface(0));
-
-  if (_parameters.GetIsPurelyTemporalAnalysis())
-    return MonteCarlo(0, DataGateway);
-
-  double dMaxLogLikelihoodRatio=0;
-  //calculate greatest loglikelihood ratio about each centroid
-  for (int i=0; i < _data_hub.m_nGridTracts && !_print.GetIsCanceled(); ++i)
-    dMaxLogLikelihoodRatio = std::max(MonteCarlo(i, DataGateway), dMaxLogLikelihoodRatio);
-  return dMaxLogLikelihoodRatio;
+    double dMaxLogLikelihoodRatio = 0;
+    if (_replica_process_type == MeasureListEvaluation)
+        dMaxLogLikelihoodRatio = MonteCarlo(DataGateway.GetDataSetInterface(0));
+    else if (_parameters.GetIsPurelyTemporalAnalysis())
+        dMaxLogLikelihoodRatio = MonteCarlo(0, DataGateway);
+    else { //calculate greatest loglikelihood ratio about each centroid
+        for (int i=0; i < _data_hub.m_nGridTracts && !_print.GetIsCanceled(); ++i)
+            dMaxLogLikelihoodRatio = std::max(MonteCarlo(i, DataGateway), dMaxLogLikelihoodRatio);
+    }
+    return dMaxLogLikelihoodRatio;
 }
 
 /** Given data gate way, calculates and collects most likely clusters about

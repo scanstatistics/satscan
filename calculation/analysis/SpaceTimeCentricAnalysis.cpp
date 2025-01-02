@@ -14,7 +14,7 @@ SpaceTimeCentricAnalysis::SpaceTimeCentricAnalysis(
 :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _top_clusters(Data) {
     try {
         // Allocate objects used to evaluate real data.
-        _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory, RealDataGateway));
+        _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory.get(), RealDataGateway));
         _top_clusters.setTopClusters(*_cluster_compare.get());
         // Allocate time interval evaluation of real data.
         _time_intervals_r.reset(
@@ -106,9 +106,9 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
         //calculate top purely temporal cluster
         IncludeClustersType includeType = _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType();
         //create top cluster
-        CPurelyTemporalCluster TopCluster(_cluster_data_factory, DataGateway, includeType, _data_hub);
+        CPurelyTemporalCluster TopCluster(_cluster_data_factory.get(), DataGateway, includeType, _data_hub);
         //create comparator cluster
-        CPurelyTemporalCluster ClusterComparator(_cluster_data_factory, DataGateway, includeType, _data_hub);
+        CPurelyTemporalCluster ClusterComparator(_cluster_data_factory.get(), DataGateway, includeType, _data_hub);
         boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
         CClusterObject clusterObject(ClusterComparator);
         clusterSet->add(clusterObject);

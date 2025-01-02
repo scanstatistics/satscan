@@ -24,7 +24,7 @@ void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataS
           process of finding most likely clusters. */
 void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
     try {
-        _cluster_compare.reset(new CSVTTCluster(_cluster_data_factory, DataGateway));
+        _cluster_compare.reset(new CSVTTCluster(_cluster_data_factory.get(), DataGateway));
         _top_clusters.setTopClusters(*_cluster_compare);
     } catch (prg_exception& x) {
         x.addTrace("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");

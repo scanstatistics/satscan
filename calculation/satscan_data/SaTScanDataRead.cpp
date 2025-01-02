@@ -18,6 +18,7 @@
 #include "MetaTractManager.h"
 #include "HomogeneousPoissonDataSetHandler.h"
 #include "UniformTimeDataSetHandler.h"
+#include "BatchedDataSetHandler.h"
 #include "Toolkit.h"
 
 const long SaTScanDataReader::_identifier_column_index = 0;
@@ -101,6 +102,7 @@ void SaTScanDataReader::Read() {
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       case UNIFORMTIME          : bReadSuccess = ReadUniformTimeData(); break;
+      case BATCHED              : bReadSuccess = ReadBatchedData(); break;
       case HOMOGENEOUSPOISSON   : bReadSuccess = ReadHomogeneousPoissonData(); break;
       default :
         throw prg_error("Unknown probability model type '%d'.","Read()", gParameters.GetProbabilityModelType());
@@ -647,6 +649,25 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
         throw;
     }
     return bValid;
+}
+
+/** reads data from input files for a batched probability model */
+bool SaTScanDataReader::ReadBatchedData() {
+    try {
+        if (!ReadCoordinatesFile())
+            return false;
+        gDataHub.gDataSets.reset(new BatchedDataSetHandler(gDataHub, gPrint));
+        if (!gDataHub.gDataSets->ReadData())
+            return false;
+        if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+            return false;
+        if (gParameters.UseSpecialGrid() && !ReadGridFile())
+            return false;
+    } catch (prg_exception& x) {
+        x.addTrace("ReadBatchedData()", "SaTScanDataReader");
+        throw;
+    }
+    return true;
 }
 
 /** reads data from input files for a Exponential probability model */

@@ -288,6 +288,15 @@
     <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h">
       <Filter>Header Files\source\calculation\cluster</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\cluster\MultiSetBatchedClusterData.h">
+      <Filter>Header Files\source\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\BatchedClusterData.h">
+      <Filter>Header Files\source\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\BatchedClusterDataFactory.h">
+      <Filter>Header Files\source\calculation\cluster</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\cluster\PurelySpatialCluster.h">
       <Filter>Header Files\source\calculation\cluster</Filter>
     </ClInclude>
@@ -438,6 +447,9 @@
     <ClInclude Include="..\calculation\randomization\NormalRandomizer.h">
       <Filter>Header Files\source\calculation\randomization</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\randomization\BatchedRandomizer.h">
+      <Filter>Header Files\source\calculation\randomization</Filter>
+    </ClInclude>
     <ClInclude Include="..\calculation\randomization\OrdinalDataRandomizer.h">
       <Filter>Header Files\source\calculation\randomization</Filter>
     </ClInclude>
@@ -517,6 +529,9 @@
       <Filter>Header Files\source\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\NormalDataSetHandler.h">
+      <Filter>Header Files\source\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\BatchedDataSetHandler.h">
       <Filter>Header Files\source\calculation\satscan_data</Filter>
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\ObservableRegion.h">
@@ -803,6 +818,24 @@
     <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp">
       <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\cluster\MultiSetBatchedClusterData.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterData.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterDataFactory.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\MultiSetBatchedClusterData.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterData.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\cluster\BatchedClusterDataFactory.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\cluster\PurelySpatialCluster.cpp">
       <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
@@ -843,6 +876,9 @@
       <Filter>Source Files\source\calculation\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp">
+      <Filter>Source Files\source\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\loglikelihood\BatchedLikelihoodCalculation.cpp">
       <Filter>Source Files\source\calculation\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp">
@@ -986,6 +1022,9 @@
     <ClCompile Include="..\calculation\satscan_data\NormalDataSetHandler.cpp">
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\satscan_data\BatchedDataSetHandler.cpp">
+      <Filter>Source Files\source\calculation\satscan_data</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\ObservableRegion.cpp">
       <Filter>Source Files\source\calculation\satscan_data</Filter>
     </ClCompile>
@@ -1046,6 +1085,9 @@
     <ClCompile Include="..\calculation\randomization\NormalRandomizer.cpp">
       <Filter>Source Files\source\calculation\randomization</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\randomization\BatchedRandomizer.cpp">
+      <Filter>Source Files\source\calculation\randomization</Filter>
+    </ClCompile>
     <ClCompile Include="..\calculation\randomization\OrdinalDataRandomizer.cpp">
       <Filter>Source Files\source\calculation\randomization</Filter>
     </ClCompile>
@@ -1077,6 +1119,9 @@
       <Filter>Source Files\source\calculation\probability_model</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\probability_model\NormalModel.cpp">
+      <Filter>Source Files\source\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\probability_model\BatchedModel.cpp">
       <Filter>Source Files\source\calculation\probability_model</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\probability_model\OrdinalModel.cpp">
@@ -1289,26 +1334,26 @@
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
       <Filter>Source Files\source\calculation\Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp">
+    <ClCompile Include="..\boost\boost_1_81_0\libs\timer\src\cpu_timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\UniformTimeClusterData.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\cluster\MultiSetUniformTimeClusterData.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\calculation\cluster\UniformTimeClusterDataFactory.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\UniformTimeDataSetHandler.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\timer\src\cpu_timer.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
+      <Filter>Source Files\source\calculation\cluster</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

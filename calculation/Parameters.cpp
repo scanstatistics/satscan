@@ -610,6 +610,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 bool CParameters::GetPermitsCentricExecution(bool excludePValue) const {
  if (GetIsPurelyTemporalAnalysis()) return false;
  if (GetProbabilityModelType() == HOMOGENEOUSPOISSON) return false;
+ if (GetProbabilityModelType() == BATCHED) return false;
  if (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) return false;
  if (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) return false;
  if (!excludePValue && GetPValueReportingType() == TERMINATION_PVALUE && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) return false;
@@ -626,7 +627,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL || eModelType == BATCHED
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
@@ -640,7 +641,7 @@ bool CParameters::GetPermitsPurelyTemporalCluster() const {
 
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL || eModelType == BATCHED
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL || eModelType == UNIFORMTIME;
 }
 
@@ -1203,8 +1204,8 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
 
 /** Sets probability model type. Throws exception if out of range. */
 void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModelType) {
-  if (eProbabilityModelType < POISSON || eProbabilityModelType > UNIFORMTIME)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, UNIFORMTIME);
+  if (eProbabilityModelType < POISSON || eProbabilityModelType > BATCHED)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, BATCHED);
   geProbabilityModelType = eProbabilityModelType;
 }
 

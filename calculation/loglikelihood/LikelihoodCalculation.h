@@ -17,6 +17,7 @@ class AbstractLikelihoodCalculator {
   public:
     typedef bool (AbstractLikelihoodCalculator::*SCANRATE_FUNCPTR) (count_t,measure_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATETIMESTRATIFIED_FUNCPTR) (count_t, measure_t, count_t, measure_t) const;
+    typedef bool (AbstractLikelihoodCalculator::* SCANRATEBATCHED_FUNCPTR) (count_t, measure_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATENORMAL_FUNCPTR) (count_t,measure_t,measure_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATEUNIFORMTIME_FUNCPTR) (count_t, measure_t, count_t, measure_t, size_t) const;
     typedef bool (AbstractLikelihoodCalculator::*SCANRATEMULTISET_FUNCPTR) (const AbstractLoglikelihoodRatioUnifier&, bool) const;
@@ -40,9 +41,11 @@ class AbstractLikelihoodCalculator {
 
     std::vector<std::pair<count_t, measure_t> > gvDataSetTotals;
     std::vector<measure_t>              gvDataSetMeasureAuxTotals;
+    std::vector<measure_t>              gvDataSetMeasureAux2Totals;
 
     SCANRATE_FUNCPTR                    gpRateOfInterest;
     SCANRATETIMESTRATIFIED_FUNCPTR      gpRateOfInterestTimeStratified;
+    SCANRATEBATCHED_FUNCPTR             gpRateOfInterestBatched;
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
     SCANRATEUNIFORMTIME_FUNCPTR         gpRateOfInterestUniformTime;
     SCANRATEMULTISET_FUNCPTR            _rate_of_interest_multiset;
@@ -52,7 +55,7 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalcLogLikelihood(count_t n, measure_t u) const;
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
-    virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex=0) const;
+    virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex = 0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioUniformTime(count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex = 0) const;
     virtual double                      CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const;
@@ -113,6 +116,11 @@ class AbstractLikelihoodCalculator {
     bool                                MultivariateHighRiskOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const;
     bool                                MultivariateHighRateOrLowRiskMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const;
     bool                                MultivariateHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const;
+
+    /* Cluster evaluation functions specific to the Batched model.*/
+    inline bool                         HighRateBatched(count_t nCases, measure_t nMeasure) const;
+    inline bool                         LowRateBatched(count_t nCases, measure_t nMeasure) const;
+    inline bool                         HighOrLowRateBatched(count_t nCases, measure_t nMeasure) const;
 
     /* Cluster evaluation functions specific to the Normal model.*/
     inline bool                         HighRateNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux) const;
@@ -439,6 +447,20 @@ inline bool AbstractLikelihoodCalculator::LowRateDataStream(count_t nCases, meas
 /** For multiple sets the criteria that a high rate must have a certain minimum is implemented across all data sets. */
 inline bool AbstractLikelihoodCalculator::HighRateDataStream(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
    return nCases * gvDataSetTotals[tSetIndex].second  > nMeasure * gvDataSetTotals[tSetIndex].first;
+}
+
+/** Returns whether an area has the minimum number of cases for a low rate clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::LowRateBatched(count_t nCases, measure_t nMeasure) const {
+    return nMeasure > 0.0 && nCases >= _min_low_rate_cases;
+}
+
+/** Returns whether an area has the minimum number of cases for a high rate clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::HighRateBatched(count_t nCases, measure_t nMeasure) const {
+    return nMeasure > 0.0 && nCases >= _min_high_rate_cases;
+}
+/** Indicates whether an area has expected cases for a clustering within a single dataset. */
+inline bool AbstractLikelihoodCalculator::HighOrLowRateBatched(count_t nCases, measure_t nMeasure) const {
+     return nMeasure > 0.0;
 }
 
 /** Indicates whether an area has lower than expected cases for a clustering within a single dataset. */

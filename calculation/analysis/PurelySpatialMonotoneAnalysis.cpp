@@ -14,10 +14,10 @@ CPSMonotoneAnalysis::CPSMonotoneAnalysis(const CParameters& Parameters, const CS
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
 void CPSMonotoneAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway) {
-  _top_clusters.setTopClusters(CPSMonotoneCluster(_cluster_data_factory, DataGateway, _parameters.GetExecuteScanRateType()));
-  _compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory, DataGateway, _parameters.GetExecuteScanRateType() == HIGHANDLOW ? HIGH : _parameters.GetExecuteScanRateType()));
+  _top_clusters.setTopClusters(CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, _parameters.GetExecuteScanRateType()));
+  _compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, _parameters.GetExecuteScanRateType() == HIGHANDLOW ? HIGH : _parameters.GetExecuteScanRateType()));
   if (_parameters.GetExecuteScanRateType() == HIGHANDLOW)
-    _aux_compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory, DataGateway, LOW));
+    _aux_compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, LOW));
 }
 
 /** Allocates objects used during calculation of most likely clusters, instead
@@ -25,10 +25,10 @@ void CPSMonotoneAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           process of finding most likely clusters. This function is only a shell. */
 void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
-  _top_clusters.setTopClusters(CPSMonotoneCluster(_cluster_data_factory, DataGateway, _parameters.GetExecuteScanRateType()));
-  _compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory, DataGateway, _parameters.GetExecuteScanRateType() == HIGHANDLOW ? HIGH : _parameters.GetExecuteScanRateType()));
+  _top_clusters.setTopClusters(CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, _parameters.GetExecuteScanRateType()));
+  _compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, _parameters.GetExecuteScanRateType() == HIGHANDLOW ? HIGH : _parameters.GetExecuteScanRateType()));
   if (_parameters.GetExecuteScanRateType() == HIGHANDLOW)
-    _aux_compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory, DataGateway, LOW));
+    _aux_compare_cluster.reset(new CPSMonotoneCluster(_cluster_data_factory.get(), DataGateway, LOW));
 }
 
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.

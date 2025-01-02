@@ -6,6 +6,7 @@
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
 #include "NormalClusterData.h"
+#include "BatchedClusterData.h"
 #include "UniformTimeClusterData.h"
 #include "AbstractAnalysis.h"
 #include "SSException.h"
@@ -16,6 +17,7 @@
 #include "LoglikelihoodRatioUnifier.h"
 #include "RankRandomizer.h"
 #include "GisUtils.h"
+#include "BatchedLikelihoodCalculation.h"
 
 unsigned int CCluster::MIN_RANK_RPT_GUMBEL = 10;
 
@@ -106,6 +108,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
             case EXPONENTIAL:
             case RANK:
             case UNIFORMTIME:
+            case BATCHED:
                 // Cluster is high rate if observed / expected > 1.0 and is low rate if observed / expected < 1.0.
                 return GetObservedDivExpected(DataHub) >= 1.0 ? HIGH : LOW;
             case ORDINAL: {
@@ -275,6 +278,8 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
                 DisplayClusterDataNormal(fp, DataHub, PrintFormat);
         } else if (DataHub.GetParameters().GetProbabilityModelType() == RANK) {
             DisplayClusterDataRank(fp, DataHub, PrintFormat);
+        } else if (DataHub.GetParameters().GetProbabilityModelType() == BATCHED) {
+            DisplayClusterDataBatched(fp, DataHub, PrintFormat);
         } else
             DisplayClusterDataStandard(fp, DataHub, PrintFormat);
         if (DataHub.GetParameters().getNumFileSets() == 1) displayClusterLevelInformation();
@@ -326,6 +331,38 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
     } catch (prg_exception& x) {
         x.addTrace("DisplayCensusTracts()","CCluster");
         throw;
+    }
+}
+
+/** Prints observed cases, expected cases and observed/expected, for batched model,
+    to file stream is in format required by result output file. */
+void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+    std::string buffer;
+    const CParameters& params = DataHub.GetParameters();
+
+    for (auto set_number : getDataSetIndexesComprisedInRatio(DataHub)) {
+        //print data set number if analyzing more than data set
+        if (params.getNumFileSets() > 1)
+            PrintFormat.PrintSectionStatement(fp,
+                printString(buffer, "%s (set %i)",
+                    params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
+                    (set_number + 1)
+                ).c_str()
+            );
+        auto pClusterData = dynamic_cast<const AbstractBatchedClusterData*>(GetClusterData());
+        if (!pClusterData) throw prg_error("Data object could not casted to AbstractBatchedClusterData type.\n", "DisplayClusterDataBatched()");
+        BatchedLikelihoodCalculator llrCalc(DataHub);
+        printClusterData(fp, PrintFormat, "Number batches", getValueAsString(GetClusterData()->GetMeasure(set_number), buffer, 0), true, set_number);
+        printClusterData(fp, PrintFormat, "Observed positive", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
+        printClusterData(fp, PrintFormat, "Expected positive", getValueAsString(llrCalc.getClusterExpected(*this, set_number), buffer), true, set_number);
+        DisplayObservedDivExpected(fp, set_number, DataHub, PrintFormat);
+        printClusterData(fp, PrintFormat, "Sum positive", getValueAsString(pClusterData->GetMeasureAux2(set_number), buffer, 0), true, set_number);
+        printClusterData(fp, PrintFormat, "Sum negative", getValueAsString(pClusterData->GetMeasureAux(set_number), buffer, 0), true, set_number);
+        auto probabilities = llrCalc.getProbabilityPositive(*this, set_number);
+        printClusterData(fp, PrintFormat, "Positive pr. inside", getValueAsString(probabilities.first, buffer, 3), true, set_number);
+        printClusterData(fp, PrintFormat, "Positive pr. outside", getValueAsString(probabilities.second, buffer, 3), true, set_number);
+
+        DisplayRelativeRisk(fp, set_number, DataHub, PrintFormat);
     }
 }
 
@@ -944,6 +981,8 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
         else if (cases == casesInPeriod)
             return measure / (M * (measureInPeriod - measure));
         return 0.0; // should not happen
+    } else if (params.GetProbabilityModelType() == BATCHED) {
+        return BatchedLikelihoodCalculator(DataHub).getClusterExpected(*this, tSetIndex);
     } else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
         // Retrieve the identifier indexes for this cluster.
         std::vector<tract_t> identifierIndexes;
@@ -1026,8 +1065,8 @@ count_t CCluster::GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryInde
 
 /** Returns relative risk of cluster. */
 double CCluster::GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex) const {
-  measure_t     tExpected = GetExpectedCount(DataHub, tSetIndex);
-  return (tExpected ? (double)GetObservedCount(tSetIndex)/tExpected : 0);
+  measure_t tExpected(GetExpectedCount(DataHub, tSetIndex));
+  return tExpected ? (double)GetObservedCount(tSetIndex)/tExpected : 0;
 }
 
 /** Returns the relative risk for tract as defined by cluster. */
@@ -1121,6 +1160,10 @@ double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) 
 
   if (params.GetProbabilityModelType() == UNIFORMTIME) {
       return (expected == 0.0 ? -1 : static_cast<double>(GetObservedCount(tSetIndex)) / expected); // when expected == 0, relative risk goes to infinity
+  } else if (params.GetProbabilityModelType() == BATCHED) {
+      auto pClusterData = dynamic_cast<const AbstractBatchedClusterData*>(GetClusterData());
+      if (!pClusterData) throw prg_error("Data object could not casted to AbstractBatchedClusterData type.\n", "GetExpectedCount()");
+      return BatchedLikelihoodCalculator(DataHub).getClusterRelativeRisk(*this, tSetIndex);
   } else if (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
       return GetRelativeRisk(
           GetObservedCount(tSetIndex), GetClusterData()->GetMeasure(tSetIndex), // We want the unadjusted measure here.

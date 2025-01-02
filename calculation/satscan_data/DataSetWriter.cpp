@@ -11,14 +11,15 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
     case POISSON              :
     case BERNOULLI            :
     case UNIFORMTIME          :
+    case BATCHED              :
     case SPACETIMEPERMUTATION : return new DefaultDataSetWriter();
     case CATEGORICAL          :
     case ORDINAL              : return new OrdinalDataSetWriter();
     case EXPONENTIAL          : return new ExponentialDataSetWriter();
     case NORMAL               :
-       throw prg_error("getNewDataSetReader() not implemented for Normal model.","getNewDataSetReader()");
+       throw prg_error("getNewDataSetReader() not implemented for Normal model.","AbstractDataSetWriter()");
     case RANK                 :
-       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","AbstractDataSetWriter()");
     default : throw prg_error("Unknown model type '%d'.","getNewDataSetReader()", Parameters.GetProbabilityModelType());
   }
 }

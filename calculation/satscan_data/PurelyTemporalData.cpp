@@ -12,6 +12,7 @@
 #include "OrdinalModel.h"
 #include "SSException.h"
 #include "UniformTimeModel.h"
+#include "BatchedModel.h"
 
 /** class constructor */
 CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -122,21 +123,18 @@ void CPurelyTemporalData::PostDataRead() {
 	}
 }
 
-/** Allocates probability model object. Throws prg_error if probability model
-    type is space-time permutation. */
+/** Allocates probability model object. */
 void CPurelyTemporalData::SetProbabilityModel() {
   switch (gParameters.GetProbabilityModelType()) {
-     case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-     case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
-     case CATEGORICAL          :
-     case ORDINAL              : m_pModel = new OrdinalModel(); break;
-     case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
-     case NORMAL               : m_pModel = new CNormalModel(); break;
-     case RANK                 : m_pModel = new CRankModel(); break;
-     case UNIFORMTIME: m_pModel = new UniformTimeModel(*this); break;
-     case SPACETIMEPERMUTATION : throw prg_error("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
-                                                 "SetProbabilityModel()");
-     default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                               gParameters.GetProbabilityModelType());
+     case POISSON     : m_pModel = new CPoissonModel(*this);   break;
+     case BERNOULLI   : m_pModel = new CBernoulliModel(); break;
+     case CATEGORICAL :
+     case ORDINAL     : m_pModel = new OrdinalModel(); break;
+     case EXPONENTIAL : m_pModel = new ExponentialModel(); break;
+     case NORMAL      : m_pModel = new CNormalModel(); break;
+     case RANK        : m_pModel = new CRankModel(); break;
+     case UNIFORMTIME : m_pModel = new UniformTimeModel(*this); break;
+     case BATCHED     : m_pModel = new BatchedModel(); break;
+     default : throw prg_error("Not implemented for probability model type: '%d'.\n", "SetProbabilityModel()", gParameters.GetProbabilityModelType());
   }
 }

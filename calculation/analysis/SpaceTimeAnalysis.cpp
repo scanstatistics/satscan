@@ -7,6 +7,8 @@
 #include "ClusterData.h"
 #include "SSException.h"
 
+#include "BatchedLikelihoodCalculation.h"
+
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
 :CAnalysis(Parameters, DataHub, PrintDirection), _top_clusters(DataHub) {}
@@ -38,7 +40,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), SUCCESSIVELY
         ));
         //create cluster object used as comparator when iterating over centroids and time intervals
-        _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory, DataGateway));
+        _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory.get(), DataGateway));
         //initialize list of top circle/ellipse clusters
         _top_clusters.setTopClusters(*_cluster_compare);
     } catch (prg_exception& x) {

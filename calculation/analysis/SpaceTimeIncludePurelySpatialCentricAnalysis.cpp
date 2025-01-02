@@ -12,7 +12,7 @@ SpaceTimeIncludePurelySpatialCentricAnalysis::SpaceTimeIncludePurelySpatialCentr
 :SpaceTimeCentricAnalysis(Parameters, Data, PrintDirection, RealDataGateway, vSimDataGateways), _top_ps_Clusters(Data) {
     try {
         // Allocate objects used to evaluate real data.
-        _ps_cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory, RealDataGateway));
+        _ps_cluster_compare.reset(new CPurelySpatialCluster(_cluster_data_factory.get(), RealDataGateway));
         _top_ps_Clusters.setTopClusters(*_ps_cluster_compare.get());
         // Allocate objects used to evaluate simulation data.
         if (_parameters.GetNumReplicationsRequested()) {

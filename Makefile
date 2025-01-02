@@ -94,17 +94,20 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CLUSTER)/AbstractClusterData.cpp \
                $(CLUSTER)/ClusterData.cpp \
                $(CLUSTER)/NormalClusterData.cpp \
+               $(CLUSTER)/BatchedClusterData.cpp \
                $(CLUSTER)/CategoricalClusterData.cpp \
                $(CLUSTER)/AbstractClusterDataFactory.cpp \
                $(CLUSTER)/UniformTimeClusterDataFactory.cpp \
                $(CLUSTER)/ClusterDataFactory.cpp \
                $(CLUSTER)/NormalClusterDataFactory.cpp \
+               $(CLUSTER)/BatchedClusterDataFactory.cpp \
                $(CLUSTER)/UniformTimeClusterData.cpp \
                $(CLUSTER)/MultiSetUniformTimeClusterData.cpp \
                $(CLUSTER)/CategoricalClusterDataFactory.cpp \
                $(CLUSTER)/MultiSetClusterData.cpp \
                $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
                $(CLUSTER)/MultiSetNormalClusterData.cpp \
+               $(CLUSTER)/MultiSetBatchedClusterData.cpp \
                $(CLUSTER)/PurelySpatialHomogeneousPoissonCluster.cpp \
                $(OUTPUT)/ClusterLocationsWriter.cpp \
                $(OUTPUT)/stsASCIIFileWriter.cpp \
@@ -130,6 +133,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(PROBMODEL)/PoissonModel.cpp \
                $(PROBMODEL)/SpaceTimePermutationModel.cpp \
                $(PROBMODEL)/NormalModel.cpp \
+               $(PROBMODEL)/BatchedModel.cpp \
                $(PROBMODEL)/ExponentialModel.cpp \
                $(PROBMODEL)/UniformTimeModel.cpp \
                $(PROBMODEL)/RankModel.cpp \
@@ -146,12 +150,14 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(RANDOMIZER)/RankRandomizer.cpp \
                $(RANDOMIZER)/NormalRandomizer.cpp \
                $(RANDOMIZER)/WeightedNormalRandomizer.cpp \
+               $(RANDOMIZER)/BatchedRandomizer.cpp \
                $(RANDOMIZER)/HomogeneousPoissonRandomizer.cpp \
                $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/UniformTimeLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
                $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
+               $(LOGLIKELIHOOD)/BatchedLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/PoissonLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/PoissonSVTTLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
@@ -179,6 +185,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(SATDATA)/DataSetInterface.cpp \
                $(SATDATA)/BernoulliDataSetHandler.cpp \
                $(SATDATA)/NormalDataSetHandler.cpp \
+               $(SATDATA)/BatchedDataSetHandler.cpp \
                $(SATDATA)/PoissonDataSetHandler.cpp \
                $(SATDATA)/RankDataSetHandler.cpp \
                $(SATDATA)/UniformTimeDataSetHandler.cpp \

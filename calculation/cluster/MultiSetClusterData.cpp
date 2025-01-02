@@ -55,7 +55,11 @@ boost::dynamic_bitset<> MultiSetSpatialData::getRatioSets(AbstractLikelihoodCalc
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together. */
 double MultiSetSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
+    auto& unifier = getRatioUnified(Calculator);
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = Calculator._rate_of_interest_multiset;
+    if ((Calculator.*pRateCheck)(unifier, false))
+        return unifier.GetLoglikelihoodRatio();
+    return 0.0;
 }
 
 /** Returns newly cloned MultiSetSpatialData object. Caller responsible for deletion of object. */
@@ -239,7 +243,11 @@ const AbstractLoglikelihoodRatioUnifier & MultiSetProspectiveSpatialData::getRat
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together.*/
 double MultiSetProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-    return getRatioUnified(Calculator).GetLoglikelihoodRatio();
+    auto& unifier = getRatioUnified(Calculator);
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = Calculator._rate_of_interest_multiset;
+    if ((Calculator.*pRateCheck)(unifier, false))
+        return unifier.GetLoglikelihoodRatio();
+    return 0.0;
 }
 
 /** Returns newly cloned MultiSetProspectiveSpatialData object. Caller responsible

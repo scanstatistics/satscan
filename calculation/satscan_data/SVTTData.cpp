@@ -8,6 +8,7 @@
 #include "SpaceTimePermutationModel.h"
 #include "LocationRiskEstimateWriter.h"
 #include "SSException.h"
+#include "ParametersPrint.h"
 
 /** class constructor */
 CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -211,33 +212,18 @@ void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
 /** Allocates probability model obect. Throws prg_error for all probability
     model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {
-  try {
-    switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-       case BERNOULLI            : throw prg_error("Spatial Variation in Temporal Trends not implemented for Bernoulli model.\n",
-                                                   "SetProbabilityModel()");
-       case SPACETIMEPERMUTATION : throw prg_error("Spatial Variation in Temporal Trends not implemented for Space-Time Permutation model.\n",
-                                                   "SetProbabilityModel()");
-       case CATEGORICAL          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Categorical model.\n",
-                                                   "SetProbabilityModel()");
-       case ORDINAL              : throw prg_error("Spatial Variation in Temporal Trends not implemented for Ordinal model.\n",
-                                                   "SetProbabilityModel()");
-       case EXPONENTIAL          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Exponential model.\n",
-                                                   "SetProbabilityModel()");
-       case NORMAL               : throw prg_error("Spatial Variation in Temporal Trends not implemented for Normal model.\n",
-                                                   "SetProbabilityModel()");
-       case RANK                 : throw prg_error("Spatial Variation in Temporal Trends not implemented for Rank model.\n",
-                                                   "SetProbabilityModel()");
-       case UNIFORMTIME          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Uniform Time model.\n",
-                                                   "SetProbabilityModel()");
-       default : throw prg_error("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", gParameters.GetProbabilityModelType());
+    try {
+        switch (gParameters.GetProbabilityModelType()) {
+            case POISSON : m_pModel = new CPoissonModel(*this); break;
+            default : throw prg_error(
+                "Spatial Variation in Temporal Trends not implemented for %s model.\n",
+                "SetProbabilityModel()", ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
+            );
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("SetProbabilityModel()","CSVTTData");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("SetProbabilityModel()","CSVTTData");
-    throw;
-  }
 }
 
 /** First calls base class SetIntervalStartTimes() then verifies that first time interval

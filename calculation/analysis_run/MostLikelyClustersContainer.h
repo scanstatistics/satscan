@@ -130,10 +130,9 @@ class MostLikelyClustersContainer {
 
        public:
          CompareClustersObservedDivExpected(const CSaTScanData& DataHub) : _dataHub(DataHub), _parameters(DataHub.GetParameters()), _numDataSets(DataHub.GetDataSetHandler().GetNumDataSets()) {
-             // Verify that method is called for supported models -- Ordinal, Multinomial and Normal are not currently.
-             if (_parameters.GetProbabilityModelType() == ORDINAL || 
-                 _parameters.GetProbabilityModelType() == CATEGORICAL ||
-                 _parameters.GetProbabilityModelType() == RANK)
+             // Verify that method is called for supported models -- Ordinal, Multinomial, Batched and Rank are not currently.
+             if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL ||
+                 _parameters.GetProbabilityModelType() == BATCHED || _parameters.GetProbabilityModelType() == RANK)
                throw prg_error("CompareClustersObservedDivExpected() not implemented for model('%d').","CompareClustersObservedDivExpected()", _parameters.GetProbabilityModelType());
          }
          bool operator() (const Cluster_t& pCluster1, const Cluster_t& pCluster2) {
