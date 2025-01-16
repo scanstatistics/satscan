@@ -1774,7 +1774,7 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
                     cumulative_llr[t] += i_llr;
 
                 // calculate the expected for this time interval then add to cumulative
-                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpected(
+                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpectedAtWindow(
                     Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1], 
                     Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowStart + 1], iWindowStart, t
                 );
@@ -1847,7 +1847,7 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValu
                     cumulative_llr[t] += i_llr;
 
                 // calculate the expected for this time interval then add to cumulative
-                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpected(
+                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpectedAtWindow(
                     Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1],
                     Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowStart + 1], iWindowStart, t
                 );

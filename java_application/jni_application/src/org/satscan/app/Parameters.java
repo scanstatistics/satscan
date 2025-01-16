@@ -20,7 +20,7 @@ public class Parameters implements Cloneable {
                                                PURELYSPATIALPROSPECTIVECLUSTER, PURELYSPATIALHOMOGENEOUSCLUSTER};
     /** probability model types */
     public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL,
-                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK, UNIFORMTIME};
+                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK, UNIFORMTIME, BATCHED};
     public enum IncludeClustersType           {ALLCLUSTERS, ALIVECLUSTERS, CLUSTERSINRANGE};
     public enum RiskType                      {STANDARDRISK, MONOTONERISK};
     /** area incidence rate types */
@@ -766,6 +766,7 @@ public class Parameters implements Cloneable {
             case HOMOGENEOUSPOISSON   : sProbabilityModel = (abbr ? "H. Poisson" : "Homogeneous Poisson"); break;
             case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
             case UNIFORMTIME          : sProbabilityModel = "Uniform-Time"; break;
+            case BATCHED              : sProbabilityModel = "Batched"; break;
         }
         return sProbabilityModel;
     }

@@ -57,7 +57,9 @@ class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
     virtual double            CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex = 0) const;
 
     double                    getClusterExpected(const CCluster& cluster, size_t tSetIndex = 0) const;
-    double                    getClusterExpected(measure_t totalBatches, const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex = 0) const;
+    double                    getExpectedInWindow(int windowStart, int windowEnd, size_t tSetIndex = 0) const;
+    double                    getExpectedInWindow(int windowStart, int windowEnd, const std::vector<tract_t>& locationIdexes, size_t tSetIndex = 0) const;
+    double                    getClusterExpectedAtWindow(measure_t totalBatches, const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex = 0) const;
     double                    getClusterRelativeRisk(const CCluster& cluster, size_t tSetIndex = 0) const;
     std::pair<double, double> getProbabilityPositive(const CCluster& cluster, size_t tSetIndex = 0) const;
 };

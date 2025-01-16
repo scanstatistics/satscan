@@ -19,7 +19,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_uniformtimeModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_uniformtimeModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_batchedModelRadioButton);&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_scanAreasButtonGroup">
@@ -1065,12 +1065,12 @@
                           <Group type="102" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                           </Group>
                           <Component id="_analysisTypeGroup" alignment="1" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="1" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="1" min="-2" max="-2" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="167" max="32767" attributes="0"/>
+                      <EmptySpace pref="149" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1097,7 +1097,7 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                  <Component id="_spatialVariationRadioLabel" max="32767" attributes="0"/>
+                                  <Component id="_spatialVariationRadioLabel" pref="197" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1147,17 +1147,17 @@
                           <Component id="_retrospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_retrospectiveSeasonalRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_spatialVariationRadioButton" min="-2" pref="22" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                           <Component id="_spatialVariationRadioLabel" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1342,9 +1342,10 @@
                                   </Group>
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_batchedModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_uniformtimeModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_normalModelRadioButton" alignment="1" max="32767" attributes="0"/>
                                       <Component id="_exponentialModelRadioButton" alignment="1" max="32767" attributes="0"/>
@@ -1383,9 +1384,11 @@
                           <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_batchedModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_uniformtimeModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace pref="9" max="32767" attributes="0"/>
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -1620,6 +1623,25 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_uniformtimeModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JRadioButton" name="_batchedModelRadioButton">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Batched" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_batchedModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="_scanAreasGroup">
@@ -1778,7 +1800,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="24" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

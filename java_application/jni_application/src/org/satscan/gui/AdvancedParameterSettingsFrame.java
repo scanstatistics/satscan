@@ -595,7 +595,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bExponential = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
                 bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
                 bH_Poisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON,
-                bUniformTime = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.UNIFORMTIME;
+                bUniformTime = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.UNIFORMTIME,
+                bBatched = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BATCHED;
 
         switch (_settings_window.getAnalysisControlType()) {
             case PURELYSPATIAL:
@@ -636,7 +637,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case SPACETIME:
@@ -656,14 +657,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH), 
-                    bPoisson || (bBernoulli && _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH),
-                    bPoisson, bPoisson
+                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
                 enableSpatialOptionsGroup(true, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
@@ -680,7 +679,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(false);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
@@ -700,7 +699,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableIterativeScanOptionsGroup(true);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime);
+                enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case SPATIALVARTEMPTREND:
@@ -826,6 +825,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case CATEGORICAL:
             case NORMAL:
             case EXPONENTIAL:
+            case BATCHED:
                 // Skip for purely temporal analysis or applying spatial adjustment.
                 if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
                     _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
@@ -2096,9 +2096,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void enableDataSetPurposeControls() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
-        _multivariateAdjustmentsRadioButton.setEnabled(bEnable);
+        _multivariateAdjustmentsRadioButton.setEnabled(
+            bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.BATCHED
+        );
         _adjustmentByDataSetsRadioButton.setEnabled(bEnable);
         _multipleDataSetPurposeLabel.setEnabled(bEnable);
+        if (bEnable && _multivariateAdjustmentsRadioButton.isSelected() && !_multivariateAdjustmentsRadioButton.isEnabled())
+            _adjustmentByDataSetsRadioButton.setSelected(true);
     }
 
     /**

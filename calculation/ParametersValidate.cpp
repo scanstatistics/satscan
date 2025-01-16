@@ -38,11 +38,11 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
                                   BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (gParameters.GetProbabilityModelType() == BATCHED && 
-            gParameters.GetIsSpaceTimeAnalysis() && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION &&
+            /*gParameters.GetIsSpaceTimeAnalysis() && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION &&*/
             gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
             bValid = false;
             PrintDirection.Printf(
-                "%s:\Multivariate purpose for multiple data sets is not permitted with the %s model \nwhen performing a temporal trend adjustment.\n",
+                "%s:\Multivariate purpose for multiple data sets is not permitted with the %s model.\n",
                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
             );
         }
@@ -1389,7 +1389,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
 
     if (gParameters.getOutputTemporalGraphFile() &&
         (!(gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetIsSpaceTimeAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) ||
-        !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || 
+        !(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == BATCHED ||
           gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == UNIFORMTIME))) {
             const_cast<CParameters&>(gParameters).setOutputTemporalGraphFile(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"

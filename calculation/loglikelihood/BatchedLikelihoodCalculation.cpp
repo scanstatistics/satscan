@@ -97,7 +97,6 @@ double BatchedLikelihoodCalculator::probabilityPositive(measure_t C, measure_t N
     // LOOP #2:
     pLL = { LL(1 - p1, Sn, positiveBatches), LL(1 - p2, Sn, positiveBatches), LL(1 - p3, Sn, positiveBatches), LL(1 - p4, Sn, positiveBatches) };
     it = std::max_element(pLL.begin(), pLL.end());
-    //std::cout << std::distance(pLL.begin(), it);
     while (it == pLL.begin()) { // LL(1-p1) is the largest
         p1 = p1;
         p4 = p2;
@@ -108,19 +107,28 @@ double BatchedLikelihoodCalculator::probabilityPositive(measure_t C, measure_t N
     }
     // LOOP #3:
     pLL = { LL(1 - p1, Sn, positiveBatches), LL(1 - p2, Sn, positiveBatches), LL(1 - p3, Sn, positiveBatches), LL(1 - p4, Sn, positiveBatches) };
-    while (std::abs(pLL[1] - pLL[2]) > 0.0001) {
+    while (std::abs(pLL[1] - pLL[2]) > 0.0001) { // note: convergence near 15 decimal places cause round-off problems
         it = std::max_element(pLL.begin(), pLL.end());
         if (it == pLL.begin() + 1) { // LL(1-p2) is the largest
             p4 = p3;
-            p3 = p2 + (p3 - p2) / 2.0;
+            p3 = (p3 + p2) / 2.0;
+            //p3 = p2 + (p3 - p2) / 2.0; // value of 2.0 can be optimized, ex. 3.0
+            p2 = p1 + (p2 - p1) / 2.0; // value of 2.0 can be optimized, ex. 1.5
+            pLL[1] = LL(1 - p2, Sn, positiveBatches);
             pLL[2] = LL(1 - p3, Sn, positiveBatches);
             pLL[3] = LL(1 - p4, Sn, positiveBatches);
         } else if (it == pLL.begin() + 2) { // LL(1-p3) is the largest
             p1 = p2;
-            p2 = p2 + (p3 - p2) / 2.0;
+            p2 = p2 + (p3 - p2) / 2.0; // value of 2.0 can be optimized, ex. 1.5
+            p3 = p3 + (p4 - p3) / 2.0; // value of 2.0 can be optimized, ex. 3.0
             pLL[0] = LL(1 - p1, Sn, positiveBatches);
             pLL[1] = LL(1 - p2, Sn, positiveBatches);
-        }
+            pLL[2] = LL(1 - p3, Sn, positiveBatches);
+        } else
+            throw prg_error(
+                "Unexpected situation: p1=%g, LL=%g\n p2=%g, LL=%g\n p3=%g, LL=%g\n p4=%g, LL=%g", 
+                "probabilityPositive()", p1, pLL[0], p2, pLL[1], p3, pLL[2], p4, pLL[3]
+            );
     }
     // return the probability associated with the maximum log-likelihood
     it = std::max_element(pLL.begin(), pLL.end());
@@ -134,7 +142,6 @@ double BatchedLikelihoodCalculator::probabilityPositive(measure_t C, measure_t N
 double BatchedLikelihoodCalculator::getClusterExpected(const CCluster& cluster, size_t tSetIndex) const {
     const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
-    BatchedRandomizer::BatchEntryContainer_t batches;
     if (cluster.GetClusterType() == SPACETIMECLUSTER && gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
         // The expected needs to be calculated by interval and added together.
         measure_t clusterExpected = 0.0, ** ppMeasure = dataset.getMeasureData().GetArray();
@@ -154,6 +161,7 @@ double BatchedLikelihoodCalculator::getClusterExpected(const CCluster& cluster, 
         }
         return clusterExpected;
     } else {
+        BatchedRandomizer::BatchEntryContainer_t batches;
         double Sk = 0.0, qall = 1.0 - _probabilities[tSetIndex];
         for (const auto& be : randomizer->getClusterBatches(cluster, batches))
             Sk += std::pow(qall, be.get<1>());
@@ -161,9 +169,54 @@ double BatchedLikelihoodCalculator::getClusterExpected(const CCluster& cluster, 
     }
 }
 
-/** Returns the expected number of cases for cluster data in window. */
-double BatchedLikelihoodCalculator::getClusterExpected(measure_t totalBatches, const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex) const {
+/** Returns the expected number of cases in window range. This is a helper function used in TemporalChartGenerator class. */
+double BatchedLikelihoodCalculator::getExpectedInWindow(int windowStart, int windowEnd, size_t tSetIndex) const {
     const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    measure_t totalExpected = 0.0, * pMeasure = dataset.getMeasureData_PT();
+    for (int i = windowStart; i < windowEnd; ++i) {
+        measure_t measure = pMeasure[i] - (i + 1 < dataset.getIntervalDimension() ? pMeasure[i + 1] : 0.0);
+        double Sk = 0.0, qall = 0;
+        // If time-stratified, the probability of being negative obtained by interval.
+        if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+            qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][i].first;
+        else // Otherwise the probability of being negative is that of the entire data set.
+            qall = 1.0 - _probabilities[tSetIndex];
+        for (auto& be : randomizer->getBatches()) {
+            if (be.get<2>() == i)
+                Sk += std::pow(qall, be.get<1>());
+        }
+        totalExpected += measure - Sk;
+    }
+    return totalExpected;
+}
+
+/** Returns the expected number of cases in window range for locations. This is a helper function used in TemporalChartGenerator class. */
+double BatchedLikelihoodCalculator::getExpectedInWindow(int windowStart, int windowEnd, const std::vector<tract_t>& locationIdexes, size_t tSetIndex) const {
+    const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    measure_t totalExpected = 0.0, ** ppMeasure = dataset.getMeasureData().GetArray();
+    for (int i = windowStart; i < windowEnd; ++i) {
+        measure_t measure = 0;
+        for (tract_t t : locationIdexes)
+            measure += ppMeasure[i][t] - (i + 1 < dataset.getIntervalDimension() ? ppMeasure[i + 1][t] : 0.0);
+        double Sk = 0.0, qall = 0;
+        // If time-stratified, the probability of being negative obtained by interval.
+        if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+            qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][i].first;
+        else // Otherwise the probability of being negative is that of the entire data set.
+            qall = 1.0 - _probabilities[tSetIndex];
+        for (auto& be : randomizer->getBatches()) {
+            if (be.get<2>() == i && std::find(locationIdexes.begin(), locationIdexes.end(), be.get<3>()) != locationIdexes.end())
+                Sk += std::pow(qall, be.get<1>());
+        }
+        totalExpected += measure - Sk;
+    }
+    return totalExpected;
+}
+
+/** Returns the expected number of cases for cluster data at window. */
+double BatchedLikelihoodCalculator::getClusterExpectedAtWindow(measure_t totalBatches, const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex) const {
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
     BatchedRandomizer::BatchEntryContainer_t batches;
     double Sk = 0.0, qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][windowIndex].first;

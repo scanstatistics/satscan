@@ -54,6 +54,7 @@ class ChartSeries {
 class CSaTScanData;
 class CCluster;
 class SimulationVariables;
+class BatchedLikelihoodCalculator; // forward declaration
 
 /* generator for temporal chart */
 class TemporalChartGenerator : public AbstractChartGenerator {
@@ -70,6 +71,7 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         const CSaTScanData & _dataHub;
         const MostLikelyClustersContainer & _clusters;
         const SimulationVariables & _simVars;
+        std::unique_ptr<BatchedLikelihoodCalculator> _batched_likelihood_calculator;
     
         // 0: Inside Cluster Window, Inside Cluster Area
         // 1: Outside Cluster Window, Inside Cluster Area

@@ -230,7 +230,7 @@ void ParametersPrint::PrintAdditionalOutputFiles(FILE* fp) const {
             if (_parameters.getLinelistIndividualsCacheFileName().size())
                 addByFullpath("Individuals Cache", _parameters.getLinelistIndividualsCacheFileName());
         }
-        for (auto& const file: _parameters.getDrilldownResultFilename())
+        for (auto const& file: _parameters.getDrilldownResultFilename())
             addByFullpath("Drilldown Results", file);
         if (files.size()) {
             AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
@@ -1333,7 +1333,7 @@ void ParametersPrint::PrintTemporalOutputParameters(FILE* fp) const {
         if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis()) ||
             !(_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI || 
               _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || _parameters.GetProbabilityModelType() == EXPONENTIAL ||
-              _parameters.GetProbabilityModelType() == UNIFORMTIME)) return;
+                _parameters.GetProbabilityModelType() == BATCHED || _parameters.GetProbabilityModelType() == UNIFORMTIME)) return;
 
         settings.push_back(std::make_pair("Produce Temporal Graphs",(_parameters.getOutputTemporalGraphFile() ? "Yes" : "No")));
         if (_parameters.getOutputTemporalGraphFile()) {

@@ -7,6 +7,7 @@
 #include "cluster.h"
 #include "SimulationVariables.h"
 #include "Toolkit.h"
+#include "BatchedLikelihoodCalculation.h"
 #include <boost/regex.hpp>
 
 /** ------------------- AbstractChartGenerator --------------------------------*/
@@ -280,7 +281,10 @@ const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS = "\n \
 
 /** constructor */
 TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars) 
-    :_dataHub(dataHub), _clusters(clusters), _simVars(simVars) {}
+    :_dataHub(dataHub), _clusters(clusters), _simVars(simVars){
+    if (_dataHub.GetParameters().GetProbabilityModelType() == BATCHED)
+        _batched_likelihood_calculator.reset(new BatchedLikelihoodCalculator(dataHub));
+}
 
 /* TODO: Once we start creating Gini graph, we might break TEMPLATE into parts. A good portion of the header
          will certainly be shared between the 2 files.
@@ -340,7 +344,7 @@ void TemporalChartGenerator::generateChart() const {
 
         // set margin bottom according to time precision
         int margin_bottom=130;
-        switch (_dataHub.GetParameters().GetPrecisionOfTimesType()) {
+        switch (parameters.GetPrecisionOfTimesType()) {
             case YEAR : margin_bottom = 90; break;
             case MONTH : margin_bottom = 110; break;
             case DAY:
@@ -348,7 +352,7 @@ void TemporalChartGenerator::generateChart() const {
             default: margin_bottom=130;
         }
 
-        // We might need to calculated purely temporal data structures.
+        // We might need to calculate purely temporal data structures.
         // TODO: Is there a better way to do this?
         const DataSetHandler& handler = _dataHub.GetDataSetHandler();
         if (parameters.GetAnalysisType() != PURELYTEMPORAL) {
@@ -412,8 +416,9 @@ void TemporalChartGenerator::generateChart() const {
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected in cluster area", "394521", "triangle", 0, ""));
                 }
 
-                // the Poisson, Exponential, and Space Time Permutation models also graph observed / expected
-                if (_dataHub.GetParameters().GetProbabilityModelType() == POISSON || _dataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL || _dataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+                // Poisson, Exponential, Space Time Permutation and batch models also graph observed / expected
+                if (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == EXPONENTIAL ||
+                    parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || parameters.GetProbabilityModelType() == BATCHED) {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
@@ -600,11 +605,14 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
     for (intervalGroups::intervals_t::const_iterator itrGrp=groups.getGroups().begin(); itrGrp != groups.getGroups().end(); ++itrGrp) {
         // define date categories
         categories << (itrGrp==groups.getGroups().begin() ? "'" : ",'") << JulianToString(buffer, startDates[itrGrp->first], precision).c_str() << "'";
-        // calcuate the expected and observed for this interval
+        // calculate the expected and observed for this interval
         measure_t expected=0, cluster_expected=0;
         count_t observed=0, cluster_observed=0;
+        if (_batched_likelihood_calculator.get())
+            expected += _batched_likelihood_calculator->getExpectedInWindow(itrGrp->first, itrGrp->second, dataSetIdx);
         for (int i=itrGrp->first; i < itrGrp->second; ++i) {
-            expected += (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i+1]);
+            if (!_batched_likelihood_calculator.get())
+                expected += (i == intervals - 1 ? pmeasure[i] : pmeasure[i] - pmeasure[i + 1]);
             observed += (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i+1]);
         }
         // if not purely temporal cluster, we're expressing this as outside verse inside cluster
@@ -612,10 +620,13 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
             // calculate cluster observed and expected series across entire period, not just cluster window
             std::vector<tract_t> indexes;
             cluster.getIdentifierIndexes(_dataHub, indexes, true);
+            if (_batched_likelihood_calculator.get())
+                cluster_expected += _batched_likelihood_calculator->getExpectedInWindow(itrGrp->first, itrGrp->second, indexes, dataSetIdx);
             for (auto t : indexes) {
                 for (int i = itrGrp->first; i < itrGrp->second; ++i) {
                     cluster_observed += (i == intervals - 1 ? ppcases[i][t] : ppcases[i][t] - ppcases[i + 1][t]);
-                    cluster_expected += (i == intervals - 1 ? ppmeasure[i][t] : ppmeasure[i][t] - ppmeasure[i + 1][t]);
+                    if (!_batched_likelihood_calculator.get())
+                        cluster_expected += (i == intervals - 1 ? ppmeasure[i][t] : ppmeasure[i][t] - ppmeasure[i + 1][t]);
                 }
             }
             // removed observed and expected from overall temporal values
@@ -630,7 +641,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
         }
         if (odeSeries) {
             // For the Bernoulli model, this represents the ratio of cases / (cases + controls) inside the cluster.
-            // For the Poisson/Exponential models, this represents the ratio of observed / expected inside the cluster.
+            // For the Poisson/Exponential/Batched models, this represents the ratio of observed / expected inside the cluster.
             getValueAsString(expected ? static_cast<measure_t>(observed)/expected : 0, buffer, 2);
             odeSeries->datastream() << (itrGrp==groups.getGroups().begin() ? "" : ",") <<  buffer.c_str();
         }

@@ -942,13 +942,13 @@ std::string& humanize(double n, std::string& humanized, int decimals) {
      *
      * So 1000 would be 1 + floor(log_10(10^3)) = 4 digits.
      */
-    int digits = n == 0 ? 0 : 1 + std::floor(std::log10l(fabs(n)));
+    int digits = n == 0 ? 0 : 1 + std::floor(log10l(fabs(n)));
 
     // determine base 10 exponential
     int exp = digits <= 4 ? 0 : 3 * ((digits - 1) / 3);
 
     // normalized number
-    double m = n / std::powl(10, exp);
+    double m = n / powl(10, exp);
 
     // no decimals? then don't print any
     if (m - static_cast<long>(m) == 0)
