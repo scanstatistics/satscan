@@ -23,6 +23,9 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
             gvDataSetMeasureAuxTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux());
             gvDataSetMeasureAux2Totals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux2());
         }
+        // Determine measure adjustment when restricting evaluated clusters by risk thresholds - this variable is only for single data set.
+        if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
+            _measure_adjustment = gvDataSetTotals.front().first / gvDataSetTotals.front().second;
         /* Assign the class function pointers that will determine if cluster passes scan area test. */
         if (parameters.GetProbabilityModelType() == BATCHED) {
             switch (parameters.GetExecuteScanRateType()) {
@@ -91,6 +94,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
             /* Specialized for time stratification temporal adjustment. */
             switch (parameters.GetExecuteScanRateType()) {
                 case LOW:
+                    gpRateOfInterest = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRisk : &AbstractLikelihoodCalculator::LowRate;
                     gpRateOfInterestTimeStratified = parameters.getRiskLimitLowClusters() ? &AbstractLikelihoodCalculator::LowRiskTimeStratified : &AbstractLikelihoodCalculator::LowRateTimeStratified;
                     if (parameters.getRiskLimitLowClusters())
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::LowRiskMultiset;
@@ -99,27 +103,28 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     break;
                 case HIGHANDLOW:
                     if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters()) {
+                        gpRateOfInterest = &AbstractLikelihoodCalculator::HighRiskOrLowRisk;
                         gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRiskOrLowRiskTimeStratified;
                         if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRiskMultiset;
                         else
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRiskMultiset;
-                    }
-                    else if (parameters.getRiskLimitLowClusters()) {
+                    } else if (parameters.getRiskLimitLowClusters()) {
+                        gpRateOfInterest = &AbstractLikelihoodCalculator::HighRateOrLowRisk;
                         gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRateOrLowRiskTimeStratified;
                         if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRateOrLowRiskMultiset;
                         else
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRateOrLowRiskMultiset;
-                    }
-                    else if (parameters.getRiskLimitHighClusters()) {
+                    } else if (parameters.getRiskLimitHighClusters()) {
+                        gpRateOfInterest = &AbstractLikelihoodCalculator::HighRiskOrLowRate;
                         gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighRiskOrLowRateTimeStratified;
                         if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighRiskOrLowRateMultiset;
                         else
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::MultivariateHighRiskOrLowRateMultiset;
-                    }
-                    else {
+                    } else {
+                        gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate;
                         gpRateOfInterestTimeStratified = &AbstractLikelihoodCalculator::HighOrLowRateTimeStratified;
                         if (parameters.GetMultipleDataSetPurposeType() == ADJUSTMENT)
                             _rate_of_interest_multiset = &AbstractLikelihoodCalculator::AdjustmentHighOrLowRateMultiset;
@@ -128,17 +133,16 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     } break;
                 case HIGH:
                 default: 
+                    gpRateOfInterest = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRisk : &AbstractLikelihoodCalculator::HighRate;
                     gpRateOfInterestTimeStratified = parameters.getRiskLimitHighClusters() ? &AbstractLikelihoodCalculator::HighRiskTimeStratified : &AbstractLikelihoodCalculator::HighRateTimeStratified;
                     if (parameters.getRiskLimitHighClusters())
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRiskMultiset;
                     else
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRateMultiset;
             }
+            _risk_function = &AbstractLikelihoodCalculator::getRelativeRisk;
             _risk_multiset_function = &AbstractLikelihoodCalculator::getRelativeRiskMultiset;
         } else {
-            // Determine measure adjustment when restricting evaluated clusters by risk thresholds - this variable is only for singl data set.
-            if ((parameters.getRiskLimitLowClusters() || parameters.getRiskLimitHighClusters()) && parameters.GetProbabilityModelType() == BERNOULLI)
-                _measure_adjustment = gvDataSetTotals.front().first / gvDataSetTotals.front().second;
             /* The class function pointer for scan area is dependent on whether we're restricting cluster by rate only or both rate and risk level. */
             switch (parameters.GetExecuteScanRateType()) {
                 case LOW:
