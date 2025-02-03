@@ -26,14 +26,13 @@ class BatchedRandomizer : public AbstractDenominatorDataRandomizer {
         measure_t _total_positive_batches;
         std::vector<measure_t> _sum_negative_batches_by_time;
         std::vector<measure_t> _sum_positive_batches_by_time;
-        std::vector<boost::dynamic_bitset<>> _positive_batches_indexes_by_time;
 
         void randomize(const RealDataSet& RealSet, DataSet& SimSet);
         void randomizePurelyTemporal(const RealDataSet& RealSet, DataSet& SimSet);
-        void randomizeStratified(const RealDataSet& RealSet, DataSet& SimSet);
+        void randomizeStratified(const RealDataSet& RealSet, DataSet& SimSet, unsigned int adjustmentLength);
         boost::dynamic_bitset<>& randomizePositiveBatches(
             const BatchEntryContainer_t& batches, boost::dynamic_bitset<>& positiveBatches, 
-            unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<int> interval=boost::none
+            unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<std::pair<int,int>> intervalRange=boost::none
         );
 
     public:
@@ -48,8 +47,11 @@ class BatchedRandomizer : public AbstractDenominatorDataRandomizer {
         const BatchEntryContainer_t& getBatches() const { return _batch_entries; }
         BatchEntryContainer_t& getPositiveBatches(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest) const;
         BatchEntryContainer_t& getPositiveBatchesForInterval(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int interval) const;
+        BatchEntryContainer_t& getPositiveBatchesForRange(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int startIdx, int endIdx, bool clear) const;
+        BatchEntryContainer_t& getPositiveBatchesForRange(BatchEntryContainer_t& batches, int startIdx, int endIdx, bool clear) const;
         BatchEntryContainer_t& getBatchesInSet(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest) const;
         BatchEntryContainer_t& getBatchesInSetForInterval(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int interval) const;
+        BatchEntryContainer_t& getBatchesInSetForRange(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int startIdx, int endIdx, bool clear) const;
         BatchEntryContainer_t& getClusterBatches(const CCluster& cluster, BatchEntryContainer_t& batches) const;
         const boost::dynamic_bitset<>& getPositiveIndexesOfRandomization() const { return _positive_batches_indexes; }
 
@@ -57,7 +59,6 @@ class BatchedRandomizer : public AbstractDenominatorDataRandomizer {
         measure_t getSumPositiveBatches() const { return _total_positive_batches; }
         const std::vector<measure_t> & getSumNegativeBatchesByTime() const { return _sum_negative_batches_by_time; }
         const std::vector<measure_t> & getSumPositiveBatchesByTime() const { return _sum_positive_batches_by_time; }
-        const std::vector<boost::dynamic_bitset<>>& getPositiveBatchesByTime() const { return _positive_batches_indexes_by_time; }
 
         virtual void RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
         virtual void RemoveCase(int iTimeInterval, tract_t tTractIndex);

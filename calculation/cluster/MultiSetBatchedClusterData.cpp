@@ -36,8 +36,11 @@ const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedSpatialData::getRatioUni
     AbstractLoglikelihoodRatioUnifier& Unifier = Calculator.GetUnifier();
     Unifier.Reset();
     size_t t = 0;
-    for (auto set : gvSetClusterData) {
-        Unifier.AdjoinRatio(Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, set->gtMeasureAux2, set->gPositiveBatches, t);
+    for (auto dset : gvSetClusterData) {
+        Unifier.AdjoinRatio(
+            Calculator, dset->gtCases, dset->gtMeasure, dset->gtMeasureAux, 
+            dset->gtMeasureAux2, dset->gPositiveBatches, dset->gBatches, t
+        );
         ++t;
     }
     return Unifier;
@@ -84,7 +87,10 @@ double MultiSetBatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculat
     Unifier.Reset();
     size_t t = 0;
     for (auto& set : gvSetClusterData) { // Adjoin this data set in the context of a simulation
-        Unifier.AdjoinRatioSimulation(Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, set->gtMeasureAux2, set->gPositiveBatches, t);
+        Unifier.AdjoinRatioSimulation(
+            Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, 
+            set->gtMeasureAux2, set->gPositiveBatches, set->gBatches, t
+        );
         ++t;
     }
     if ((Calculator.*pRateCheck)(Unifier, false))
@@ -115,6 +121,11 @@ measure_t MultiSetBatchedSpatialData::GetMeasureAux2(unsigned int tSetIndex) con
 /** Returns a bitset which indicates which batches are positive in data set. */
 const BatchIndexes_t& MultiSetBatchedSpatialData::GetPositiveBatches(unsigned int tSetIndex) const {
     return gvSetClusterData[tSetIndex]->GetPositiveBatches();
+}
+
+/** Returns a bitset which indicates which batches are in data set. */
+const BatchIndexes_t& MultiSetBatchedSpatialData::GetBatches(unsigned int tSetIndex) const {
+    return gvSetClusterData[tSetIndex]->GetBatches();
 }
 
 /** Initializes cluster data in each data set. */
@@ -156,7 +167,9 @@ const AbstractLoglikelihoodRatioUnifier& AbstractMultiSetBatchedTemporalData::ge
     Unifier.Reset();
     size_t t = 0;
     for (auto set : gvSetClusterData) {
-        Unifier.AdjoinRatio(Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, set->gtMeasureAux2, set->gPositiveBatches, t);
+        Unifier.AdjoinRatio(
+            Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, 
+            set->gtMeasureAux2, set->gPositiveBatches, set->gBatches, t);
         ++t;
     }
     return Unifier;
@@ -185,6 +198,11 @@ measure_t AbstractMultiSetBatchedTemporalData::GetMeasureAux2(unsigned int tSetI
 /** Returns a bitset which indicates which positive batches in data set 'tSetIndex'. */
 const BatchIndexes_t& AbstractMultiSetBatchedTemporalData::GetPositiveBatches(unsigned int tSetIndex) const {
     return gvSetClusterData.at(tSetIndex)->gPositiveBatches;
+}
+
+/** Returns the batches in cluster data of specific data stream. */
+const BatchIndexes_t& AbstractMultiSetBatchedTemporalData::GetBatches(unsigned int tSetIndex) const {
+    return gvSetClusterData.at(tSetIndex)->GetBatches();
 }
 
 //********************** class MultiSetBatchedTemporalData ****************************
@@ -252,7 +270,8 @@ const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedProspectiveSpatialData::
     Unifier.Reset();
     for (auto set : gvSetClusterData) {
         Unifier.AdjoinRatio(
-            Calculator, set->gpCases[0], set->gpMeasure[0], set->gpMeasureAux[0], set->gpMeasureAux2[0], set->gpPositiveBatches[0], t
+            Calculator, set->gpCases[0], set->gpMeasure[0], set->gpMeasureAux[0], 
+            set->gpMeasureAux2[0], set->gpPositiveBatches[0], set->gpBatches[0], t
         );
         ++t;
     }
@@ -267,7 +286,8 @@ const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedProspectiveSpatialData::
             set->gtMeasure = set->gpMeasure[0] - set->gpMeasure[iWindowEnd];
             set->gtMeasureAux = set->gpMeasureAux[0] - set->gpMeasureAux[iWindowEnd];
             prospectiveUnifier->AdjoinRatio(
-                Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, set->gtMeasureAux2, set->gPositiveBatches, t
+                Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, 
+                set->gtMeasureAux2, set->gPositiveBatches, set->gBatches, t
             );
             ++t;
         }
@@ -312,7 +332,8 @@ double MultiSetBatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelih
     Unifier.Reset();
     for (auto set : gvSetClusterData) {
         Unifier.AdjoinRatioSimulation(
-            Calculator, set->gpCases[0], set->gpMeasure[0], set->gpMeasureAux[0], set->gpMeasureAux2[0], set->gpPositiveBatches[0], t
+            Calculator, set->gpCases[0], set->gpMeasure[0], set->gpMeasureAux[0], 
+            set->gpMeasureAux2[0], set->gpPositiveBatches[0], set->gpBatches[0], t
         );
         ++t;
     }
@@ -327,7 +348,8 @@ double MultiSetBatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelih
             set->gtMeasure = set->gpMeasure[0] - set->gpMeasure[iWindowEnd];
             set->gtMeasureAux = set->gpMeasureAux[0] - set->gpMeasureAux[iWindowEnd];
             prospectiveUnifier->AdjoinRatioSimulation(
-                Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, set->gtMeasureAux2, set->gPositiveBatches, t
+                Calculator, set->gtCases, set->gtMeasure, set->gtMeasureAux, 
+                set->gtMeasureAux2, set->gPositiveBatches, set->gBatches, t
             );
             ++t;
         }

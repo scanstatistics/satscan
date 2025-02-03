@@ -114,6 +114,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWER_01                     : return "power evaluation critical value .001 (> 0)";
       case TIMETREND                    : return "time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic)";
       case TIMETRENDPERC                : return "time trend adjustment percentage (>-100)";
+      case TIMETRENDLENGTH              : return "time stratified adjustment length (Positive Integer)";
       case PURETEMPORAL                 : return "include purely temporal clusters? (y/n)";
       case CONTROLFILE                  : return "control data filename";
       case COORDTYPE                    : return "coordinate type (0=Cartesian, 1=latitude/longitude)";
@@ -306,6 +307,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case POWER_05                     : return AsString(s, gParameters.getPowerEvaluationCriticalValue05());
       case POWER_01                     : return AsString(s, gParameters.getPowerEvaluationCriticalValue01());
       case TIMETREND                    : return AsString(s, gParameters.GetTimeTrendAdjustmentType());
+      case TIMETRENDLENGTH              : return AsString(s, gParameters.GetNonparametricAdjustmentSize());
       case TIMETRENDPERC                : return AsString(s, gParameters.GetTimeTrendAdjustmentPercentage());
       case PURETEMPORAL                 : return AsString(s, gParameters.GetIncludePurelyTemporalClusters());
       case CONTROLFILE                  : s = gParameters.GetControlFileName().c_str(); return s;
@@ -713,6 +715,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, TEMPORAL_NOTADJUSTED, CALCULATED_QUADRATIC);
                                           gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
       case TIMETRENDPERC                : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
+      case TIMETRENDLENGTH              : gParameters.SetNonparametricAdjustmentSize(ReadUnsignedInt(sParameter, eParameterType)); break;
       case PURETEMPORAL                 : gParameters.SetIncludePurelyTemporalClusters(ReadBoolean(sParameter, eParameterType)); break;
       case CONTROLFILE                  : gParameters.SetControlFileName(sParameter.c_str(), true); break;
       case COORDTYPE                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, CARTESIAN, LATLON);

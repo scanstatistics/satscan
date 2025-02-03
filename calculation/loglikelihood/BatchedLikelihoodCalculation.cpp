@@ -11,10 +11,16 @@
 BatchedLikelihoodCalculator::BatchedLikelihoodCalculator(const CSaTScanData& Data):AbstractLikelihoodCalculator(Data) {
     // Calculate the log-likelihoods for each data set under the null.
     if (Data.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-        // If doing the time stratified adjustment, we need the log-likelihood by time interval.
-        _log_likelihoods_by_time.reset(new TwoDimensionArrayHandler<std::pair<double, double>>(
-            Data.GetDataSetHandler().GetNumDataSets(), Data.GetNumTimeIntervals() + 1
-        ));
+        // we need the probability and log-likelihood by adjustment range
+        if (Data.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+            _log_likelihoods_by_range.reset(new TwoDimensionArrayHandler<std::pair<double, double>>(
+                Data.GetDataSetHandler().GetNumDataSets(), Data.getTimeStratifiedTemporalAdjustmentWindows().size()
+            ));
+            _probabilities_cache.resize(Data.GetDataSetHandler().GetNumDataSets());
+        } else // we need the probability and log-likelihood by time interval
+            _log_likelihoods_by_time.reset(new TwoDimensionArrayHandler<std::pair<double, double>>(
+                Data.GetDataSetHandler().GetNumDataSets(), Data.GetNumTimeIntervals() + 1
+            ));
     }
     for (size_t t = 0; t < Data.GetDataSetHandler().GetNumDataSets(); ++t) {
         const auto& dataset = Data.GetDataSetHandler().GetDataSet(t);
@@ -30,15 +36,30 @@ BatchedLikelihoodCalculator::BatchedLikelihoodCalculator(const CSaTScanData& Dat
         ));
         _log_likelihoods.push_back(LL(1 - _probabilities.back(), dataset.getTotalMeasureAux(), positiveBatches));
         if (Data.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-            for (int i = 0; i < Data.GetNumTimeIntervals(); ++i) {
-                double ptime = probabilityPositive(
-                    dataset.getCaseData_PT_NC()[i],
-                    dataset.getMeasureData_PT_NC()[i],
-                    dataset.getMeasureData_PT_Aux2()[i] - dataset.getMeasureData_PT_Aux2()[i + 1],/* sum of the batch sizes for positive batches */
-                    dataset.getMeasureData_PT_Aux()[i] - dataset.getMeasureData_PT_Aux()[i + 1],/* sum of the batch sizes for negative batches */
-                    randomizer->getPositiveBatchesForInterval(positiveBatches, positiveBatchIndexes, i)
-                );
-                _log_likelihoods_by_time->GetArray()[t][i] = std::make_pair(ptime, LL(1 - ptime, dataset.getMeasureData_PT_Aux()[i] - dataset.getMeasureData_PT_Aux()[i + 1], positiveBatches));
+            if (Data.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+                for (size_t i = 0; i < Data.getTimeStratifiedTemporalAdjustmentWindows().size(); ++i) {
+                    const auto& range = Data.getTimeStratifiedTemporalAdjustmentWindows()[i];
+                    double ptime = probabilityPositive(
+                        dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1],
+                        dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1],
+                        dataset.getMeasureData_PT_Aux2()[range.first] - dataset.getMeasureData_PT_Aux2()[range.second + 1],
+                        dataset.getMeasureData_PT_Aux()[range.first] - dataset.getMeasureData_PT_Aux()[range.second + 1],
+                        randomizer->getPositiveBatchesForRange(positiveBatches, positiveBatchIndexes, range.first, range.second, true)
+                    );
+                    _log_likelihoods_by_range->GetArray()[t][i] = std::make_pair(ptime,
+                        LL(1 - ptime, dataset.getMeasureData_PT_Aux()[range.first] - dataset.getMeasureData_PT_Aux()[range.second + 1], positiveBatches)
+                    );
+                }
+            } else {
+                for (int i = 0; i < Data.GetNumTimeIntervals(); ++i) {
+                    double ptime = probabilityPositive(
+                        dataset.getCaseData_PT_NC()[i], dataset.getMeasureData_PT_NC()[i],
+                        dataset.getMeasureData_PT_Aux2()[i] - dataset.getMeasureData_PT_Aux2()[i + 1],/* sum of the batch sizes for positive batches */
+                        dataset.getMeasureData_PT_Aux()[i] - dataset.getMeasureData_PT_Aux()[i + 1],/* sum of the batch sizes for negative batches */
+                        randomizer->getPositiveBatchesForInterval(positiveBatches, positiveBatchIndexes, i)
+                    );
+                    _log_likelihoods_by_time->GetArray()[t][i] = std::make_pair(ptime, LL(1 - ptime, dataset.getMeasureData_PT_Aux()[i] - dataset.getMeasureData_PT_Aux()[i + 1], positiveBatches));
+                }
             }
         }
     }
@@ -138,28 +159,35 @@ double BatchedLikelihoodCalculator::probabilityPositive(measure_t C, measure_t N
     else return p4;
 }
 
+/* Returns the probability under the null for time interval. */
+double BatchedLikelihoodCalculator::getProbabilityForInterval(int interval, size_t tSetIndex) const {
+    if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        if (gDataHub.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+            auto batchRange = std::find_if(
+                gDataHub.getTimeStratifiedTemporalAdjustmentWindows().begin(),
+                gDataHub.getTimeStratifiedTemporalAdjustmentWindows().end(),
+                [interval](const auto& range) { return range.first <= interval && interval <= range.second; }
+            );
+            auto pos = std::distance(gDataHub.getTimeStratifiedTemporalAdjustmentWindows().begin(), batchRange);
+            return _log_likelihoods_by_range->GetArray()[tSetIndex][pos].first;
+        }
+        return _log_likelihoods_by_time->GetArray()[tSetIndex][interval].first;
+    }
+    return _probabilities[tSetIndex];
+}
+
 /** Returns the expected number of cases for cluster data when reporting. */
 double BatchedLikelihoodCalculator::getClusterExpected(const CCluster& cluster, size_t tSetIndex) const {
-    const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    if (!randomizer) throw prg_error("Unable to cast to BatchedRandomizer", "getClusterExpected()");
     if (cluster.GetClusterType() == SPACETIMECLUSTER && gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-        // The expected needs to be calculated by interval and added together.
-        measure_t clusterExpected = 0.0, ** ppMeasure = dataset.getMeasureData().GetArray();
-        std::vector<tract_t> indexes;
-        cluster.getIdentifierIndexes(gDataHub, indexes, true);
-        for (int i = cluster.m_nFirstInterval; i < cluster.m_nLastInterval; ++i) {
-            measure_t measure = 0;
-            for (tract_t t : indexes)
-                measure += ppMeasure[i][t] - (i + 1 < dataset.getIntervalDimension() ? ppMeasure[i + 1][t] : 0.0);
-            double Sk = 0.0, qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][i].first;
-            for (auto& be : randomizer->getBatches()) {
-                if (be.get<2>() == i && std::find(indexes.begin(), indexes.end(), be.get<3>()) != indexes.end()) {
-                    Sk += std::pow(qall, be.get<1>());
-                }
-            }
-            clusterExpected += measure - Sk;
-        }
-        return clusterExpected;
+        const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+        const AbstractBatchedClusterData* clusterData = dynamic_cast<const AbstractBatchedClusterData*>(cluster.GetClusterData());
+        double Sk = 0.0;
+        BatchedRandomizer::BatchEntryContainer_t batches;
+        for (const auto& be : randomizer->getBatchesInSet(batches, clusterData->GetBatches(tSetIndex)))
+            Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
+        return static_cast<double>(clusterData->GetBatches(tSetIndex).count()) - Sk;
     } else {
         BatchedRandomizer::BatchEntryContainer_t batches;
         double Sk = 0.0, qall = 1.0 - _probabilities[tSetIndex];
@@ -171,58 +199,54 @@ double BatchedLikelihoodCalculator::getClusterExpected(const CCluster& cluster, 
 
 /** Returns the expected number of cases in window range. This is a helper function used in TemporalChartGenerator class. */
 double BatchedLikelihoodCalculator::getExpectedInWindow(int windowStart, int windowEnd, size_t tSetIndex) const {
-    const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
-    measure_t totalExpected = 0.0, * pMeasure = dataset.getMeasureData_PT();
-    for (int i = windowStart; i < windowEnd; ++i) {
-        measure_t measure = pMeasure[i] - (i + 1 < dataset.getIntervalDimension() ? pMeasure[i + 1] : 0.0);
-        double Sk = 0.0, qall = 0;
-        // If time-stratified, the probability of being negative obtained by interval.
-        if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-            qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][i].first;
-        else // Otherwise the probability of being negative is that of the entire data set.
-            qall = 1.0 - _probabilities[tSetIndex];
-        for (auto& be : randomizer->getBatches()) {
-            if (be.get<2>() == i)
-                Sk += std::pow(qall, be.get<1>());
+    if (!randomizer) throw prg_error("Unable to cast to BatchedRandomizer", "getExpectedInWindow()");
+    double Sk = 0.0, batchCount = 0.0;
+    for (auto& be : randomizer->getBatches()) {
+        if (windowStart <= be.get<2>() && be.get<2>() < windowEnd) {
+            Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
+            ++batchCount;
         }
-        totalExpected += measure - Sk;
     }
-    return totalExpected;
+    return batchCount - Sk;
 }
 
-/** Returns the expected number of cases in window range for locations. This is a helper function used in TemporalChartGenerator class. */
+/** Returns the expected number of cases in window range for locations in window. This is a helper function used in TemporalChartGenerator class. */
 double BatchedLikelihoodCalculator::getExpectedInWindow(int windowStart, int windowEnd, const std::vector<tract_t>& locationIdexes, size_t tSetIndex) const {
-    const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
-    measure_t totalExpected = 0.0, ** ppMeasure = dataset.getMeasureData().GetArray();
-    for (int i = windowStart; i < windowEnd; ++i) {
-        measure_t measure = 0;
-        for (tract_t t : locationIdexes)
-            measure += ppMeasure[i][t] - (i + 1 < dataset.getIntervalDimension() ? ppMeasure[i + 1][t] : 0.0);
-        double Sk = 0.0, qall = 0;
-        // If time-stratified, the probability of being negative obtained by interval.
-        if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-            qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][i].first;
-        else // Otherwise the probability of being negative is that of the entire data set.
-            qall = 1.0 - _probabilities[tSetIndex];
-        for (auto& be : randomizer->getBatches()) {
-            if (be.get<2>() == i && std::find(locationIdexes.begin(), locationIdexes.end(), be.get<3>()) != locationIdexes.end())
-                Sk += std::pow(qall, be.get<1>());
+    if (!randomizer) throw prg_error("Unable to cast to BatchedRandomizer", "getExpectedInWindow()");
+    measure_t Sk = 0.0, batchCount = 0.0;
+    for (auto& be : randomizer->getBatches()) {
+        if (windowStart <= be.get<2>()  && be.get<2>() < windowEnd && std::find(locationIdexes.begin(), locationIdexes.end(), be.get<3>()) != locationIdexes.end()) {
+            Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
+            ++batchCount;
         }
-        totalExpected += measure - Sk;
     }
-    return totalExpected;
+    return batchCount - Sk;
 }
 
-/** Returns the expected number of cases for cluster data at window. */
-double BatchedLikelihoodCalculator::getClusterExpectedAtWindow(measure_t totalBatches, const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex) const {
+/** Returns the expected number of cases for cluster data at window when performing the time stratified 
+    temporal adjustment and the adjustment length equals the time aggregation length. */
+double BatchedLikelihoodCalculator::getClusterExpectedAtWindow(const boost::dynamic_bitset<>& BatchIndexes, int windowIndex, size_t tSetIndex) const {
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    if (!randomizer) throw prg_error("Unable to cast to BatchedRandomizer", "getExpectedInWindow()");
     BatchedRandomizer::BatchEntryContainer_t batches;
     double Sk = 0.0, qall = 1.0 - _log_likelihoods_by_time->GetArray()[tSetIndex][windowIndex].first;
     for (const auto& be : randomizer->getBatchesInSet(batches, BatchIndexes))
         Sk += std::pow(qall, be.get<1>());
-    return totalBatches - Sk;
+    return static_cast<double>(batches.size()) - Sk;
+}
+
+/** Returns the expected number of cases for cluster data at window when performing the time stratified
+    temporal adjustment and the adjustment length is longer than the time aggregation length. */
+double BatchedLikelihoodCalculator::getExpectedForBatches(const boost::dynamic_bitset<>& BatchIndexes, size_t tSetIndex) const {
+    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    if (!randomizer) throw prg_error("Unable to cast to BatchedRandomizer", "getExpectedForBatches()");
+    BatchedRandomizer::BatchEntryContainer_t batches;
+    double Sk = 0.0;
+    for (const auto& be : randomizer->getBatchesInSet(batches, BatchIndexes))
+        Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
+    return static_cast<double>(batches.size()) - Sk;
 }
 
 /** Returns the relative risk for cluster data. */
@@ -299,6 +323,251 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesByTimeInter
     return probabilities;
 }
 
+/** Calculates the probabilities the cluster data and window by time stratified adjustment lengths. */
+void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
+    BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex
+) {
+    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+    auto& probabilitiesCache = _probabilities_cache[tSetIndex];
+    ProbabilitiesCache_t::iterator cachedProbability;
+    std::vector<WindowRange_t> outRanges;
+    double C, N, Sc, Sn, C_outside, N_outside, Sc_outside;
+    boost::dynamic_bitset<> positiveBatchIndexes, positiveBatchIndexesOutside;
+    auto const& adjustment_ranges = gDataHub.getTimeStratifiedTemporalAdjustmentWindows();
+    probabilities.clear();
+    // Find the adjustment range where iWindowEnd fits between the start and the end of the range.
+    auto endRange = std::find_if(adjustment_ranges.begin(), adjustment_ranges.end(),
+        [iWindowEnd](const auto& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
+    );
+    // Create a range that expands to the iWindowStart -> iWindowEnd indexes, bound by this adjustment range.
+    auto windowRange = WindowRange_t(std::max(endRange->first, iWindowStart), iWindowEnd);
+    // search cache - we might have already calculated this window's probability
+    if (windowRange == *endRange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
+        probabilities.push_back(cachedProbability->second);
+    } else {
+        probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
+        // Calculate the values for the inside probability in the current adjustment range.
+        C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
+        N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
+        Sc = Data.gpMeasureAux2[windowRange.first] - Data.gpMeasureAux2[windowRange.second + 1];
+        Sn = Data.gpMeasureAux[windowRange.first] - Data.gpMeasureAux[windowRange.second + 1];
+        positiveBatchIndexes = Data.gpPositiveBatches[windowRange.first] - Data.gpPositiveBatches[windowRange.second + 1];
+        // Calculate the probability inside the cluster.
+        probabilities.back()->_paoi._pinside = probabilityPositive(
+            C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities.back()->_paoi._positive_batches, positiveBatchIndexes)
+        );
+        probabilities.back()->_paoi._sn_inside = Sn;
+        // Calculate the outside probability for the current adjustment range. First obtain values for area outside of the cluster.
+        probabilities.back()->_paoi._sn_outside = dataset.getMeasureData_PT_Aux()[windowRange.first] - dataset.getMeasureData_PT_Aux()[windowRange.second + 1] - Sn;
+        C_outside = dataset.getCaseData_PT()[windowRange.first] - dataset.getCaseData_PT()[windowRange.second + 1] - C;
+        N_outside = dataset.getMeasureData_PT()[windowRange.first] - dataset.getMeasureData_PT()[windowRange.second + 1] - N;
+        Sc_outside = (dataset.getMeasureData_PT_Aux2()[windowRange.first] - dataset.getMeasureData_PT_Aux2()[windowRange.second + 1]) - Sc;
+        positiveBatchIndexesOutside = positiveBatchIndexes;
+        randomizer->getPositiveBatchesForRange(
+            probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside.flip()/* flip to exclude cluster area */,
+            windowRange.first, windowRange.second, false
+        );
+        // Create range(s) on either side of the cluster window range within the current adjustment range.
+        // There ranges are used to determine which batches are in the remainder of the current adjustment range.
+        if (endRange->first < iWindowStart) outRanges.push_back(WindowRange_t(endRange->first, iWindowStart - 1)); // before
+        if (iWindowEnd < endRange->second) outRanges.push_back(WindowRange_t(iWindowEnd + 1, endRange->second)); // after
+        // Now add values from those ranges that potentially abutt the cluster window within this adjustment range.
+        for (auto& range : outRanges) {
+            probabilities.back()->_paoi._sn_outside += dataset.getMeasureData_PT_Aux()[range.first] - dataset.getMeasureData_PT_Aux()[range.second + 1];
+            C_outside += dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1];
+            N_outside += dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1];
+            Sc_outside += (dataset.getMeasureData_PT_Aux2()[range.first] - dataset.getMeasureData_PT_Aux2()[range.second + 1]);
+            // Obtain the batches in this range everywhere - not just the cluster area of interest.
+            randomizer->getPositiveBatchesForRange(probabilities.back()->_paoi._positive_batches_outside, range.first, range.second, false);
+        }
+        // Now calculate the probability outside within this adjustment range.
+        probabilities.back()->_paoi._poutside = probabilityPositive(
+            C_outside, N_outside, Sc_outside, probabilities.back()->_paoi._sn_outside, probabilities.back()->_paoi._positive_batches_outside
+        );
+        // Add probability to cache if it fits the window.
+        if (windowRange == *endRange)
+            probabilitiesCache.insert(std::make_pair(windowRange, probabilities.back()));
+    }
+    // Are there other adjustment ranges before the initial window range?
+    if (iWindowStart < endRange->first) {
+        auto pos = std::distance(adjustment_ranges.begin(), endRange);
+        auto irange = adjustment_ranges.rbegin() + (adjustment_ranges.size() - pos);
+        for (; irange != adjustment_ranges.rend() && irange->second >= iWindowStart; ++irange) {
+            windowRange = WindowRange_t(std::max(irange->first, iWindowStart), irange->second);
+            // search cache - we might have already calculated this window's probability
+            if (windowRange == *irange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
+                probabilities.push_back(cachedProbability->second);
+            } else {
+                pos = std::distance(adjustment_ranges.rbegin(), irange);
+                probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(adjustment_ranges.size() - pos - 1)));
+                // Calculate the values for the inside probability in the current adjustment range.
+                C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
+                N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
+                Sc = Data.gpMeasureAux2[windowRange.first] - Data.gpMeasureAux2[windowRange.second + 1];
+                Sn = Data.gpMeasureAux[windowRange.first] - Data.gpMeasureAux[windowRange.second + 1];
+                positiveBatchIndexes = Data.gpPositiveBatches[windowRange.first] - Data.gpPositiveBatches[windowRange.second + 1];
+                // Calculate the probability inside the cluster.
+                probabilities.back()->_paoi._pinside = probabilityPositive(
+                    C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities.back()->_paoi._positive_batches, positiveBatchIndexes)
+                );
+                probabilities.back()->_paoi._sn_inside = Sn;
+                // Calculate the outside probability for the current adjustment range. First obtain values for area outside of the cluster.
+                probabilities.back()->_paoi._sn_outside = dataset.getMeasureData_PT_Aux()[windowRange.first] - dataset.getMeasureData_PT_Aux()[windowRange.second + 1] - Sn;
+                C_outside = dataset.getCaseData_PT()[windowRange.first] - dataset.getCaseData_PT()[windowRange.second + 1] - C;
+                N_outside = dataset.getMeasureData_PT()[windowRange.first] - dataset.getMeasureData_PT()[windowRange.second + 1] - N;
+                Sc_outside = (dataset.getMeasureData_PT_Aux2()[windowRange.first] - dataset.getMeasureData_PT_Aux2()[windowRange.second + 1]) - Sc;
+                positiveBatchIndexesOutside = positiveBatchIndexes;
+                randomizer->getPositiveBatchesForRange(
+                    probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside.flip()/* flip to exclude cluster area */,
+                    windowRange.first, windowRange.second, false
+                );
+                // Create range(s) on either side of the cluster window range within the current adjustment range.
+                // There ranges are used to determine which batches are in the remainder of the current adjustment range.
+                outRanges.clear();
+                if (irange->first < iWindowStart) outRanges.push_back(WindowRange_t(irange->first, iWindowStart - 1));
+                // Now add values from those ranges that potentially abutt the cluster window within this adjustment range.
+                for (auto& range : outRanges) {
+                    probabilities.back()->_paoi._sn_outside += dataset.getMeasureData_PT_Aux()[range.first] - dataset.getMeasureData_PT_Aux()[range.second + 1];
+                    C_outside += dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1];
+                    N_outside += dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1];
+                    Sc_outside += (dataset.getMeasureData_PT_Aux2()[range.first] - dataset.getMeasureData_PT_Aux2()[range.second + 1]);
+                    // Obtain the batches in this range everywhere - not just the cluster area of interest.
+                    randomizer->getPositiveBatchesForRange(probabilities.back()->_paoi._positive_batches_outside, range.first, range.second, false);
+                }
+                // Now calculate the probability outside within this adjustment range.
+                probabilities.back()->_paoi._poutside = probabilityPositive(
+                    C_outside, N_outside, Sc_outside, probabilities.back()->_paoi._sn_outside, probabilities.back()->_paoi._positive_batches_outside
+                );
+                if (windowRange == *irange)
+                    probabilitiesCache.insert(std::make_pair(windowRange, probabilities.back()));
+            }
+        }
+    }
+}
+
+/** Calculates the probabilities the cluster data and window by time stratified adjustment lengths within a simulation. */
+void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
+    BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex
+) {
+    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(_randomizer_container->at(tSetIndex));
+    auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+    auto& probabilitiesCache = _probabilities_cache[tSetIndex];
+    ProbabilitiesCache_t::iterator cachedProbability;
+    std::vector<WindowRange_t> outRanges;
+    double C, N, Sc, Sn, C_outside, N_outside, Sc_outside;
+    boost::dynamic_bitset<> positiveBatchIndexes, positiveBatchIndexesOutside;
+    auto const& adjustment_ranges = gDataHub.getTimeStratifiedTemporalAdjustmentWindows();
+    probabilities.clear();
+    // Find the adjustment range where iWindowEnd fits between the start and the end of the range.
+    auto endRange = std::find_if(adjustment_ranges.begin(), adjustment_ranges.end(),
+        [iWindowEnd](const auto& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
+    );
+    // Create a range that expands to the iWindowStart -> iWindowEnd indexes, bound by this adjustment range.
+    auto windowRange = WindowRange_t(std::max(endRange->first, iWindowStart), iWindowEnd);
+    // search cache - we might have already calculated this window's probability
+    if (windowRange == *endRange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
+        probabilities.push_back(cachedProbability->second);
+    } else {
+        probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
+        // Calculate the values for the inside probability in the current adjustment range.
+        C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
+        N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
+        Sc = Data.gpMeasureAux2[windowRange.first] - Data.gpMeasureAux2[windowRange.second + 1];
+        Sn = Data.gpMeasureAux[windowRange.first] - Data.gpMeasureAux[windowRange.second + 1];
+        positiveBatchIndexes = Data.gpPositiveBatches[windowRange.first] - Data.gpPositiveBatches[windowRange.second + 1];
+        // Calculate the probability inside the cluster.
+        probabilities.back()->_paoi._pinside = probabilityPositive(
+            C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities.back()->_paoi._positive_batches, positiveBatchIndexes)
+        );
+        probabilities.back()->_paoi._sn_inside = Sn;
+        // Calculate the outside probability for the current adjustment range. First obtain values for area outside of the cluster.
+        probabilities.back()->_paoi._sn_outside = randomizer->getSumNegativeBatchesByTime()[windowRange.first] - randomizer->getSumNegativeBatchesByTime()[windowRange.second + 1] - Sn;
+        C_outside = dataset.getCaseData_PT()[windowRange.first] - dataset.getCaseData_PT()[windowRange.second + 1] - C;
+        N_outside = dataset.getMeasureData_PT()[windowRange.first] - dataset.getMeasureData_PT()[windowRange.second + 1] - N;
+        Sc_outside = randomizer->getSumPositiveBatchesByTime()[windowRange.first] - randomizer->getSumPositiveBatchesByTime()[windowRange.second + 1] - Sc;
+        positiveBatchIndexesOutside = randomizer->getPositiveIndexesOfRandomization() - positiveBatchIndexes;
+        randomizer->getBatchesInSetForRange(
+            probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside, windowRange.first, windowRange.second, true
+        );
+        // Create range(s) on either side of the cluster window range within the current adjustment range.
+        // There ranges are used to determine which batches are in the remainder of the current adjustment range.
+        if (endRange->first < iWindowStart) outRanges.push_back(WindowRange_t(endRange->first, iWindowStart - 1)); // before
+        if (iWindowEnd < endRange->second) outRanges.push_back(WindowRange_t(iWindowEnd + 1, endRange->second)); // after
+        // Now add values from those ranges that potentially abutt the cluster window within this adjustment range.
+        for (auto& range : outRanges) {
+            probabilities.back()->_paoi._sn_outside += randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1];
+            C_outside += dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1];
+            N_outside += dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1];
+            Sc_outside += randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1];
+            // Obtain the batches in this range everywhere - not just the cluster area of interest.
+            randomizer->getBatchesInSetForRange(probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside, range.first, range.second, false);
+        }
+        // Now calculate the probability outside within this adjustment range.
+        probabilities.back()->_paoi._poutside = probabilityPositive(
+            C_outside, N_outside, Sc_outside, probabilities.back()->_paoi._sn_outside, probabilities.back()->_paoi._positive_batches_outside
+        );
+        // Add probability to cache if it fits the window.
+        if (windowRange == *endRange)
+            probabilitiesCache.insert(std::make_pair(windowRange, probabilities.back()));
+    }
+    // Are there other adjustment ranges before the initial window range?
+    if (iWindowStart < endRange->first) {
+        auto pos = std::distance(adjustment_ranges.begin(), endRange);
+        auto irange = adjustment_ranges.rbegin() + (adjustment_ranges.size() - pos);
+        for (; irange != adjustment_ranges.rend() && irange->second >= iWindowStart; ++irange) {
+            windowRange = WindowRange_t(std::max(irange->first, iWindowStart), irange->second);
+            // search cache - we might have already calculated this window's probability
+            if (windowRange == *irange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
+                probabilities.push_back(cachedProbability->second);
+            } else {
+                probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(
+                    adjustment_ranges.size() - std::distance(adjustment_ranges.rbegin(), irange) - 1
+                )));
+                // Calculate the values for the inside probability in the current adjustment range.
+                C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
+                N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
+                Sc = Data.gpMeasureAux2[windowRange.first] - Data.gpMeasureAux2[windowRange.second + 1];
+                Sn = Data.gpMeasureAux[windowRange.first] - Data.gpMeasureAux[windowRange.second + 1];
+                positiveBatchIndexes = Data.gpPositiveBatches[windowRange.first] - Data.gpPositiveBatches[windowRange.second + 1];
+                // Calculate the probability inside the cluster.
+                probabilities.back()->_paoi._pinside = probabilityPositive(
+                    C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities.back()->_paoi._positive_batches, positiveBatchIndexes)
+                );
+                probabilities.back()->_paoi._sn_inside = Sn;
+                // Calculate the outside probability for the current adjustment range. First obtain values for area outside of the cluster.
+                probabilities.back()->_paoi._sn_outside = randomizer->getSumNegativeBatchesByTime()[windowRange.first] - randomizer->getSumNegativeBatchesByTime()[windowRange.second + 1] - Sn;
+                C_outside = dataset.getCaseData_PT()[windowRange.first] - dataset.getCaseData_PT()[windowRange.second + 1] - C;
+                N_outside = dataset.getMeasureData_PT()[windowRange.first] - dataset.getMeasureData_PT()[windowRange.second + 1] - N;
+                Sc_outside = randomizer->getSumPositiveBatchesByTime()[windowRange.first] - randomizer->getSumPositiveBatchesByTime()[windowRange.second + 1] - Sc;
+                positiveBatchIndexesOutside = randomizer->getPositiveIndexesOfRandomization() - positiveBatchIndexes;
+                randomizer->getBatchesInSetForRange(
+                    probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside, windowRange.first, windowRange.second, true
+                );
+                // Create range(s) on either side of the cluster window range within the current adjustment range.
+                // There ranges are used to determine which batches are in the remainder of the current adjustment range.
+                outRanges.clear();
+                if (irange->first < iWindowStart) outRanges.push_back(WindowRange_t(irange->first, iWindowStart - 1));
+                // Now add values from those ranges that potentially abutt the cluster window within this adjustment range.
+                for (auto& range : outRanges) {
+                    probabilities.back()->_paoi._sn_outside += randomizer->getSumNegativeBatchesByTime()[range.first] - randomizer->getSumNegativeBatchesByTime()[range.second + 1];
+                    C_outside += dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1];
+                    N_outside += dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1];
+                    Sc_outside += randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1];
+                    // Obtain the batches in this range everywhere - not just the cluster area of interest.
+                    randomizer->getBatchesInSetForRange(probabilities.back()->_paoi._positive_batches_outside, positiveBatchIndexesOutside, range.first, range.second, false);
+                }
+                // Now calculate the probability outside within this adjustment range.
+                probabilities.back()->_paoi._poutside = probabilityPositive(
+                    C_outside, N_outside, Sc_outside, probabilities.back()->_paoi._sn_outside, probabilities.back()->_paoi._positive_batches_outside
+                );
+                if (windowRange == *irange)
+                    probabilitiesCache.insert(std::make_pair(windowRange, probabilities.back()));
+            }
+        }
+    }
+}
+
 /** Returns whether ProbabilitiesAOI meets the scanning area requested. */
 bool BatchedLikelihoodCalculator::isScanArea(const ProbabilitiesAOI& probabilities, count_t nCases) const {
     switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
@@ -317,15 +586,16 @@ bool BatchedLikelihoodCalculator::isScanArea(const ProbabilitiesAOI& probabiliti
     }
 }
 
-/** Returns whether ProbabilitiesAOI meets the scanning area requested. */
-bool BatchedLikelihoodCalculator::isScanArea(measure_t positiveCases, measure_t totalCases, const boost::dynamic_bitset<>& batchIndexes, size_t tSetIndex) const {
-    const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
+/** Returns whether the clustering meets the scanning area requested. 
+    This function is intended for space-time clusters while performing time-stratified adjustment. */
+bool BatchedLikelihoodCalculator::isScanArea(measure_t positiveCases, const boost::dynamic_bitset<>& batchIndexes, size_t tSetIndex) const {
+    //const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
+    double clusterExpected, Sk = 0.0;
     BatchedRandomizer::BatchEntryContainer_t batches;
-    double Sk = 0.0, qall = 1.0 - _probabilities[tSetIndex];
     for (const auto& be : randomizer->getBatchesInSet(batches, batchIndexes))
-        Sk += std::pow(qall, be.get<1>());
-    double clusterExpected = totalCases - Sk;
+        Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
+    clusterExpected = static_cast<double>(batches.size()) - Sk;
     switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
         case LOW: return positiveCases < clusterExpected;
         // When scanning for both high and low rates simultaneously, we can't shortcut minimum number
@@ -356,6 +626,14 @@ double BatchedLikelihoodCalculator::getLoglikelihoodRatioForInterval(Probabiliti
         - _log_likelihoods_by_time->GetArray()[tSetIndex][interval].second;
 }
 
+/** Returns loglikelihood ratio given probabilities in area of interest, for time range. */
+double BatchedLikelihoodCalculator::getLoglikelihoodRatioForRange(ProbabilitiesRange& probabilities, size_t tSetIndex) const {
+    if (probabilities.llrIsSet()) return probabilities._llr;
+    return (probabilities._llr = (LL(1 - probabilities._paoi._pinside, probabilities._paoi._sn_inside, probabilities._paoi._positive_batches)
+        + LL(1 - probabilities._paoi._poutside, probabilities._paoi._sn_outside, probabilities._paoi._positive_batches_outside)
+        - _log_likelihoods_by_range->GetArray()[tSetIndex][probabilities._range_idx].second));
+}
+
 /** Calculates the log-likelihoods for each simulation data set under the null. */
 void BatchedLikelihoodCalculator::calculateLoglikelihoodsForAll() const {
     _log_likelihoods.clear();
@@ -370,22 +648,35 @@ void BatchedLikelihoodCalculator::calculateLoglikelihoodsForAll() const {
             positiveBatches), randomizer->getSumNegativeBatches(), positiveBatches)
         );
         if (gDataHub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-            for (int i = 0; i < gDataHub.GetNumTimeIntervals(); ++i) {
-                randomizer->getBatchesInSetForInterval(positiveBatches, randomizer->getPositiveIndexesOfRandomization(), i);
-                double ptime = probabilityPositive(
-                    dataset.getCaseData_PT_NC()[i], dataset.getMeasureData_PT_NC()[i],
-                    randomizer->getSumPositiveBatchesByTime()[i], randomizer->getSumNegativeBatchesByTime()[i], positiveBatches
-                );
-                _log_likelihoods_by_time->GetArray()[t][i] = std::make_pair(ptime, LL(1 - ptime, randomizer->getSumNegativeBatchesByTime()[i], positiveBatches));
+            // When performing the time stratified adjustment at lengths greater than the time aggregation, we need to calculate
+            // log-likelihoods under the null for each adjustment window.
+            if (gDataHub.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+                auto& ranges = gDataHub.getTimeStratifiedTemporalAdjustmentWindows();
+                for (size_t r = 0; r < ranges.size(); ++r) {
+                    const auto& range = ranges[r];
+                    randomizer->getBatchesInSetForRange(positiveBatches, randomizer->getPositiveIndexesOfRandomization(), range.first, range.second, true);
+                    double ptime = probabilityPositive(
+                        dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1],
+                        dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1],
+                        randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1],
+                        randomizer->getSumNegativeBatchesByTime()[range.first] - randomizer->getSumNegativeBatchesByTime()[range.second + 1],
+                        positiveBatches
+                    );
+                    _log_likelihoods_by_range->GetArray()[t][r] = std::make_pair(ptime,
+                        LL(1 - ptime, randomizer->getSumNegativeBatchesByTime()[range.first] - randomizer->getSumNegativeBatchesByTime()[range.second + 1], positiveBatches)
+                    );
+                }
+            } else {
+                for (int i = 0; i < gDataHub.GetNumTimeIntervals(); ++i) {
+                    randomizer->getBatchesInSetForInterval(positiveBatches, randomizer->getPositiveIndexesOfRandomization(), i);
+                    double ptime = probabilityPositive(
+                        dataset.getCaseData_PT_NC()[i], dataset.getMeasureData_PT_NC()[i],
+                        randomizer->getSumPositiveBatchesByTime()[i], randomizer->getSumNegativeBatchesByTime()[i], positiveBatches
+                    );
+                    _log_likelihoods_by_time->GetArray()[t][i] = std::make_pair(ptime, LL(1 - ptime, randomizer->getSumNegativeBatchesByTime()[i], positiveBatches));
+                }
             }
-        } /*else {
-            randomizer->getBatchesInSet(positiveBatches, randomizer->getPositiveIndexesOfRandomization());
-            _log_likelihoods.push_back(LL(1 - probabilityPositive(
-                dataset.getTotalCases(), dataset.getTotalMeasure(),
-                randomizer->getSumPositiveBatches(), randomizer->getSumNegativeBatches(),
-                positiveBatches), randomizer->getSumNegativeBatches(), positiveBatches)
-            );
-        }*/
+        }
     }
 }
 
@@ -438,6 +729,7 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulati
         randomizer->getSumPositiveBatchesByTime()[interval] - Sc, probabilities._sn_outside,
         randomizer->getBatchesInSetForInterval(probabilities._positive_batches_outside, positiveBatchIndexesOutside, interval)
     );
+    // positiveBatchIndexes should already be limited to the time interval of interest for this cluster
     probabilities._pinside = probabilityPositive(C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities._positive_batches, positiveBatchIndexes));
     probabilities._sn_inside = Sn;
     return probabilities;

@@ -2084,11 +2084,15 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is valid "
                         "only for space-time analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                } /* else if (gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED) {
+                } else if (gParameters.GetProbabilityModelType() == BATCHED && (
+                        gParameters.GetNonparametricAdjustmentSize() == 0 ||
+                        gParameters.GetNonparametricAdjustmentSize() % gParameters.GetTimeAggregationLength() != 0
+                    )) {
+                    // Adjustment length is always in the same units as the time aggregation and a multiple of time aggregation length.
                     bValid = false;
-                    PrintDirection.Printf("%s:\nThe Bernoulli model does not permit the nonparametric temporal trends adjustment\n"
-                        "in conjunction with the nonparametric spatial adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                }*/
+                    PrintDirection.Printf("%s:\nThe Batched model requires the nonparametric temporal trends adjustment length\n"
+                        "to be a multiple of the time aggregation length.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
             } else {
                 bValid = false;
                 PrintDirection.Printf("%s:\nThe selected model permits only the nonparametric temporal trends adjustment. Other temporal trend adjustments are not implemented.\n",

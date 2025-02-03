@@ -106,6 +106,28 @@ BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getPositiveBatchesF
     return batches;
 }
 
+/* Returns collection of positive batches in the set defined by batchIndexesOfInterest and
+   time range ensuring that index actually references a positive batch. */
+BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getPositiveBatchesForRange(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int startIdx, int endIdx, bool clear) const {
+    if (clear) batches.clear();
+    for (boost::dynamic_bitset<>::size_type b = batchIndexesOfInterest.find_first(); b != boost::dynamic_bitset<>::npos; b = batchIndexesOfInterest.find_next(b)) {
+        const auto& be = _batch_entries[b];
+        if (be.get<0>() && startIdx <= be.get<2>() && be.get<2>() <= endIdx)
+            batches.push_back(be);
+    }
+    return batches;
+}
+
+/* Returns collection of positive batches in the time range ensuring that index actually references a positive batch. */
+BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getPositiveBatchesForRange(BatchEntryContainer_t& batches, int startIdx, int endIdx, bool clear) const {
+    if (clear) batches.clear();
+    for (const auto& be: _batch_entries) {
+        if (be.get<0>() && startIdx <= be.get<2>() && be.get<2>() <= endIdx)
+            batches.push_back(be);
+    }
+    return batches;
+}
+
 /* Returns collection of positive batches in the set defined by batchIndexesOfInterest. */
 BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getBatchesInSet(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest) const {
     batches.clear();
@@ -121,6 +143,17 @@ BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getBatchesInSetForI
     for (boost::dynamic_bitset<>::size_type b = batchIndexesOfInterest.find_first(); b != boost::dynamic_bitset<>::npos; b = batchIndexesOfInterest.find_next(b)) {
         const auto& be = _batch_entries[b];
         if (be.get<2>() == interval)
+            batches.push_back(be);
+    }
+    return batches;
+}
+
+/* Returns collection of positive batches in the set defined by batchIndexesOfInterest and restricted to time range. */
+BatchedRandomizer::BatchEntryContainer_t& BatchedRandomizer::getBatchesInSetForRange(BatchEntryContainer_t& batches, const boost::dynamic_bitset<>& batchIndexesOfInterest, int startIdx, int endIdx, bool clear) const {
+    if (clear) batches.clear();
+    for (boost::dynamic_bitset<>::size_type b = batchIndexesOfInterest.find_first(); b != boost::dynamic_bitset<>::npos; b = batchIndexesOfInterest.find_next(b)) {
+        const auto& be = _batch_entries[b];
+        if (startIdx <= be.get<2>() && be.get<2>() <= endIdx)
             batches.push_back(be);
     }
     return batches;
@@ -205,20 +238,37 @@ void BatchedRandomizer::randomizePurelyTemporal(const RealDataSet& RealSet, Data
 }
 
 /** Randomizes simulation data set when applying time stratified temporal adjustment. */
-void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet& SimSet) {
+void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet& SimSet, unsigned int adjustmentLength) {
     // Randomized data by time intervals
     _positive_batches_indexes.reset();
     _positive_batches_indexes.resize(_batch_entries.size());
+    count_t* pt_cases = RealSet.getCaseData_PT_NC();
+    measure_t* measure_aux = RealSet.getMeasureData_PT_Aux(), * measure_aux2 = RealSet.getMeasureData_PT_Aux2();
     boost::dynamic_bitset<> pos_batches_indexes;
-    count_t * pt_cases = RealSet.getCaseData_PT_NC();
-    measure_t * measure_aux = RealSet.getMeasureData_PT_Aux(), * measure_aux2 = RealSet.getMeasureData_PT_Aux2();
-    for (int i = 0; i < RealSet.getIntervalDimension(); ++i) {
-        if (pt_cases[i]) {
-            randomizePositiveBatches(
-                _batch_entries, pos_batches_indexes, pt_cases[i], 
-                (measure_aux[i] - measure_aux[i + 1]) + (measure_aux2[i] - measure_aux2[i + 1]), i
-            );
-            _positive_batches_indexes |= pos_batches_indexes;
+    if (_data_hub.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+        // stratifying by ranges of two or more intervals
+        auto& ranges = _data_hub.getTimeStratifiedTemporalAdjustmentWindows();
+        for (const auto& range : ranges) {
+            count_t rangeCount = 0;
+            measure_t rangeBatchSum = 0;
+            for (int i = range.first; i <= range.second; ++i) {// get totals for current range
+                rangeCount += pt_cases[i];
+                rangeBatchSum += (measure_aux[i] - measure_aux[i + 1]) + (measure_aux2[i] - measure_aux2[i + 1]);
+            }
+            if (rangeCount) { // randomize which case postive within the current range
+                randomizePositiveBatches(_batch_entries, pos_batches_indexes, rangeCount, rangeBatchSum, range);
+                _positive_batches_indexes |= pos_batches_indexes;
+            }
+        }
+    } else { // stratifying by each time interval
+        for (int i = 0; i < RealSet.getIntervalDimension(); ++i) {
+            if (pt_cases[i]) {
+                randomizePositiveBatches(
+                    _batch_entries, pos_batches_indexes, pt_cases[i],
+                    (measure_aux[i] - measure_aux[i + 1]) + (measure_aux2[i] - measure_aux2[i + 1]), WindowRange_t(i, i)
+                );
+                _positive_batches_indexes |= pos_batches_indexes;
+            }
         }
     }
     // Clear data from last simulation.
@@ -226,19 +276,17 @@ void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet&
     SimSet.getMeasureData_Aux().Set(0);
     SimSet.getMeasureData_Aux2().Set(0);
     SimSet.getPositiveBatchData().Set(boost::dynamic_bitset<>(_batch_entries.size()));
-    // Assign randomized data to SimSet object.
-    count_t** ppSimCases = SimSet.getCaseData().GetArray();
-    measure_t ** ppMeasureAux = SimSet.allocateMeasureData_Aux().GetArray(); // totaled negative batch sizes by interval and location
-    measure_t ** ppMeasureAux2 = SimSet.allocateMeasureData_Aux2().GetArray(); // totaled positive batch sizes by interval and location
-    boost::dynamic_bitset<>** ppPositiveBatches = SimSet.allocatePositiveBatchData(_batch_entries.size()).GetArray();
     _total_negative_batches = 0;
     _total_positive_batches = 0;
     _sum_negative_batches_by_time.clear();
     _sum_negative_batches_by_time.resize(RealSet.getIntervalDimension() + 1);
     _sum_positive_batches_by_time.clear();
     _sum_positive_batches_by_time.resize(RealSet.getIntervalDimension() + 1);
-    _positive_batches_indexes_by_time.clear();
-    _positive_batches_indexes_by_time.resize(RealSet.getIntervalDimension() + 1, boost::dynamic_bitset<>(RealSet.getTotalMeasure()));
+    // Assign randomized data to structures.
+    count_t** ppSimCases = SimSet.getCaseData().GetArray();
+    measure_t** ppMeasureAux = SimSet.allocateMeasureData_Aux().GetArray();
+    measure_t** ppMeasureAux2 = SimSet.allocateMeasureData_Aux2().GetArray();
+    boost::dynamic_bitset<>** ppPositiveBatches = SimSet.allocatePositiveBatchData(_batch_entries.size()).GetArray();
     for (unsigned int t = 0; t < _batch_entries.size(); ++t) {
         const auto& be = _batch_entries[t];
         if (_positive_batches_indexes.test(t)) {
@@ -247,7 +295,6 @@ void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet&
             ppPositiveBatches[be.get<2>()][be.get<3>()].set(t);
             _total_positive_batches += be.get<1>();
             _sum_positive_batches_by_time[be.get<2>()] += be.get<1>();
-            _positive_batches_indexes_by_time[be.get<2>()].set(t);
         } else {
             ppMeasureAux[be.get<2>()][be.get<3>()] += be.get<1>();
             _total_negative_batches += be.get<1>();
@@ -263,14 +310,19 @@ void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet&
             ppPositiveBatches[i][tTract] |= ppPositiveBatches[i + 1][tTract];
         }
     }
-    for (int i = RealSet.getIntervalDimension() - 2; i >= 0; --i)
-        _positive_batches_indexes_by_time[i] |= _positive_batches_indexes_by_time[i + 1];
+    if (_data_hub.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
+        // Set the 'by_time' arrays to cumulative to faciliate faster calculations with ranges.
+        for (int i = RealSet.getIntervalDimension() - 2; i >= 0; --i) {
+            _sum_positive_batches_by_time[i] += _sum_positive_batches_by_time[i + 1];
+            _sum_negative_batches_by_time[i] += _sum_negative_batches_by_time[i + 1];
+        }
+    }
 }
 
 /** Randomly assigns which batches are positive. */
 boost::dynamic_bitset<>& BatchedRandomizer::randomizePositiveBatches(
     const BatchEntryContainer_t& batches, boost::dynamic_bitset<>& positiveBatches, 
-    unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<int> interval
+    unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<std::pair<int, int>> intervalRange
 ) {
     positiveBatches.reset();
     positiveBatches.resize(batches.size());
@@ -292,7 +344,7 @@ boost::dynamic_bitset<>& BatchedRandomizer::randomizePositiveBatches(
         for (auto idx = negativeBatches.find_first(); idx != boost::dynamic_bitset<>::npos; idx = negativeBatches.find_next(idx)) {
             auto& be = batches[idx];
             // If calling this process for a specific time interval and current batch isn't for that interval, skip record.
-            if (interval && interval.get() != be.get<2>())
+            if (intervalRange && (be.get<2>() < intervalRange.get().first || intervalRange.get().second < be.get<2>()))
                 continue;
             CUMSIZE += be.get<1>();
             if (*itrRand >= CUMSIZE) continue; // skip to the next until random number is less than cumulation
@@ -332,9 +384,11 @@ void BatchedRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSe
     SetSeed(iSimulation, SimSet.getSetIndex());
     if (_data_hub.GetParameters().GetIsPurelyTemporalAnalysis())
         randomizePurelyTemporal(RealSet, SimSet);
-    else if (_data_hub.GetParameters().GetIsSpaceTimeAnalysis() && _data_hub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-        randomizeStratified(RealSet, SimSet);
-    else
+    else if (_data_hub.GetParameters().GetIsSpaceTimeAnalysis() && _data_hub.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        randomizeStratified(RealSet, SimSet, 
+            _data_hub.GetParameters().GetNonparametricAdjustmentSize()/static_cast<unsigned int>(_data_hub.GetParameters().GetTimeAggregationLength())
+        );
+    } else
         randomize(RealSet, SimSet);
 }
 

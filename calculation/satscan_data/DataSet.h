@@ -158,18 +158,22 @@ class RealDataSet : public DataSet {
     double                      gdCalculatedTimeTrendPercentage; // calculated time trend percentage used to temporal adjust expected cases
     std::string                 _calculatedQuadraticTrend; // calculated quadratic trend used to adjust temporal expected cases
     PopulationDataPair_t        _populationData; // population measure data and PopulationData
-    TwoDimBitsetArray_t        * gpBatchIndexes; // batch index data by time interval and location, cumulative by intervals 
+    TwoDimBitsetArray_t        * gpBatchIndexes; // batch index data by time interval and location, cumulative by intervals
+    BatchIndexes_t             * gpBatchIndexes_PT; // batch index data by time interval, cumulative by intervals 
+
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
     virtual ~RealDataSet();
 
     TwoDimBitsetArray_t       & allocateBatchData(unsigned int setSize);
+    BatchIndexes_t            * allocateBatchData_PT(unsigned int setSize);
     TwoDimCountArray_t        & allocateCaseData_Censored();
     TwoDimCountArray_t        & allocateControlData();
     TwoDimCountArray_t        & addCategoryTypeCaseCount(const std::string& categoryTypeLabel, count_t Count, Julian date, bool asOrdinal);
     void                        checkPopulationDataCases(CSaTScanData& Data);
     TwoDimBitsetArray_t       & getBatchData() const;
+    BatchIndexes_t            * getBatchIndexes_PT() const;
     double                      getCalculatedTimeTrendPercentage() const {return gdCalculatedTimeTrendPercentage;}
     const std::string         & getCalculatedQuadraticTimeTrend() const { return _calculatedQuadraticTrend; }
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex) const;
@@ -188,6 +192,7 @@ class RealDataSet : public DataSet {
     void                        resetPopulationData();
     void                        setAggregateCovariateCategories(bool b) {_population->SetAggregateCovariateCategories(b);}
     void                        setBitsetDataMeta(const MetaManagerProxy& MetaProxy);
+    void                        setBatchData_PT(unsigned int setSize);
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
     void                        setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr);
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);

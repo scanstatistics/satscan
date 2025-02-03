@@ -800,7 +800,7 @@ void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
 RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
             :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0), gpControlData(0), gtTotalMeasure(0),
-             gtTotalMeasureAtStart(0), gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gpBatchIndexes(0) {
+             gtTotalMeasureAtStart(0), gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gpBatchIndexes(0), gpBatchIndexes_PT(0) {
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
     boost::gregorian::greg_weekday week_day = boost::date_time::Sunday;
@@ -821,6 +821,7 @@ RealDataSet::~RealDataSet() {
         delete gpControlData;
         delete gpCaseData_Censored;
         delete gpBatchIndexes;
+        delete[] gpBatchIndexes_PT;
     } catch (...){}
 }
 
@@ -841,6 +842,40 @@ TwoDimBitsetArray_t& RealDataSet::allocateBatchData(unsigned int setSize) {
         throw;
     }
     return *gpBatchIndexes;
+}
+
+/** Allocates one dimensional array which will represent not cumulative auxillary measure
+    data, time only. Initializes all elements of array to zero. */
+BatchIndexes_t* RealDataSet::allocateBatchData_PT(unsigned int setSize) {
+    try {
+        if (!gpBatchIndexes_PT)
+            //allocate to # time intervals plus one -- a pointer to this array will be
+            //passed directly CTimeIntervals object, where it is assumed element at index
+            //'giIntervalsDimensions' is accessible and set to zero
+            gpBatchIndexes_PT = new BatchIndexes_t[giIntervalsDimensions + 1];
+        boost::dynamic_bitset<> theset(setSize);
+        for (unsigned int i = 0; i < giIntervalsDimensions + 1; ++i)
+            gpBatchIndexes_PT[i] = theset;
+    } catch (prg_exception& x) {
+        x.addTrace("allocateBatchData_PT()", "DataSet");
+        throw;
+    }
+    return gpBatchIndexes_PT;
+}
+
+/** Allocates and sets cumulative array bitsets by time. */
+void RealDataSet::setBatchData_PT(unsigned int setSize) {
+    try {
+        allocateBatchData_PT(setSize);
+        BatchIndexes_t** ppBitset = getBatchData().GetArray();
+        for (unsigned int i = 0; i < giIntervalsDimensions; ++i) {
+            for (unsigned int t = 0; t < giLocationDimensions; ++t)
+                gpBatchIndexes_PT[i] |= ppBitset[i][t];
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("setBatchData_PT()", "DataSet");
+        throw;
+    }
 }
 
 /** Allocates two dimensional array which will represent cumulative censored case
@@ -927,6 +962,13 @@ TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryInde
 TwoDimBitsetArray_t& RealDataSet::getBatchData() const {
     if (!gpBatchIndexes) throw prg_error("gpBatchIndexes not allocated.", "getBatchData()");
     return *gpBatchIndexes;
+}
+
+/** Returns pointer to allocated array that represents cumulative auxillary measure data
+    time only. Throws prg_error if not allocated. */
+BatchIndexes_t* RealDataSet::getBatchIndexes_PT() const {
+    if (!gpBatchIndexes_PT) throw prg_error("gpBatchIndexes_PT not allocated.", "getBatchIndexes_PT()");
+    return gpBatchIndexes_PT;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents

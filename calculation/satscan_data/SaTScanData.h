@@ -90,6 +90,7 @@ class CSaTScanData {
     unsigned int                                _drilldown_level;
     mutable ClusterLocationCache_t              _cluster_locations_cache;
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
+    std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -110,6 +111,7 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
+    const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }
     Network                                   & getLocationNetwork() { return  _locations_network; }
     const Network                             & refLocationNetwork() const { return  _locations_network; }
     int                                         getDataInterfaceIntervalStartIndex() const { return _data_interface_start_idex; }

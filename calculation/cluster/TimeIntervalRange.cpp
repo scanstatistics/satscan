@@ -199,20 +199,22 @@ TimeStratifiedBatchedTemporalDataEvaluator::TimeStratifiedBatchedTemporalDataEva
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void TimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+	BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
     double cumulative_llr;
-    int iWindowStart, iMinStartWindow;
+    int iWindowStart, iMinStartWindow, iEvaluateStart;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
     for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
         iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
-        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iEvaluateStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iWindowStart = iWindowEnd - 1;
         cumulative_llr = 0.0;
         for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
             // In order to correctly calculate the accumulated LLR by time interval, we always need to calculate here.
-            ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesByTimeInterval(
+            batchedCalc.CalculateProbabilitiesByTimeInterval(
                 probabilities,
                 Data.gpCases[iWindowStart] - Data.gpCases[iWindowStart + 1],
                 Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowStart + 1],
@@ -221,17 +223,20 @@ void TimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Run
                 Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowStart + 1],
                 iWindowStart
             );
-            double i_llr = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
+            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
             if (probabilities._pinside < probabilities._poutside)
                 cumulative_llr += -1.0 * i_llr;
             else
                 cumulative_llr += i_llr;
+            // For a prospective scan where the minimum temporal cluster size is greater than one, there will be intervals between
+            // the start and end intervals that are not evaluated but contribute to the cumulative LLR.
+            if (iWindowStart > iEvaluateStart)
+                continue;
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
             Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) && cumulative_llr > Running.m_nRatio &&
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(
-                    Data.gtCases, Data.gtMeasure, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
-                )) {
+                batchedCalc.isScanArea(Data.gtCases, Data.gBatches)) {
                     Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
                     Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
                     Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
@@ -256,21 +261,23 @@ void TimeStratifiedBatchedTemporalDataEvaluator::CompareMeasures(AbstractTempora
 double TimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(0.0);
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
     double cumulative_llr;
     //iterate through windows
-    int iWindowStart, iMaxStartWindow;
+    int iWindowStart, iMinWindowStart, iEvaluateStart;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
     for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
-        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iEvaluateStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iWindowStart = iWindowEnd - 1;
         cumulative_llr = 0.0;
-        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
             // In order to correctly calculate the accumulated LLR by time interval, we always need to calculate here.
-            ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesForSimulationByTimeInterval(
+            batchedCalc.CalculateProbabilitiesForSimulationByTimeInterval(
                 probabilities,
                 Data.gpCases[iWindowStart] - Data.gpCases[iWindowStart + 1],
                 Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowStart + 1],
@@ -279,18 +286,124 @@ double TimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(Abstra
                 Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowStart + 1],
                 iWindowStart
             );
-            double i_llr = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
+            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
             if (probabilities._pinside < probabilities._poutside)
                 cumulative_llr += -1.0 * i_llr;
             else
                 cumulative_llr += i_llr;
+            // For a prospective scan where the minimum temporal cluster size is greater than one, there will be intervals between
+            // the start and end intervals that are not evaluated but contribute to the cumulative LLR.
+            if (iWindowStart > iEvaluateStart)
+                continue;
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
             Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) &&
-                 ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(
-                    Data.gtCases, Data.gtMeasure, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
+                batchedCalc.isScanArea(
+                     Data.gtCases, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
                 )) {
-                    dMaxValue = std::max(dMaxValue, cumulative_llr);
+                dMaxValue = std::max(dMaxValue, cumulative_llr);
+            }
+        }
+    }
+    return dMaxValue;
+}
+
+//********** TimeStratifiedBatchedTemporalDataEvaluatorEnhanced **********
+
+/** constructor */
+TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::TimeStratifiedBatchedTemporalDataEvaluatorEnhanced(
+    const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
+) : CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+    of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
+    BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
+
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
+    double cumulative_llr, w_llr;
+    int iWindowStart, iMinStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
+            batchedCalc.CalculateProbabilitiesForWindow(
+                Data, iWindowStart, iWindowEnd - 1, probabilities
+            );
+            cumulative_llr = 0.0;
+            for (auto& probability: probabilities) {
+                w_llr = batchedCalc.getLoglikelihoodRatioForRange(*probability);
+                if (probability->_paoi._pinside < probability->_paoi._poutside)
+                    cumulative_llr += -1.0 * w_llr;
+                else
+                    cumulative_llr += w_llr;
+            }
+            Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
+            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) && cumulative_llr > Running.m_nRatio &&
+                batchedCalc.isScanArea(Data.gtCases, Data.gBatches)) {
+                Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
+                Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
+                Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = cumulative_llr;
+                clusterSet.update(Running);
+            }
+        }
+    }
+}
+
+
+/** Not implemented - throws prg_error */
+void TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "TimeStratifiedBatchedTemporalDataEvaluatorEnhanced");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
+    double dMaxValue(0.0);
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
+    BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
+
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
+    double cumulative_llr, w_llr;
+    //iterate through windows
+    int iWindowStart, iMinStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
+            batchedCalc.CalculateProbabilitiesForWindowForSimulation(
+                Data, iWindowStart, iWindowEnd - 1, probabilities
+            );
+            cumulative_llr = 0.0;
+            for (auto& probability : probabilities) {
+                w_llr = batchedCalc.getLoglikelihoodRatioForRange(*probability);
+                if (probability->_paoi._pinside < probability->_paoi._poutside)
+                    cumulative_llr += -1.0 * w_llr;
+                else
+                    cumulative_llr += w_llr;
+            }
+            Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
+            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) &&
+                batchedCalc.isScanArea(
+                    Data.gtCases, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
+                )) {
+                dMaxValue = std::max(dMaxValue, cumulative_llr);
             }
         }
     }
@@ -1568,7 +1681,8 @@ BatchedTemporalDataEvaluator::BatchedTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void BatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedTemporalData& Data = (BatchedTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
     int iWindowStart, iMinStartWindow;
@@ -1579,20 +1693,19 @@ void BatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CCluster
         iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
         for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
                 Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
                 Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
                 Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilities(
+                batchedCalc.CalculateProbabilities(
                     probabilities, Data.gtCases, Data.gtMeasure, Data.gtMeasureAux2, Data.gtMeasureAux, Data.gPositiveBatches
                 );
-                if (((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(probabilities, Data.gtCases)) {
-                    Running.m_nFirstInterval = iWindowStart;
-                    Running.m_nLastInterval = iWindowEnd;
-                    Running.m_nRatio = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatio(probabilities);
-                    clusterSet.update(Running);
-                }
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = batchedCalc.getLoglikelihoodRatio(probabilities);
+                clusterSet.update(Running);
             }
         }
     }
@@ -1609,8 +1722,9 @@ void BatchedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&,
 double BatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedTemporalData& Data = (BatchedTemporalData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(-std::numeric_limits<double>::max());
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
     ProbabilitiesAOI probabilities;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
 
     //iterate through windows
     int iWindowStart, iMaxStartWindow;
@@ -1621,16 +1735,16 @@ double BatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClus
         iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesForSimulation(
-                    probabilities, Data.gtCases, Data.gtMeasure, 
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                batchedCalc.CalculateProbabilitiesForSimulation(
+                    probabilities, Data.gtCases, 
+                    Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd],
                     Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd],
                     Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd],
                     Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd]
                 );
-                if (((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(probabilities, Data.gtCases))
-                    dMaxValue = std::max(dMaxValue, ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getMaximizingValue(probabilities));
+                dMaxValue = std::max(dMaxValue, ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getMaximizingValue(probabilities));
             }
         }
     }
@@ -1666,7 +1780,11 @@ void MultiSetBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, 
                 Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
                 Datum.gtMeasureAux2 = Datum.gpMeasureAux2[iWindowStart] - Datum.gpMeasureAux2[iWindowEnd];
                 Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowEnd];
-                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, Datum.gtMeasureAux2, Datum.gPositiveBatches, t);
+                Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd];
+                Unifier.AdjoinRatio(
+                    gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, 
+                    Datum.gtMeasureAux2, Datum.gPositiveBatches, Datum.gBatches, t
+                );
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false)) {
                 Running.m_nFirstInterval = iWindowStart;
@@ -1703,12 +1821,14 @@ double MultiSetBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemp
             Unifier.Reset();
             for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
                 BatchedTemporalData& Datum = *(Data.gvSetClusterData[t]);
-                Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
-                Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-                Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
-                Datum.gtMeasureAux2 = Datum.gpMeasureAux2[iWindowStart] - Datum.gpMeasureAux2[iWindowEnd];
-                Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowEnd];
-                Unifier.AdjoinRatioSimulation(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, Datum.gtMeasureAux2, Datum.gPositiveBatches, t);
+                Unifier.AdjoinRatioSimulation(gLikelihoodCalculator, 
+                    Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd],
+                    Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd],
+                    Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd],
+                    Datum.gpMeasureAux2[iWindowStart] - Datum.gpMeasureAux2[iWindowEnd],
+                    Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowEnd],
+                    Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd], t
+                );
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false))
                 dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
@@ -1738,17 +1858,19 @@ MultiSetTimeStratifiedBatchedTemporalDataEvaluator::MultiSetTimeStratifiedBatche
 void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     AbstractMultiSetBatchedTemporalData& Data = (AbstractMultiSetBatchedTemporalData&)*(Running.GetClusterData());
     AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
     ProbabilitiesAOI probabilities;
 
     std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
     std::vector<double> cumulative_expected(Data.gvSetClusterData.size(), 0.0);
-    int iWindowStart, iMinWindowStart;
+    int iWindowStart, iMinWindowStart, iEvaluateStart;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
     for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
         iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
-        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iEvaluateStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iWindowStart = iWindowEnd - 1;
         std::fill(cumulative_llr.begin(), cumulative_llr.end(), 0.0);
         std::fill(cumulative_expected.begin(), cumulative_expected.end(), 0.0);
         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
@@ -1756,7 +1878,7 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
             for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
                 BatchedSpaceTimeData& Datum = (BatchedSpaceTimeData&)(*(Data.gvSetClusterData[t]));
                 // In order to correctly calculate the accumulated LLR by time interval, we always need to calculate here.
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesByTimeInterval(
+                batchedCalc.CalculateProbabilitiesByTimeInterval(
                     probabilities,
                     Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowStart + 1],
                     Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1],
@@ -1765,28 +1887,27 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
                     Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowStart + 1],
                     iWindowStart, t
                 );
-
                 // calculate the log-likelihood ratio for this time interval then add to cumulative
-                double i_llr = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
+                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
                 if (probabilities._pinside < probabilities._poutside)
                     cumulative_llr[t] += -1.0 * i_llr;
                 else
                     cumulative_llr[t] += i_llr;
-
                 // calculate the expected for this time interval then add to cumulative
-                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpectedAtWindow(
-                    Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1], 
+                cumulative_expected[t] += batchedCalc.getClusterExpectedAtWindow(
                     Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowStart + 1], iWindowStart, t
                 );
-
+                // For a prospective scan where the minimum temporal cluster size is greater than one, there will be intervals between
+                // the start and end intervals that are not evaluated but contribute to the cumulative LLR.
+                if (iWindowStart > iEvaluateStart)
+                    continue;
                 Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
                 Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
                 Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
                 Datum.gtMeasureAux2 = Datum.gpMeasureAux2[iWindowStart] - Datum.gpMeasureAux2[iWindowEnd];
                 Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowEnd];
-
+				Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd];
                 Unifier.AdjoinRatio(cumulative_llr[t], gLikelihoodCalculator, Datum.gtCases, cumulative_expected[t]);
-
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate()) {
                 Running.m_nFirstInterval = iWindowStart;
@@ -1810,27 +1931,28 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareMeasures(Abstrac
 double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     AbstractMultiSetBatchedTemporalData& Data = (AbstractMultiSetBatchedTemporalData&)(ClusterData);
     AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
     double dRatio(0);
     ProbabilitiesAOI probabilities;
 
     std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
     std::vector<double> cumulative_expected(Data.gvSetClusterData.size(), 0.0);
-    int iWindowStart, iMaxStartWindow;
+    int iWindowStart, iMinWindowStart, iEvaluateStart;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
     for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
-        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iEvaluateStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        iWindowStart = iWindowEnd - 1;
         std::fill(cumulative_llr.begin(), cumulative_llr.end(), 0.0);
         std::fill(cumulative_expected.begin(), cumulative_expected.end(), 0.0);
-        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
             Unifier.Reset();
             for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
                 BatchedSpaceTimeData& Datum = (BatchedSpaceTimeData&)(*(Data.gvSetClusterData[t]));
-
                 // In order to correctly calculate the accumulated LLR by time interval, we always need to calculate here.
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesForSimulationByTimeInterval(
+                batchedCalc.CalculateProbabilitiesForSimulationByTimeInterval(
                     probabilities,
                     Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowStart + 1],
                     Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1],
@@ -1839,26 +1961,143 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValu
                     Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowStart + 1],
                     iWindowStart, t
                 );
-
-                double i_llr = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
+                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
                 if (probabilities._pinside < probabilities._poutside)
                     cumulative_llr[t] += -1.0 * i_llr;
                 else
                     cumulative_llr[t] += i_llr;
-
                 // calculate the expected for this time interval then add to cumulative
-                cumulative_expected[t] += ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getClusterExpectedAtWindow(
-                    Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowStart + 1],
+                cumulative_expected[t] += batchedCalc.getClusterExpectedAtWindow(
                     Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowStart + 1], iWindowStart, t
                 );
+                // For a prospective scan where the minimum temporal cluster size is greater than one, there will be intervals between
+                // the start and end intervals that are not evaluated but contribute to the cumulative LLR.
+                if (iWindowStart > iEvaluateStart)
+                    continue;
+                Unifier.AdjoinRatio(cumulative_llr[t], gLikelihoodCalculator, 
+                    Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd], cumulative_expected[t]
+                );
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate())
+                dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+        }
+    }
+    return dRatio;
+}
 
+//********** MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced **********
+
+/** constructor */
+MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced(
+    const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
+) : CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {
+    if (DataHub.GetParameters().GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
+        throw prg_error(
+            "MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced not implemented for selected time trend adjustment type.", "MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced"
+        );
+    if (!DataHub.GetParameters().GetIsSpaceTimeAnalysis())
+        throw prg_error(
+            "MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced only implemented for space-time analyses.", "MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced"
+        );
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+    of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    AbstractMultiSetBatchedTemporalData& Data = (AbstractMultiSetBatchedTemporalData&)*(Running.GetClusterData());
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+    BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
+
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
+    double cumulative_llr, w_llr, expected;
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
+                BatchedSpaceTimeData& Datum = (BatchedSpaceTimeData&)(*(Data.gvSetClusterData[t]));
+                // Calculate the probabilities for each adjustment window.
+                batchedCalc.CalculateProbabilitiesForWindow(
+                    Datum, iWindowStart, iWindowEnd - 1, probabilities, t
+                );
+                // Calculate the LLR from the calculated probabilities.
+                cumulative_llr = 0;
+                for (auto& probability : probabilities) {
+                    w_llr = batchedCalc.getLoglikelihoodRatioForRange(*probability, t);
+                    if (probability->_paoi._pinside < probability->_paoi._poutside)
+                        cumulative_llr += -1.0 * w_llr;
+                    else
+                        cumulative_llr += w_llr;
+                }
                 Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
                 Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-                Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
                 Datum.gtMeasureAux2 = Datum.gpMeasureAux2[iWindowStart] - Datum.gpMeasureAux2[iWindowEnd];
+                Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
                 Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowEnd];
+                Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd];
+                Unifier.AdjoinRatio(cumulative_llr, gLikelihoodCalculator, Datum.gtCases, 
+                    batchedCalc.getExpectedForBatches(Datum.gBatches, t)
+                );
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate()) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                Running._ratio_sets = Unifier.getUnifiedSets();
+                clusterSet.update(Running);
+            }
+        }
+    }
+}
 
-                Unifier.AdjoinRatio(cumulative_llr[t], gLikelihoodCalculator, Datum.gtCases, cumulative_expected[t]);
+/** Not implemented - throws prg_error */
+void MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    AbstractMultiSetBatchedTemporalData& Data = (AbstractMultiSetBatchedTemporalData&)(ClusterData);
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+    double dRatio(0);
+    BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
+
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
+    double cumulative_llr, w_llr, expected;
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
+                BatchedSpaceTimeData& Datum = (BatchedSpaceTimeData&)(*(Data.gvSetClusterData[t]));
+                batchedCalc.CalculateProbabilitiesForWindowForSimulation(
+                    Datum, iWindowStart, iWindowEnd - 1, probabilities, t
+                );
+                cumulative_llr = 0.0;
+                for (auto& probability: probabilities) {
+                    w_llr = batchedCalc.getLoglikelihoodRatioForRange(*probability, t);
+                    if (probability->_paoi._pinside < probability->_paoi._poutside)
+                        cumulative_llr += -1.0 * w_llr;
+                    else
+                        cumulative_llr += w_llr;
+                }
+                Unifier.AdjoinRatio(cumulative_llr, gLikelihoodCalculator, Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd],
+                    batchedCalc.getExpectedForBatches(Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd], t)
+                );
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate())
                 dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
@@ -1891,7 +2130,8 @@ ClosedLoopBatchedTemporalDataEvaluator::ClosedLoopBatchedTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void ClosedLoopBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedTemporalData& Data = (BatchedTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
     int iWindowStart, iMinStartWindow;
@@ -1901,7 +2141,6 @@ void ClosedLoopBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running
         iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
         iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
         for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
-            //printf("start = %d, end = %d\n", iWindowStart, iWindowEnd);
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[std::min(iWindowEnd, _extended_period_start)];
             Data.gtCases += Data.gpCases[0] - Data.gpCases[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[std::min(iWindowEnd, _extended_period_start)];
@@ -1912,16 +2151,16 @@ void ClosedLoopBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running
             Data.gtMeasureAux2 += Data.gpMeasureAux2[0] - Data.gpMeasureAux2[std::max(0, iWindowEnd - _extended_period_start)];
             Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[std::min(iWindowEnd, _extended_period_start)];
             Data.gPositiveBatches |= Data.gpPositiveBatches[0] - Data.gpPositiveBatches[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilities(
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[std::min(iWindowEnd, _extended_period_start)];
+            Data.gBatches |= Data.gpBatches[0] - Data.gpBatches[std::max(0, iWindowEnd - _extended_period_start)];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                batchedCalc.CalculateProbabilities(
                     probabilities, Data.gtCases, Data.gtMeasure, Data.gtMeasureAux2, Data.gtMeasureAux, Data.gPositiveBatches
                 );
-                if (((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(probabilities, Data.gtCases)) {
-                    Running.m_nFirstInterval = iWindowStart;
-                    Running.m_nLastInterval = iWindowEnd;
-                    Running.m_nRatio = ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getLoglikelihoodRatio(probabilities);
-                    clusterSet.update(Running);
-                }
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = batchedCalc.getLoglikelihoodRatio(probabilities);
+                clusterSet.update(Running);
             }
         }
     }
@@ -1938,7 +2177,8 @@ void ClosedLoopBatchedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClu
 double ClosedLoopBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedTemporalData& Data = (BatchedTemporalData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(gdDefaultMaximizingValue);
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
     //iterate through windows
@@ -1951,20 +2191,21 @@ double ClosedLoopBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTe
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[std::min(iWindowEnd, _extended_period_start)];
             Data.gtCases += Data.gpCases[0] - Data.gpCases[std::max(0, iWindowEnd - _extended_period_start)];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[std::min(iWindowEnd, _extended_period_start)];
-            Data.gtMeasure += Data.gpMeasure[0] - Data.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
-            Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[std::min(iWindowEnd, _extended_period_start)];
-            Data.gtMeasureAux += Data.gpMeasureAux[0] - Data.gpMeasureAux[std::max(0, iWindowEnd - _extended_period_start)];
-            Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[std::min(iWindowEnd, _extended_period_start)];
-            Data.gtMeasureAux2 += Data.gpMeasureAux2[0] - Data.gpMeasureAux2[std::max(0, iWindowEnd - _extended_period_start)];
-            Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[std::min(iWindowEnd, _extended_period_start)];
-            Data.gPositiveBatches |= Data.gpPositiveBatches[0] - Data.gpPositiveBatches[std::max(0, iWindowEnd - _extended_period_start)];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).CalculateProbabilitiesForSimulation(
+            Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[std::min(iWindowEnd, _extended_period_start)];
+            Data.gBatches |= Data.gpBatches[0] - Data.gpBatches[std::max(0, iWindowEnd - _extended_period_start)];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[std::min(iWindowEnd, _extended_period_start)];
+                Data.gtMeasure += Data.gpMeasure[0] - Data.gpMeasure[std::max(0, iWindowEnd - _extended_period_start)];
+                Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[std::min(iWindowEnd, _extended_period_start)];
+                Data.gtMeasureAux += Data.gpMeasureAux[0] - Data.gpMeasureAux[std::max(0, iWindowEnd - _extended_period_start)];
+                Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[std::min(iWindowEnd, _extended_period_start)];
+                Data.gtMeasureAux2 += Data.gpMeasureAux2[0] - Data.gpMeasureAux2[std::max(0, iWindowEnd - _extended_period_start)];
+                Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[std::min(iWindowEnd, _extended_period_start)];
+                Data.gPositiveBatches |= Data.gpPositiveBatches[0] - Data.gpPositiveBatches[std::max(0, iWindowEnd - _extended_period_start)];
+                batchedCalc.CalculateProbabilitiesForSimulation(
                     probabilities, Data.gtCases, Data.gtMeasure, Data.gtMeasureAux2, Data.gtMeasureAux, Data.gPositiveBatches
                 );
-                if (((BatchedLikelihoodCalculator&)gLikelihoodCalculator).isScanArea(probabilities, Data.gtCases))
-                    dMaxValue = std::max(dMaxValue, ((BatchedLikelihoodCalculator&)gLikelihoodCalculator).getMaximizingValue(probabilities));
+                dMaxValue = std::max(dMaxValue, batchedCalc.getMaximizingValue(probabilities));
             }
         }
     }
@@ -2017,7 +2258,12 @@ void ClosedLoopMultiSetBatchedTemporalDataEvaluator::CompareClusterSet(CCluster&
                 Datum.gtMeasureAux2 += Datum.gpMeasureAux2[0] - Datum.gpMeasureAux2[std::max(0, iWindowEnd - _extended_period_start)];
                 Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[std::min(iWindowEnd, _extended_period_start)];
                 Datum.gPositiveBatches |= Datum.gpPositiveBatches[0] - Datum.gpPositiveBatches[std::max(0, iWindowEnd - _extended_period_start)];
-                Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, Datum.gtMeasureAux2, Datum.gPositiveBatches, t);
+                Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[std::min(iWindowEnd, _extended_period_start)];
+                Datum.gBatches |= Datum.gpBatches[0] - Datum.gpBatches[std::max(0, iWindowEnd - _extended_period_start)];
+                Unifier.AdjoinRatio(
+                    gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, 
+                    Datum.gtMeasureAux, Datum.gtMeasureAux2, Datum.gPositiveBatches, Datum.gBatches, t
+                );
             }
             Running.m_nFirstInterval = iWindowStart;
             Running.m_nLastInterval = iWindowEnd;
@@ -2062,7 +2308,12 @@ double ClosedLoopMultiSetBatchedTemporalDataEvaluator::ComputeMaximizingValue(Ab
                 Datum.gtMeasureAux2 += Datum.gpMeasureAux2[0] - Datum.gpMeasureAux2[std::max(0, iWindowEnd - _extended_period_start)];
                 Datum.gPositiveBatches = Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[std::min(iWindowEnd, _extended_period_start)];
                 Datum.gPositiveBatches |= Datum.gpPositiveBatches[0] - Datum.gpPositiveBatches[std::max(0, iWindowEnd - _extended_period_start)];
-                Unifier.AdjoinRatioSimulation(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, Datum.gtMeasureAux2, Datum.gPositiveBatches, t);
+                Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[std::min(iWindowEnd, _extended_period_start)];
+                Datum.gBatches |= Datum.gpBatches[0] - Datum.gpBatches[std::max(0, iWindowEnd - _extended_period_start)];
+                Unifier.AdjoinRatioSimulation(
+                    gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, 
+                    Datum.gtMeasureAux2, Datum.gPositiveBatches, Datum.gBatches, t
+                );
             }
             dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
         }

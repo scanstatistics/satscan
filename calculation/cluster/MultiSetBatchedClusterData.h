@@ -20,6 +20,7 @@ public:
 
     virtual measure_t   GetMeasureAux2(unsigned int tSetIndex = 0) const;
     virtual const BatchIndexes_t& GetPositiveBatches(unsigned int tSetIndex = 0) const;
+    virtual const BatchIndexes_t& GetBatches(unsigned int tSetIndex = 0) const;
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex = 0);
     virtual void        Assign(const AbstractSpatialClusterData& rhs);
@@ -47,6 +48,8 @@ public:
 
     virtual measure_t        GetMeasureAux2(unsigned int tSetIndex = 0) const;
     virtual const BatchIndexes_t& GetPositiveBatches(unsigned int tSetIndex = 0) const;
+    virtual const BatchIndexes_t& GetBatches(unsigned int tSetIndex = 0) const;
+
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);

@@ -212,8 +212,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_10_0_x_ParameterList();
     else if (version.iMajor == 10 && version.iMinor == 1)
         Build_10_1_x_ParameterList();
-    else
+    else if (version.iMajor == 10 && version.iMinor == 2)
         Build_10_2_x_ParameterList();
+    else
+        Build_10_3_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -750,6 +752,20 @@ void IniParameterSpecification::Build_10_2_x_ParameterList() {
     _parameter_info[DRILLDOWN_CUTOFF] = ParamInfo(DRILLDOWN_CUTOFF, "DrilldownClusterCutoff", 4, _drilldown_section);
 
     assert(_parameter_info.size() == 179);
+}
+
+/** Version 10.3.x */
+void IniParameterSpecification::Build_10_3_x_ParameterList() {
+    Build_10_2_x_ParameterList();
+
+    _parameter_info[TIMETRENDLENGTH] = ParamInfo(TIMETRENDLENGTH, "TimeStratifiedAdjLength", 3, _space_time_adjustments_section);
+    _parameter_info[SPATIAL_ADJ_TYPE] = ParamInfo(SPATIAL_ADJ_TYPE, "SpatialAdjustmentType", 4, _space_time_adjustments_section);
+    _parameter_info[USE_ADJ_BY_RR_FILE] = ParamInfo(USE_ADJ_BY_RR_FILE, "UseAdjustmentsByRRFile", 5, _space_time_adjustments_section);
+    _parameter_info[ADJ_BY_RR_FILE] = ParamInfo(ADJ_BY_RR_FILE, "AdjustmentsByKnownRelativeRisksFilename", 6, _space_time_adjustments_section);
+    _parameter_info[INTERVAL_STARTRANGE] = ParamInfo(INTERVAL_STARTRANGE, "IntervalStartRange", 7, _space_time_adjustments_section);
+    _parameter_info[INTERVAL_ENDRANGE] = ParamInfo(INTERVAL_ENDRANGE, "IntervalEndRange", 8, _space_time_adjustments_section);
+
+    assert(_parameter_info.size() == 180);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

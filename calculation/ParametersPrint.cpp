@@ -732,11 +732,13 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
                 if (_parameters.getRiskLimitLowClusters())
                     settings.push_back(std::make_pair("Risk Threshold Long Survival Clusters", printString(buffer, "%g", _parameters.getRiskThresholdLowClusters())));
             } break;
+        case BATCHED:
+            if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                break; // Not an available option for time stratified adjustment.
         case SPACETIMEPERMUTATION:
         case POISSON:
         case HOMOGENEOUSPOISSON:
         case BERNOULLI:
-        case BATCHED:
             if (_parameters.GetAreaScanRateType() == HIGH || _parameters.GetAreaScanRateType() == HIGHANDLOW) {
                 settings.push_back(std::make_pair("Restrict High Rate Clusters", (_parameters.getRiskLimitHighClusters() ? "Yes" : "No")));
                 if (_parameters.getRiskLimitHighClusters())
@@ -1219,7 +1221,16 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                 case CALCULATED_LOGLINEAR_PERC :
                     settings.push_back(std::make_pair("Temporal Adjustment","Log Linear with Automatically Calculated Trend"));break;
                 case TEMPORAL_STRATIFIED_RANDOMIZATION:
-                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with Time Stratified Randomization"));break;
+                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with Time Stratified Randomization"));
+                    if (_parameters.GetProbabilityModelType() == BATCHED) {
+                        settings.push_back(std::make_pair("Adjustment Length",
+                            printString(buffer, "%u %s",
+                                _parameters.GetNonparametricAdjustmentSize(),
+                                GetDatePrecisionAsString(_parameters.GetTimeAggregationUnitsType(), worker, _parameters.GetNonparametricAdjustmentSize() != 1, false)
+                            )
+                        ));
+                    }
+                    break;
                 case CALCULATED_QUADRATIC:
                     settings.push_back(std::make_pair("Temporal Adjustment", "Log Quadratic with Automatically Calculated Trend")); break;
                 default : throw prg_error("Unknown time trend adjustment type '%d'.\n",

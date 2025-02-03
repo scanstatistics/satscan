@@ -33,6 +33,7 @@ enum ParameterType
     POWER_01,                       /* power evaluation critical value .01 (numeric) */
     TIMETREND,                      /* time trend adjustment type (enumeration) */
     TIMETRENDPERC,                  /* time trend adjustment percentage (numeric) */
+    TIMETRENDLENGTH,                /* nonparametric time trend adjustment length (integer) */
     PURETEMPORAL,                   /* include purely temporal clusters (boolean) */
     CONTROLFILE,                    /* control filename (vector<string>) */
     COORDTYPE,                      /* coordinates type (enumeration) */

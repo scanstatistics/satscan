@@ -141,8 +141,13 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
     switch (_parameters.GetProbabilityModelType()) {
         case BATCHED:
             if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
-                if (_data_hub.GetNumDataSets() == 1)
+                if (_data_hub.GetNumDataSets() == 1) {
+                    if (_parameters.isTimeStratifiedWithLargerAdjustmentLength())
+                        return new TimeStratifiedBatchedTemporalDataEvaluatorEnhanced(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
                     return new TimeStratifiedBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                }
+                if (_parameters.isTimeStratifiedWithLargerAdjustmentLength())
+                    return new MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
                 return new MultiSetTimeStratifiedBatchedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
             }
             if (_parameters.GetAnalysisType() == SEASONALTEMPORAL) {

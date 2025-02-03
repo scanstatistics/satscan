@@ -13,6 +13,7 @@ public:
     virtual measure_t GetMeasureAux(unsigned int tSetIndex) const = 0; // represents number of negative batches
     virtual measure_t GetMeasureAux2(unsigned int tSetIndex) const = 0; // represents number of positive batches
     virtual const BatchIndexes_t& GetPositiveBatches(unsigned int tSetIndex=0) const = 0;
+    virtual const BatchIndexes_t& GetBatches(unsigned int tSetIndex = 0) const = 0;
 };
 
 /** Class representing accumulated data of spatial clustering of a batched probability model. */
@@ -29,6 +30,7 @@ public:
     measure_t gtMeasureAux; // represents number of negative batches
     measure_t gtMeasureAux2; // represents number of positive batches
     BatchIndexes_t gPositiveBatches;
+    BatchIndexes_t gBatches;
 
     virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex = 0);
@@ -39,7 +41,8 @@ public:
     virtual measure_t        GetMeasureAux(unsigned int tSetIndex = 0) const { return gtMeasureAux; }
     virtual measure_t        GetMeasureAux2(unsigned int tSetIndex = 0) const { return gtMeasureAux2; }
     virtual const BatchIndexes_t& GetPositiveBatches(unsigned int tSetIndex = 0) const { return gPositiveBatches; }
-    virtual void             InitializeData() { gtCases = 0; gtMeasure = 0; gtMeasureAux = 0; gtMeasureAux2 = 0; gPositiveBatches.reset(); }
+    virtual const BatchIndexes_t& GetBatches(unsigned int tSetIndex = 0) const { return gBatches; }
+    virtual void             InitializeData() { gtCases = 0; gtMeasure = 0; gtMeasureAux = 0; gtMeasureAux2 = 0; gPositiveBatches.reset(); gBatches.reset(); }
 };
 
 /** Class representing accumulated data of temporal clustering for batched probability model.
@@ -57,19 +60,22 @@ public:
     virtual ~BatchedTemporalData() {}
     virtual BatchedTemporalData * Clone() const;
 
-    measure_t gtMeasureAux;
-    measure_t * gpMeasureAux;
-    measure_t gtMeasureAux2;
-    measure_t* gpMeasureAux2;
-    BatchIndexes_t gPositiveBatches;
+    measure_t        gtMeasureAux;
+    measure_t      * gpMeasureAux;
+    measure_t        gtMeasureAux2;
+    measure_t      * gpMeasureAux2;
+    BatchIndexes_t   gPositiveBatches;
     BatchIndexes_t * gpPositiveBatches;
+    BatchIndexes_t   gBatches;
+    BatchIndexes_t * gpBatches;
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
-    virtual void             InitializeData() { gtCases = 0; gtMeasure = 0; gtMeasureAux = 0; gtMeasureAux2 = 0; gPositiveBatches.reset(); }
+    virtual void             InitializeData() { gtCases = 0; gtMeasure = 0; gtMeasureAux = 0; gtMeasureAux2 = 0; gPositiveBatches.reset(); gBatches.reset(); }
     virtual measure_t        GetMeasureAux(unsigned int tSetIndex = 0) const { return gtMeasureAux; }
     virtual measure_t        GetMeasureAux2(unsigned int tSetIndex = 0) const { return gtMeasureAux2; }
     virtual const BatchIndexes_t& GetPositiveBatches(unsigned int tSetIndex = 0) const { return gPositiveBatches; }
+    virtual const BatchIndexes_t& GetBatches(unsigned int tSetIndex = 0) const { return gBatches; }
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
 };
@@ -80,7 +86,8 @@ public:
 */
 class BatchedProspectiveSpatialData : public BatchedTemporalData, public AbstractProspectiveSpatialClusterData {
 private:
-    void                                  Init() { gpCases = 0; gpMeasure = 0; gpMeasureAux = 0; gpMeasureAux2 = 0; gPositiveBatches.reset();}
+    void                                  Init() { gpCases = 0; gpMeasure = 0; gpMeasureAux = 0; gpMeasureAux2 = 0; 
+                                                   gPositiveBatches.reset(); gBatches.reset(); }
     void                                  Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
 
 protected:
@@ -125,9 +132,6 @@ public:
     virtual ~BatchedSpaceTimeData();
     virtual BatchedSpaceTimeData* Clone() const;
     BatchedSpaceTimeData   & operator=(const BatchedSpaceTimeData& rhs);
-
-    BatchIndexes_t  gBatches;
-    BatchIndexes_t* gpBatches;
 
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex = 0);
     virtual void             Assign(const AbstractTemporalClusterData& rhs);

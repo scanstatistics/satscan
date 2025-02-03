@@ -11,7 +11,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 179;
+const int CParameters::giNumParameters                = 180;
 
 /** Constructor */
 CParameters::CParameters(): _cluster_sig_by_ri_(false), _cluster_sig_ri_type_(DAY), _cluster_sig_by_p_(false), _cluster_sig_p_val_(0.05){
@@ -53,6 +53,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (glTimeAggregationLength != rhs.glTimeAggregationLength) return false;
   if (geTimeTrendAdjustType != rhs.geTimeTrendAdjustType) return false;
   if (gdTimeTrendAdjustPercentage != rhs.gdTimeTrendAdjustPercentage) return false;
+  if (_nonparametric_adjustment_size != rhs._nonparametric_adjustment_size) return false;
   if (gbIncludePurelySpatialClusters != rhs.gbIncludePurelySpatialClusters) return false;
   if (gbIncludePurelyTemporalClusters != rhs.gbIncludePurelyTemporalClusters) return false;
   if (gvCaseFilenames != rhs.gvCaseFilenames) return false;
@@ -306,6 +307,7 @@ void CParameters::Copy(const CParameters &rhs) {
   glTimeAggregationLength                = rhs.glTimeAggregationLength;
   geTimeTrendAdjustType                  = rhs.geTimeTrendAdjustType;
   gdTimeTrendAdjustPercentage            = rhs.gdTimeTrendAdjustPercentage;
+  _nonparametric_adjustment_size = rhs._nonparametric_adjustment_size;
   gbIncludePurelySpatialClusters         = rhs.gbIncludePurelySpatialClusters;
   gbIncludePurelyTemporalClusters        = rhs.gbIncludePurelyTemporalClusters;
   gvCaseFilenames                        = rhs.gvCaseFilenames;
@@ -538,6 +540,10 @@ bool CParameters::GetIsPurelyTemporalAnalysis() const {
 /** Returns whether analysis is space-time. */
 bool CParameters::GetIsSpaceTimeAnalysis() const {
   return geAnalysisType == SPACETIME || geAnalysisType == PROSPECTIVESPACETIME;
+}
+
+bool CParameters::isTimeStratifiedWithLargerAdjustmentLength() const {
+    return geTimeTrendAdjustType == TEMPORAL_STRATIFIED_RANDOMIZATION && glTimeAggregationLength != _nonparametric_adjustment_size;
 }
 
 /** Returns description for LLR. */
@@ -920,6 +926,7 @@ void CParameters::SetAsDefaulted() {
   _critical_value_001                      = 0.0;
   geTimeTrendAdjustType                    = TEMPORAL_NOTADJUSTED;
   gdTimeTrendAdjustPercentage              = 0;
+  _nonparametric_adjustment_size           = 1;
   gbIncludePurelyTemporalClusters          = false;
   gvControlFilenames.resize(1);
   geCoordinatesType                        = LATLON;

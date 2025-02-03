@@ -139,6 +139,7 @@ class CParameters {
     /* Temporal trend adjusment variables */
     double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
+    unsigned int                        _nonparametric_adjustment_size;         /** number of units in non-parametric, units are that of time aggregation */
     bool                                _adjustWeeklyTrends;                    /** Adjust for weekly trends. */
     /* Input precision variables */
     DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none = no, years=months=days = yes */
@@ -573,6 +574,8 @@ class CParameters {
     DatePrecisionType                   GetTimeAggregationUnitsType() const {return geTimeAggregationUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
+    unsigned int                        GetNonparametricAdjustmentSize() const { return _nonparametric_adjustment_size; }
+    bool                                isTimeStratifiedWithLargerAdjustmentLength() const;
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
     TimeTrendType                       getTimeTrendType() const {return geTimeTrendType;}
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
@@ -694,6 +697,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
+    void                                SetNonparametricAdjustmentSize(unsigned int i) { _nonparametric_adjustment_size = i; }
     void                                setTimeTrendType(TimeTrendType eTimeTrendType);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetIsWeightedNormal(bool b) {gbWeightedNormal = b;}

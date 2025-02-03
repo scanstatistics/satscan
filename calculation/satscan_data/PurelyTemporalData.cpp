@@ -121,6 +121,10 @@ void CPurelyTemporalData::PostDataRead() {
 		(gParameters.getPowerEvaluationMethod() == PE_ONLY_CASEFILE || gParameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
 		SetPurelyTemporalCases();
 	}
+    if (gParameters.GetProbabilityModelType() == BATCHED) {
+        for (auto& dataset: gDataSets->getDataSets())
+            dataset->setBatchData_PT(static_cast<unsigned int>(dataset->getTotalMeasure()));
+    }
 }
 
 /** Allocates probability model object. */

@@ -13,7 +13,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
     _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()), _low_risk_threshold(DataHub.GetParameters().getRiskThresholdLowClusters()),
     _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()), _high_risk_threshold(DataHub.GetParameters().getRiskThresholdHighClusters()),
     gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _risk_function(0), _risk_multiset_function(0), _rate_of_interest_multiset(0),
-    gpRateOfInterestBatched(0) {
+    gpRateOfInterestCount(0), gpRateOfInterestExpected(0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -29,10 +29,34 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         /* Assign the class function pointers that will determine if cluster passes scan area test. */
         if (parameters.GetProbabilityModelType() == BATCHED) {
             switch (parameters.GetExecuteScanRateType()) {
-                case LOW: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::LowRateBatched; break;
-                case HIGHANDLOW: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighOrLowRateBatched; break;
+                case LOW: 
+                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::LowRateBatchedCount;
+                    if (parameters.getRiskLimitLowClusters())
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::LowRiskBatchedExpected;
+                    else
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::LowRateBatchedExpected;
+                    break;
+                case HIGHANDLOW: 
+                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::HighOrLowRateBatchedCount;
+                    if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters())
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskOrLowRiskBatchedExpected;
+                    else if (parameters.getRiskLimitLowClusters())
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRateOrLowRiskBatchedExpected;
+                    else if (parameters.getRiskLimitHighClusters())
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskOrLowRateBatchedExpected;
+                    else
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighOrLowRateBatchedExpected;
+                    break;
                 case HIGH:
-                default: gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRateBatched;
+                default:
+                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
+                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::HighRateBatchedCount;
+                    if (parameters.getRiskLimitHighClusters())
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskBatchedExpected;
+                    else
+                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRateBatchedExpected;
             }
         } else if (parameters.GetProbabilityModelType() == NORMAL) {
             /* The normal model is specialized. */
@@ -187,8 +211,10 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     break;
                 default: throw prg_error("Unknown area scan type '%d'.", "constructor()", parameters.GetExecuteScanRateType());
             }
-            /* The relative risk function is dependent on the probability model since the space-time permutation and exponential models do not report relative risk. */
-            if (parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || parameters.GetProbabilityModelType() == EXPONENTIAL) {
+            /* The relative risk function is dependent on the probability model since the space-time permutation, batched and exponential models do not report relative risk. */
+            if (parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || 
+                parameters.GetProbabilityModelType() == EXPONENTIAL ||
+                parameters.GetProbabilityModelType() == BATCHED) {
                 _risk_function = &AbstractLikelihoodCalculator::getObservedDividedExpected;
                 _risk_multiset_function = &AbstractLikelihoodCalculator::getObservedDividedExpectedMultiset;
             } else {

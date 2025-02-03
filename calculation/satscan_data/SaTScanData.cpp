@@ -290,6 +290,16 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     if (iNumCollapsibleIntervals > 1)
         _data_interface_start_idex = std::max(0, iNumCollapsibleIntervals);
   }
+  // Calculate the temporal adjustment windows if performing time-stratified nonparametric and 
+  // the adjustment length isn't the same as the time aggregation length.
+  if (gParameters.isTimeStratifiedWithLargerAdjustmentLength()) {
+      WindowRange_t range(m_nTimeIntervals - static_cast<int>(gParameters.GetNonparametricAdjustmentSize()), m_nTimeIntervals - 1);
+      while (range.second >= 0) {
+          _adjustment_window_ranges.push_back(range);
+          range = WindowRange_t(std::max(range.first - static_cast<int>(gParameters.GetNonparametricAdjustmentSize()), 0), range.first - 1);
+      }
+      std::reverse(_adjustment_window_ranges.begin(), _adjustment_window_ranges.end());
+  }
 }
 
 /* Clears the cluster locations caches. */ 
@@ -537,8 +547,10 @@ void CSaTScanData::PostDataRead() {
         if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetProbabilityModelType() == BATCHED) {
             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
-            for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
+            for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i) {
                 gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
+                gDataSets->GetDataSet(i).setBatchData_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
+            }
         }
         if (gParameters.UseMetaLocationsFile())
 			gDataSets->assignMetaData(gDataSets->getDataSets());

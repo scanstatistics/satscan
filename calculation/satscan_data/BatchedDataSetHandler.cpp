@@ -89,6 +89,7 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetDataGateway(AbstractDataSetGa
                     Interface.SetMeasureAuxArray(DataSet->getMeasureData_Aux().GetArray());
                     Interface.SetMeasureAux2Array(DataSet->getMeasureData_Aux2().GetArray());
                     Interface.setPositiveBatchIndexesArray(DataSet->getPositiveBatchData().GetArray());
+                    Interface.setBatchIndexesArray(DataSet->getBatchData().GetArray());
                     break;
                 case SEASONALTEMPORAL:
                 case PROSPECTIVEPURELYTEMPORAL:
@@ -98,6 +99,7 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetDataGateway(AbstractDataSetGa
                     Interface.SetPTMeasureAuxArray(DataSet->getMeasureData_PT_Aux());
                     Interface.SetPTMeasureAux2Array(DataSet->getMeasureData_PT_Aux2());
                     Interface.setPtPositiveBatchIndexesArray(DataSet->getPositiveBatchIndexes_PT());
+                    Interface.setPtBatchIndexesArray(DataSet->getBatchIndexes_PT());
                     break;
                 case SPACETIME:
                 case PROSPECTIVESPACETIME:
@@ -112,6 +114,7 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetDataGateway(AbstractDataSetGa
                         Interface.SetPTMeasureAuxArray(DataSet->getMeasureData_PT_Aux());
                         Interface.SetPTMeasureAux2Array(DataSet->getMeasureData_PT_Aux2());
                         Interface.setPtPositiveBatchIndexesArray(DataSet->getPositiveBatchIndexes_PT());
+                        Interface.setPtBatchIndexesArray(DataSet->getBatchIndexes_PT());
                     }
                     Interface.setBatchIndexesArray(DataSet->getBatchData().GetArray());
                     break;
@@ -167,6 +170,7 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetSimulationDataGateway(Abstrac
                     Interface.SetMeasureAuxArray(S_DataSet.getMeasureData_Aux().GetArray());
                     Interface.SetMeasureAux2Array(S_DataSet.getMeasureData_Aux2().GetArray());
                     Interface.setPositiveBatchIndexesArray(S_DataSet.getPositiveBatchData().GetArray());
+                    Interface.setBatchIndexesArray(R_DataSet.getBatchData().GetArray());
                     break;
                 case SEASONALTEMPORAL:
                 case PROSPECTIVEPURELYTEMPORAL:
@@ -176,6 +180,7 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetSimulationDataGateway(Abstrac
                     Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
                     Interface.SetPTMeasureAux2Array(S_DataSet.getMeasureData_PT_Aux2());
                     Interface.setPtPositiveBatchIndexesArray(S_DataSet.getPositiveBatchIndexes_PT());
+                    Interface.setPtBatchIndexesArray(R_DataSet.getBatchIndexes_PT());
                     break;
                 case SPACETIME:
                 case PROSPECTIVESPACETIME:
@@ -190,7 +195,8 @@ AbstractDataSetGateway & BatchedDataSetHandler::GetSimulationDataGateway(Abstrac
                         Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
                         Interface.SetPTMeasureAux2Array(S_DataSet.getMeasureData_PT_Aux2());
                         Interface.setPtPositiveBatchIndexesArray(S_DataSet.getPositiveBatchIndexes_PT());
-                    } 
+                        Interface.setPtBatchIndexesArray(R_DataSet.getBatchIndexes_PT());
+                    }
                     Interface.setBatchIndexesArray(R_DataSet.getBatchData().GetArray());
                     break;
                 case SPATIALVARTEMPTREND:

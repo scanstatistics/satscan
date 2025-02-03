@@ -50,10 +50,10 @@
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "10"
-#define VERSION_MINOR   "2"
-#define VERSION_RELEASE "5"
+#define VERSION_MINOR   "3"
+#define VERSION_RELEASE "0"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "September 2024"
+#define VERSION_DATE    "Not Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
@@ -108,6 +108,8 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 #define MIN_CLUSTER_LLR_REPORT 0.001
 /** interval range type */
 typedef boost::tuple<int,int,int,int>  IntervalRange_t;
+/** cluster window range type */
+typedef std::pair<int, int> WindowRange_t;
 /* DateSource types */
 enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */

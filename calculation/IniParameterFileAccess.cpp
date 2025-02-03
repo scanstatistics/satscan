@@ -939,6 +939,7 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
     try {
         WriteIniParameter(WriteFile, TIMETREND, GetParameterString(TIMETREND, s).c_str(), GetParameterComment(TIMETREND));
         WriteIniParameter(WriteFile, TIMETRENDPERC, GetParameterString(TIMETRENDPERC, s).c_str(), GetParameterComment(TIMETRENDPERC));
+        WriteIniParameter(WriteFile, TIMETRENDLENGTH, GetParameterString(TIMETRENDLENGTH, s).c_str(), GetParameterComment(TIMETRENDLENGTH));
         WriteIniParameter(WriteFile, TIME_TREND_TYPE, GetParameterString(TIME_TREND_TYPE, s).c_str(), GetParameterComment(TIME_TREND_TYPE));
         WriteIniParameter(WriteFile, ADJUST_WEEKLY_TRENDS, GetParameterString(ADJUST_WEEKLY_TRENDS, s).c_str(), GetParameterComment(ADJUST_WEEKLY_TRENDS));
         WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));

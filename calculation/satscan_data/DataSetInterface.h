@@ -50,6 +50,8 @@ class DataSetInterface {
     measure_t                ** gppMeasureAux2Array;      /** */
 
     boost::dynamic_bitset<>  ** gppBatchIndexesArray;
+    boost::dynamic_bitset<>   * gpPsBatchIndexesArray;
+    boost::dynamic_bitset<>   * gpPtBatchIndexesArray;
     boost::dynamic_bitset<>  ** gppPositiveBatchIndexesArray;
     boost::dynamic_bitset<>  * gpPsPositiveBatchIndexesArray;
     boost::dynamic_bitset<>  * gpPtPositiveBatchIndexesArray;
@@ -80,11 +82,14 @@ class DataSetInterface {
     inline measure_t                   * GetPTMeasureAux2Array() const { return gpPTMeasureAux2Array; }
 
     boost::dynamic_bitset<>           ** getBatchIndexesArray() const { return gppBatchIndexesArray; }
+    boost::dynamic_bitset<>            * getPsBatchIndexesArray() const { return gpPsBatchIndexesArray; }
+    boost::dynamic_bitset<>            * getPtBatchIndexesArray() const { return gpPtBatchIndexesArray; }
     boost::dynamic_bitset<>           ** getPositiveBatchIndexesArray() const { return gppPositiveBatchIndexesArray; }
     boost::dynamic_bitset<>            * getPsPositiveBatchIndexesArray() const { return gpPsPositiveBatchIndexesArray; }
     boost::dynamic_bitset<>            * getPtPositiveBatchIndexesArray() const { return gpPtPositiveBatchIndexesArray; }
 
-    void                                 setBatchIndexesArray(boost::dynamic_bitset<>** pp) { gppBatchIndexesArray = pp; }
+    void                                 setBatchIndexesArray(boost::dynamic_bitset<>** pp) { gppBatchIndexesArray = pp; gpPsBatchIndexesArray = pp[0]; }
+    void                                 setPtBatchIndexesArray(boost::dynamic_bitset<>* p) { gpPtBatchIndexesArray = p; }
     void                                 setPositiveBatchIndexesArray(boost::dynamic_bitset<>** pp) { gppPositiveBatchIndexesArray = pp; gpPsPositiveBatchIndexesArray = pp[0]; }
     void                                 setPtPositiveBatchIndexesArray(boost::dynamic_bitset<>* p) { gpPtPositiveBatchIndexesArray = p; }
 

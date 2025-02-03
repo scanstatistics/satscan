@@ -14,11 +14,15 @@ BatchedSpatialData::BatchedSpatialData() : SpatialData(), gtMeasureAux(0), gtMea
 
 /** class constructor */
 BatchedSpatialData::BatchedSpatialData(const DataSetInterface& Interface)
-    :SpatialData(Interface), gtMeasureAux(0), gtMeasureAux2(0), gPositiveBatches(static_cast<unsigned int>(Interface.GetTotalMeasureCount())) {}
+    :SpatialData(Interface), gtMeasureAux(0), gtMeasureAux2(0), 
+    gPositiveBatches(static_cast<unsigned int>(Interface.GetTotalMeasureCount())),
+    gBatches(static_cast<unsigned int>(Interface.GetTotalMeasureCount())) {}
 
 /** class constructor */
 BatchedSpatialData::BatchedSpatialData(const AbstractDataSetGateway& DataGateway)
-    :SpatialData(DataGateway), gtMeasureAux(0), gtMeasureAux2(0), gPositiveBatches(static_cast<unsigned int>(DataGateway.GetDataSetInterface().GetTotalMeasureCount())) {}
+    :SpatialData(DataGateway), gtMeasureAux(0), gtMeasureAux2(0), 
+    gPositiveBatches(static_cast<unsigned int>(DataGateway.GetDataSetInterface().GetTotalMeasureCount())),
+    gBatches(static_cast<unsigned int>(DataGateway.GetDataSetInterface().GetTotalMeasureCount())) {}
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
@@ -28,6 +32,7 @@ void BatchedSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractD
     gtMeasureAux += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureAuxArray()[tNeighborIndex];
     gtMeasureAux2 += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureAux2Array()[tNeighborIndex];
     gPositiveBatches |= DataGateway.GetDataSetInterface(tSetIndex).getPsPositiveBatchIndexesArray()[tNeighborIndex];
+    gBatches |= DataGateway.GetDataSetInterface(tSetIndex).getPsBatchIndexesArray()[tNeighborIndex];
 }
 
 /** Not implemeneted - throws prg_error. */
@@ -47,13 +52,13 @@ void BatchedSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double BatchedSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
+    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
-        ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(
+        batchedCalc.CalculateProbabilities(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
         );
-        if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-            return ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities);
+        return batchedCalc.getLoglikelihoodRatio(probabilities);
     } return 0.0;
 }
 
@@ -70,18 +75,19 @@ void BatchedSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rh
     gtMeasureAux = ((const BatchedSpatialData&)rhs).gtMeasureAux;
     gtMeasureAux2 = ((const BatchedSpatialData&)rhs).gtMeasureAux2;
     gPositiveBatches = ((const BatchedSpatialData&)rhs).gPositiveBatches;
+    gBatches = ((const BatchedSpatialData&)rhs).gBatches;
 }
 
 /** Calculates and returns maximizing value given accumulated cluster data. If data
     is not significant given scanning rate, negation of maximum double returned. */
 double BatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
+    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
         ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
         );
-        if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-            return ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probabilities);
+        return batchedCalc.getMaximizingValue(probabilities);
     }
     return -std::numeric_limits<double>::max();
 }
@@ -90,18 +96,19 @@ double BatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calc
 
 /** class constructor */
 BatchedTemporalData::BatchedTemporalData(): TemporalData(), 
-gtMeasureAux(0), gpMeasureAux(0), gtMeasureAux2(0), gpMeasureAux2(0), gpPositiveBatches(0){}
+gtMeasureAux(0), gpMeasureAux(0), gtMeasureAux2(0), gpMeasureAux2(0), gpPositiveBatches(0), gpBatches(0) {}
 
 /** class constructor */
 BatchedTemporalData::BatchedTemporalData(const DataSetInterface& Interface): TemporalData(Interface), 
 gtMeasureAux(0), gpMeasureAux(Interface.GetPTMeasureAuxArray()), gtMeasureAux2(0), gpMeasureAux2(Interface.GetPTMeasureAux2Array()),
-gpPositiveBatches(Interface.getPtPositiveBatchIndexesArray()) {}
+gpPositiveBatches(Interface.getPtPositiveBatchIndexesArray()), gpBatches(Interface.getPtBatchIndexesArray()) {}
 
 /** class constructor */
 BatchedTemporalData::BatchedTemporalData(const AbstractDataSetGateway& DataGateway):TemporalData(DataGateway.GetDataSetInterface()), 
 gtMeasureAux(0), gpMeasureAux(DataGateway.GetDataSetInterface().GetPTMeasureAuxArray()), 
 gtMeasureAux2(0), gpMeasureAux2(DataGateway.GetDataSetInterface().GetPTMeasureAux2Array()),
-gpPositiveBatches(DataGateway.GetDataSetInterface().getPtPositiveBatchIndexesArray()){}
+gpPositiveBatches(DataGateway.GetDataSetInterface().getPtPositiveBatchIndexesArray()),
+gpBatches(DataGateway.GetDataSetInterface().getPtBatchIndexesArray()) {}
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
@@ -123,6 +130,7 @@ void BatchedTemporalData::CopyEssentialClassMembers(const AbstractClusterData& r
     gtMeasureAux = ((const BatchedTemporalData&)rhs).gtMeasureAux;
     gtMeasureAux2 = ((const BatchedTemporalData&)rhs).gtMeasureAux2;
     gPositiveBatches = ((const BatchedTemporalData&)rhs).gPositiveBatches;
+    gBatches = ((const BatchedTemporalData&)rhs).gBatches;
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers.
@@ -184,6 +192,7 @@ BatchedProspectiveSpatialData::~BatchedProspectiveSpatialData() {
         delete[] gpMeasureAux;
         delete[] gpMeasureAux2;
         delete[] gpPositiveBatches;
+        delete[] gpBatches;
     } catch (...) {}
 }
 
@@ -197,6 +206,7 @@ void BatchedProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, cons
     measure_t** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
     measure_t** ppMeasureAux2 = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAux2Array();
     BatchIndexes_t** ppPositiveBatch = DataGateway.GetDataSetInterface(tSetIndex).getPositiveBatchIndexesArray();
+    BatchIndexes_t** ppBatch = DataGateway.GetDataSetInterface(tSetIndex).getBatchIndexesArray();
 
     //set cases for entire period added by this neighbor
     gpCases[0] += ppCases[0][tNeighborIndex];
@@ -204,12 +214,14 @@ void BatchedProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, cons
     gpMeasureAux[0] += ppMeasureAux[0][tNeighborIndex];
     gpMeasureAux2[0] += ppMeasureAux2[0][tNeighborIndex];
     gpPositiveBatches[0] |= ppPositiveBatch[0][tNeighborIndex];
+    gpBatches[0] |= ppBatch[0][tNeighborIndex];
     for (j = 1, i = giProspectiveStart; i < giNumTimeIntervals; ++j, ++i) {
         gpCases[j] += ppCases[i][tNeighborIndex];
         gpMeasure[j] += ppMeasure[i][tNeighborIndex];
         gpMeasureAux[j] += ppMeasureAux[i][tNeighborIndex];
         gpMeasureAux2[j] += ppMeasureAux2[i][tNeighborIndex];
         gpPositiveBatches[j] |= ppPositiveBatch[i][tNeighborIndex];
+        gpBatches[j] |= ppBatch[i][tNeighborIndex];
     }
 }
 
@@ -226,7 +238,7 @@ void BatchedProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rh
     loglikelihood ratio as calculated by probability model. */
 double BatchedProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
     assert(geEvaluationAssistDataStatus == Allocated);
-    double dMaxLoglikelihoodRatio = 0;
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
     ProbabilitiesAOI probabilities;
 
     gtCases = gpCases[0];
@@ -234,28 +246,14 @@ double BatchedProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikeli
     gtMeasureAux = gpMeasureAux[0];
     gtMeasureAux2 = gpMeasureAux2[0];
     gPositiveBatches = gpPositiveBatches[0];
-    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
-        ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(
+    gBatches = gpBatches[0];
+    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+        ProbabilitiesAOI probabilities;
+        batchedCalc.CalculateProbabilities(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
         );
-        if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-            dMaxLoglikelihoodRatio = ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities);
-    }
-    for (unsigned int iWindowEnd = 1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
-        gtCases = gpCases[0] - gpCases[iWindowEnd];
-        gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
-        gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-        gtMeasureAux2 = gpMeasureAux2[0] - gpMeasureAux2[iWindowEnd];
-        gPositiveBatches = gpPositiveBatches[0] - gpPositiveBatches[iWindowEnd];
-        if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
-            ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilities(
-                probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
-            );
-            if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-                dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, ((BatchedLikelihoodCalculator&)Calculator).getLoglikelihoodRatio(probabilities));
-        }
-    }
-    return dMaxLoglikelihoodRatio;
+        return batchedCalc.getLoglikelihoodRatio(probabilities);
+    } return 0.0;
 }
 
 /** Calculates and returns maximizing value given accumulated cluster data. If data
@@ -263,6 +261,7 @@ double BatchedProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikeli
 double BatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
     assert(geEvaluationAssistDataStatus == Allocated);
     double dMaxValue(-std::numeric_limits<double>::max());
+    BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
     ProbabilitiesAOI probabilities;
 
     gtCases = gpCases[0];
@@ -270,26 +269,13 @@ double BatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcu
     gtMeasureAux = gpMeasureAux[0];
     gtMeasureAux2 = gpMeasureAux2[0];
     gPositiveBatches = gpPositiveBatches[0];
-    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
+    gBatches = gpBatches[0];
+    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+        ProbabilitiesAOI probabilities;
         ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
         );
-        if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-            dMaxValue = ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probabilities);
-    }
-    for (unsigned int iWindowEnd = 1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
-        gtCases = gpCases[0] - gpCases[iWindowEnd];
-        gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
-        gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
-        gtMeasureAux2 = gpMeasureAux2[0] - gpMeasureAux2[iWindowEnd];
-        gPositiveBatches = gpPositiveBatches[0] - gpPositiveBatches[iWindowEnd];
-        if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, gtMeasure)) {
-            ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(
-                probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
-            );
-            if (((BatchedLikelihoodCalculator&)Calculator).isScanArea(probabilities, gtCases))
-                dMaxValue = std::max(dMaxValue, ((BatchedLikelihoodCalculator&)Calculator).getMaximizingValue(probabilities));
-        }
+        return batchedCalc.getMaximizingValue(probabilities);
     }
     return dMaxValue;
 }
@@ -309,6 +295,7 @@ void BatchedProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
         delete[] gpMeasureAux; gpMeasureAux = 0;
         delete[] gpMeasureAux2; gpMeasureAux2 = 0;
         delete[] gpPositiveBatches; gpPositiveBatches = 0;
+        delete[] gpBatches; gpBatches = 0;
         giAllocationSize = 0;
         geEvaluationAssistDataStatus = Deallocated;
     }
@@ -323,12 +310,15 @@ void BatchedProspectiveSpatialData::InitializeData() {
     gtMeasureAux = 0;
     gtMeasureAux2 = 0;
     gPositiveBatches.reset();
+    gBatches.reset();
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
     memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
     memset(gpMeasureAux2, 0, sizeof(measure_t) * giAllocationSize);
-    for (size_t t = 0; t < giAllocationSize; ++t)
+    for (size_t t = 0; t < giAllocationSize; ++t) {
         gpPositiveBatches[t].reset();
+        gpBatches[t].reset();
+    }
 }
 
 /** overloaded assignement operator */
@@ -338,6 +328,7 @@ BatchedProspectiveSpatialData& BatchedProspectiveSpatialData::operator=(const Ba
     gtMeasureAux = rhs.gtMeasureAux;
     gtMeasureAux2 = rhs.gtMeasureAux2;
     gPositiveBatches = rhs.gPositiveBatches;
+    gBatches = rhs.gBatches;
 
     giAllocationSize = rhs.giAllocationSize;
     giNumTimeIntervals = rhs.giNumTimeIntervals;
@@ -348,18 +339,22 @@ BatchedProspectiveSpatialData& BatchedProspectiveSpatialData::operator=(const Ba
         if (!gpMeasureAux) gpMeasureAux = new measure_t[rhs.giAllocationSize];
         if (!gpMeasureAux2) gpMeasureAux2 = new measure_t[rhs.giAllocationSize];
         if (!gpPositiveBatches) gpPositiveBatches = new BatchIndexes_t[rhs.giAllocationSize];
+        if (!gpBatches) gpBatches = new BatchIndexes_t[rhs.giAllocationSize];
         memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
         memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
         memcpy(gpMeasureAux, rhs.gpMeasureAux, giAllocationSize * sizeof(measure_t));
         memcpy(gpMeasureAux2, rhs.gpMeasureAux2, giAllocationSize * sizeof(measure_t));
-        for (size_t t = 0; t < giAllocationSize; ++t)
+        for (size_t t = 0; t < giAllocationSize; ++t) {
             gpPositiveBatches[t] = rhs.gpPositiveBatches[t];
+            gpBatches[t] = rhs.gpBatches[t];
+        }
     } else {
         delete[] gpCases; gpCases = 0;
         delete[] gpMeasure; gpMeasure = 0;
         delete[] gpMeasureAux; gpMeasureAux = 0;
         delete[] gpMeasureAux2; gpMeasureAux2 = 0;
         delete[] gpPositiveBatches; gpPositiveBatches = 0;
+        delete[] gpBatches; gpBatches = 0;
     }
     geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
     return *this;
@@ -369,6 +364,11 @@ BatchedProspectiveSpatialData& BatchedProspectiveSpatialData::operator=(const Ba
 void BatchedProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterface& Interface) {
     try {
         giAllocationSize = 1 + Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex();
+        // The allocation size used to be more than one when we had the 'adjustment for earlier analyses'
+        // with prospective scans. This feature was removed many versions ago, so this cluster object
+        // should only ever have an allocation size of one. Just hedge on the possiblity that that feature
+        // comes back, all the *ProspectiveSpatialData classes are left being derived from a *TemporalData class.
+        assert(giAllocationSize == 1);
         giNumTimeIntervals = Data.GetNumTimeIntervals();
         giProspectiveStart = Data.GetProspectiveStartIndex();
         gpCases = new count_t[giAllocationSize];
@@ -381,16 +381,18 @@ void BatchedProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSe
         memset(gpMeasureAux2, 0, sizeof(measure_t) * giAllocationSize);
         boost::dynamic_bitset<> bset(static_cast<unsigned int>(Interface.GetTotalMeasureCount()));
         gpPositiveBatches = new BatchIndexes_t[giAllocationSize];
+        gpBatches = new BatchIndexes_t[giAllocationSize];
         for (size_t t = 0; t < giAllocationSize; ++t) {
             gpPositiveBatches[t] = bset;
+            gpBatches[t] = bset;
         }
-
     } catch (prg_exception& x) {
         delete[] gpCases;
         delete[] gpMeasure;
         delete[] gpMeasureAux;
         delete[] gpMeasureAux2;
         delete[] gpPositiveBatches;
+        delete[] gpBatches;
         x.addTrace("Setup(const CSaTScanData&, const DataSetInterface&)", "BatchedProspectiveSpatialData");
         throw;
     }
@@ -400,7 +402,7 @@ void BatchedProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSe
 
 /** class constructor */
 BatchedSpaceTimeData::BatchedSpaceTimeData(const DataSetInterface& Interface)
-    :BatchedTemporalData(), geEvaluationAssistDataStatus(Allocated), gpBatches(0){
+    :BatchedTemporalData(), geEvaluationAssistDataStatus(Allocated){
     try {
         Setup(Interface);
     } catch (prg_exception& x) {
@@ -411,7 +413,7 @@ BatchedSpaceTimeData::BatchedSpaceTimeData(const DataSetInterface& Interface)
 
 /** constructor */
 BatchedSpaceTimeData::BatchedSpaceTimeData(const AbstractDataSetGateway& DataGateway): 
-    BatchedTemporalData(), geEvaluationAssistDataStatus(Allocated), _start_index(0), gpBatches(0) {
+    BatchedTemporalData(), geEvaluationAssistDataStatus(Allocated), _start_index(0) {
     try {
         Setup(DataGateway.GetDataSetInterface());
     } catch (prg_exception& x) {
@@ -422,7 +424,7 @@ BatchedSpaceTimeData::BatchedSpaceTimeData(const AbstractDataSetGateway& DataGat
 
 /** class copy constructor */
 BatchedSpaceTimeData::BatchedSpaceTimeData(const BatchedSpaceTimeData& rhs): 
-    BatchedTemporalData(), _start_index(0), gpBatches(0) {
+    BatchedTemporalData(), _start_index(0) {
     try {
         *this = rhs;
     } catch (prg_exception& x) {

@@ -41,6 +41,8 @@ void DataSetInterface::Init() {
   _randomizer=0;
 
   gppBatchIndexesArray = 0;
+  gpPsBatchIndexesArray = 0;
+  gpPtBatchIndexesArray = 0;
   gppPositiveBatchIndexesArray = 0;
   gpPsPositiveBatchIndexesArray = 0;
   gpPtPositiveBatchIndexesArray = 0;
