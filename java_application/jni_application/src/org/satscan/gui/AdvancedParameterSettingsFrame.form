@@ -2093,7 +2093,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="94" max="32767" attributes="0"/>
+                      <EmptySpace pref="90" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2123,18 +2123,26 @@
                                       <Component id="_temporalTrendAdjLogLinearCalc" alignment="0" max="32767" attributes="0"/>
                                       <Component id="_temporalTrendAdjNone" alignment="0" max="32767" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_temporalTrendAdjLogLinear" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                              <Component id="_temporalTrendAdjNonparametric" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="_temporalTrendAdjLogLinear" alignment="0" max="32767" attributes="0"/>
+                                          </Group>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_logLinearTextField" min="-2" pref="70" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="_nonparametric_length" max="32767" attributes="0"/>
+                                              <Component id="_logLinearTextField" pref="70" max="32767" attributes="0"/>
+                                          </Group>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_logLinearLabel" max="32767" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_logLinearLabel" alignment="0" max="32767" attributes="0"/>
+                                              <Component id="_nonparametric_label" max="32767" attributes="0"/>
+                                          </Group>
                                       </Group>
-                                      <Component id="_temporalTrendAdjNonparametric" alignment="0" pref="628" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_temporalTrendAdjQuadCalc" max="32767" attributes="0"/>
+                                  <Component id="_temporalTrendAdjQuadCalc" pref="673" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -2147,7 +2155,11 @@
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="_temporalTrendAdjNone" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_temporalTrendAdjNonparametric" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_temporalTrendAdjNonparametric" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_nonparametric_length" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_nonparametric_label" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -2270,6 +2282,19 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjQuadCalc.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSetDefaultsButton();&#xa;        enableSettingsForAnalysisModelCombination();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_nonparametric_length">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_nonparametric_length.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_nonparametric_length.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _nonparametric_length.setText(&quot;1&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_nonparametric_length.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_nonparametric_length, e, 10);&#xa;    }&#xa;});&#xa;_nonparametric_length.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_nonparametric_label">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="adjustment length (in time aggregation units)"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

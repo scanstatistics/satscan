@@ -801,6 +801,13 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
             // Validate the risk thresholds by probability model.
             switch (gParameters.GetProbabilityModelType()) {
             case BATCHED:
+                if (gParameters.getNumFileSets() > 1) {
+                    bValid = false;
+                    PrintDirection.Printf(
+                        "%s:\nThe option to limit clusters by risk level is not implemented for\nthe %s model and multiple data sets.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
+                    );
+                }
             case EXPONENTIAL:
             case SPACETIMEPERMUTATION:
             case POISSON:
@@ -1028,8 +1035,10 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
     //Maximum temporal cluster size parameters not used for these analyses.
     if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       return true;
-    // Lower the maximum temporal cluster size for space-time permutation, purely temporal analyses, or any spatial adjusment; 
-    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED)
+    // Lower the maximum temporal cluster size for space-time permutation, purely temporal analyses, or any spatial adjustment; 
+    if (gParameters.GetProbabilityModelType() == BATCHED)
+        absoluteMaximum = 100;
+    else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED)
         absoluteMaximum = 50.0;
     if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
       //validate for maximum specified as percentage of study period
@@ -1043,7 +1052,7 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
       //check maximum temporal cluster size(as percentage of population) is less than maximum for user settings
       if (gParameters.GetMaximumTemporalClusterSize() > absoluteMaximum) {
         PrintDirection.Printf(
-            "%s:\nThe maximum temporal cluster size as a percent of the study period is %g percent.\n", 
+            "%s:\nThe maximum temporal cluster size as a percent of the study period is %g percent for current settings.\n", 
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, absoluteMaximum
         );
         return false;
@@ -2084,14 +2093,25 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                     bValid = false;
                     PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is valid "
                         "only for space-time analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-                } else if (gParameters.GetProbabilityModelType() == BATCHED && (
-                        gParameters.GetNonparametricAdjustmentSize() == 0 ||
-                        gParameters.GetNonparametricAdjustmentSize() % gParameters.GetTimeAggregationLength() != 0
-                    )) {
-                    // Adjustment length is always in the same units as the time aggregation and a multiple of time aggregation length.
-                    bValid = false;
-                    PrintDirection.Printf("%s:\nThe Batched model requires the nonparametric temporal trends adjustment length\n"
-                        "to be a multiple of the time aggregation length.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                } else if (gParameters.GetProbabilityModelType() == BATCHED) {
+                    if (gParameters.GetNonparametricAdjustmentSize() == 0 ||
+                        gParameters.GetNonparametricAdjustmentSize() % gParameters.GetTimeAggregationLength() != 0) {
+                        // Adjustment length is always in the same units as the time aggregation and a multiple of time aggregation length.
+                        bValid = false;
+                        PrintDirection.Printf("%s:\nThe Batched model requires the nonparametric temporal trends adjustment length\n"
+                            "to be a multiple of the time aggregation length.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                    }
+                    double dStudyPeriodLengthInUnits = std::ceil(CalculateNumberOfTimeIntervals(
+                        DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                        DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                        gParameters.GetTimeAggregationUnitsType(), 1)
+                    );
+                    if (gParameters.GetNonparametricAdjustmentSize() > static_cast<unsigned int>(std::floor(dStudyPeriodLengthInUnits * 0.5))) {
+                        bValid = false;
+                        PrintDirection.Printf("%s:\nThe nonparametric temporal trends adjustment length is required\n"
+                            "to be no greater than 50% of study period length (%u maximum).\n", 
+                            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, static_cast<unsigned int>(std::floor(dStudyPeriodLengthInUnits * 0.5)));
+                    }
                 }
             } else {
                 bValid = false;

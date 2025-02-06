@@ -11,16 +11,17 @@
 BatchedLikelihoodCalculator::BatchedLikelihoodCalculator(const CSaTScanData& Data):AbstractLikelihoodCalculator(Data) {
     // Calculate the log-likelihoods for each data set under the null.
     if (Data.GetParameters().GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
+        _probabilities_cache.resize(Data.GetDataSetHandler().GetNumDataSets());
         // we need the probability and log-likelihood by adjustment range
         if (Data.GetParameters().isTimeStratifiedWithLargerAdjustmentLength()) {
             _log_likelihoods_by_range.reset(new TwoDimensionArrayHandler<std::pair<double, double>>(
                 Data.GetDataSetHandler().GetNumDataSets(), Data.getTimeStratifiedTemporalAdjustmentWindows().size()
             ));
-            _probabilities_cache.resize(Data.GetDataSetHandler().GetNumDataSets());
-        } else // we need the probability and log-likelihood by time interval
+        } else {// we need the probability and log-likelihood by time interval
             _log_likelihoods_by_time.reset(new TwoDimensionArrayHandler<std::pair<double, double>>(
                 Data.GetDataSetHandler().GetNumDataSets(), Data.GetNumTimeIntervals() + 1
             ));
+        }
     }
     for (size_t t = 0; t < Data.GetDataSetHandler().GetNumDataSets(); ++t) {
         const auto& dataset = Data.GetDataSetHandler().GetDataSet(t);
@@ -304,22 +305,33 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilities(Probabilit
    Sc = sum of the trap sizes for positive batches
    Sn = sum of the trap sizes for negative batches
 */
-ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesByTimeInterval(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
+ProbabilitiesRange_t& BatchedLikelihoodCalculator::CalculateProbabilitiesByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
+    // First check cache for already calculated probability for this interval.
+    auto& probabilitiesCache = _probabilities_cache[tSetIndex];
+    ProbabilitiesCache_t::iterator cachedProbability = probabilitiesCache.find(WindowRange_t(interval, interval));
+    if (cachedProbability != probabilitiesCache.end()) {
+        probabilities = cachedProbability->second;
+        return probabilities;
+    }
+    // Calculate probabilities.
+    probabilities = ProbabilitiesRange_t(new ProbabilitiesRange());
     double C = n; // number of positive batches
     double N = u; // number of batches
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
-    probabilities._pinside = probabilityPositive(C, N, Sc, Sn, randomizer->getPositiveBatches(probabilities._positive_batches, positiveBatchIndexes));
-    probabilities._sn_inside = Sn;
+    probabilities->_paoi._pinside = probabilityPositive(C, N, Sc, Sn, randomizer->getPositiveBatches(probabilities->_paoi._positive_batches, positiveBatchIndexes));
+    probabilities->_paoi._sn_inside = Sn;
     boost::dynamic_bitset<> positiveBatchIndexesOutside = positiveBatchIndexes;
     // We need totals by time interval
     auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
-    probabilities._sn_outside = (dataset.getMeasureData_PT_Aux()[interval] - dataset.getMeasureData_PT_Aux()[interval + 1]) - Sn;
-    probabilities._poutside = probabilityPositive(
+    probabilities->_paoi._sn_outside = (dataset.getMeasureData_PT_Aux()[interval] - dataset.getMeasureData_PT_Aux()[interval + 1]) - Sn;
+    probabilities->_paoi._poutside = probabilityPositive(
         dataset.getCaseData_PT_NC()[interval] - C, dataset.getMeasureData_PT_NC()[interval] - N,
         (dataset.getMeasureData_PT_Aux2()[interval] - dataset.getMeasureData_PT_Aux2()[interval + 1]) - Sc,
-        probabilities._sn_outside,
-        randomizer->getPositiveBatchesForInterval(probabilities._positive_batches_outside, positiveBatchIndexesOutside.flip()/* flip to become outside */, interval)
+        probabilities->_paoi._sn_outside,
+        randomizer->getPositiveBatchesForInterval(probabilities->_paoi._positive_batches_outside, positiveBatchIndexesOutside.flip()/* flip to become outside */, interval)
     );
+    // Insert probability into cache.
+    probabilitiesCache.insert(std::make_pair(WindowRange_t(interval, interval), probabilities));
     return probabilities;
 }
 
@@ -568,50 +580,6 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
     }
 }
 
-/** Returns whether ProbabilitiesAOI meets the scanning area requested. */
-bool BatchedLikelihoodCalculator::isScanArea(const ProbabilitiesAOI& probabilities, count_t nCases) const {
-    switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
-        case LOW: return probabilities._pinside < probabilities._poutside;
-        case HIGHANDLOW:
-            // When scanning for both high and low rates simultaneously, we can't shortcut minimum number
-            // of cases w/o calculating the probabilities inside and outside - which then tells us if it's
-            // a high or low rate cluster.
-            if (probabilities._pinside < probabilities._poutside)
-                return nCases >= _min_low_rate_cases;
-            if (probabilities._pinside > probabilities._poutside)
-                return nCases >= _min_high_rate_cases;
-            return false;
-        case HIGH:
-        default: return probabilities._pinside > probabilities._poutside;
-    }
-}
-
-/** Returns whether the clustering meets the scanning area requested. 
-    This function is intended for space-time clusters while performing time-stratified adjustment. */
-bool BatchedLikelihoodCalculator::isScanArea(measure_t positiveCases, const boost::dynamic_bitset<>& batchIndexes, size_t tSetIndex) const {
-    //const auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
-    const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(tSetIndex));
-    double clusterExpected, Sk = 0.0;
-    BatchedRandomizer::BatchEntryContainer_t batches;
-    for (const auto& be : randomizer->getBatchesInSet(batches, batchIndexes))
-        Sk += std::pow(1.0 - getProbabilityForInterval(be.get<2>(), tSetIndex), be.get<1>());
-    clusterExpected = static_cast<double>(batches.size()) - Sk;
-    switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
-        case LOW: return positiveCases < clusterExpected;
-        // When scanning for both high and low rates simultaneously, we can't shortcut minimum number
-        // of cases w/o calculating the expected number of cases - which then tells us if it's
-        // a high or low rate cluster.
-        case HIGHANDLOW: 
-            if (positiveCases < clusterExpected)
-                return positiveCases >= _min_low_rate_cases;
-            if (positiveCases > clusterExpected)
-                return positiveCases >= _min_high_rate_cases;
-            return false;
-        case HIGH:
-        default: return positiveCases > clusterExpected;
-    }
-}
-
 /** Returns loglikelihood ratio given probabilities in area of interest. */
 double BatchedLikelihoodCalculator::getLoglikelihoodRatio(ProbabilitiesAOI& probabilities, size_t tSetIndex) const {
     return LL(1 - probabilities._pinside, probabilities._sn_inside, probabilities._positive_batches)
@@ -620,10 +588,11 @@ double BatchedLikelihoodCalculator::getLoglikelihoodRatio(ProbabilitiesAOI& prob
 }
 
 /** Returns loglikelihood ratio given probabilities in area of interest, for time interval. */
-double BatchedLikelihoodCalculator::getLoglikelihoodRatioForInterval(ProbabilitiesAOI& probabilities, int interval, size_t tSetIndex) const {
-    return LL(1 - probabilities._pinside, probabilities._sn_inside, probabilities._positive_batches)
-        + LL(1 - probabilities._poutside, probabilities._sn_outside, probabilities._positive_batches_outside)
-        - _log_likelihoods_by_time->GetArray()[tSetIndex][interval].second;
+double BatchedLikelihoodCalculator::getLoglikelihoodRatioForInterval(ProbabilitiesRange& probabilities, int interval, size_t tSetIndex) const {
+    if (probabilities.llrIsSet()) return probabilities._llr;
+    return (probabilities._llr = (LL(1 - probabilities._paoi._pinside, probabilities._paoi._sn_inside, probabilities._paoi._positive_batches)
+        + LL(1 - probabilities._paoi._poutside, probabilities._paoi._sn_outside, probabilities._paoi._positive_batches_outside)
+        - _log_likelihoods_by_time->GetArray()[tSetIndex][interval].second));
 }
 
 /** Returns loglikelihood ratio given probabilities in area of interest, for time range. */
@@ -716,22 +685,33 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulati
    Sc = sum of the trap sizes for positive batches
    Sn = sum of the trap sizes for negative batches
 */
-ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulationByTimeInterval(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
+ProbabilitiesRange_t& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulationByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
+    // First check cache for already calculated probability for this interval.
+    auto& probabilitiesCache = _probabilities_cache[tSetIndex];
+    ProbabilitiesCache_t::iterator cachedProbability = probabilitiesCache.find(WindowRange_t(interval, interval));
+    if (cachedProbability != probabilitiesCache.end()) {
+        probabilities = cachedProbability->second;
+        return probabilities;
+    }
+    // Calculate probabilities.
+    probabilities = ProbabilitiesRange_t(new ProbabilitiesRange());
     double C = n; // number of positive batches
     double N = u; // number of batches
     // Retrieve the randomizer for this simulation and data set, we need to obtain totals and batch information.
     const BatchedRandomizer* randomizer = dynamic_cast<const BatchedRandomizer*>(_randomizer_container->at(tSetIndex));
     boost::dynamic_bitset<> positiveBatchIndexesOutside = randomizer->getPositiveIndexesOfRandomization() - positiveBatchIndexes;
-    probabilities._sn_outside = randomizer->getSumNegativeBatchesByTime()[interval] - Sn;
+    probabilities->_paoi._sn_outside = randomizer->getSumNegativeBatchesByTime()[interval] - Sn;
     auto& dataset = gDataHub.GetDataSetHandler().GetDataSet(tSetIndex);
-    probabilities._poutside = probabilityPositive(
+    probabilities->_paoi._poutside = probabilityPositive(
         dataset.getCaseData_PT_NC()[interval] - C, dataset.getMeasureData_PT_NC()[interval] - N,
-        randomizer->getSumPositiveBatchesByTime()[interval] - Sc, probabilities._sn_outside,
-        randomizer->getBatchesInSetForInterval(probabilities._positive_batches_outside, positiveBatchIndexesOutside, interval)
+        randomizer->getSumPositiveBatchesByTime()[interval] - Sc, probabilities->_paoi._sn_outside,
+        randomizer->getBatchesInSetForInterval(probabilities->_paoi._positive_batches_outside, positiveBatchIndexesOutside, interval)
     );
     // positiveBatchIndexes should already be limited to the time interval of interest for this cluster
-    probabilities._pinside = probabilityPositive(C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities._positive_batches, positiveBatchIndexes));
-    probabilities._sn_inside = Sn;
+    probabilities->_paoi._pinside = probabilityPositive(C, N, Sc, Sn, randomizer->getBatchesInSet(probabilities->_paoi._positive_batches, positiveBatchIndexes));
+    probabilities->_paoi._sn_inside = Sn;
+    // Insert probability into cache.
+    probabilitiesCache.insert(std::make_pair(WindowRange_t(interval, interval), probabilities));
     return probabilities;
 }
 

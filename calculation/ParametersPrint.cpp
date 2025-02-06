@@ -733,8 +733,6 @@ void ParametersPrint::PrintClusterRestrictionsParameters(FILE* fp) const {
                     settings.push_back(std::make_pair("Risk Threshold Long Survival Clusters", printString(buffer, "%g", _parameters.getRiskThresholdLowClusters())));
             } break;
         case BATCHED:
-            if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                break; // Not an available option for time stratified adjustment.
         case SPACETIMEPERMUTATION:
         case POISSON:
         case HOMOGENEOUSPOISSON:
@@ -1237,7 +1235,7 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                                           "PrintSpaceAndTimeAdjustmentsParameters()", _parameters.GetTimeTrendAdjustmentType());
             }
         }
-        if (_parameters.GetAnalysisType() != PURELYSPATIAL) {
+        if (_parameters.GetAnalysisType() != PURELYSPATIAL && (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)) {
             settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric",(_parameters.getAdjustForWeeklyTrends() ? "Yes" : "No")));
         }
         if (bPrintingSpatialAdjustment) {

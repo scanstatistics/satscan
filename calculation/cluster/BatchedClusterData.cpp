@@ -53,7 +53,7 @@ void BatchedSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     calculated by probability model. */
 double BatchedSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
-    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
         batchedCalc.CalculateProbabilities(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
@@ -82,7 +82,7 @@ void BatchedSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rh
     is not significant given scanning rate, negation of maximum double returned. */
 double BatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
-    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
         ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
@@ -247,7 +247,7 @@ double BatchedProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikeli
     gtMeasureAux2 = gpMeasureAux2[0];
     gPositiveBatches = gpPositiveBatches[0];
     gBatches = gpBatches[0];
-    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
         batchedCalc.CalculateProbabilities(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches
@@ -270,7 +270,7 @@ double BatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcu
     gtMeasureAux2 = gpMeasureAux2[0];
     gPositiveBatches = gpPositiveBatches[0];
     gBatches = gpBatches[0];
-    if ((Calculator.*Calculator.gpRateOfInterestExpected)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
+    if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
         ProbabilitiesAOI probabilities;
         ((BatchedLikelihoodCalculator&)Calculator).CalculateProbabilitiesForSimulation(
             probabilities, gtCases, gtMeasure, gtMeasureAux2, gtMeasureAux, gPositiveBatches

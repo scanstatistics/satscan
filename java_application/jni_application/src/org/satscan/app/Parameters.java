@@ -133,6 +133,7 @@ public class Parameters implements Cloneable {
     /* Temporal trend adjusment variables */
     private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
     private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
+    private int                             _nonparametric_adjustment_size=1;
     /* Input precision variables */
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
@@ -332,6 +333,7 @@ public class Parameters implements Cloneable {
         if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
         if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
         if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
+        if (_nonparametric_adjustment_size         != rhs._nonparametric_adjustment_size) return false;
         if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
         if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
         if (!gvCaseFilenames.equals(rhs.gvCaseFilenames)) return false;
@@ -804,6 +806,7 @@ public class Parameters implements Cloneable {
     public int GetTimeAggregationLength() {return glTimeAggregationLength;}
     public DatePrecisionType GetTimeAggregationUnitsType() {return geTimeAggregationUnitsType;}
     public double GetTimeTrendAdjustmentPercentage() {return gdTimeTrendAdjustPercentage;}
+    public int GetNonparametricAdjustmentSize() { return _nonparametric_adjustment_size; }
     public TimeTrendAdjustmentType GetTimeTrendAdjustmentType() {return geTimeTrendAdjustType;}
     public double GetTimeTrendConvergence() {return gdTimeTrendConverge;}
     private <T> void setSize(ArrayList<T> list, int size) {
@@ -991,6 +994,7 @@ public class Parameters implements Cloneable {
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
     }
     public void SetTimeTrendAdjustmentPercentage(double dPercentage) {gdTimeTrendAdjustPercentage = dPercentage;}
+    public void SetNonparametricAdjustmentSize(int i) { _nonparametric_adjustment_size = i; }
     public void SetTimeTrendAdjustmentType(int iOrdinal) {
         try { geTimeTrendAdjustType = TimeTrendAdjustmentType.values()[iOrdinal];
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, TimeTrendAdjustmentType.values()); }

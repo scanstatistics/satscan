@@ -58,7 +58,6 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) = 0;
         virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure) {/* nop */}
-        virtual bool isScanRate() const;
         virtual double GetLoglikelihoodRatio() const = 0;
         virtual void Reset() = 0;
         virtual const boost::dynamic_bitset<>& getUnifiedSets() const {
@@ -254,7 +253,6 @@ public:
     virtual void        AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
 
     virtual void        AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure);
-    virtual bool        isScanRate() const;
 
     virtual double      GetLoglikelihoodRatio() const;
     virtual double      GetRawLoglikelihoodRatio() const { return _llr; }

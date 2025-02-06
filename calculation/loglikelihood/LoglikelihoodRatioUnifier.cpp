@@ -8,12 +8,6 @@
 #include "SaTScanData.h"
 #include "BatchedLikelihoodCalculation.h"
 
-////////////////////////////////// AbstractLoglikelihoodRatioUnifier ////////////////////////////////
-
-bool AbstractLoglikelihoodRatioUnifier::isScanRate() const {
-    throw prg_error("isScanRate() not implementated for this class.", "AbstractLoglikelihoodRatioUnifier");
-}
-
 ////////////////////////////////// MultivariateUnifierHighRate //////////////////////////////////////
 
 /** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
@@ -346,15 +340,10 @@ void AdjustmentUnifierBatchModelTimeStratified::AdjoinRatio(AbstractLikelihoodCa
 
 /** Returns calculated loglikelihood ratio that is the sum of adjoined values. */
 double AdjustmentUnifierBatchModelTimeStratified::GetLoglikelihoodRatio() const {
-    return _llr;
-}
-
-/* Returns whether the unified log-likelihood ratio is in the scan area of interest. */
-bool AdjustmentUnifierBatchModelTimeStratified::isScanRate() const {
     switch (_scan_area) {
-        case HIGHANDLOW: return _data_stream_accumulator._sum_observed != _data_stream_accumulator._sum_expected;
-        case LOW: return _data_stream_accumulator._sum_observed < _data_stream_accumulator._sum_expected;
-        default: return _data_stream_accumulator._sum_observed > _data_stream_accumulator._sum_expected;
+        case HIGHANDLOW: return std::fabs(_llr);
+        case LOW: return _llr * -1;
+        default: return _llr;
     };
 }
 

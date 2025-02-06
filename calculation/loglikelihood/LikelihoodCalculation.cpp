@@ -13,7 +13,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
     _min_low_rate_cases(DataHub.GetParameters().getMinimumCasesLowRateClusters()), _low_risk_threshold(DataHub.GetParameters().getRiskThresholdLowClusters()),
     _min_high_rate_cases(DataHub.GetParameters().getMinimumCasesHighRateClusters()), _high_risk_threshold(DataHub.GetParameters().getRiskThresholdHighClusters()),
     gpRateOfInterest(0), gpRateOfInterestNormal(0), gpRateOfInterestUniformTime(0), _risk_function(0), _risk_multiset_function(0), _rate_of_interest_multiset(0),
-    gpRateOfInterestCount(0), gpRateOfInterestExpected(0) {
+    gpRateOfInterestBatched(0) {
 
     try {
         const CParameters& parameters = DataHub.GetParameters();
@@ -30,33 +30,27 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         if (parameters.GetProbabilityModelType() == BATCHED) {
             switch (parameters.GetExecuteScanRateType()) {
                 case LOW: 
-                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::LowRateBatchedCount;
                     if (parameters.getRiskLimitLowClusters())
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::LowRiskBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::LowRiskBatchedExpected;
                     else
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::LowRateBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::LowRateBatchedExpected;
                     break;
                 case HIGHANDLOW: 
-                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::HighOrLowRateBatchedCount;
                     if (parameters.getRiskLimitLowClusters() && parameters.getRiskLimitHighClusters())
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskOrLowRiskBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRiskOrLowRiskBatchedExpected;
                     else if (parameters.getRiskLimitLowClusters())
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRateOrLowRiskBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRateOrLowRiskBatchedExpected;
                     else if (parameters.getRiskLimitHighClusters())
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskOrLowRateBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRiskOrLowRateBatchedExpected;
                     else
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighOrLowRateBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighOrLowRateBatchedExpected;
                     break;
                 case HIGH:
                 default:
-                    if (parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-                        gpRateOfInterestCount = &AbstractLikelihoodCalculator::HighRateBatchedCount;
                     if (parameters.getRiskLimitHighClusters())
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRiskBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRiskBatchedExpected;
                     else
-                        gpRateOfInterestExpected = &AbstractLikelihoodCalculator::HighRateBatchedExpected;
+                        gpRateOfInterestBatched = &AbstractLikelihoodCalculator::HighRateBatchedExpected;
             }
         } else if (parameters.GetProbabilityModelType() == NORMAL) {
             /* The normal model is specialized. */
@@ -164,8 +158,14 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                     else
                         _rate_of_interest_multiset = &AbstractLikelihoodCalculator::HighRateMultiset;
             }
-            _risk_function = &AbstractLikelihoodCalculator::getRelativeRisk;
-            _risk_multiset_function = &AbstractLikelihoodCalculator::getRelativeRiskMultiset;
+            /* The relative risk function is dependent on the probability model since the space-time permutation, batched and exponential models do not report relative risk. */
+            if (parameters.GetProbabilityModelType() == BATCHED) {
+                _risk_function = &AbstractLikelihoodCalculator::getObservedDividedExpected;
+                _risk_multiset_function = &AbstractLikelihoodCalculator::getObservedDividedExpectedMultiset;
+            } else {
+                _risk_function = &AbstractLikelihoodCalculator::getRelativeRisk;
+                _risk_multiset_function = &AbstractLikelihoodCalculator::getRelativeRiskMultiset;
+            }
         } else {
             /* The class function pointer for scan area is dependent on whether we're restricting cluster by rate only or both rate and risk level. */
             switch (parameters.GetExecuteScanRateType()) {

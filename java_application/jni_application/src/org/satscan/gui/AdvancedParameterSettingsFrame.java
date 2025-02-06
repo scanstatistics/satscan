@@ -538,7 +538,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean enableGroup = !(
             modeltype == Parameters.ProbabilityModelType.ORDINAL ||
             modeltype == Parameters.ProbabilityModelType.CATEGORICAL ||
-            modeltype == Parameters.ProbabilityModelType.NORMAL
+            modeltype == Parameters.ProbabilityModelType.NORMAL || (
+               modeltype == Parameters.ProbabilityModelType.BATCHED && 
+               _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 1
+            )
         );
         _limit_clusters_risk_group.setEnabled(enableGroup);
         switch (_settings_window.getModelControlType()) {
@@ -546,6 +549,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _limit_high_clusters.setText("Restrict short survival clusters to observed/expected greater than or equal to:");
                 _limit_low_clusters.setText("Restrict long survival clusters to observed/expected less than or equal to:");
                 break;
+            case BATCHED:
             case SPACETIMEPERMUTATION:
                 _limit_high_clusters.setText("Restrict high rate clusters to observed/expected greater than or equal to:");
                 _limit_low_clusters.setText("Restrict low rate clusters to observed/expected less than or equal to:");
@@ -600,7 +604,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         switch (_settings_window.getAnalysisControlType()) {
             case PURELYSPATIAL:
-                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false, false);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(true, false);
                 enableWindowShapeGroup(true);
@@ -621,7 +625,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case PURELYTEMPORAL:
             case SEASONALTEMPORAL:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, false, bPoisson, bPoisson);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(false, false);
                 enableWindowShapeGroup(false);
@@ -641,7 +645,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMiscellaneousAnalysisGroup(false, false);
                 break;
             case SPACETIME:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, bPoisson, bPoisson, bPoisson);
+                enableAdjustmentForTimeTrendOptionsGroup(
+                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
+                );
                 enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
                 enableSpatialOptionsGroup(true, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
                 enableWindowShapeGroup(true);
@@ -662,7 +668,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bPoisson, bPoisson
+                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
                 enableSpatialOptionsGroup(true, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
@@ -683,7 +689,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
-                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
+                enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, false, bPoisson, bPoisson);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(false, false);
                 enableWindowShapeGroup(false);
@@ -703,7 +709,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMiscellaneousAnalysisGroup(false, true);
                 break;
             case SPATIALVARTEMPTREND:
-                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+                enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false, false);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
                 enableSpatialOptionsGroup(true, false);
                 enableTemporalOptionsGroup(false, false, false);
@@ -814,29 +820,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 unitsLabel = "units";
                 break;
         }
-        
         _minTemporalTimeUnitsLabel.setText(unitsLabel);
-        
-        switch (_settings_window.getModelControlType()) {
-            case POISSON:
-            case HOMOGENEOUSPOISSON:
-            case BERNOULLI:
-            case ORDINAL:
-            case CATEGORICAL:
-            case NORMAL:
-            case EXPONENTIAL:
-            case BATCHED:
-                // Skip for purely temporal analysis or applying spatial adjustment.
-                if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
-                    _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
-                    _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=90% of the study period)");
-                    break;
-                }
-            case SPACETIMEPERMUTATION:
-                _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 50%, default = 50%)");
-                _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<=50% of the study period)");
-                break;
+        int percentage = 50;
+        if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
+            // Skip for purely temporal analysis or applying spatial adjustment.
+            switch (_settings_window.getModelControlType()) {
+                case POISSON, HOMOGENEOUSPOISSON, BERNOULLI, ORDINAL, CATEGORICAL, NORMAL, EXPONENTIAL -> percentage = 90;
+                case BATCHED -> percentage = 100;
+                case SPACETIMEPERMUTATION -> percentage = 50;
+            }
         }
+        _percentageOfStudyPeriodLabel.setText("percent of the study period (<= " + percentage + "%, default = 50%)");
+        _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<= " + percentage + "% of the study period)");
     }
 
     public void updateCriticalValuesTextCaptions() {
@@ -962,10 +957,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.integerIs(_endRangeEndDayTextField, 31);
         bReturn &= Utils.selected(_restrictTemporalRangeCheckBox, false);
 
-        // Risk tab
+        // Adjustments tab
         bReturn &= Utils.selected(_adjustForKnownRelativeRisksCheckBox, false);
         bReturn &= Utils.textIs(_adjustmentsByRelativeRisksFileTextField, "");
         bReturn &= Utils.selected(_temporalTrendAdjNone, true);
+        bReturn &= Utils.integerIs(_nonparametric_length, 1);
         bReturn &= Utils.doubleIs(_logLinearTextField, 0.0);
         bReturn &= Utils.selected(_spatialAdjustmentsNone, true);
 
@@ -1256,6 +1252,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
         parameters.SetTimeTrendAdjustmentType(getAdjustmentTimeTrendControlType().ordinal());
         parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
+        parameters.SetNonparametricAdjustmentSize(Integer.parseInt(_nonparametric_length.getText()));
         parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());
         parameters.SetSpatialAdjustmentType(getSpatialAdjustmentType().ordinal());
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
@@ -1676,6 +1673,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The adjustment for day of week cannot be performed on a period less than 14 days.", FocusedTabSet.ANALYSIS, (Component) _adjustDayOfWeek);
             }
         }
+        
+        // For the nonparametric adjustment (time-stratified), the batched model allows the user to specify the adjustment
+        // length in values that are multiple of the aggregation units (daily data, adjustment weekly).
+        if (Utils.selected(_temporalTrendAdjNonparametric) && _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BATCHED) {
+            int aggregation_length = Integer.parseInt(_settings_window._timeAggregationLengthTextField.getText());
+            int adjustment_length = Integer.parseInt(_nonparametric_length.getText());
+            if (adjustment_length == 0 || adjustment_length % aggregation_length != 0)
+               throw new AdvFeaturesExpection(
+                    """
+                    The Batched model requires the nonparametric temporal trends adjustment length
+                    to be a multiple of the time aggregation length.""",
+                    FocusedTabSet.ANALYSIS, (Component)_nonparametric_length
+               );
+            double dStudyPeriodLengthInUnits = _settings_window.CalculateTimeAggregationUnitsInStudyPeriod();
+            if (adjustment_length > (int)Math.floor(dStudyPeriodLengthInUnits * 0.5))
+               throw new AdvFeaturesExpection(
+                    """
+                    The nonparametric temporal trends adjustment length is required
+                    to be no greater than 50% of study period length (""" + (int)Math.floor(dStudyPeriodLengthInUnits * 0.5) + " maximum).",
+                    FocusedTabSet.ANALYSIS, (Component)_nonparametric_length
+               );
+        }        
     }
 
     /* Returns the absolute maximum temporal cluster size give the current analysis settings. */
@@ -1685,9 +1704,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             analysisType == Parameters.AnalysisType.PURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
-        );        
-        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION || ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))
-            return 50.0;
+        );
+        if (ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric)) return 50.0;
+        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.BATCHED) return 100.0;
+        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) return 50.0;
         return 90.0;
     }
     
@@ -2199,12 +2219,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Utils.parseDateStringToControls("2000/12/31", _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, false);
         _restrictTemporalRangeCheckBox.setSelected(false);
 
-        // Risk tab
+        // Adjustments tab
         _adjustForKnownRelativeRisksCheckBox.setSelected(false);
         _adjustmentsByRelativeRisksFileTextField.setText("");
         setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         _spatialAdjustmentsNone.setSelected(true);
         _logLinearTextField.setText("0");
+        _nonparametric_length.setText("1");
         _adjustDayOfWeek.setSelected(false);
 
         // Power Evaluations tab
@@ -2440,7 +2461,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the temporal time trend adjustment control group
      */
-    private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bNonparametric, boolean bLogYearPercentage, boolean bCalculatedLog) {
+    private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bNonparametric, boolean bNonparametricSize, boolean bLogYearPercentage, boolean bCalculatedLog) {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
 
         // trump control enables
@@ -2453,6 +2474,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!bNonparametric && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.TEMPORAL_STRATIFIED_RANDOMIZATION) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
+        _nonparametric_length.setEnabled(bNonparametric && bNonparametricSize);
+        _nonparametric_label.setEnabled(bNonparametric);
 
         _temporalTrendAdjLogLinear.setEnabled(bLogYearPercentage);
         _logLinearLabel.setEnabled(bLogYearPercentage);
@@ -2703,6 +2726,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Space-Time Adjustments tab
         setTemporalTrendAdjustmentControl(parameters.GetTimeTrendAdjustmentType());
         _logLinearTextField.setText(parameters.GetTimeTrendAdjustmentPercentage() <= -100 ? "0" : Double.toString(parameters.GetTimeTrendAdjustmentPercentage()));
+        _nonparametric_length.setText(Integer.toString(parameters.GetNonparametricAdjustmentSize()));
         _adjustDayOfWeek.setSelected(parameters.getAdjustForWeeklyTrends());
         setSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
         _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
@@ -3125,6 +3149,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _logLinearTextField = new javax.swing.JTextField();
         _logLinearLabel = new javax.swing.JLabel();
         _temporalTrendAdjQuadCalc = new javax.swing.JRadioButton();
+        _nonparametric_length = new javax.swing.JTextField();
+        _nonparametric_label = new javax.swing.JLabel();
         _spatialAdjustmentsGroup = new javax.swing.JPanel();
         _spatialAdjustmentsNone = new javax.swing.JRadioButton();
         _spatialAdjustmentsNonparametric = new javax.swing.JRadioButton();
@@ -4899,6 +4925,27 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _nonparametric_length.setText("1");
+            _nonparametric_length.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    while (_nonparametric_length.getText().length() == 0)
+                    if (undo.canUndo()) undo.undo(); else _nonparametric_length.setText("1");
+                    enableSetDefaultsButton();
+                }
+            });
+            _nonparametric_length.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_nonparametric_length, e, 10);
+                }
+            });
+            _nonparametric_length.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+
+            _nonparametric_label.setText("adjustment length (in time aggregation units)");
+
             javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
             _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
             _temporalTrendAdjGroupLayout.setHorizontalGroup(
@@ -4911,15 +4958,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                 .addComponent(_temporalTrendAdjLogLinearCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(_temporalTrendAdjNone, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                                    .addComponent(_temporalTrendAdjLogLinear)
+                                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(_temporalTrendAdjLogLinear, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(_nonparametric_length)
+                                        .addComponent(_logLinearTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE))
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addComponent(_temporalTrendAdjNonparametric, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
+                                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(_nonparametric_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                             .addGap(2, 2, 2))
                         .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
-                            .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
                             .addContainerGap())))
             );
             _temporalTrendAdjGroupLayout.setVerticalGroup(
@@ -4928,7 +4980,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_temporalTrendAdjNone)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                    .addComponent(_temporalTrendAdjNonparametric)
+                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_temporalTrendAdjNonparametric)
+                        .addComponent(_nonparametric_length, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_nonparametric_label))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_temporalTrendAdjLogLinear)
@@ -5097,7 +5152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(94, Short.MAX_VALUE))
+                    .addContainerGap(90, Short.MAX_VALUE))
             );
 
             _adjustDayOfWeek.getAccessibleContext().setAccessibleName("Adjust for day of week");
@@ -7138,6 +7193,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _network_tab;
     private java.awt.Choice _nonCompactnessPenaltyComboBox;
     private javax.swing.JLabel _nonCompactnessPenaltyLabel;
+    private javax.swing.JLabel _nonparametric_label;
+    private javax.swing.JTextField _nonparametric_length;
     private javax.swing.JPanel _notificatons_tab;
     private javax.swing.JTextField _numIterativeScansTextField;
     private javax.swing.JTextField _numMostLikelyClustersGraph;

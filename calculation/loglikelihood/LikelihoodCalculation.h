@@ -45,8 +45,7 @@ class AbstractLikelihoodCalculator {
 
     SCANRATE_FUNCPTR                    gpRateOfInterest;
     SCANRATETIMESTRATIFIED_FUNCPTR      gpRateOfInterestTimeStratified;
-    SCANRATEBATCHED_FUNCPTR             gpRateOfInterestCount;
-    SCANRATEBATCHED_FUNCPTR             gpRateOfInterestExpected;
+    SCANRATEBATCHED_FUNCPTR             gpRateOfInterestBatched;
     SCANRATENORMAL_FUNCPTR              gpRateOfInterestNormal;
     SCANRATEUNIFORMTIME_FUNCPTR         gpRateOfInterestUniformTime;
     SCANRATEMULTISET_FUNCPTR            _rate_of_interest_multiset;
@@ -119,10 +118,6 @@ class AbstractLikelihoodCalculator {
     bool                                MultivariateHighOrLowRateMultiset(const AbstractLoglikelihoodRatioUnifier& unifier, bool nonparametric) const;
 
     /* Cluster evaluation functions specific to the Batched model.*/
-    inline bool                         HighRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const;
-    inline bool                         LowRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const;
-    inline bool                         HighOrLowRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const;
-
     inline bool                         HighRateBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const;
     inline bool                         HighRiskBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const;
     inline bool                         LowRateBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const;
@@ -460,11 +455,6 @@ inline bool AbstractLikelihoodCalculator::HighRateDataStream(count_t nCases, mea
 }
 
 /** Returns whether an area has the minimum number of cases for a low rate clustering within a single dataset. */
-inline bool AbstractLikelihoodCalculator::LowRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const {
-    return totalBatches > 0.0 && positiveBatches >= _min_low_rate_cases;
-}
-
-/** Returns whether an area has the minimum number of cases for a low rate clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::LowRateBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const {
     // First check whether this cluster contains the minimum number of cases for a high rate cluster.
     if (expectedPositive == 0.0 || positiveBatches < _min_high_rate_cases) return false;
@@ -478,11 +468,6 @@ inline bool AbstractLikelihoodCalculator::LowRiskBatchedExpected(count_t positiv
 }
 
 /** Returns whether an area has the minimum number of cases for a high rate clustering within a single dataset. */
-inline bool AbstractLikelihoodCalculator::HighRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const {
-    return totalBatches > 0.0 && positiveBatches >= _min_high_rate_cases;
-}
-
-/** Returns whether an area has the minimum number of cases for a high rate clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighRateBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const {
     // First check whether this cluster contains the minimum number of cases for a high rate cluster.
     if (expectedPositive == 0.0 || positiveBatches < _min_high_rate_cases) return false;
@@ -492,12 +477,7 @@ inline bool AbstractLikelihoodCalculator::HighRateBatchedExpected(count_t positi
 
 /** Returns whether an area has the minimum number of cases for a high rate clustering within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighRiskBatchedExpected(count_t positiveBatches, measure_t expectedPositive) const {
-    return HighRateBatchedExpected(positiveBatches, expectedPositive) && (this->*_risk_function)(positiveBatches, positiveBatches) >= _high_risk_threshold;
-}
-
-/** Indicates whether an area has expected cases for a clustering within a single dataset. */
-inline bool AbstractLikelihoodCalculator::HighOrLowRateBatchedCount(count_t positiveBatches, measure_t totalBatches) const {
-    return totalBatches > 0.0;
+    return HighRateBatchedExpected(positiveBatches, expectedPositive) && (this->*_risk_function)(positiveBatches, expectedPositive) >= _high_risk_threshold;
 }
 
 /** Indicates whether an area has expected cases for a clustering within a single dataset. */

@@ -199,10 +199,11 @@ TimeStratifiedBatchedTemporalDataEvaluator::TimeStratifiedBatchedTemporalDataEva
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void TimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
 	BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
-    ProbabilitiesAOI probabilities;
+    ProbabilitiesRange_t probabilities;
 
+    batchedCalc.clearCache();
     double cumulative_llr;
     int iWindowStart, iMinStartWindow, iEvaluateStart;
     gpMaxWindowLengthIndicator->reset();
@@ -223,8 +224,8 @@ void TimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Run
                 Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowStart + 1],
                 iWindowStart
             );
-            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
-            if (probabilities._pinside < probabilities._poutside)
+            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(*probabilities, iWindowStart);
+            if (probabilities->_paoi._pinside < probabilities->_paoi._poutside)
                 cumulative_llr += -1.0 * i_llr;
             else
                 cumulative_llr += i_llr;
@@ -233,17 +234,17 @@ void TimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Run
             if (iWindowStart > iEvaluateStart)
                 continue;
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
             Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) && cumulative_llr > Running.m_nRatio &&
-                batchedCalc.isScanArea(Data.gtCases, Data.gBatches)) {
-                    Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
-                    Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
-                    Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
-                    Running.m_nFirstInterval = iWindowStart;
-                    Running.m_nLastInterval = iWindowEnd;
-                    Running.m_nRatio = cumulative_llr;
-                    clusterSet.update(Running);
+            if (cumulative_llr > Running.m_nRatio && 
+                (gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+                Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
+                Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
+                Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = cumulative_llr;
+                clusterSet.update(Running);
             }
         }
     }
@@ -261,10 +262,11 @@ void TimeStratifiedBatchedTemporalDataEvaluator::CompareMeasures(AbstractTempora
 double TimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(0.0);
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
-    ProbabilitiesAOI probabilities;
+    ProbabilitiesRange_t probabilities;
 
+    batchedCalc.clearCache();
     double cumulative_llr;
     //iterate through windows
     int iWindowStart, iMinWindowStart, iEvaluateStart;
@@ -286,8 +288,8 @@ double TimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(Abstra
                 Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowStart + 1],
                 iWindowStart
             );
-            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart);
-            if (probabilities._pinside < probabilities._poutside)
+            double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(*probabilities, iWindowStart);
+            if (probabilities->_paoi._pinside < probabilities->_paoi._poutside)
                 cumulative_llr += -1.0 * i_llr;
             else
                 cumulative_llr += i_llr;
@@ -295,12 +297,10 @@ double TimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValue(Abstra
             // the start and end intervals that are not evaluated but contribute to the cumulative LLR.
             if (iWindowStart > iEvaluateStart)
                 continue;
-            Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) &&
-                batchedCalc.isScanArea(
-                     Data.gtCases, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
-                )) {
+            if ((gLikelihoodCalculator.*pRateCheck)(
+                Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd],
+                batchedCalc.getExpectedForBatches(Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]))
+                ) {
                 dMaxValue = std::max(dMaxValue, cumulative_llr);
             }
         }
@@ -319,7 +319,7 @@ TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::TimeStratifiedBatchedTempora
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
 
@@ -344,10 +344,9 @@ void TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareClusterSet(CClus
                     cumulative_llr += w_llr;
             }
             Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
             Data.gBatches = Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) && cumulative_llr > Running.m_nRatio &&
-                batchedCalc.isScanArea(Data.gtCases, Data.gBatches)) {
+            if (cumulative_llr > Running.m_nRatio && (gLikelihoodCalculator.*pRateCheck)(Data.gtCases, batchedCalc.getExpectedForBatches(Data.gBatches))) {
+                Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
                 Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
                 Data.gtMeasureAux2 = Data.gpMeasureAux2[iWindowStart] - Data.gpMeasureAux2[iWindowEnd];
                 Data.gPositiveBatches = Data.gpPositiveBatches[iWindowStart] - Data.gpPositiveBatches[iWindowEnd];
@@ -372,7 +371,7 @@ void TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareMeasures(Abstrac
 double TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedSpaceTimeData& Data = (BatchedSpaceTimeData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(0.0);
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestCount;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     BatchedLikelihoodCalculator::ProbabilitiesContainer_t probabilities;
 
@@ -397,12 +396,9 @@ double TimeStratifiedBatchedTemporalDataEvaluatorEnhanced::ComputeMaximizingValu
                 else
                     cumulative_llr += w_llr;
             }
-            Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
-            Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure) &&
-                batchedCalc.isScanArea(
-                    Data.gtCases, Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]
-                )) {
+            if ((gLikelihoodCalculator.*pRateCheck)(
+                Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd],
+                batchedCalc.getExpectedForBatches(Data.gpBatches[iWindowStart] - Data.gpBatches[iWindowEnd]))) {
                 dMaxValue = std::max(dMaxValue, cumulative_llr);
             }
         }
@@ -1681,7 +1677,7 @@ BatchedTemporalDataEvaluator::BatchedTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void BatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedTemporalData& Data = (BatchedTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
@@ -1722,7 +1718,7 @@ void BatchedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&,
 double BatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedTemporalData& Data = (BatchedTemporalData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(-std::numeric_limits<double>::max());
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     ProbabilitiesAOI probabilities;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
 
@@ -1860,8 +1856,9 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
     AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
-    ProbabilitiesAOI probabilities;
+    ProbabilitiesRange_t probabilities;
 
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
     std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
     std::vector<double> cumulative_expected(Data.gvSetClusterData.size(), 0.0);
     int iWindowStart, iMinWindowStart, iEvaluateStart;
@@ -1888,8 +1885,8 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
                     iWindowStart, t
                 );
                 // calculate the log-likelihood ratio for this time interval then add to cumulative
-                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
-                if (probabilities._pinside < probabilities._poutside)
+                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(*probabilities, iWindowStart, t);
+                if (probabilities->_paoi._pinside < probabilities->_paoi._poutside)
                     cumulative_llr[t] += -1.0 * i_llr;
                 else
                     cumulative_llr[t] += i_llr;
@@ -1909,7 +1906,7 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluator::CompareClusterSet(CClus
 				Datum.gBatches = Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd];
                 Unifier.AdjoinRatio(cumulative_llr[t], gLikelihoodCalculator, Datum.gtCases, cumulative_expected[t]);
             }
-            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate()) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false)) {
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
@@ -1934,8 +1931,9 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValu
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
     double dRatio(0);
-    ProbabilitiesAOI probabilities;
+    ProbabilitiesRange_t probabilities;
 
+    batchedCalc.clearCache(); // clear cached probabilities from previous iteration
     std::vector<double> cumulative_llr(Data.gvSetClusterData.size(), 0.0);
     std::vector<double> cumulative_expected(Data.gvSetClusterData.size(), 0.0);
     int iWindowStart, iMinWindowStart, iEvaluateStart;
@@ -1961,8 +1959,8 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValu
                     Datum.gpPositiveBatches[iWindowStart] - Datum.gpPositiveBatches[iWindowStart + 1],
                     iWindowStart, t
                 );
-                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(probabilities, iWindowStart, t);
-                if (probabilities._pinside < probabilities._poutside)
+                double i_llr = batchedCalc.getLoglikelihoodRatioForInterval(*probabilities, iWindowStart, t);
+                if (probabilities->_paoi._pinside < probabilities->_paoi._poutside)
                     cumulative_llr[t] += -1.0 * i_llr;
                 else
                     cumulative_llr[t] += i_llr;
@@ -1978,7 +1976,7 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluator::ComputeMaximizingValu
                     Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd], cumulative_expected[t]
                 );
             }
-            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate())
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false))
                 dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
         }
     }
@@ -2045,7 +2043,7 @@ void MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::CompareClusterS
                     batchedCalc.getExpectedForBatches(Datum.gBatches, t)
                 );
             }
-            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate()) {
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false)) {
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
@@ -2099,7 +2097,7 @@ double MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced::ComputeMaximi
                     batchedCalc.getExpectedForBatches(Datum.gpBatches[iWindowStart] - Datum.gpBatches[iWindowEnd], t)
                 );
             }
-            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false) && Unifier.isScanRate())
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false))
                 dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
         }
     }
@@ -2130,7 +2128,7 @@ ClosedLoopBatchedTemporalDataEvaluator::ClosedLoopBatchedTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void ClosedLoopBatchedTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     BatchedTemporalData& Data = (BatchedTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<BatchedTemporalData>(*(Running.GetClusterData()));
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 
@@ -2177,7 +2175,7 @@ void ClosedLoopBatchedTemporalDataEvaluator::CompareMeasures(AbstractTemporalClu
 double ClosedLoopBatchedTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     BatchedTemporalData& Data = (BatchedTemporalData&)ClusterData;//GetClusterDataAsType<BatchedTemporalData>(ClusterData);
     double dMaxValue(gdDefaultMaximizingValue);
-    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestExpected;
+    AbstractLikelihoodCalculator::SCANRATEBATCHED_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestBatched;
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)gLikelihoodCalculator;
     ProbabilitiesAOI probabilities;
 

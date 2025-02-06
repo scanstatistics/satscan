@@ -35,22 +35,24 @@ struct ProbabilitiesAOI {
     }
 };
 
+/* Structure used to store ProbabilitiesAOI objects during cluster scanning and enable
+   caching of probabilities (verse repeated recalculation). */
+struct ProbabilitiesRange {
+    ProbabilitiesAOI _paoi; // probabilities inside area of interest and outside of that area
+    size_t _range_idx; // associated range
+    double _llr; // calculated log-likelihood
+    ProbabilitiesRange(size_t ridx = 0) : _range_idx(ridx), _llr(std::numeric_limits<double>::infinity()) {}
+    bool llrIsSet() const { return _llr != std::numeric_limits<double>::infinity(); }
+};
+typedef boost::shared_ptr<ProbabilitiesRange> ProbabilitiesRange_t;
+
 class BatchedSpaceTimeData;
 
 /** Batched model log-likelihood calculator. */
 class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
   public:
-      /* Structure used to store ProbabilitiesAOI objects during cluster scanning and enable
-         caching of probabilities (verse repeated recalculation). */
-      struct ProbabilitiesRange {
-          ProbabilitiesAOI _paoi; // probabilities inside area of interest and outside of that area
-          size_t _range_idx; // associated range
-          double _llr; // calculated log-likelihood
-          ProbabilitiesRange(size_t ridx=0): _range_idx(ridx), _llr(std::numeric_limits<double>::infinity()) {}
-          bool llrIsSet() const { return _llr != std::numeric_limits<double>::infinity(); }
-      };
-      typedef std::vector<boost::shared_ptr<ProbabilitiesRange>> ProbabilitiesContainer_t;
-      typedef std::map<WindowRange_t, boost::shared_ptr<ProbabilitiesRange>> ProbabilitiesCache_t;
+      typedef std::vector<ProbabilitiesRange_t> ProbabilitiesContainer_t;
+      typedef std::map<WindowRange_t, ProbabilitiesRange_t> ProbabilitiesCache_t;
       typedef std::vector<ProbabilitiesCache_t> DataSetsProbabilitiesCache_t;
 
   private:
@@ -76,25 +78,17 @@ class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
 
     void                      associateRandomizers(boost::shared_ptr<RandomizerContainer_t> rc);
     void                      calculateLoglikelihoodsForAll() const;
-    bool                      isScanArea(const ProbabilitiesAOI& probabilities, count_t nCases) const;
-    bool                      isScanArea(measure_t positiveCases, const boost::dynamic_bitset<>& BatchIndexes, size_t tSetIndex = 0) const;
 
     ProbabilitiesAOI        & CalculateProbabilities(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex = 0) const;
-    ProbabilitiesAOI        & CalculateProbabilitiesByTimeInterval(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex = 0) const;
-
-    void CalculateProbabilitiesForWindow(
-        BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex = 0
-    );
-    void CalculateProbabilitiesForWindowForSimulation(
-        BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex = 0
-    );
+    ProbabilitiesRange_t    & CalculateProbabilitiesByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex = 0) const;
+    void                      CalculateProbabilitiesForWindow(BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex = 0);
+    void                      CalculateProbabilitiesForWindowForSimulation(BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex = 0);
+    ProbabilitiesAOI        & CalculateProbabilitiesForSimulation(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex = 0) const;
+    ProbabilitiesRange_t    & CalculateProbabilitiesForSimulationByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex = 0) const;
 
     double                    getLoglikelihoodRatio(ProbabilitiesAOI& probabilities, size_t tSetIndex = 0) const;
-    double                    getLoglikelihoodRatioForInterval(ProbabilitiesAOI& probabilities, int interval, size_t tSetIndex = 0) const;
+    double                    getLoglikelihoodRatioForInterval(ProbabilitiesRange& probabilities, int interval, size_t tSetIndex = 0) const;
     double                    getLoglikelihoodRatioForRange(ProbabilitiesRange& probabilities, size_t tSetIndex = 0) const;
-
-    ProbabilitiesAOI        & CalculateProbabilitiesForSimulation(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex = 0) const;
-    ProbabilitiesAOI        & CalculateProbabilitiesForSimulationByTimeInterval(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex = 0) const;
 
     double                    getMaximizingValue(ProbabilitiesAOI& probabilities, size_t tSetIndex = 0) const;
     virtual double            CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex = 0) const;

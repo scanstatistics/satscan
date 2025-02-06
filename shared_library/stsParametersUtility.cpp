@@ -208,6 +208,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetTimeTrendConvergence());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "SetNonparametricAdjustmentSize", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetNonparametricAdjustmentSize());
+  jni_error::_detectError(Env);
+
   mid = _getMethodId_Checked(Env, clazz, "SetPValueReportingType", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetPValueReportingType());
   jni_error::_detectError(Env);
@@ -891,6 +895,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "GetTimeTrendConvergence", "()D");
   Parameters.SetTimeTrendConvergence(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "GetNonparametricAdjustmentSize", "()I");
+  Parameters.SetNonparametricAdjustmentSize(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   Parameters.SetPValueReportingType((PValueReportingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetPValueReportingType", "Lorg/satscan/app/Parameters$PValueReportingType;"));

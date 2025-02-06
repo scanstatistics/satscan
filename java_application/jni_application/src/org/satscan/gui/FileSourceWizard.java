@@ -277,6 +277,7 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                 _displayVariablesComboBox.addItem("ordinal model");
                 _displayVariablesComboBox.addItem("exponential model");
                 _displayVariablesComboBox.addItem("normal model");
+                _displayVariablesComboBox.addItem("batched model");
                 _displayVariablesComboBox.addItem("uniform-time model");
                 switch (_startingModelType) {
                     case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
@@ -285,7 +286,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                     case ORDINAL              : _displayVariablesComboBox.setSelectedIndex(4); break;
                     case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(5); break;
                     case NORMAL               : _displayVariablesComboBox.setSelectedIndex(6); break;
-                    case UNIFORMTIME          : _displayVariablesComboBox.setSelectedIndex(7); break;
+                    case BATCHED              : _displayVariablesComboBox.setSelectedIndex(7); break;
+                    case UNIFORMTIME          : _displayVariablesComboBox.setSelectedIndex(8); break;
                     case POISSON              :
                     default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
                 } break;
@@ -479,6 +481,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         break;
                     case RANK :
                         file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt;  &lt;Continuous Variable&gt;");
+                        break;
+                    case BATCHED :
+                        file_format.append("&lt;Identifier&gt;  &lt;Number of Cases&gt;  &lt;Date/Time&gt; &lt;Batch Size&gt; &lt;Positive/Negative&gt;");
                         break;
                     default: throw new UnknownEnumException(getModelControlType());
                 }
@@ -691,7 +696,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
             case 4: return Parameters.ProbabilityModelType.ORDINAL;
             case 5: return Parameters.ProbabilityModelType.EXPONENTIAL;
             case 6: return Parameters.ProbabilityModelType.NORMAL;
-            case 7: return Parameters.ProbabilityModelType.UNIFORMTIME;
+            case 7: return Parameters.ProbabilityModelType.BATCHED;
+            case 8: return Parameters.ProbabilityModelType.UNIFORMTIME;
             case 0:
             default: return Parameters.ProbabilityModelType.POISSON;
         }
@@ -1186,6 +1192,8 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
         _import_variables.add(new ImportVariable("Covariate8", 12, false, null, null, "<covariate>"));
         _import_variables.add(new ImportVariable("Covariate9", 13, false, null, null, "<covariate>"));
         _import_variables.add(new ImportVariable("Covariate10", 14, false, null, null, "<covariate>"));
+        _import_variables.add(new ImportVariable("Batch Size", 4, false, null, null, "<batchsize>"));
+        _import_variables.add(new ImportVariable("Positive/Negative", 5, false, null, null, "<positive>"));
     }
     
     /** Setup field descriptors for control file. */
@@ -1361,6 +1369,9 @@ public class FileSourceWizard extends javax.swing.JDialog implements PropertyCha
                         model.setShowing(_import_variables.get(t));
                     } else if (t == 6) { //show 'weight' variable for normal mapping_model only
                         _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.NORMAL);
+                        model.setShowing(_import_variables.get(t));
+                    } else if (t >= 17 && t <= 18) {//show 'batchsize' and 'positive' variables for batched model only
+                        _import_variables.get(t).setShowing(_modelType == Parameters.ProbabilityModelType.BATCHED);
                         model.setShowing(_import_variables.get(t));
                     } else { //default - show variable
                         _import_variables.get(t).setShowing(true);
