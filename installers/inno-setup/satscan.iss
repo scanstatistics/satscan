@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SaTScan"
-#define MyAppVersion "10.2.5"
+#define MyAppVersion "10.3"
 #define MyAppPublisher "Information Management Services, Ins."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"
@@ -24,8 +24,8 @@ LicenseFile=Q:\licence\SaTScanLicenseAgreement.rtf
 InfoBeforeFile=Q:\build.area\satscan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=Q:\installers\v.10.2.x
-OutputBaseFilename=install-10_2_windows
+OutputDir=Q:\installers\v.10.3.x
+OutputBaseFilename=install-10_3_windows
 ;SetupIconFile=Q:\build.area\satscan\installers\resources\SaTScan.ico
 Compression=lzma
 SolidCompression=yes

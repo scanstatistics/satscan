@@ -74,7 +74,7 @@ class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
     BatchedLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~BatchedLikelihoodCalculator() {}
 
-    void                      clearCache() { std::for_each(_probabilities_cache.begin(), _probabilities_cache.end(), [](auto& m) { m.clear(); }); }
+    void                      clearCache() { std::for_each(_probabilities_cache.begin(), _probabilities_cache.end(), [](ProbabilitiesCache_t& m) { m.clear(); }); }
 
     void                      associateRandomizers(boost::shared_ptr<RandomizerContainer_t> rc);
     void                      calculateLoglikelihoodsForAll() const;

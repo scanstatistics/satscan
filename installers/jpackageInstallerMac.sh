@@ -7,7 +7,7 @@ else
   read -p "Apple developer password (SaTScan Mac App Specific): " PASSWORD
 fi
 
-APPVERSION="10.2"
+APPVERSION="10.3"
 SRCDIR="/Users/satscsvc/prj/satscan.development/satscan"
 INSTALLER_DIR="/prj/satscan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"

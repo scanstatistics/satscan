@@ -167,7 +167,7 @@ double BatchedLikelihoodCalculator::getProbabilityForInterval(int interval, size
             auto batchRange = std::find_if(
                 gDataHub.getTimeStratifiedTemporalAdjustmentWindows().begin(),
                 gDataHub.getTimeStratifiedTemporalAdjustmentWindows().end(),
-                [interval](const auto& range) { return range.first <= interval && interval <= range.second; }
+                [interval](const WindowRange_t& range) { return range.first <= interval && interval <= range.second; }
             );
             auto pos = std::distance(gDataHub.getTimeStratifiedTemporalAdjustmentWindows().begin(), batchRange);
             return _log_likelihoods_by_range->GetArray()[tSetIndex][pos].first;
@@ -350,7 +350,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
     probabilities.clear();
     // Find the adjustment range where iWindowEnd fits between the start and the end of the range.
     auto endRange = std::find_if(adjustment_ranges.begin(), adjustment_ranges.end(),
-        [iWindowEnd](const auto& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
+        [iWindowEnd](const WindowRange_t& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
     );
     // Create a range that expands to the iWindowStart -> iWindowEnd indexes, bound by this adjustment range.
     auto windowRange = WindowRange_t(std::max(endRange->first, iWindowStart), iWindowEnd);
@@ -473,7 +473,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
     probabilities.clear();
     // Find the adjustment range where iWindowEnd fits between the start and the end of the range.
     auto endRange = std::find_if(adjustment_ranges.begin(), adjustment_ranges.end(),
-        [iWindowEnd](const auto& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
+        [iWindowEnd](const WindowRange_t& range) { return range.first <= iWindowEnd && iWindowEnd <= range.second; }
     );
     // Create a range that expands to the iWindowStart -> iWindowEnd indexes, bound by this adjustment range.
     auto windowRange = WindowRange_t(std::max(endRange->first, iWindowStart), iWindowEnd);

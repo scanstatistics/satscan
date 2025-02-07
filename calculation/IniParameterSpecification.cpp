@@ -759,11 +759,6 @@ void IniParameterSpecification::Build_10_3_x_ParameterList() {
     Build_10_2_x_ParameterList();
 
     _parameter_info[TIMETRENDLENGTH] = ParamInfo(TIMETRENDLENGTH, "TimeStratifiedAdjLength", 3, _space_time_adjustments_section);
-    _parameter_info[SPATIAL_ADJ_TYPE] = ParamInfo(SPATIAL_ADJ_TYPE, "SpatialAdjustmentType", 4, _space_time_adjustments_section);
-    _parameter_info[USE_ADJ_BY_RR_FILE] = ParamInfo(USE_ADJ_BY_RR_FILE, "UseAdjustmentsByRRFile", 5, _space_time_adjustments_section);
-    _parameter_info[ADJ_BY_RR_FILE] = ParamInfo(ADJ_BY_RR_FILE, "AdjustmentsByKnownRelativeRisksFilename", 6, _space_time_adjustments_section);
-    _parameter_info[INTERVAL_STARTRANGE] = ParamInfo(INTERVAL_STARTRANGE, "IntervalStartRange", 7, _space_time_adjustments_section);
-    _parameter_info[INTERVAL_ENDRANGE] = ParamInfo(INTERVAL_ENDRANGE, "IntervalEndRange", 8, _space_time_adjustments_section);
 
     assert(_parameter_info.size() == 180);
 }

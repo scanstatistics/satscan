@@ -23,7 +23,7 @@ CoordinatesType=0
 [Analysis]
 ;analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=Spatial Variation in Temporal Trends, 6=Prospective Purely Temporal, 7=Seasonal Temporal)
 AnalysisType=1
-;model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial, 8=Rank, 9=UniformTime)
+;model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial, 8=Rank, 9=UniformTime, 10=Batched)
 ModelType=5
 ;scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential); Higher Trend(Poisson-SVTT), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential); Lower Trend(Poisson-SVTT), 3=Both Areas)
 ScanAreas=1
@@ -67,6 +67,8 @@ OutputGoogleMaps=n
 [Multiple Data Sets]
 ; multiple data sets purpose type (0=Multivariate, 1=Adjustment)
 MultipleDataSetsPurposeType=0
+; source data set name (data set 1)
+DataSet1-Name=Data Set #1
 
 [Data Checking]
 ;study period data check (0=Strict Bounds, 1=Relaxed Bounds)
@@ -151,6 +153,8 @@ MinimumCasesInHighRateClusters=2
 TimeTrendAdjustmentType=0
 ;time trend adjustment percentage (>-100)
 TimeTrendPercentage=0
+;time stratified adjustment length (Positive Integer)
+TimeStratifiedAdjLength=1
 ;time trend type - SVTT only (Linear=0, Quadratic=1)
 TimeTrendType=0
 ;adjust for weekly trends, nonparametric
@@ -318,9 +322,9 @@ EmailIncludeResults=n
 ;email custom (y/n)
 CustomEmail=n
 ;email custom subject
-CustomEmailSubjectLine=
+CustomEmailSubjectLine=SaTScan Results - <results-name>
 ;email custom message body
-CustomEmailMessageBody=
+CustomEmailMessageBody=<summary-paragraph><linebreak><linebreak><location-paragraph><linebreak><linebreak><footer-paragraph>
 
 [Elliptic Scan]
 ;elliptic shapes - one value for each ellipse (comma separated decimal values)
@@ -350,5 +354,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=10.2.0
+Version=10.3.0
 
