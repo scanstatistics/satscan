@@ -508,7 +508,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
         if (iWindowEnd < endRange->second) outRanges.push_back(WindowRange_t(iWindowEnd + 1, endRange->second)); // after
         // Now add values from those ranges that potentially abutt the cluster window within this adjustment range.
         for (auto& range : outRanges) {
-            probabilities.back()->_paoi._sn_outside += randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1];
+            probabilities.back()->_paoi._sn_outside += randomizer->getSumNegativeBatchesByTime()[range.first] - randomizer->getSumNegativeBatchesByTime()[range.second + 1];
             C_outside += dataset.getCaseData_PT()[range.first] - dataset.getCaseData_PT()[range.second + 1];
             N_outside += dataset.getMeasureData_PT()[range.first] - dataset.getMeasureData_PT()[range.second + 1];
             Sc_outside += randomizer->getSumPositiveBatchesByTime()[range.first] - randomizer->getSumPositiveBatchesByTime()[range.second + 1];
