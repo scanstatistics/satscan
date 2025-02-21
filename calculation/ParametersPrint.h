@@ -19,7 +19,7 @@ class ParametersPrint {
     void                PrintMiscellaneousAnalysisParameters(FILE* fp) const;
     void                PrintSpatialOutputParameters(FILE* fp) const;
     void                PrintDataCheckingParameters(FILE* fp) const;
-    void                PrintDrilldownParameters(FILE* fp) const;
+    void                PrintDrilldownParameters(FILE* fp, bool isDrilldown) const;
     void                PrintEllipticScanParameters(FILE* fp) const;
     void                PrintNotificationsParameters(FILE* fp) const;
     void                PrintClusterRestrictionsParameters(FILE* fp) const;
@@ -51,7 +51,7 @@ class ParametersPrint {
     const char        * GetAreaScanRateTypeAsString() const;
     const char        * GetProbabilityModelTypeAsString() const;
     const char        * getPowerEvaluationMethodAsString() const;
-    void                Print(FILE* fp) const;
+    void                Print(FILE* fp, bool isDrilldown=false) const;
     void                PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHandler) const;
     std::string         getCalculatedTimeTrendAsString(const DataSetHandler& SetHandler) const;
 };

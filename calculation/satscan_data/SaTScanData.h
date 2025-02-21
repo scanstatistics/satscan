@@ -87,7 +87,8 @@ class CSaTScanData {
     std::vector<tract_t>                        _nullified_identifiers;
     mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
 	bool                                        _network_can_report_coordinates;
-    unsigned int                                _drilldown_level;
+    unsigned int                                _drilldown_level; // tracks analysis drillown depth
+    unsigned int                                _drilldown_runid; // tracks analysis drillown unique serial identifier
     mutable ClusterLocationCache_t              _cluster_locations_cache;
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
@@ -166,8 +167,10 @@ class CSaTScanData {
 	double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual Julian                              intervalIndexToJulian(unsigned int intervalIdx) const;
     unsigned int                                getDrilldownLevel() const { return _drilldown_level; }
+    unsigned int                                getDrilldownRunId() const { return _drilldown_runid; }
     bool                                        isDrilldown() const { return _drilldown_level > 0; }
     void                                        setIsDrilldownLevel(unsigned int u) { _drilldown_level = u; }
+    void                                        setDrilldownRunId(unsigned int u) { _drilldown_runid = u; }
 
     virtual Julian                              convertToSeasonalDate(Julian j) const {return j;}
 

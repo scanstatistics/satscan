@@ -393,6 +393,7 @@ class CParameters {
     void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
     void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
     const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
+    bool                                getIsBernoulliIterativeDrilldown() const;
 
     bool                                requestsGeogrphaicalOutput() const {	return _output_google_map || _output_kml || _output_shapefiles || _output_cartesian_graph;	}
     void                                toggleGeogrphaicalOutput(bool b) { _output_google_map = b; _output_kml = b; _output_shapefiles = b; _output_cartesian_graph = b; }

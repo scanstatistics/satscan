@@ -298,12 +298,15 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection,
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
         return bValid;
     }
-    if (gParameters.getPerformBernoulliDrilldown() && 
-        !(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
-            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
-        return bValid;
+    if (gParameters.getPerformBernoulliDrilldown()) {
+        if (!gParameters.getIsBernoulliIterativeDrilldown() &&
+            !(gParameters.GetIsSpaceTimeAnalysis() && (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == POISSON))
+            ) {
+            bValid = false;
+            PrintDirection.Printf("%s:\nThe Bernoulli cluster drilldown is only implemented for space-time permutation and Poisson space-time analyses.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+            return bValid;
+        }
     }
     if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
         bValid = false;

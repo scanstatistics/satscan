@@ -522,6 +522,13 @@ void CParameters::setLinelistIndividualsCacheFileName(const char * s, bool bCorr
     if (bCorrectForRelativePath) AssignMissingPath(_linelist_individuals_cache_name);
 }
 
+/** Returns whether parameter settings indicate that this analysis is the purely spatial iterative Bernoulli drilldown. */
+bool CParameters::getIsBernoulliIterativeDrilldown() const {
+    // Infer the situation - iterative, purely spatial Bernoulli with control files.
+    return GetIsIterativeScanning() && GetProbabilityModelType() == BERNOULLI && 
+        GetIsPurelySpatialAnalysis() && (gvControlFilenames.empty() || gvControlFilenames.front().empty());
+}
+
 /** Returns whether analysis is a prospective analysis. */
 bool CParameters::GetIsProspectiveAnalysis() const {
   return (geAnalysisType == PROSPECTIVESPACETIME || geAnalysisType == PROSPECTIVEPURELYTEMPORAL);

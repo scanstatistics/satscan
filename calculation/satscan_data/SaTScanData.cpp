@@ -497,6 +497,7 @@ void CSaTScanData::Init() {
   _min_iterval_cut=4;
   _network_can_report_coordinates = false;
   _drilldown_level = 0;
+  _drilldown_runid = 0;
   _data_interface_start_idex = 0;
 }
 
@@ -564,32 +565,31 @@ void CSaTScanData::PostDataRead() {
 void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
   tract_t stopNeighbor(0), thisNeighbor(-1), iNeighborIndex=0;
   try {
-        if (Cluster.GetClusterType() == SPACETIMECLUSTER)
-            throw prg_error("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
+    if (Cluster.GetClusterType() == SPACETIMECLUSTER)
+        throw prg_error("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
 
-        // update total data set population now for the Poisson model -- before cluster tracts are nullified
-        if (gParameters.GetProbabilityModelType() == POISSON && Cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-            for (size_t dIdx=0; dIdx < gDataSets->GetNumDataSets(); ++dIdx) {
-                double clusterSetPopulation = GetProbabilityModel().GetPopulation(dIdx, Cluster, *this);
-                // round the total population now for reporting reasons
-                gDataSets->GetDataSet(dIdx).setTotalPopulation(macro_round(gDataSets->GetDataSet(dIdx).getTotalPopulation()) - macro_round(clusterSetPopulation));
-            }
+    // update total data set population now for the Poisson model -- before cluster tracts are nullified
+    if (gParameters.GetProbabilityModelType() == POISSON && Cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+        for (size_t dIdx=0; dIdx < gDataSets->GetNumDataSets(); ++dIdx) {
+            double clusterSetPopulation = GetProbabilityModel().GetPopulation(dIdx, Cluster, *this);
+            // round the total population now for reporting reasons
+            gDataSets->GetDataSet(dIdx).setTotalPopulation(macro_round(gDataSets->GetDataSet(dIdx).getTotalPopulation()) - macro_round(clusterSetPopulation));
         }
-
-        stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_identifiers - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumIdentifiers()));
-        while (thisNeighbor != stopNeighbor) {
-            thisNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? thisNeighbor + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
-            // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
-            if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
-           && isNullifiedIdentifier(thisNeighbor))
-         continue;
-       if (thisNeighbor < _num_identifiers)
-         RemoveTractSignificance(Cluster, thisNeighbor);
-       else {//tract is a meta location
-          std::vector<tract_t> atomicIndexes;
-		 _identifiers_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_identifiers, atomicIndexes);
-         for (auto a: atomicIndexes) { if (!isNullifiedIdentifier(a)) RemoveTractSignificance(Cluster, a); }
-       }
+    }
+    stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_identifiers - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumIdentifiers()));
+    while (thisNeighbor != stopNeighbor) {
+        thisNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? thisNeighbor + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
+        // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
+        if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || 
+             Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER) && isNullifiedIdentifier(thisNeighbor))
+            continue;
+        if (thisNeighbor < _num_identifiers)
+            RemoveTractSignificance(Cluster, thisNeighbor);
+        else {//tract is a meta location
+            std::vector<tract_t> atomicIndexes;
+		    _identifiers_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_identifiers, atomicIndexes);
+            for (auto a: atomicIndexes) { if (!isNullifiedIdentifier(a)) RemoveTractSignificance(Cluster, a); }
+        }
     }
 
     //now update data sets as needed, given all cluster data has now been removed
@@ -689,7 +689,6 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     //now recalculate meta data as needed
     if (gParameters.UseMetaLocationsFile())
     gDataSets->assignMetaData(gDataSets->getDataSets());
-    
     } catch (prg_exception& x) {
         x.addTrace("RemoveClusterSignificance()", "CSaTScanData");
         throw;

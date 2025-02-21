@@ -135,7 +135,7 @@ const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::Print(FILE* fp) const {
+void ParametersPrint::Print(FILE* fp, bool isDrilldown) const {
     try {
         PrintAdditionalOutputFiles(fp);
         AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
@@ -153,7 +153,7 @@ void ParametersPrint::Print(FILE* fp) const {
         PrintClusterRestrictionsParameters(fp);
         PrintSpaceAndTimeAdjustmentsParameters(fp);
         PrintInferenceParameters(fp);
-        PrintDrilldownParameters(fp);
+        PrintDrilldownParameters(fp, isDrilldown);
         PrintMiscellaneousAnalysisParameters(fp);
         PrintPowerEvaluationsParameters(fp);
         PrintSpatialOutputParameters(fp);
@@ -616,14 +616,17 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
     }
 }
 
-void ParametersPrint::PrintDrilldownParameters(FILE* fp) const {
+void ParametersPrint::PrintDrilldownParameters(FILE* fp, bool isDrilldown) const {
     SettingContainer_t settings;
     std::string buffer;
 
     try {
         bool permitsStandard = _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == PURELYSPATIAL || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND;
         permitsStandard &= !_parameters.UseMetaLocationsFile();
-        bool permitsBernoulli = _parameters.GetIsSpaceTimeAnalysis() && (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+        bool permitsBernoulli = (
+           (_parameters.GetIsSpaceTimeAnalysis() && (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)) ||
+           (isDrilldown && _parameters.GetIsPurelySpatialAnalysis() && _parameters.GetProbabilityModelType() == BERNOULLI && _parameters.GetIsIterativeScanning())
+        );
         permitsBernoulli &= !_parameters.UseMetaLocationsFile();
         if (permitsStandard || permitsBernoulli) {
             if (permitsStandard)
