@@ -452,8 +452,10 @@ void IdentifiersManager::assignExplicitCoordinates(CoordinatesContainer_t& coord
 			}
 			_num_location_coordinates = coordinates.size();
 		}
-	}
-	catch (prg_exception& x) {
+
+		_locations_manager._locations_by_coordinates.clear();
+		_locations_manager._locations_by_coordinates = _locations_manager._locations;
+	} catch (prg_exception& x) {
 		x.addTrace("assignExplicitCoordinates()", "IdentifiersManager");
 		throw;
 	}
