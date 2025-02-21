@@ -1038,11 +1038,10 @@ bool ParametersValidate::ValidateTemporalClusterSize(BasePrint& PrintDirection) 
     //Maximum temporal cluster size parameters not used for these analyses.
     if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       return true;
-    // Lower the maximum temporal cluster size for space-time permutation, purely temporal analyses, or any spatial adjustment; 
-    if (gParameters.GetProbabilityModelType() == BATCHED)
-        absoluteMaximum = 100;
+    if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetSpatialAdjustmentType() == SPATIAL_NOTADJUSTED)
+        absoluteMaximum = 100; // When using the nonparametric temporal adjustment, and no spatial adjustment, the maxium temporal cluster size is 100%.
     else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetSpatialAdjustmentType() != SPATIAL_NOTADJUSTED)
-        absoluteMaximum = 50.0;
+        absoluteMaximum = 50.0; // Lower the maximum temporal cluster size for space-time permutation, purely temporal analyses, or any spatial adjustment; 
     if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
       //validate for maximum specified as percentage of study period
       if (gParameters.GetMaximumTemporalClusterSize() <= 0) {

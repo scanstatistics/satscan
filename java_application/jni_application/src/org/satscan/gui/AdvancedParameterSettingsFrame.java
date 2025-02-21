@@ -821,15 +821,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
         }
         _minTemporalTimeUnitsLabel.setText(unitsLabel);
-        int percentage = 50;
-        if (!(ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric))) {
-            // Skip for purely temporal analysis or applying spatial adjustment.
-            switch (_settings_window.getModelControlType()) {
-                case POISSON, HOMOGENEOUSPOISSON, BERNOULLI, ORDINAL, CATEGORICAL, NORMAL, EXPONENTIAL -> percentage = 90;
-                case BATCHED -> percentage = 100;
-                case SPACETIMEPERMUTATION -> percentage = 50;
-            }
-        }
+        int percentage = 90;
+        // When using the nonparametric temporal adjustment, and no spatial adjustment, the maxium temporal cluster size can be 100%.
+        if (Utils.selected(_temporalTrendAdjNonparametric) && !Utils.selected(_spatialAdjustmentsNonparametric))
+            percentage = 100;
+        else if (ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric) || 
+                _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION)
+            percentage = 50; 
         _percentageOfStudyPeriodLabel.setText("percent of the study period (<= " + percentage + "%, default = 50%)");
         _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<= " + percentage + "% of the study period)");
     }
@@ -1705,9 +1703,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
         );
+        // Purely temporal analyses, or analyses using the nonparametric spatial adjustment,
+        // limit the maxium temporal cluster size to 50%.
         if (ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric)) return 50.0;
-        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.BATCHED) return 100.0;
+        // When using the nonparametric temporal adjustment, and no spatial adjustment, the maxium temporal cluster size can be 100%.
+        if (Utils.selected(_temporalTrendAdjNonparametric) && !Utils.selected(_spatialAdjustmentsNonparametric)) return 100.0;
+        // The space-time permutation model limits the maxium temporal cluster size to 50%.
         if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) return 50.0;
+        // Otherwise 90% is the default maximum.
         return 90.0;
     }
     
@@ -2965,7 +2968,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cases_label.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);
         // Adjustment by day of week is permitted for only purely spatia Bernoulli and one data set.
-        _drilldown_restriction_dow.setEnabled(bEnableGroup && bernoulliSelected && _inputDataSetsList.getModel().getSize() == 0);
+        _drilldown_restriction_dow.setEnabled(bEnableGroup && bernoulliSelected && _inputDataSetsList.getModel().getSize() == 1);
         
         
         double val = Double.parseDouble(_drilldown_restriction_cutoff.getText());
