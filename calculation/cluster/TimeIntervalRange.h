@@ -58,7 +58,10 @@ public:
     virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Temporal window evaluator for the batched model and time stratified adjustment. */
+/** Temporal window evaluator for the batched model and time stratified adjustment.
+    This class is specialized for scanning windows when the time stratified adjustment length is larger
+    than the time aggregation length. Technically, this class replaces TimeStratifiedBatchedTemporalDataEvaluator,
+    and should produce the same results, but that class is slightly faster. */
 class TimeStratifiedBatchedTemporalDataEvaluatorEnhanced : public CTimeIntervals {
 private:
     typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;
@@ -86,7 +89,6 @@ class MultiSetTimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
         virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
-
 
 /** Temporal window evaluator used with Bernoulli model and adjusting for purely spatial clusters nonparametrically. */
 class BernoulliSpatialStratifiedTemporalDataEvaluator : public CTimeIntervals {
@@ -321,7 +323,10 @@ public:
     virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
-/** Temporal window evaluator for the batched model, time stratified adjustment and multiple data sets. */
+/** Temporal window evaluator for the batched model, time stratified adjustment and multiple data sets.
+    This class is specialized for scanning windows when the time stratified adjustment length is larger
+    than the time aggregation length. Technically, this class replaces MultiSetTimeStratifiedBatchedTemporalDataEvaluator,
+    and should produce the same results, but that class is slightly faster. */
 class MultiSetTimeStratifiedBatchedTemporalDataEvaluatorEnhanced : public CTimeIntervals {
 private:
     typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, measure_t, measure_t, const boost::dynamic_bitset<>&, size_t) const;

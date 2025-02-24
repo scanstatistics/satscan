@@ -18,21 +18,7 @@ struct ProbabilitiesAOI {
     double _poutside; // probability positive inside
     double _sn_outside; // sum of negative batches outside
     BatchedRandomizer::BatchEntryContainer_t _positive_batches_outside; // positive batches outside
-
     ProbabilitiesAOI(): _pinside(0), _sn_inside(0), _poutside(0), _sn_outside(0){}
-    bool operator==(const ProbabilitiesAOI& other) {
-        auto equalsOther = [](const BatchedRandomizer::BatchEntryContainer_t& a, const BatchedRandomizer::BatchEntryContainer_t& b) {
-            if (a.size() != b.size()) return false;
-            for (size_t t = 0; t < a.size(); ++t)
-                if (a[t].get<0>() != b[t].get<0>() || a[t].get<1>() != b[t].get<1>() ||
-                    a[t].get<2>() != b[t].get<2>() || a[t].get<3>() != b[t].get<3>()) return false;
-            return true;
-        };
-        return _pinside == other._pinside && _sn_inside == other._sn_inside &&
-            _poutside == other._poutside && _sn_outside == other._sn_outside &&
-            equalsOther(_positive_batches, other._positive_batches) &&
-            equalsOther(_positive_batches_outside, other._positive_batches_outside);
-    }
 };
 
 /* Structure used to store ProbabilitiesAOI objects during cluster scanning and enable

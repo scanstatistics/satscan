@@ -29,8 +29,8 @@ public:
 
     measure_t gtMeasureAux; // represents number of negative batches
     measure_t gtMeasureAux2; // represents number of positive batches
-    BatchIndexes_t gPositiveBatches;
-    BatchIndexes_t gBatches;
+    BatchIndexes_t gPositiveBatches; // all positive batches in this clustering
+    BatchIndexes_t gBatches; // all batches in this clustering
 
     virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex = 0);
@@ -60,14 +60,14 @@ public:
     virtual ~BatchedTemporalData() {}
     virtual BatchedTemporalData * Clone() const;
 
-    measure_t        gtMeasureAux;
-    measure_t      * gpMeasureAux;
-    measure_t        gtMeasureAux2;
-    measure_t      * gpMeasureAux2;
-    BatchIndexes_t   gPositiveBatches;
-    BatchIndexes_t * gpPositiveBatches;
-    BatchIndexes_t   gBatches;
-    BatchIndexes_t * gpBatches;
+    measure_t        gtMeasureAux; // represents number of negative batches
+    measure_t      * gpMeasureAux; // represents number of negative batches by time interval
+    measure_t        gtMeasureAux2; // represents number of positive batches
+    measure_t      * gpMeasureAux2; // represents number of positive batches by time interval
+    BatchIndexes_t   gPositiveBatches; // all positive batches in this clustering
+    BatchIndexes_t * gpPositiveBatches; // all positive batches in this clustering by time interval, using by scanning
+    BatchIndexes_t   gBatches; // all batches in this clustering
+    BatchIndexes_t * gpBatches; // all batches in this clustering by time interval, using by scanning
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
@@ -81,9 +81,8 @@ public:
 };
 
 /** Class representing accumulated data of prospective spatial clustering  for batched probability model.
-    For spatial cluster data, in a prospective analysis, the supposed study period does not necessarily
-    remain fixed but changes with the prospective end date. This class represents that 'spatial' data clustering.
-*/
+    The ProspectiveSpatialData classes used to have a special purpose but this feature has been deprecated. This class
+    keeps the pattern, otherwise we'd need to refactor many other places. */
 class BatchedProspectiveSpatialData : public BatchedTemporalData, public AbstractProspectiveSpatialClusterData {
 private:
     void                                  Init() { gpCases = 0; gpMeasure = 0; gpMeasureAux = 0; gpMeasureAux2 = 0; 

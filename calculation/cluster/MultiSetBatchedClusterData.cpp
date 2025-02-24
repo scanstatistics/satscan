@@ -25,13 +25,12 @@ void MultiSetBatchedSpatialData::AddNeighborData(tract_t tNeighborIndex, const A
     }
 }
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractSpatialClusterData object
-    can be casted to 'MultiSetCategoricalSpatialData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void MultiSetBatchedSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     *this = (const MultiSetBatchedSpatialData&)rhs;
 }
 
+/** Returns the log-likelihood unifier after adding all data. */
 const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedSpatialData::getRatioUnified(AbstractLikelihoodCalculator& Calculator) const {
     AbstractLoglikelihoodRatioUnifier& Unifier = Calculator.GetUnifier();
     Unifier.Reset();
@@ -46,6 +45,7 @@ const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedSpatialData::getRatioUni
     return Unifier;
 }
 
+/** Returns the data set indexes which are part of the unified llr calculation. */
 boost::dynamic_bitset<> MultiSetBatchedSpatialData::getRatioSets(AbstractLikelihoodCalculator& Calculator) const {
     return Calculator.GetUnifier().getUnifiedSets();
 }
@@ -59,12 +59,12 @@ double MultiSetBatchedSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoo
     return 0.0;
 }
 
-/** Returns newly cloned MultiSetCategoricalSpatialData object. */
+/** Returns newly cloned MultiSetBatchedSpatialData object. */
 MultiSetBatchedSpatialData* MultiSetBatchedSpatialData::Clone() const {
     return new MultiSetBatchedSpatialData(*this);
 }
 
-/** Copies class data members that we are interested in for possiblely reporting. */
+/** Copies class data members that are needed for reporting. */
 void MultiSetBatchedSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
     for (size_t t = 0; t < ((const MultiSetBatchedSpatialData&)rhs).gvSetClusterData.size(); ++t)
         gvSetClusterData[t]->CopyEssentialClassMembers(*((const MultiSetBatchedSpatialData&)rhs).gvSetClusterData[t]);
@@ -135,17 +135,12 @@ void MultiSetBatchedSpatialData::InitializeData() {
 
 //******************* class AbstractMultiSetBatchedTemporalData *****************
 
-/** Assigns cluster data of passed object to 'this' object. 
-    Caller of function is responsible for ensuring that passed AbstractTemporalClusterData
-    object can be casted to 'AbstractMultiSetBatchedTemporalData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void AbstractMultiSetBatchedTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
     *this = (const AbstractMultiSetBatchedTemporalData&)rhs;
 }
 
-/** Copies class data members that we are interested in for possiblely reporting. 
-    Caller of function is responsible for ensuring that passed AbstractTemporalClusterData
-    object can be casted to 'AbstractMultiSetBatchedTemporalData' object.
-*/
+/** Copies class data members that are needed for reporting. */
 void AbstractMultiSetBatchedTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
     for (size_t t = 0; t < ((const AbstractMultiSetBatchedTemporalData&)rhs).gvSetClusterData.size(); ++t)
         gvSetClusterData[t]->CopyEssentialClassMembers(*((const AbstractMultiSetBatchedTemporalData&)rhs).gvSetClusterData[t]);

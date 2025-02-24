@@ -278,10 +278,10 @@ std::pair<double, double> BatchedLikelihoodCalculator::getProbabilityPositive(co
 }
 
 /* Calculate the probabilities of being positive inside and outside the area of interest.
-   n = number of positive traps
-   u = number of traps
-   Sc = sum of the trap sizes for positive batches
-   Sn = sum of the trap sizes for negative batches
+   n = number of positive batches
+   u = number of batches
+   Sc = sum of the batch sizes for positive batches
+   Sn = sum of the batch sizes for negative batches
 */
 ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilities(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex) const {
     double C = n; // number of positive batches
@@ -300,10 +300,10 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilities(Probabilit
 }
 
 /* Calculate the probabilities of being positive inside and outside the area of interest, for time interval.
-   n = number of positive traps
-   u = number of traps
-   Sc = sum of the trap sizes for positive batches
-   Sn = sum of the trap sizes for negative batches
+   n = number of positive batches
+   u = number of batches
+   Sc = sum of the batch sizes for positive batches
+   Sn = sum of the batch sizes for negative batches
 */
 ProbabilitiesRange_t& BatchedLikelihoodCalculator::CalculateProbabilitiesByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
     // First check cache for already calculated probability for this interval.
@@ -335,7 +335,7 @@ ProbabilitiesRange_t& BatchedLikelihoodCalculator::CalculateProbabilitiesByTimeI
     return probabilities;
 }
 
-/** Calculates the probabilities the cluster data and window by time stratified adjustment lengths. */
+/** Calculates the probabilities for cluster data and window by time-stratified adjustment lengths. */
 void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
     BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex
 ) {
@@ -458,7 +458,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
     }
 }
 
-/** Calculates the probabilities the cluster data and window by time stratified adjustment lengths within a simulation. */
+/** Calculates the probabilities for cluster data and window by time-stratified adjustment lengths within a simulation. */
 void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
     BatchedSpaceTimeData& Data, int iWindowStart, int iWindowEnd, ProbabilitiesContainer_t& probabilities, size_t tSetIndex
 ) {
@@ -589,7 +589,7 @@ double BatchedLikelihoodCalculator::getLoglikelihoodRatio(ProbabilitiesAOI& prob
 
 /** Returns loglikelihood ratio given probabilities in area of interest, for time interval. */
 double BatchedLikelihoodCalculator::getLoglikelihoodRatioForInterval(ProbabilitiesRange& probabilities, int interval, size_t tSetIndex) const {
-    if (probabilities.llrIsSet()) return probabilities._llr;
+    if (probabilities.llrIsSet()) return probabilities._llr; // use cached llr when available
     return (probabilities._llr = (LL(1 - probabilities._paoi._pinside, probabilities._paoi._sn_inside, probabilities._paoi._positive_batches)
         + LL(1 - probabilities._paoi._poutside, probabilities._paoi._sn_outside, probabilities._paoi._positive_batches_outside)
         - _log_likelihoods_by_time->GetArray()[tSetIndex][interval].second));
@@ -597,7 +597,7 @@ double BatchedLikelihoodCalculator::getLoglikelihoodRatioForInterval(Probabiliti
 
 /** Returns loglikelihood ratio given probabilities in area of interest, for time range. */
 double BatchedLikelihoodCalculator::getLoglikelihoodRatioForRange(ProbabilitiesRange& probabilities, size_t tSetIndex) const {
-    if (probabilities.llrIsSet()) return probabilities._llr;
+    if (probabilities.llrIsSet()) return probabilities._llr; // use cached llr when available
     return (probabilities._llr = (LL(1 - probabilities._paoi._pinside, probabilities._paoi._sn_inside, probabilities._paoi._positive_batches)
         + LL(1 - probabilities._paoi._poutside, probabilities._paoi._sn_outside, probabilities._paoi._positive_batches_outside)
         - _log_likelihoods_by_range->GetArray()[tSetIndex][probabilities._range_idx].second));
@@ -657,10 +657,10 @@ double BatchedLikelihoodCalculator::CalculateFullStatistic(double dMaximizingVal
 }
 
 /* Calculate the probabilities of being positive inside and outside the area of interest - in the context of simulations.
-   n = number of positive traps
-   u = number of traps
-   Sc = sum of the trap sizes for positive batches
-   Sn = sum of the trap sizes for negative batches
+   n = number of positive batches
+   u = number of batches
+   Sc = sum of the batch sizes for positive batches
+   Sn = sum of the batch sizes for negative batches
 */
 ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulation(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex) const {
     double C = n; // number of positive batches
@@ -680,10 +680,10 @@ ProbabilitiesAOI& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulati
 }
 
 /* Calculate the probabilities of being positive inside and outside the area of interest - in the context of simulations.
-   n = number of positive traps
-   u = number of traps
-   Sc = sum of the trap sizes for positive batches
-   Sn = sum of the trap sizes for negative batches
+   n = number of positive batches
+   u = number of batches
+   Sc = sum of the batch sizes for positive batches
+   Sn = sum of the batch sizes for negative batches
 */
 ProbabilitiesRange_t& BatchedLikelihoodCalculator::CalculateProbabilitiesForSimulationByTimeInterval(ProbabilitiesRange_t& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, int interval, size_t tSetIndex) const {
     // First check cache for already calculated probability for this interval.

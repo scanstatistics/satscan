@@ -40,17 +40,13 @@ void BatchedSpatialData::AddMeasureList(const DataSetInterface&, CMeasureList*, 
     throw prg_error("AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) not implemented.", "BatchedSpatialData");
 }
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractSpatialClusterData object
-    can be casted to 'NormalSpatialData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void BatchedSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     *this = (const BatchedSpatialData&)rhs;
 }
 
-/** Calculates loglikelihood ratio, given current accumulated cluster data, if
-    it is determined that data fits scanning area of interest (high, low, both).
-    Returns zero if rate not of interest else returns loglikelihood ratio as
-    calculated by probability model. */
+/** Calculates loglikelihood ratio of data if it fits scanning area of interest (high, low, both).
+    Returns zero if rate not of interest else returns loglikelihood ratio as calculated by probability model. */
 double BatchedSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
     if ((Calculator.*Calculator.gpRateOfInterestBatched)(gtCases, batchedCalc.getExpectedForBatches(gBatches))) {
@@ -62,13 +58,12 @@ double BatchedSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalcula
     } return 0.0;
 }
 
-/** Returns newly cloned BatchedSpatialData object. Caller is responsible for deletion of object. */
+/** Returns newly cloned BatchedSpatialData object. */
 BatchedSpatialData* BatchedSpatialData::Clone() const {
     return new BatchedSpatialData(*this);
 }
 
-/** Copies class data members that reflect the number of cases, expected, and expected
-    squared values, which is the data we are interested in for possiblely reporting. */
+/** Copies class data members that are needed for reporting. */
 void BatchedSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
     gtCases = ((const BatchedSpatialData&)rhs).gtCases;
     gtMeasure = ((const BatchedSpatialData&)rhs).gtMeasure;
@@ -78,7 +73,7 @@ void BatchedSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rh
     gBatches = ((const BatchedSpatialData&)rhs).gBatches;
 }
 
-/** Calculates and returns maximizing value given accumulated cluster data. If data
+/** Calculates maximizing value given accumulated cluster data. If data
     is not significant given scanning rate, negation of maximum double returned. */
 double BatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
@@ -92,7 +87,7 @@ double BatchedSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calc
     return -std::numeric_limits<double>::max();
 }
 
-//************** class NormalTemporalData **************************************
+//************** class BatchedTemporalData **************************************
 
 /** class constructor */
 BatchedTemporalData::BatchedTemporalData(): TemporalData(), 
@@ -110,20 +105,17 @@ gtMeasureAux2(0), gpMeasureAux2(DataGateway.GetDataSetInterface().GetPTMeasureAu
 gpPositiveBatches(DataGateway.GetDataSetInterface().getPtPositiveBatchIndexesArray()),
 gpBatches(DataGateway.GetDataSetInterface().getPtBatchIndexesArray()) {}
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractTemporalClusterData object
-    can be casted to 'BatchedTemporalData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void BatchedTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
     *this = (const BatchedTemporalData&)rhs;
 }
 
-/** Returns newly cloned NormalTemporalData object. Caller responsible for deletion of object. */
+/** Returns newly cloned BatchedTemporalData object. */
 BatchedTemporalData* BatchedTemporalData::Clone() const {
     return new BatchedTemporalData(*this);
 }
 
-/** Copies class data members that reflect the number of cases, expected, and expected
-    squared values, which is the data we are interested in for possiblely reporting. */
+/** Copies class data members that are needed for reporting. */
 void BatchedTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
     gtCases = ((const BatchedTemporalData&)rhs).gtCases;
     gtMeasure = ((const BatchedTemporalData&)rhs).gtMeasure;
@@ -133,8 +125,7 @@ void BatchedTemporalData::CopyEssentialClassMembers(const AbstractClusterData& r
     gBatches = ((const BatchedTemporalData&)rhs).gBatches;
 }
 
-/** Reassociates internal data with passed DataSetInterface pointers.
-    Not implemented - throws exception */
+/** Not implemented - throws exception */
 void BatchedTemporalData::Reassociate(const DataSetInterface& Interface) {
     throw prg_error("Reassociate(const DataSetInterface&) not implemented.", "BatchedTemporalData");
 }
@@ -200,7 +191,7 @@ BatchedProspectiveSpatialData::~BatchedProspectiveSpatialData() {
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void BatchedProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
     assert(geEvaluationAssistDataStatus == Allocated);
-    unsigned int           i, j;
+    unsigned int i, j;
     count_t** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
     measure_t** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
     measure_t** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
@@ -225,17 +216,13 @@ void BatchedProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, cons
     }
 }
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractTemporalClusterData object
-    can be casted to 'BatchedProspectiveSpatialData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void BatchedProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
     *this = (const BatchedProspectiveSpatialData&)rhs;
 }
 
-/** Calculates loglikelihood ratio, given current accumulated cluster data, if
-    it is determined that data fits scanning area of interest (high, low, both).
-    Returns zero if all windows rates not of interest else returns greatest
-    loglikelihood ratio as calculated by probability model. */
+/** Calculates loglikelihood ratio of data if it fits scanning area of interest (high, low, both).
+    Returns zero if rate not of interest else returns loglikelihood ratio as calculated by probability model. */
 double BatchedProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
     assert(geEvaluationAssistDataStatus == Allocated);
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
@@ -280,14 +267,13 @@ double BatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcu
     return dMaxValue;
 }
 
-/** Returns newly cloned BatchedProspectiveSpatialData object. Caller responsible for deletion of object. */
+/** Returns newly cloned BatchedProspectiveSpatialData object. */
 BatchedProspectiveSpatialData* BatchedProspectiveSpatialData::Clone() const {
     return new BatchedProspectiveSpatialData(*this);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.
-    Once this function is called various class member functions become invalid
-    and an assertion will fail if called. */
+    Once this function is called various class member functions become invalid and an assertion will fail if called. */
 void BatchedProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
     try {
         delete[] gpCases; gpCases = 0;
@@ -298,11 +284,10 @@ void BatchedProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
         delete[] gpBatches; gpBatches = 0;
         giAllocationSize = 0;
         geEvaluationAssistDataStatus = Deallocated;
-    }
-    catch (...) {}
+    } catch (...) {}
 }
 
-/** re-initialize data*/
+/** Re-initializes data for scanning. */
 void BatchedProspectiveSpatialData::InitializeData() {
     assert(geEvaluationAssistDataStatus == Allocated);
     gtCases = 0;
@@ -445,8 +430,7 @@ BatchedSpaceTimeData::~BatchedSpaceTimeData() {
     } catch (...) {}
 }
 
-/** Adds neighbor data to accumulation - caller is responsible for ensuring that
-    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+/** Adds neighbor data to accumulation. */
 void BatchedSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
     assert(geEvaluationAssistDataStatus == Allocated);
     count_t** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
@@ -465,15 +449,12 @@ void BatchedSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abstrac
     }
 }
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractTemporalClusterData object
-    can be casted to 'BatchedSpaceTimeData' object. */
+/** Assigns cluster data of passed object to 'this' object. */
 void BatchedSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
     *this = (const BatchedSpaceTimeData&)rhs;
 }
 
-/** Returns newly cloned NormalSpaceTimeData object. Caller responsible for deletion
-    of object. */
+/** Returns newly cloned BatchedSpaceTimeData object. */
 BatchedSpaceTimeData* BatchedSpaceTimeData::Clone() const {
     return new BatchedSpaceTimeData(*this);
 }
@@ -494,7 +475,7 @@ void BatchedSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
     } catch (...) {}
 }
 
-/** re-initialize data */
+/** Re-initialize data for scanning. */
 void BatchedSpaceTimeData::InitializeData() {
     assert(geEvaluationAssistDataStatus == Allocated);
     gtCases = 0;
