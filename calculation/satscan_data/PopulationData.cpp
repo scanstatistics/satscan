@@ -170,12 +170,12 @@ PopulationData::~PopulationData() {
     Throws prg_error if category index is invalid or tCount is negative.
     Throws resolvable_error if category cases exceeds positive
     limits for count_t(long) */
-void PopulationData::AddCovariateCategoryCaseCount(int iCategoryIndex, count_t tCount) {
+void PopulationData::AddCovariateCategoryCaseCount(int iCategoryIndex, count_t tCount, bool allowNegative) {
   // validate category index
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCovariateCategoryCaseCount.size() - 1)
     throw prg_error("Index '%d' out of range.","AddCovariateCategoryCaseCount()", iCategoryIndex);
   // validate count is not negative
-  if (tCount < 0)
+  if (tCount < 0 && !allowNegative)
     throw prg_error("Negative case count specifed '%ld'.","AddCovariateCategoryCaseCount()", tCount);
   // add to cumulative variable for category at index
   gvCovariateCategoryCaseCount[iCategoryIndex] += tCount;

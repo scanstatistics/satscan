@@ -14,6 +14,7 @@
 #include "MetaTractManager.h"
 #include "DateStringParser.h"
 #include "BatchedRandomizer.h"
+#include "SpaceTimeRandomizer.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -563,174 +564,197 @@ void CSaTScanData::PostDataRead() {
 
 /** Removes all cases/controls/measure from data sets, geographically and temporally, for passed cluster object. */
 void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
-  tract_t stopNeighbor(0), thisNeighbor(-1), iNeighborIndex=0;
-  try {
-    if (Cluster.GetClusterType() == SPACETIMECLUSTER)
-        throw prg_error("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
-
-    // update total data set population now for the Poisson model -- before cluster tracts are nullified
-    if (gParameters.GetProbabilityModelType() == POISSON && Cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-        for (size_t dIdx=0; dIdx < gDataSets->GetNumDataSets(); ++dIdx) {
-            double clusterSetPopulation = GetProbabilityModel().GetPopulation(dIdx, Cluster, *this);
-            // round the total population now for reporting reasons
-            gDataSets->GetDataSet(dIdx).setTotalPopulation(macro_round(gDataSets->GetDataSet(dIdx).getTotalPopulation()) - macro_round(clusterSetPopulation));
+    tract_t stopNeighbor(0), thisNeighbor(-1), iNeighborIndex=0;
+    try {
+        // update total data set population now for the Poisson model -- before cluster tracts are nullified
+        if (gParameters.GetProbabilityModelType() == POISSON && Cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+            for (size_t dIdx=0; dIdx < gDataSets->GetNumDataSets(); ++dIdx) {
+                double clusterSetPopulation = GetProbabilityModel().GetPopulation(dIdx, Cluster, *this);
+                // round the total population now for reporting reasons
+                gDataSets->GetDataSet(dIdx).setTotalPopulation(macro_round(gDataSets->GetDataSet(dIdx).getTotalPopulation()) - macro_round(clusterSetPopulation));
+            }
         }
-    }
-    stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_identifiers - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumIdentifiers()));
-    while (thisNeighbor != stopNeighbor) {
-        thisNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? thisNeighbor + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
-        // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
-        if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || 
-             Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER) && isNullifiedIdentifier(thisNeighbor))
-            continue;
-        if (thisNeighbor < _num_identifiers)
-            RemoveTractSignificance(Cluster, thisNeighbor);
-        else {//tract is a meta location
-            std::vector<tract_t> atomicIndexes;
-		    _identifiers_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_identifiers, atomicIndexes);
-            for (auto a: atomicIndexes) { if (!isNullifiedIdentifier(a)) RemoveTractSignificance(Cluster, a); }
+        // Remove the data of each location within this cluster.
+        stopNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? _num_identifiers - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.getNumIdentifiers()));
+        while (thisNeighbor != stopNeighbor) {
+            thisNeighbor = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? thisNeighbor + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
+            // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
+            if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || 
+                Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER) && isNullifiedIdentifier(thisNeighbor))
+                continue;
+            if (thisNeighbor < _num_identifiers)
+                RemoveTractSignificance(Cluster, thisNeighbor);
+            else {//tract is a meta location
+                std::vector<tract_t> atomicIndexes;
+		        _identifiers_manager->getMetaManagerProxy().getIndexes(thisNeighbor - _num_identifiers, atomicIndexes);
+                for (auto a: atomicIndexes) { 
+                    if (!isNullifiedIdentifier(a)) RemoveTractSignificance(Cluster, a);
+                }
+            }
         }
-    }
-
-    //now update data sets as needed, given all cluster data has now been removed
-    if (gParameters.GetProbabilityModelType() == POISSON) {
-      //recalibrate the measure array to equal expected cases
-      gtTotalMeasure = 0;
-      for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
-         RealDataSet& DataSet = gDataSets->GetDataSet(d);
-         measure_t tAdjustedTotalMeasure=0;
-         measure_t tCalibration = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
-         measure_t ** ppMeasure = DataSet.getMeasureData().GetArray();
-         for (int i=0; i < GetNumTimeIntervals()-1; ++i) for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
-         for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[GetNumTimeIntervals() - 1][t] *= tCalibration;
-         DataSet.setMeasureDataToCumulative();
-         for (tract_t t=0; t < _num_identifiers; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
-         gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
-         gtTotalMeasure += tAdjustedTotalMeasure;
-      }
-    }
-    if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
-      //recalibrate the measure to equal expected cases
-      AbstractExponentialRandomizer *pRandomizer;
-      gtTotalCases = 0;
-      gtTotalMeasure = 0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-         RealDataSet& DataSet = gDataSets->GetDataSet(t);
-         if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-           throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
-         pRandomizer->AssignFromAttributes(DataSet);
-         gtTotalCases += DataSet.getTotalCases();
-         gtTotalMeasure += DataSet.getTotalMeasure();
-      }
-    }
-    if (gParameters.GetProbabilityModelType() == BATCHED) {
-        // obtain data sets from updated randomizer
-        BatchedRandomizer* pRandomizer;
-        gtTotalCases = 0;
-        gtTotalMeasure = 0;
-        gtTotalMeasureAux = 0;
-        for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
-            RealDataSet& DataSet = gDataSets->GetDataSet(t);
-            if ((pRandomizer = dynamic_cast<BatchedRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-                throw prg_error("Randomizer could not be dynamically casted to BatchedRandomizer type.\n", "RemoveClusterSignificance()");
-            pRandomizer->AssignFromAttributes(DataSet);
-            gtTotalCases += DataSet.getTotalCases();
-            gtTotalMeasure += DataSet.getTotalMeasure();
+        //now that cluster data has now been removed, update data sets by probability model
+        if (gParameters.GetProbabilityModelType() == POISSON) {
+            gtTotalMeasure = 0;
+            for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
+                RealDataSet& dataset = gDataSets->GetDataSet(d);
+                measure_t tAdjustedTotalMeasure=0, tCalibration = (measure_t)(dataset.getTotalCases())/(dataset.getTotalMeasure());
+                measure_t ** ppMeasure = dataset.getMeasureData().GetArray(); //recalibrate the measure array to equal expected cases
+                for (int i=0; i < GetNumTimeIntervals()-1; ++i) for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
+                for (tract_t t=0; t < _num_identifiers; ++t) ppMeasure[GetNumTimeIntervals() - 1][t] *= tCalibration;
+                dataset.setMeasureDataToCumulative();
+                for (tract_t t=0; t < _num_identifiers; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
+                gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
+                gtTotalMeasure += tAdjustedTotalMeasure;
+            }
+        } else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+            SpaceTimeRandomizer * randomizer;
+            gtTotalMeasure = 0;
+            for (size_t d = 0; d < gDataSets->GetNumDataSets(); ++d) {
+                RealDataSet& dataset = gDataSets->GetDataSet(d);
+                if ((randomizer = dynamic_cast<SpaceTimeRandomizer*>(gDataSets->GetRandomizer(d))) == 0)
+                    throw prg_error("Randomizer could not be dynamically casted to SpaceTimeRandomizer type.\n", "RemoveClusterSignificance()");
+                randomizer->CreateRandomizationData(dataset);
+                m_pModel->CalculateMeasure(dataset, *this);
+                gtTotalMeasure += dataset.getTotalMeasure();
+            }
+        } else if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
+            //recalibrate the measure to equal expected cases
+            AbstractExponentialRandomizer *pRandomizer;
+            gtTotalCases = 0;
+            gtTotalMeasure = 0;
+            for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+                RealDataSet& dataset = gDataSets->GetDataSet(t);
+                if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                    throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
+                pRandomizer->AssignFromAttributes(dataset);
+                gtTotalCases += dataset.getTotalCases();
+                gtTotalMeasure += dataset.getTotalMeasure();
+            }
+        } else if (gParameters.GetProbabilityModelType() == BATCHED) {
+            // obtain data sets from updated randomizer
+            BatchedRandomizer* pRandomizer;
+            gtTotalCases = 0;
+            gtTotalMeasure = gtTotalMeasureAux = 0;
+            for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+                RealDataSet& dataset = gDataSets->GetDataSet(t);
+                if ((pRandomizer = dynamic_cast<BatchedRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                    throw prg_error("Randomizer could not be dynamically casted to BatchedRandomizer type.\n", "RemoveClusterSignificance()");
+                pRandomizer->AssignFromAttributes(dataset);
+                gtTotalCases += dataset.getTotalCases();
+                gtTotalMeasure += dataset.getTotalMeasure();
+            }
+        } else if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
+            //recalculate the data set cases/measure given updated randomizer data
+            AbstractNormalRandomizer *pRandomizer;
+            gtTotalCases=0;
+            gtTotalMeasureAux=gtTotalMeasureAux=0;
+            for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+                RealDataSet& dataset = gDataSets->GetDataSet(t);
+                if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                    throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+                pRandomizer->AssignFromAttributes(dataset);
+                //update class variables that defines totals across all data sets
+                gtTotalCases += dataset.getTotalCases();
+                gtTotalMeasure += dataset.getTotalMeasure();
+                gtTotalMeasureAux += dataset.getTotalMeasureAux();
+            }
+        } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
+            //recalculate the data set cases/measure given updated randomizer data
+            AbstractWeightedNormalRandomizer *pRandomizer;
+            gtTotalCases=0;
+            gtTotalMeasureAux=gtTotalMeasureAux=0;
+            for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+                RealDataSet& dataset = gDataSets->GetDataSet(t);
+                if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+                    throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
+                pRandomizer->AssignFromAttributes(dataset);
+                //update class variables that defines totals across all data sets
+                gtTotalCases += dataset.getTotalCases();
+                gtTotalMeasure += dataset.getTotalMeasure();
+                gtTotalMeasureAux += dataset.getTotalMeasureAux();
+            }
         }
-    }
-    if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
-      //recalculate the data set cases/measure given updated randomizer data
-      AbstractNormalRandomizer *pRandomizer;
-      gtTotalCases=0;
-      gtTotalMeasureAux=gtTotalMeasureAux=0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-        RealDataSet& DataSet = gDataSets->GetDataSet(t);
-        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
-        pRandomizer->AssignFromAttributes(DataSet);
-        //update class variables that defines totals across all data sets
-        gtTotalCases += DataSet.getTotalCases();
-        gtTotalMeasure += DataSet.getTotalMeasure();
-        gtTotalMeasureAux += DataSet.getTotalMeasureAux();
-      }
-    }
-    if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
-      //recalculate the data set cases/measure given updated randomizer data
-      AbstractWeightedNormalRandomizer *pRandomizer;
-      gtTotalCases=0;
-      gtTotalMeasureAux=gtTotalMeasureAux=0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-        RealDataSet& DataSet = gDataSets->GetDataSet(t);
-        if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
-        pRandomizer->AssignFromAttributes(DataSet);
-        //update class variables that defines totals across all data sets
-        gtTotalCases += DataSet.getTotalCases();
-        gtTotalMeasure += DataSet.getTotalMeasure();
-        gtTotalMeasureAux += DataSet.getTotalMeasureAux();
-      }
-    }
-    //now recalculate purely temporal arrays as needed
-    if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
-        switch (gParameters.GetProbabilityModelType()) {
-            case BATCHED        : for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
+        //now recalculate purely temporal arrays, as needed
+        if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+            switch (gParameters.GetProbabilityModelType()) {
+                case BATCHED    : for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
                                     gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
                                   std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
-            case NORMAL         : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
-            case EXPONENTIAL    :
-            case BERNOULLI      :
-            case POISSON        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
+                case NORMAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+                case EXPONENTIAL:
+                case BERNOULLI  :
+                case POISSON    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
                                   std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
-            case CATEGORICAL    :
-            case ORDINAL        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
-            default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
+                case CATEGORICAL:
+                case ORDINAL    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+                default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
+            }
         }
-    }
-    //now recalculate meta data as needed
-    if (gParameters.UseMetaLocationsFile())
-    gDataSets->assignMetaData(gDataSets->getDataSets());
+        //now recalculate meta data as needed
+        if (gParameters.UseMetaLocationsFile())
+            gDataSets->assignMetaData(gDataSets->getDataSets());
     } catch (prg_exception& x) {
         x.addTrace("RemoveClusterSignificance()", "CSaTScanData");
         throw;
     }
 }
 
-/** Removes all cases/controls/measure from data sets, geographically and temporally, for
-    location at tTractIndex in specified interval range. */
+/** Removes all cases/controls/measure from data sets, geographically and temporally, for location at tTractIndex in specified interval range. */
 void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex) {
-  count_t       tCasesInInterval, ** ppCases;
-  measure_t     tMeasureInInterval, ** ppMeasure;
+    count_t tCasesInInterval, ** ppCases;
+    measure_t tMeasureInInterval, ** ppMeasure;
 
-       if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
-         gtTotalCases = 0;
-         gtTotalMeasure = 0;
-         if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation = 0;
-         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-           RealDataSet& DataSet = gDataSets->GetDataSet(t);
-           ppCases = DataSet.getCaseData().GetArray();
-           ppMeasure = DataSet.getMeasureData().GetArray();
-           //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
-           tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
-           tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
-           //zero out cases/measure in clusters defined temporal window
-           for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i) {
-             ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
-             ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
-           }
-           //remove cases/measure from earlier intervals
-           for (int i=0; i < Cluster.m_nFirstInterval; ++i) {
-             ppCases[i][tTractIndex] -= tCasesInInterval;
-             ppMeasure[i][tTractIndex] -= tMeasureInInterval;
-           }
-           //update totals for data set
-           DataSet.setTotalCases(DataSet.getTotalCases() - tCasesInInterval);
-           DataSet.setTotalMeasure(DataSet.getTotalMeasure() - tMeasureInInterval);
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalControls(DataSet.getTotalControls() - static_cast<count_t>(tMeasureInInterval - tCasesInInterval));
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalPopulation(DataSet.getTotalPopulation() - tMeasureInInterval);
+    if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
+        gtTotalCases = 0;
+        gtTotalMeasure = 0;
+        if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation = 0;
+        for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+            RealDataSet& DataSet = gDataSets->GetDataSet(t);
+            ppCases = DataSet.getCaseData().GetArray();
+            ppMeasure = DataSet.getMeasureData().GetArray();
+            //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
+            tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+            tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+            //zero out cases/measure in clusters defined temporal window
+            for (int i = Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i) {
+                ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+                ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == GetNumTimeIntervals() ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+            }
+            //remove cases/measure from earlier intervals
+            for (int i = 0; i < Cluster.m_nFirstInterval; ++i) {
+                ppCases[i][tTractIndex] -= tCasesInInterval;
+                ppMeasure[i][tTractIndex] -= tMeasureInInterval;
+            }
+            //update totals for data set
+            DataSet.setTotalCases(DataSet.getTotalCases() - tCasesInInterval);
+            DataSet.setTotalMeasure(DataSet.getTotalMeasure() - tMeasureInInterval);
+            if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalControls(DataSet.getTotalControls() - static_cast<count_t>(tMeasureInInterval - tCasesInInterval));
+            if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalPopulation(DataSet.getTotalPopulation() - tMeasureInInterval);
             //update class variables that defines totals across all data sets
             gtTotalCases += DataSet.getTotalCases();
             gtTotalMeasure += DataSet.getTotalMeasure();
             if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation += DataSet.getTotalPopulation();
+        }
+    } else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+        //remove location cases for the entire study period
+        auto clearCases = [this, Cluster, tTractIndex](count_t ** ppcases) {
+            count_t casesAtLocation = ppcases[0][tTractIndex];
+            for (int i = 0; i < GetNumTimeIntervals(); ++i)
+                ppcases[i][tTractIndex] = 0;
+            return casesAtLocation;
+        };
+        gtTotalCases = 0;
+        for (size_t t = 0; t < gDataSets->GetNumDataSets(); ++t) {
+            RealDataSet& DataSet = gDataSets->GetDataSet(t);
+            //remove cases and update totals for data set
+            DataSet.setTotalCases(DataSet.getTotalCases() - clearCases(DataSet.getCaseData().GetArray()));
+            //remove category cases then update totals for data set
+            gtTotalCases += DataSet.getTotalCases();
+            for (size_t c = 0; c < DataSet.getCaseData_Cat().size(); ++c) {
+                DataSet.getPopulationData().AddCovariateCategoryCaseCount(c, 
+                    clearCases(DataSet.getCategoryCaseData(c).GetArray()) * -1, true
+                );
+            }
         }
     } else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
         gtTotalCases = 0;

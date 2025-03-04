@@ -1481,7 +1481,7 @@ void AnalysisExecution::setDrilldownAttributes(const std::string& base_output, c
 
 
 /** Returns indication of whether analysis repeats.
-Indication of true is returned if user requested iterative scan option and :
+Indication of true is returned if user requested iterative scan option and:
 - analysis type is purely spatial or monotone purely spatial
 - a most likely cluster was retained
 - most likely cluster's p-value is not less than user specified cutoff p- value
@@ -1495,38 +1495,37 @@ bool AnalysisExecution::repeatAnalysis() {
 
     try {
         if (!_parameters.GetIsIterativeScanning()) return false;
-        if (_analysis_count >= _parameters.GetNumIterativeScansRequested())
-            return false;
-
-        //determine whether a top cluster was found and it's p-value mets cutoff
-        if (!getLargestMaximaClusterCollection().GetNumClustersRetained())
-            return false;
+        if (_analysis_count >= _parameters.GetNumIterativeScansRequested()) return false;
+        if (!getLargestMaximaClusterCollection().GetNumClustersRetained()) return false;
         const CCluster& cluster = getLargestMaximaClusterCollection().GetTopRankedCluster();
-        //if user requested replications, validate that p-value does not exceed user defined cutoff 
+        //if user requested replications, validate that cluster does not exceed user defined cutoff 
         if (_parameters.GetNumReplicationsRequested()) {
-            if (cluster.getReportingPValue(_parameters, _sim_vars, true) > _parameters.GetIterativeCutOffPValue())
+            if (_parameters.GetIsProspectiveAnalysis()) {
+                if (!cluster.reportableRecurrenceInterval(_parameters, _sim_vars) ||
+                    std::round(cluster.GetRecurrenceInterval(_data_hub, 0, _sim_vars).second) < _parameters.GetIterativeCutOffPValue()) { // round RI to whole days
+                    return false;
+                }
+            } else if (!cluster.reportablePValue(_parameters, _sim_vars) || cluster.getReportingPValue(_parameters, _sim_vars, true) > _parameters.GetIterativeCutOffPValue()) {
                 return false;
+            }
         }
-        // Drilldown on most likely cluster of this iteration.
+        //potentially drilldown on most likely cluster of this iteration
         if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown())
             AbstractAnalysisDrilldown::drilldownCluster(*this, cluster, 0, _drilldowns);
         //now we need to modify the data sets - removing data of locations in top cluster
         _data_hub.RemoveClusterSignificance(cluster);
-
         //for SVTT analyses, are data set global time trends converging?
         if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             for (unsigned int i = 0; i < _data_hub.GetDataSetHandler().GetNumDataSets(); ++i)
                 if (_data_hub.GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != AbstractTimeTrend::CONVERGED)
                     return false;
         }
-
         //does the minimum number of cases remain in all data sets?
         unsigned int iSetWithMinimumCases = 0;
         for (unsigned int i = 0; i < _data_hub.GetDataSetHandler().GetNumDataSets(); ++i)
             if (_data_hub.GetDataSetHandler().GetDataSet(i).getTotalCases() < tMinCases) ++iSetWithMinimumCases;
         if (_data_hub.GetDataSetHandler().GetNumDataSets() == iSetWithMinimumCases)
             return false;
-
         //are there locations left?
         if (!_parameters.GetIsPurelyTemporalAnalysis() && ((size_t)_data_hub.GetNumIdentifiers() + _data_hub.GetNumMetaIdentifiersReferenced() - _data_hub.GetNumNullifiedIdentifiers()) < 2)
             return false;
@@ -1543,10 +1542,9 @@ bool AnalysisExecution::repeatAnalysis() {
             }
         }
         if (!_parameters.GetIsPurelyTemporalAnalysis())
-            _data_hub.AdjustNeighborCounts(_executing_type);
+            _data_hub.AdjustNeighborCounts(_executing_type); //recalculate neighbors
         //clear top clusters container
-        for (MLC_Collections_t::iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end(); ++itrMLC)
-            itrMLC->Empty();
+        std::for_each(_top_clusters_containers.begin(), _top_clusters_containers.end(), [](MostLikelyClustersContainer& m) { m.Empty(); });
         _reportClusters.Empty();
         _clusterRanker.clear();
         _data_hub.clearClusterLocationsCache();

@@ -109,7 +109,7 @@ class PopulationData {
     PopulationData();
     ~PopulationData();
 
-    void                                AddCovariateCategoryCaseCount(int iCategoryIndex, count_t Count);
+    void                                AddCovariateCategoryCaseCount(int iCategoryIndex, count_t Count, bool allowNegative=false);
     void                                AddCovariateCategoryControlCount(int iCategoryIndex, count_t Count);
     void                                AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex,
                                                                        const PopulationDate_t& prPopulationDate,

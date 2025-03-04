@@ -55,6 +55,7 @@ void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet
   unsigned int          iNumCases, iNumCategories(thisRealSet.getPopulationData().GetNumCovariateCategories());
   count_t            ** ppCases=0;
 
+  gCategoryAttributes.clear();
   gCategoryAttributes.resize(iNumCategories);
   for (unsigned int c=0; c < iNumCategories; ++c) {
      CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];

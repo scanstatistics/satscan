@@ -913,7 +913,6 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
   if (gParameters.getPerformPowerEvaluation()) return true;
 
   bool  bValid=true;
-
   try {
     if (gParameters.GetIsIterativeScanning()) {
       if (gParameters.GetSimulationType() == FILESOURCE) {
@@ -924,14 +923,18 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
         PrintDirection.Printf("%s:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         return false;
       }
-      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetIsPurelyTemporalAnalysis())) {
-        PrintDirection.Printf("%s:\nThe iterative scan option is not implemented for the %s analysis.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetIsPurelyTemporalAnalysis() ||
+            (gParameters.GetIsSpaceTimeAnalysis() && gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION))) {
+        PrintDirection.Printf("%s:\nThe iterative scan option is not implemented for the %s analysis with the %s model.\n",
+            BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString(),
+            ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
+        );
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == BATCHED)) {
+            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL || 
+          gParameters.GetProbabilityModelType() == BATCHED || gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)) {
         PrintDirection.Printf("%s:\nThe iterative scan feature is not implemented for %s model.\n",
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         return false;
@@ -941,10 +944,20 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
         PrintDirection.Printf("%s:\n%d exceeds the maximum number of iterative analyses allowed (%d).\n",
                               BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetNumIterativeScansRequested(), CParameters::MAXIMUM_ITERATIVE_ANALYSES);
       }
-      if (gParameters.GetIterativeCutOffPValue() < 0 || gParameters.GetIterativeCutOffPValue() > 1) {
-        bValid = false;
-        PrintDirection.Printf("%s:\nThe iterative scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
-                              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetIterativeCutOffPValue());
+      // Validate the cutoff with respect to analysis type.
+      if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetIterativeCutOffPValue() < 1) {
+          bValid = false;
+          PrintDirection.Printf(
+              "%s:\nThe cutoff value for the iterative scan must be >= 1 for a prospective scan.\n",
+              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+          );
+      }
+      if (!gParameters.GetIsProspectiveAnalysis() && (gParameters.GetIterativeCutOffPValue() < 0 || gParameters.GetIterativeCutOffPValue() > 1)) {
+          bValid = false;
+          PrintDirection.Printf(
+              "%s:\nThe cutoff value for the iterative scan must be between 0 and 1 (inclusive) for a retrospective scan.\n",
+              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+          );
       }
     }
   } catch (prg_exception& x) {

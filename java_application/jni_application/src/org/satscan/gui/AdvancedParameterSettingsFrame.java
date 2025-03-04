@@ -515,11 +515,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void enableIterativeScanOptionsGroup(boolean bEnable) {
         _iterativeScanGroup.setEnabled(bEnable);
-        _performIterativeScanCheckBox.setEnabled(bEnable);
-        _maxIterativeScansLabel.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
-        _numIterativeScansTextField.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
-        _iterativeCutoffLabel.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
-        _iterativeScanCutoffTextField.setEnabled(_performIterativeScanCheckBox.isSelected() && bEnable);
+        _perform_iterative_scan.setEnabled(bEnable);
+        _maxIterativeScansLabel.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
+        _numIterativeScansTextField.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
+        _iterativeCutoffLabel.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
+        _iterative_scan_cutoff.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
+        
+        double val = Double.parseDouble(_iterative_scan_cutoff.getText());
+        if (_settings_window.isProspectiveScan()) {
+            if (val <= 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
+            _iterativeCutoffLabel.setText("Stop when the recurrance interval is less than:");
+        } else {
+            _iterativeCutoffLabel.setText("Stop when the p-value is greater than:");
+            if (val > 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
+        }              
     }
 
     public void enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType scanrate) {
@@ -660,7 +669,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMultipleLocationsGroup(true);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
-                enableIterativeScanOptionsGroup(false);
+                enableIterativeScanOptionsGroup(bSpaceTimePermutation);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
@@ -682,7 +691,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableMultipleLocationsGroup(true);
                 enableAdditionalDataSetsGroup(true);
                 enableIsotonicScan(false);
-                enableIterativeScanOptionsGroup(false);
+                enableIterativeScanOptionsGroup(bSpaceTimePermutation);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
@@ -918,9 +927,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_reportCriticalValuesCheckBox, false);
         bReturn &= Utils.selected(_radioDefaultPValues, true);
         bReturn &= Utils.selected(_checkReportGumbel, false);
-        bReturn &= Utils.selected(_performIterativeScanCheckBox, false);
+        bReturn &= Utils.selected(_perform_iterative_scan, false);
         bReturn &= Utils.integerIs(_numIterativeScansTextField, 10);
-        bReturn &= Utils.doubleIs(_iterativeScanCutoffTextField, 0.05);
+        bReturn &= Utils.doubleIs(_iterative_scan_cutoff, 0.05);
         bReturn &= Utils.integerIs(_montCarloReplicationsTextField, 999);
 
         // Spatial Window tab
@@ -1243,8 +1252,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()), true);
         parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), _reportedSpatialDistanceCheckBox.isEnabled() && _reportedSpatialDistanceCheckBox.isSelected(), true);
 
-        parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterativeScanCutoffTextField.getText()));
-        parameters.SetIterativeScanning(_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected());
+        // Inference tab
+        if (parameters.GetIsProspectiveAnalysis())
+            parameters.SetIterativeCutOffPValue(Double.valueOf(_iterative_scan_cutoff.getText()).intValue());
+        else
+            parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterative_scan_cutoff.getText()));        
+        parameters.SetIterativeScanning(_perform_iterative_scan.isEnabled() && _perform_iterative_scan.isSelected());
         parameters.SetNumIterativeScans(Integer.parseInt(_numIterativeScansTextField.getText()));
         parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
@@ -1256,6 +1269,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
         parameters.SetEarlyTermThreshold(Integer.parseInt(_earlyTerminationThreshold.getText()));
+        
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             parameters.SetIncludeClustersType(Parameters.IncludeClustersType.CLUSTERSINRANGE.ordinal());
         } else {
@@ -1851,7 +1865,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void validatePowerEvaluationsSettings() {
         if (_performPowerEvalautions.isEnabled() && _performPowerEvalautions.isSelected()) {
-            if (_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected()) {
+            if (_perform_iterative_scan.isEnabled() && _perform_iterative_scan.isSelected()) {
                 throw new AdvFeaturesExpection("The power evaluation can not be performed with the iterative scan statistic.\n", FocusedTabSet.ANALYSIS, (Component) _performPowerEvalautions);
             }
             if (_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
@@ -1909,14 +1923,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * validates Monte Carlo replications
      */
     private void validateInferenceSettings() {
-        //double        dNumReplications/*, dMaxReplications*/;
-        int dNumReplications;
-
         if (_montCarloReplicationsTextField.getText().length() == 0) {
             throw new AdvFeaturesExpection("Please specify a number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.",
                     FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
         }
-        dNumReplications = Integer.parseInt(_montCarloReplicationsTextField.getText());
+        int dNumReplications = Integer.parseInt(_montCarloReplicationsTextField.getText());
         if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || (dNumReplications + 1) % 1000 == 0))) {
             throw new AdvFeaturesExpection("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.",
                     FocusedTabSet.ANALYSIS, (Component) _montCarloReplicationsTextField);
@@ -1927,6 +1938,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 && (earlyTerminatationThreshold < 1 || earlyTerminatationThreshold > dNumReplications)) {
             throw new AdvFeaturesExpection("Invalid early termination cutoff.\nThe cutoff may be from 1 to number of specified replications (" + dNumReplications + ").",
                     FocusedTabSet.ANALYSIS, (Component) _earlyTerminationThreshold);
+        }
+        if (Utils.selected(_perform_iterative_scan)) {
+            double cutoff = Double.parseDouble(_iterative_scan_cutoff.getText());
+            if (_settings_window.isProspectiveScan() && cutoff < 1.0)
+                throw new AdvFeaturesExpection(
+                    "The recurrence interval cutoff for the iterative scan must\nbe greater than or equal to 1 for a prospective scan.", 
+                    FocusedTabSet.ANALYSIS, (Component) _iterative_scan_cutoff
+                );
+            if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
+                throw new AdvFeaturesExpection(
+                    "The p-value cutoff for the iterative scan must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    FocusedTabSet.ANALYSIS, (Component) _iterative_scan_cutoff
+                );
         }
     }
 
@@ -2191,9 +2215,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _earlyTerminationThreshold.setText("50");
         _checkReportGumbel.setSelected(false);
         _reportCriticalValuesCheckBox.setSelected(false);
-        _performIterativeScanCheckBox.setSelected(false);
+        _perform_iterative_scan.setSelected(false);
         _numIterativeScansTextField.setText("10");
-        _iterativeScanCutoffTextField.setText("0.05");
+        _iterative_scan_cutoff.setText("0.05");
         _montCarloReplicationsTextField.setText("999");
 
         // Spatial Window tab
@@ -2740,9 +2764,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _checkReportGumbel.setSelected(parameters.GetReportGumbelPValue());
         _earlyTerminationThreshold.setText(Integer.toString(parameters.GetEarlyTermThreshold()));
                 
-        _performIterativeScanCheckBox.setSelected(parameters.GetIsIterativeScanning());
+        _perform_iterative_scan.setSelected(parameters.GetIsIterativeScanning());
         _numIterativeScansTextField.setText(parameters.GetNumIterativeScansRequested() < 1 || parameters.GetNumIterativeScansRequested() > Parameters.MAXIMUM_ITERATIVE_ANALYSES ? "10" : Integer.toString(parameters.GetNumIterativeScansRequested()));
-        _iterativeScanCutoffTextField.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
+        _iterative_scan_cutoff.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
         _montCarloReplicationsTextField.setText(Integer.toString(parameters.GetNumReplicationsRequested()));
 
         // Miscellaneous analysis tab
@@ -2859,11 +2883,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME) {
             _temporalGraphPvalueCutoff.setText(Integer.toString(Double.valueOf(parameters.getTemporalGraphSignificantCutoff()).intValue()));
+            _iterative_scan_cutoff.setText(Integer.toString(Double.valueOf(parameters.GetIterativeCutOffPValue()).intValue()));
             _drilldown_restriction_cutoff.setText(Integer.toString(Double.valueOf(parameters.getDrilldownCutoff()).intValue()));
             _cutoff_value_email.setText(Integer.toString(Double.valueOf(parameters.getCutoffEmailValue()).intValue()));
             _cluster_lineline_value.setText(Integer.toString(Double.valueOf(parameters.getCutoffLineListCSV()).intValue()));
         } else {
-            _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));        
+            _temporalGraphPvalueCutoff.setText(Double.toString(parameters.getTemporalGraphSignificantCutoff()));
+            _iterative_scan_cutoff.setText(Double.toString(parameters.GetIterativeCutOffPValue()));
             _drilldown_restriction_cutoff.setText(Double.toString(parameters.getDrilldownCutoff()));
             _cutoff_value_email.setText(Double.toString(parameters.getCutoffEmailValue()));
             _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
@@ -2926,7 +2952,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableIndexBased &= eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.BERNOULLI;
         enableIndexBased &= !(_multivariateAdjustmentsRadioButton.isEnabled() && _multivariateAdjustmentsRadioButton.isSelected());
         enableIndexBased &= !(_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected());
-        enableIndexBased &= !(_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected());
+        enableIndexBased &= !(_perform_iterative_scan.isEnabled() && _perform_iterative_scan.isSelected());
         _giniOptimizedClusters.setEnabled(bEnableGroup && enableIndexBased);
         enableClustersReportedOptions(bEnableGroup);
     }
@@ -3172,11 +3198,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _checkReportGumbel = new javax.swing.JCheckBox();
         _earlyTerminationThreshold = new javax.swing.JTextField();
         _iterativeScanGroup = new javax.swing.JPanel();
-        _performIterativeScanCheckBox = new javax.swing.JCheckBox();
+        _perform_iterative_scan = new javax.swing.JCheckBox();
         _maxIterativeScansLabel = new javax.swing.JLabel();
         _numIterativeScansTextField = new javax.swing.JTextField();
         _iterativeCutoffLabel = new javax.swing.JLabel();
-        _iterativeScanCutoffTextField = new javax.swing.JTextField();
+        _iterative_scan_cutoff = new javax.swing.JTextField();
         _monteCarloGroup = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
@@ -5274,10 +5300,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
 
-            _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
-            _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-            _performIterativeScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-            _performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            _perform_iterative_scan.setText("Adjusting for More Likely Clusters"); // NOI18N
+            _perform_iterative_scan.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            _perform_iterative_scan.setMargin(new java.awt.Insets(0, 0, 0, 0));
+            _perform_iterative_scan.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     enableSettingsForAnalysisModelCombination();
                     enableSetDefaultsButton();
@@ -5285,7 +5311,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             });
 
             _maxIterativeScansLabel.setLabelFor(_numIterativeScansTextField);
-            _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
+            _maxIterativeScansLabel.setText("Maximum iterations:"); // NOI18N
 
             _numIterativeScansTextField.setText("10"); // NOI18N
             _numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -5309,29 +5335,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _iterativeCutoffLabel.setLabelFor(_iterativeScanCutoffTextField);
+            _iterativeCutoffLabel.setLabelFor(_iterative_scan_cutoff);
             _iterativeCutoffLabel.setText("Stop when the p-value is greater than:"); // NOI18N
 
-            _iterativeScanCutoffTextField.setText("0.05"); // NOI18N
-            _iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-                public void keyTyped(java.awt.event.KeyEvent e) {
-                    Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);
-                }
-            });
-            _iterativeScanCutoffTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-                public void focusLost(java.awt.event.FocusEvent e) {
-                    while (_iterativeScanCutoffTextField.getText().length() == 0 ||
-                        Double.parseDouble(_iterativeScanCutoffTextField.getText()) <= 0 ||
-                        Double.parseDouble(_iterativeScanCutoffTextField.getText()) > 1)
-                    if (undo.canUndo()) undo.undo(); else _iterativeScanCutoffTextField.setText(".05");
-                    enableSetDefaultsButton();
-                }
-            });
-            _iterativeScanCutoffTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-                public void undoableEditHappened(UndoableEditEvent evt) {
-                    undo.addEdit(evt.getEdit());
-                }
-            });
+            _iterative_scan_cutoff.setText("0.05"); // NOI18N
+            initCutoffJTextField(_iterative_scan_cutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);
 
             javax.swing.GroupLayout _iterativeScanGroupLayout = new javax.swing.GroupLayout(_iterativeScanGroup);
             _iterativeScanGroup.setLayout(_iterativeScanGroupLayout);
@@ -5348,20 +5356,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addGap(18, 18, 18)
                             .addComponent(_iterativeCutoffLabel)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(_performIterativeScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(_iterative_scan_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_perform_iterative_scan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
             );
             _iterativeScanGroupLayout.setVerticalGroup(
                 _iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_iterativeScanGroupLayout.createSequentialGroup()
-                    .addComponent(_performIterativeScanCheckBox)
+                    .addComponent(_perform_iterative_scan)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_iterativeScanGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_maxIterativeScansLabel)
                         .addComponent(_numIterativeScansTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_iterativeCutoffLabel)
-                        .addComponent(_iterativeScanCutoffTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_iterative_scan_cutoff, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
@@ -7133,8 +7141,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _inferenceTab;
     private javax.swing.JList _inputDataSetsList;
     private javax.swing.JLabel _iterativeCutoffLabel;
-    private javax.swing.JTextField _iterativeScanCutoffTextField;
     private javax.swing.JPanel _iterativeScanGroup;
+    private javax.swing.JTextField _iterative_scan_cutoff;
     private javax.swing.JPanel _knownAdjustmentsGroup;
     private javax.swing.JLabel _labelMonteCarloReplications;
     private javax.swing.JLabel _label_kml_options;
@@ -7218,8 +7226,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _percentageOfStudyPeriodLabel;
     private javax.swing.JRadioButton _percentageTemporalRadioButton;
     private javax.swing.JCheckBox _performIsotonicScanCheckBox;
-    private javax.swing.JCheckBox _performIterativeScanCheckBox;
     private javax.swing.JCheckBox _performPowerEvalautions;
+    private javax.swing.JCheckBox _perform_iterative_scan;
     private javax.swing.JButton _populationFileBrowseButton;
     private javax.swing.JLabel _populationFileLabel;
     private javax.swing.JTextField _populationFileTextField;

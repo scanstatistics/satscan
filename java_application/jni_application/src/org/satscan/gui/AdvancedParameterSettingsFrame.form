@@ -2671,9 +2671,9 @@
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="_iterativeCutoffLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_iterativeScanCutoffTextField" min="-2" pref="70" max="-2" attributes="1"/>
+                                  <Component id="_iterative_scan_cutoff" min="-2" pref="70" max="-2" attributes="1"/>
                               </Group>
-                              <Component id="_performIterativeScanCheckBox" alignment="0" max="32767" attributes="0"/>
+                              <Component id="_perform_iterative_scan" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -2682,13 +2682,13 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="_performIterativeScanCheckBox" min="-2" max="-2" attributes="0"/>
+                          <Component id="_perform_iterative_scan" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_maxIterativeScansLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_numIterativeScansTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_iterativeCutoffLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_iterativeScanCutoffTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_iterative_scan_cutoff" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2696,7 +2696,7 @@
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="_performIterativeScanCheckBox">
+                <Component class="javax.swing.JCheckBox" name="_perform_iterative_scan">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Adjusting for More Likely Clusters" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -2709,7 +2709,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_perform_iterative_scan.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxIterativeScansLabel">
@@ -2717,7 +2717,7 @@
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="_numIterativeScansTextField"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Maximum number of iterations:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Maximum iterations:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numIterativeScansTextField">
@@ -2731,17 +2731,17 @@
                 <Component class="javax.swing.JLabel" name="_iterativeCutoffLabel">
                   <Properties>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                      <ComponentRef name="_iterativeScanCutoffTextField"/>
+                      <ComponentRef name="_iterative_scan_cutoff"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Stop when the p-value is greater than:" noResource="true"/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JTextField" name="_iterativeScanCutoffTextField">
+                <Component class="javax.swing.JTextField" name="_iterative_scan_cutoff">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="0.05" noResource="true"/>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);&#xa;    }&#xa;});&#xa;_iterativeScanCutoffTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_iterativeScanCutoffTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_iterativeScanCutoffTextField.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_iterativeScanCutoffTextField.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _iterativeScanCutoffTextField.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_iterativeScanCutoffTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="initCutoffJTextField(_iterative_scan_cutoff, AppConstants.DEFAULT_RECURRENCE_CUTOFF, AppConstants.DEFAULT_PVALUE_CUTOFF);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

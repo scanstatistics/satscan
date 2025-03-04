@@ -637,7 +637,7 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp, bool isDrilldown) const
                     settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (_parameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
             }
             if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
-                settings.push_back(std::make_pair("Cutoff of Deteted Cluster", printString(buffer, "%g", _parameters.getDrilldownCutoff())));
+                settings.push_back(std::make_pair("Cutoff of Detected Cluster", printString(buffer, "%g", _parameters.getDrilldownCutoff())));
                 settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumLocationsCluster())));
                 settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumCasesCluster())));
             }
@@ -799,7 +799,7 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
                 printString(buffer, "%u", _parameters.GetNumIterativeScansRequested());
                 settings.push_back(std::make_pair("Maximum Number of Iterations",buffer));
                 printString(buffer, "%g", _parameters.GetIterativeCutOffPValue());
-                settings.push_back(std::make_pair("Stop When P-value Greater",buffer));
+                settings.push_back(std::make_pair("Iterative Scan Cluster Cutoff",buffer));
             }
         }
         WriteSettingsContainer(settings, "Inference", fp);
