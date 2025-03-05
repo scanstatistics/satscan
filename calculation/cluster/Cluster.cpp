@@ -885,13 +885,14 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
       params.GetProbabilityModelType() == RANK ||
       params.GetProbabilityModelType() == UNIFORMTIME ||
-      (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
-     printClusterData(fp, PrintFormat, "Test statistic", printString(buffer, "%lf", m_nRatio), false);
+      (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && 
+       (params.GetProbabilityModelType() == POISSON || params.GetProbabilityModelType() == BERNOULLI))) {
+     printClusterData(fp, PrintFormat, "Test statistic", printString(buffer, "%lf", m_nRatio), true);
   } else {
-    printClusterData(fp, PrintFormat, "Log likelihood ratio", printString(buffer, "%lf", m_nRatio / m_NonCompactnessPenalty), false);
+    printClusterData(fp, PrintFormat, "Log likelihood ratio", printString(buffer, "%lf", m_nRatio / m_NonCompactnessPenalty), true);
     if (params.GetSpatialWindowType() == ELLIPTIC) {
       printString(buffer, "%lf", m_nRatio);
-      printClusterData(fp, PrintFormat, "Test statistic", buffer, false);
+      printClusterData(fp, PrintFormat, "Test statistic", buffer, true);
     }
   }
 }

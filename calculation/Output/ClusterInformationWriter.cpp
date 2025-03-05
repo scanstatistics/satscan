@@ -134,7 +134,11 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
         CreateField(vFieldDefinitions, END_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
     }
     CreateField(vFieldDefinitions, NUM_LOCATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
-    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || 
+        gParameters.GetProbabilityModelType() == RANK ||
+        gParameters.GetProbabilityModelType() == UNIFORMTIME || 
+        (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION &&
+         (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)))
       CreateField(vFieldDefinitions, TST_STAT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     else {
       CreateField(vFieldDefinitions, LOG_LIKL_RATIO_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -329,7 +333,11 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         CentroidNeighborCalculator::getLocationsAboutCluster(gDataHub, theCluster, &bLocations, 0);
         Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() = bLocations.count();
     }
-    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
+        gParameters.GetProbabilityModelType() == RANK ||
+        gParameters.GetProbabilityModelType() == UNIFORMTIME ||
+        (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION &&
+         (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)))
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
       Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty();
