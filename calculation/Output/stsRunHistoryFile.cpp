@@ -11,9 +11,6 @@
 #include "AnalysisRun.h"
 #include "stsRunHistoryFile.h"
 #include "Toolkit.h"
-#ifdef __BORLANDC__
-  #include <syncobjs.hpp>
-#endif  
 
 const int       OUTPUT_FILE_FIELD_LENGTH        = 254;
 
@@ -97,7 +94,7 @@ void stsRunHistoryFile::CreateRunHistoryFile() {
 // converter function to turn the iType into a legible string for printing
 // pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME)
 // post : string will be assigned a formatted value based on iType
-void stsRunHistoryFile::GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType) {
+std::string& stsRunHistoryFile::GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType) {
   switch(eAnalysisType) {
     case PURELYSPATIAL             : sTempValue = "Purely Spatial"; break;
     case PURELYTEMPORAL            : sTempValue = "Purely Temporal"; break;
@@ -108,12 +105,13 @@ void stsRunHistoryFile::GetAnalysisTypeString(std::string& sTempValue, AnalysisT
     case SEASONALTEMPORAL          : sTempValue = "Seasonal Temporal"; break;
     default : throw prg_error("Invalid analysis type in the run history file.", "stsRunHistoryFile");
   }
+  return sTempValue;
 }
 
 // converts the iPrecision into a legible string for printing
 // pre : 0 <= iPrecision <= 3
 // post : string is assigned a formatted value based on iPrecision
-void stsRunHistoryFile::GetCasePrecisionString(std::string& sTempValue, int iPrecision) {
+std::string& stsRunHistoryFile::GetCasePrecisionString(std::string& sTempValue, int iPrecision) {
   switch (iPrecision) {
      case 0: sTempValue = "None"; break;
      case 1: sTempValue = "Year"; break;
@@ -121,24 +119,26 @@ void stsRunHistoryFile::GetCasePrecisionString(std::string& sTempValue, int iPre
      case 3: sTempValue = "Day";  break;
      default : throw prg_error("Invalid case time precision in run history file.", "GetCasePrecisionString");
   }
+  return sTempValue;
 }
 
 // formats include clusters type to string to be written to file
 // pre:  eAnalysisType type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
 // post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
 //       "true" or "false" string
-void stsRunHistoryFile::GetIncludeClustersTypeString(std::string& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
+std::string& stsRunHistoryFile::GetIncludeClustersTypeString(std::string& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
   if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)
     sTempValue = "n/a";
   else
     sTempValue = (eIncludeClustersType == ALIVECLUSTERS ? "true" : "false");
+  return sTempValue;
 }
 
 // basically a converter function which converts the Interval units from the way we store
 // them as ints to a legible string to be printed in the file
 // pre : 0 <= iUnits <= 3, sTempValue has been allocated
 // post: will assign the appropraite value to the string so that it can be printed
-void stsRunHistoryFile::GetIntervalUnitsString(std::string& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType) {
+std::string& stsRunHistoryFile::GetIntervalUnitsString(std::string& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType) {
   if (eAnalysisType == PURELYSPATIAL)
     sTempValue = "n/a";
   else {
@@ -151,12 +151,13 @@ void stsRunHistoryFile::GetIntervalUnitsString(std::string& sTempValue, int iUni
        default: throw prg_error("Invalid interval units in run history file.", "GetIntervalUnitsString()");
     }
   }
+  return sTempValue;
 }
 
 // sets up the string to be outputted in max geo extent field
 // pre: none
 // post: sets sTempValue to the number and units of max geo extent
-void stsRunHistoryFile::GetMaxGeoExtentString(std::string& sTempValue, const CParameters& params) {
+std::string& stsRunHistoryFile::GetMaxGeoExtentString(std::string& sTempValue, const CParameters& params) {
   if (params.GetAnalysisType() == PURELYTEMPORAL || params.UseLocationNeighborsFile())
      sTempValue = "n/a";
   else {
@@ -166,16 +167,16 @@ void stsRunHistoryFile::GetMaxGeoExtentString(std::string& sTempValue, const CPa
       else
         printString(sTempValue, "%.2lf %s", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false),
                     (params.GetCoordinatesType() == CARTESIAN ? "Cartesian Units" : "Kilometers"));
-    }
-    else
+    } else
       printString(sTempValue, "%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
   }
+  return sTempValue;
 }
 
 // sets up the string to be outputted in max temporal extent field
 // pre: none
 // post: sets sTempValue to the number and units of max temporal extent
-void stsRunHistoryFile::GetMaxTemporalExtentString(std::string& sTempValue, const CParameters& params) {
+std::string& stsRunHistoryFile::GetMaxTemporalExtentString(std::string& sTempValue, const CParameters& params) {
   if (params.GetAnalysisType() == PURELYSPATIAL)
     sTempValue = "n/a";
   else {
@@ -192,12 +193,13 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(std::string& sTempValue, cons
        sTempValue += "Years";
     }
   }
+  return sTempValue;
 }
 
 // a converter function to convert the stored int into a legible string to be printed
 // pre: eProbabiltyModelType conatined in (POISSON, BERNOULLI, SPACETIMEPERMUTATION) and sTempValue allocated
 // post : string will contain the formatted value for printing
-void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType) {
+std::string& stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType) {
   switch(eProbabilityModelType) {
     case POISSON : sTempValue = "Discrete Poisson";  break;
     case BERNOULLI : sTempValue = "Bernoulli";  break;
@@ -212,12 +214,13 @@ void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, Proba
     case HOMOGENEOUSPOISSON : sTempValue = "Continuous Poisson"; break;
     default : throw prg_error("Invalid probability model in the run history file.", "stsRunHistoryFile");
   }
+  return sTempValue;
 }
 
 // converter function to make a legible string for printing
 // pre : eAreaRateType conatined in (HIGH, LOW, HIGHANDLOW) and sTempValue allocated
 // post : will assign the appropraite formated value to sTempValue
-void stsRunHistoryFile::GetRatesString(std::string& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType) {
+std::string& stsRunHistoryFile::GetRatesString(std::string& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType) {
   if (eAnalysisType == SPATIALVARTEMPTREND)
     sTempValue = "n/a";
   else {
@@ -228,13 +231,15 @@ void stsRunHistoryFile::GetRatesString(std::string& sTempValue, AnalysisType eAn
       default : throw prg_error("Invalid rate defined in run history file.", "stsRunHistoryFile");
     }
   }
+  return sTempValue;
 }
 
 // converts the iType to a legible string for printing
 //  pre : iType is conatined in (TEMPORAL_NOTADJUSTED, TEMPORAL_NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
 // post : string will be assigned a formatted value based upon iType
-void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iType, AnalysisType eAnalysisType,
-                                                ProbabilityModelType eProbabilityModelType) {
+std::string& stsRunHistoryFile::GetTimeAdjustmentString(
+    std::string& sTempValue, int iType, AnalysisType eAnalysisType, ProbabilityModelType eProbabilityModelType
+) {
   if (eProbabilityModelType == SPACETIMEPERMUTATION)
     sTempValue = "n/a";
   else if (eProbabilityModelType == POISSON && eAnalysisType == PURELYSPATIAL)
@@ -251,137 +256,95 @@ void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iTy
       default : throw prg_error("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
     }
   }
+  return sTempValue;
 }
 
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
 void stsRunHistoryFile::LogNewHistory(const AnalysisExecution& analysisExecution) {
-   std::string                  sTempValue, sInterval;
-   std::auto_ptr<dBaseFile>     pFile;
-   bool                         bFound(false);
-   double                       dTopClusterRatio=0;
-   
-#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
-      std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
-      pSection->Acquire();
-#endif
+    std::string buffer;
+    const CParameters & params(analysisExecution.getParameters());
+    dBaseFile logFile(gsFilename.c_str(),  true);
+    std::auto_ptr<dBaseRecord> pRecord(logFile.GetNewRecord());
 
-      const CParameters & params(analysisExecution.getParameters());
-
-      // NOTE: I'm going to document the heck out of this section for two reasons :
-      // 1) in case they change the run specs on us at any time
-      // 2) to present my assumptions about the output data in case any happen to be incorrect
-      // , so bear with me - AJV 9/3/2002
-
-      pFile.reset(new dBaseFile(gsFilename.c_str(),  true));
-      std::auto_ptr<dBaseRecord> pRecord(pFile->GetNewRecord());
-
-      // NOTE : ordering in which the data is added does not matter here in this function due to the use of the
-      // GetFieldNumber function which finds the appropraite field number for the SetField functions and inserts
-      // the data in that field - ordering is determined solely in the CreateRunHistoryFile function by the order the
-      // fields are added to the vector in that function
-
-      //  run number field
-      SetDoubleField(*pRecord, (double)(pFile->GetNumRecords() + 1), GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
-
-      // run time and date field
-      sTempValue = ctime(analysisExecution.getStartTime());
-      StripCRLF(sTempValue);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RUN_TIME_FIELD));
-
-      // output file name field
-      sTempValue = params.GetOutputFileName().c_str();
-      StripCRLF(sTempValue);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, OUTPUT_FILE_FIELD));
-      SetAdditionalOutputFileNameString(sTempValue, params);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
-
-      // probability model field
-      GetProbabilityModelString(sTempValue, params.GetProbabilityModelType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PROB_MODEL_FIELD));
-
-      // rates(high, low or both) field
-      GetRatesString(sTempValue, params.GetAnalysisType(), params.GetAreaScanRateType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
-
-      // coordinate type field
-      if (!params.UseLocationNeighborsFile() && (params.UseCoordinatesFile() || params.UseSpecialGrid()))
-        sTempValue = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
-      else
-        sTempValue = "n/a";
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
-
-      // analysis type field
-      GetAnalysisTypeString(sTempValue, params.GetAnalysisType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
-
-      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));   // total number of cases field
-      SetDoubleField(*pRecord, analysisExecution.getDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));  // total population field
-      SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetNumIdentifiers(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));     // number of geographic areas field
-
-      // precision of case times field
-      sTempValue = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
-
-      //  max geographic extent field
-      GetMaxGeoExtentString(sTempValue, params);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));
-
-      // max temporal extent field
-      GetMaxTemporalExtentString(sTempValue, params);
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
-
-      // time trend adjustment field
-      GetTimeAdjustmentString(sTempValue, params.GetTimeTrendAdjustmentType(), params.GetAnalysisType(), params.GetProbabilityModelType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD));
-
-      // covariates number
-      SetDoubleField(*pRecord,
-                     (double)analysisExecution.getDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).getPopulationData().GetNumCovariateCategories(),
-                     GetFieldNumber(gvFields, COVARIATES_FIELD));
-
-      SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
-      SetStringField(*pRecord, params.GetStudyPeriodStartDate().c_str(), GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
-      SetStringField(*pRecord, params.GetStudyPeriodEndDate().c_str(), GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
-
-      GetIncludeClustersTypeString(sTempValue, params.GetAnalysisType(), params.GetIncludeClustersType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)); // alive clusters only field
-
-      // interval field
-      GetIntervalUnitsString(sTempValue, params.GetTimeAggregationUnitsType(), params.GetTimeAggregationUnitsType(), params.GetAnalysisType());
-      SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
-
-      // p-value field
-      bool bPrintPValue = params.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
-      if(bPrintPValue) {
-         if (analysisExecution.getLargestMaximaClusterCollection().GetNumClustersRetained()) {
+    //  run number field
+    SetDoubleField(*pRecord, (double)(logFile.GetNumRecords() + 1), GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
+    // run time and date field
+    buffer = ctime(analysisExecution.getStartTime());
+    SetStringField(*pRecord, StripCRLF(buffer), GetFieldNumber(gvFields, RUN_TIME_FIELD));
+    // output file name field
+    buffer = params.GetOutputFileName().c_str();
+    SetStringField(*pRecord, StripCRLF(buffer), GetFieldNumber(gvFields, OUTPUT_FILE_FIELD));
+    SetAdditionalOutputFileNameString(buffer, params);
+    SetStringField(*pRecord, buffer, GetFieldNumber(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD));
+    // probability model field
+    SetStringField(*pRecord, GetProbabilityModelString(buffer, params.GetProbabilityModelType()), GetFieldNumber(gvFields, PROB_MODEL_FIELD));
+    // rates(high, low or both) field
+    SetStringField(*pRecord, GetRatesString(buffer, params.GetAnalysisType(), params.GetAreaScanRateType()), GetFieldNumber(gvFields, RATES_FIELD));
+    // coordinate type field
+    if (!params.UseLocationNeighborsFile() && (params.UseCoordinatesFile() || params.UseSpecialGrid()))
+        buffer = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
+    else
+        buffer = "n/a";
+    SetStringField(*pRecord, buffer, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
+    // analysis type field
+    SetStringField(*pRecord, GetAnalysisTypeString(buffer, params.GetAnalysisType()), GetFieldNumber(gvFields, ANALYSIS_TYPE_FIELD));
+    SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetTotalCases(), GetFieldNumber(gvFields, NUM_CASES_FIELD));
+    SetDoubleField(*pRecord, analysisExecution.getDataHub().GetTotalPopulationCount(), GetFieldNumber(gvFields, TOTAL_POP_FIELD));
+    SetDoubleField(*pRecord, (double)analysisExecution.getDataHub().GetNumIdentifiers(), GetFieldNumber(gvFields, NUM_GEO_AREAS_FIELD));
+    // precision of case times field
+    buffer = (params.GetPrecisionOfTimesType() == NONE ? "No" : "Yes");
+    SetStringField(*pRecord, buffer, GetFieldNumber(gvFields, PRECISION_TIMES_FIELD));
+    //  max geographic extent field
+    SetStringField(*pRecord, GetMaxGeoExtentString(buffer, params), GetFieldNumber(gvFields, MAX_GEO_EXTENT_FIELD));
+    // max temporal extent field
+    SetStringField(*pRecord, GetMaxTemporalExtentString(buffer, params), GetFieldNumber(gvFields, MAX_TIME_EXTENT_FIELD));
+    // time trend adjustment field
+    SetStringField(*pRecord, 
+        GetTimeAdjustmentString(buffer, params.GetTimeTrendAdjustmentType(), params.GetAnalysisType(), params.GetProbabilityModelType()),
+        GetFieldNumber(gvFields, TIME_TREND_ADJUSTMENT_FIELD)
+    );
+    // covariates number
+    SetDoubleField(*pRecord,
+        (double)analysisExecution.getDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).getPopulationData().GetNumCovariateCategories(),
+        GetFieldNumber(gvFields, COVARIATES_FIELD)
+    );
+    SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field
+    SetStringField(*pRecord, params.GetStudyPeriodStartDate().c_str(), GetFieldNumber(gvFields, START_DATE_FIELD));  // start date field
+    SetStringField(*pRecord, params.GetStudyPeriodEndDate().c_str(), GetFieldNumber(gvFields, END_DATE_FIELD)); // end date field
+    SetStringField(*pRecord, 
+        GetIncludeClustersTypeString(buffer, params.GetAnalysisType(), params.GetIncludeClustersType()), 
+        GetFieldNumber(gvFields, ALIVE_ONLY_FIELD)
+    );
+    // interval field
+    SetStringField(*pRecord, 
+        GetIntervalUnitsString(buffer, params.GetTimeAggregationUnitsType(), params.GetTimeAggregationUnitsType(), params.GetAnalysisType()), 
+        GetFieldNumber(gvFields, INTERVAL_FIELD)
+    );
+    // p-value field
+    bool bPrintPValue = params.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
+    if (bPrintPValue) {
+        double dTopClusterRatio = 0;
+        if (analysisExecution.getLargestMaximaClusterCollection().GetNumClustersRetained()) {
             const CCluster & topCluster = analysisExecution.getLargestMaximaClusterCollection().GetTopRankedCluster();
             dTopClusterRatio = topCluster.getReportingPValue(params, analysisExecution.getSimVariables(), true);
-         }
-         SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
-      }
-      else
-         pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
-      SetDoubleField(*pRecord, (double)analysisExecution.getNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
-
-      if(!params.GetIsIterativeScanning() && bPrintPValue && analysisExecution.getIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
-         SetDoubleField(*pRecord, analysisExecution.getSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
-         SetDoubleField(*pRecord, analysisExecution.getSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
-         SetDoubleField(*pRecord, (double)analysisExecution.getNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
-      }
-      else {
-         pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));
-         pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_005_FIELD));
-         pRecord->PutBlank(GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));
-      }
-
-      pFile->DataAppend(*pRecord);
-      pFile->Close();
-
-#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
-      pSection->Release();
-#endif
+        }
+        SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
+    } else
+        pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
+    SetDoubleField(*pRecord, (double)analysisExecution.getNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));
+    if (!params.GetIsIterativeScanning() && bPrintPValue && analysisExecution.getIsCalculatingSignificantRatios()) {
+       SetDoubleField(*pRecord, analysisExecution.getSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
+       SetDoubleField(*pRecord, analysisExecution.getSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
+       SetDoubleField(*pRecord, (double)analysisExecution.getNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
+    } else {
+        pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_001_FIELD));
+        pRecord->PutBlank(GetFieldNumber(gvFields, CUTOFF_005_FIELD));
+        pRecord->PutBlank(GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));
+    }
+    logFile.DataAppend(*pRecord);
+    logFile.Close();
 }
 
 // small helper function for replacing the extension of a filename and appending it to the tempstring
@@ -450,9 +413,10 @@ void stsRunHistoryFile::SetFileName(const std::string& sFileName) {
 // strips the carriage return and line feed off of the string because some File's don't like them embedded in fields
 // pre: none
 // post: returns the string by reference without the CR or LF
-void stsRunHistoryFile::StripCRLF(std::string& sStore) {
+std::string& stsRunHistoryFile::StripCRLF(std::string& sStore) {
   sStore.erase(sStore.find_last_not_of('\n')+1);
   sStore.erase(sStore.find_last_not_of('\r')+1);
+  return sStore;
 }
 
 

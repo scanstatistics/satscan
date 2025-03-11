@@ -42,27 +42,27 @@ class stsRunHistoryFile {
       ptr_vector<FieldDef>	        gvFields;
       BasePrint*                    gpPrintDirection;
 
-      void      GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType);
-      void      GetCasePrecisionString(std::string& sTempValue, int iPrecision);
-      void      GetIncludeClustersTypeString(std::string& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType);
-      void      GetIntervalUnitsString(std::string& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType);
-      void      GetMaxGeoExtentString(std::string& sTempValue, const CParameters& params);
-      void      GetMaxTemporalExtentString(std::string& sTempValue, const CParameters& params);
-      void      GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType);
-      void      GetRatesString(std::string& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType);
-      void      GetTimeAdjustmentString(std::string& sTempValue, int iType, AnalysisType eAnalysisType, ProbabilityModelType eProbabilityModelType);
-      void      ReplaceExtensionAndAppend(std::string& sOutputFileNames, const FileName& sSourceFileName, const std::string& sReplacementExtension);
-      void      SetAdditionalOutputFileNameString(std::string& sOutputFileNames, const CParameters& params);
-      void      SetFileName(const std::string& sFileName);
-      void      StripCRLF(std::string& sStore);
+      std::string& GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType);
+      std::string& GetCasePrecisionString(std::string& sTempValue, int iPrecision);
+      std::string& GetIncludeClustersTypeString(std::string& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType);
+      std::string& GetIntervalUnitsString(std::string& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType);
+      std::string& GetMaxGeoExtentString(std::string& sTempValue, const CParameters& params);
+      std::string& GetMaxTemporalExtentString(std::string& sTempValue, const CParameters& params);
+      std::string& GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType);
+      std::string& GetRatesString(std::string& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType);
+      std::string& GetTimeAdjustmentString(std::string& sTempValue, int iType, AnalysisType eAnalysisType, ProbabilityModelType eProbabilityModelType);
+      void         ReplaceExtensionAndAppend(std::string& sOutputFileNames, const FileName& sSourceFileName, const std::string& sReplacementExtension);
+      void         SetAdditionalOutputFileNameString(std::string& sOutputFileNames, const CParameters& params);
+      void         SetFileName(const std::string& sFileName);
+      std::string& StripCRLF(std::string& sStore);
    protected:
-      void      CreateRunHistoryFile();
+      void         CreateRunHistoryFile();
    public:
       stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection);
       ~stsRunHistoryFile();
 
-      const std::string&GetRunHistoryFileName() const {return gsFilename;}
-      void              LogNewHistory(const AnalysisExecution& analysisExecution);
+      const std::string& GetRunHistoryFileName() const {return gsFilename;}
+      void         LogNewHistory(const AnalysisExecution& analysisExecution);
 
 };
 

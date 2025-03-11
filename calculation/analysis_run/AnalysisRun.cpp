@@ -1077,15 +1077,10 @@ void  AnalysisExecution::logRunHistory() {
         if (_parameters.GetIsLoggingHistory()) {
             _print_direction.Printf("Logging run history ...\n", BasePrint::P_STDOUT);
             macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-
-            /*
-            stsRunHistoryFile(_parameters, gPrintDirection).LogNewHistory(*this);
-            */
-
+            stsRunHistoryFile(_parameters, _print_direction).LogNewHistory(*this);
             macroRunTimeStopSerial();
         }
-    }
-    catch (...) {
+    } catch (...) {
         // If fails for any reason, notify user and continue ...
         _print_direction.Printf("Notice: Logging run history failed.\n", BasePrint::P_NOTICE);
     }
