@@ -20,6 +20,8 @@
 #include "LocationRelevance.h"
 #include "LocationNetwork.h"
 
+class LocationsReportHelper;
+
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
@@ -92,6 +94,7 @@ class CSaTScanData {
     mutable ClusterLocationCache_t              _cluster_locations_cache;
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
+    mutable boost::shared_ptr<LocationsReportHelper> _report_helper;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -112,6 +115,7 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
+    boost::shared_ptr<LocationsReportHelper> getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }
     Network                                   & getLocationNetwork() { return  _locations_network; }
     const Network                             & refLocationNetwork() const { return  _locations_network; }
@@ -121,7 +125,7 @@ class CSaTScanData {
     void                                        CalculateExpectedCases();
     void                                        clearClusterLocationsCache();
     virtual void                                DisplayNeighbors(FILE* pFile) const;
-    virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const;
+    virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance, const MostLikelyClustersContainer& mlc) const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
     bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }

@@ -1332,7 +1332,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
   try {
     // Just suppress this setting for situations that don't allow it.
     if (gParameters.GetOutputRelativeRisksFiles() &&
-        (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
+        (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
          gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL|| gParameters.GetProbabilityModelType() == UNIFORMTIME)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);

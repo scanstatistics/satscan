@@ -1116,14 +1116,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputClusterCaseDBase(_clusterCaseInColumnFormatDBaseCheckBox.isSelected());
         parameters.SetOutputAreaSpecificAscii(_censusAreasReportedClustersAsciiCheckBox.isSelected());
         parameters.SetOutputAreaSpecificDBase(_censusAreasReportedClustersDBaseCheckBox.isSelected());
-        parameters.SetOutputRelativeRisksAscii(_relativeRiskEstimatesAreaAsciiCheckBox.isSelected() && _relativeRiskEstimatesAreaAsciiCheckBox.isEnabled());
-        parameters.SetOutputRelativeRisksDBase(_relativeRiskEstimatesAreaDBaseCheckBox.isSelected() && _relativeRiskEstimatesAreaDBaseCheckBox.isEnabled());
+        parameters.SetOutputRelativeRisksAscii(Utils.selected(_relativeRiskEstimatesAreaAsciiCheckBox));
+        parameters.SetOutputRelativeRisksDBase(Utils.selected(_relativeRiskEstimatesAreaDBaseCheckBox));
         parameters.SetOutputSimLogLikeliRatiosAscii(_simulatedLogLikelihoodRatiosAsciiCheckBox.isSelected());
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
-        parameters.setOutputKMLFile(_reportGoogleEarthKML.isEnabled() && _reportGoogleEarthKML.isSelected());
-        parameters.setOutputShapeFiles(_reportShapefile.isEnabled() && _reportShapefile.isSelected());
-        parameters.setOutputCartesianGraph(_reportCartesianGraph.isEnabled() && _reportCartesianGraph.isSelected());
-        parameters.setOutputGoogleMapsFile(_reportGoogleMap.isEnabled() && _reportGoogleMap.isSelected());
+        parameters.setOutputKMLFile(Utils.selected(_reportGoogleEarthKML));
+        parameters.setOutputShapeFiles(Utils.selected(_reportShapefile));
+        parameters.setOutputCartesianGraph(Utils.selected(_reportCartesianGraph));
+        parameters.setOutputGoogleMapsFile(Utils.selected(_reportGoogleMap));
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
         
@@ -1343,21 +1343,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaAsciiCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaDBaseCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaLabel.setEnabled(bRelativeRisks);
-        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
-                                         !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                                           getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                                           getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
-        _reportShapefile.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
-                                    !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                                      getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                                      getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
-        _reportCartesianGraph.setEnabled(!(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                                           getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                                           getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
-        _reportGoogleMap.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && 
-                                    !(getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                                      getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                                      getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL));
+        boolean isPurelyTemporalAnalysis = (
+            getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+            getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL
+        );
+        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && !isPurelyTemporalAnalysis);
+        _reportShapefile.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && !isPurelyTemporalAnalysis);
+        _reportCartesianGraph.setEnabled(!isPurelyTemporalAnalysis);
+        _reportGoogleMap.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON && !isPurelyTemporalAnalysis);
     }
 
     /**
@@ -1370,7 +1364,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         enableDatesByTimePrecisionUnits();
         enableTimeAggregationGroup(eAnalysisType != Parameters.AnalysisType.PURELYSPATIAL);        
         enableAdditionalOutFilesOptionsGroup(
-                eModelType != Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
                 eModelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
                 eModelType != Parameters.ProbabilityModelType.ORDINAL &&
                 eModelType != Parameters.ProbabilityModelType.UNIFORMTIME &&

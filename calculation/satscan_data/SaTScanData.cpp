@@ -15,6 +15,7 @@
 #include "DateStringParser.h"
 #include "BatchedRandomizer.h"
 #include "SpaceTimeRandomizer.h"
+#include "LocationRiskEstimateWriter.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -439,6 +440,11 @@ double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
   }
   else
     return 1.0;
+}
+
+boost::shared_ptr<LocationsReportHelper> CSaTScanData::getLocationReportHelper() const {
+    if (!_report_helper.get()) _report_helper.reset(new LocationsReportHelper(*this));
+    return _report_helper;
 }
 
 /** Input: Date.                                                    **/

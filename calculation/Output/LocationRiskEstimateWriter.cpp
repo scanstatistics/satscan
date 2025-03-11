@@ -8,6 +8,59 @@
 #include "SSException.h"
 #include "ParametersPrint.h"
 #include "WeightedNormalRandomizer.h"
+#include "MostLikelyClustersContainer.h"
+
+//---------------------------- LocationsReportHelper ------------------------------------------
+
+LocationsReportHelper::LocationsReportHelper(const CSaTScanData& data_hub): _data_hub(data_hub) {
+    // Compile the list of locations to identifiers - this is the opposite of storage.
+    const auto& identifiers = _data_hub.getIdentifierInfo().getIdentifiers();
+    for (size_t idx = 0; idx < static_cast<size_t>(_data_hub.GetNumIdentifiers()); ++idx) {
+        const auto& locations = identifiers[idx]->getLocations();
+        for (size_t t = 0; t < locations.size(); ++t) {
+            const Location* location = locations[t];
+            if (_location_to_identifiers.find(location) == _location_to_identifiers.end())
+                _location_to_identifiers.emplace(location, IndentifierList_t());
+            _location_to_identifiers[location].add(idx, false);
+        }
+    }
+    // Store which locations will be reported in results - sometimes not all locations are utilized by analysis - for example this could happen with networks.
+    _report_locations.resize(_data_hub.getLocationsManager().locations().size());
+    for (auto& loc_ids : _location_to_identifiers)
+        _report_locations.set(loc_ids.first->index());
+    // Report all meta identifiers/locations.
+    _report_locations.resize(_report_locations.size() + _data_hub.GetNumMetaIdentifiers(), true);
+}
+
+/** Add location risk data to storage. */
+void LocationsReportHelper::addRptLocationRiskData(size_t loc_idx, const std::vector<FieldValue>& riskdata) {
+    _location_riskdata[loc_idx] = riskdata;
+}
+
+/*  Assigns the location name and obtains the identifier indexes associated with it.
+    In the most general and common application, identifier and location reference the same label/name. */
+void LocationsReportHelper::getLocationInfo(unsigned int locIdx, std::vector<tract_t>& identifierIndexes, std::string& name, unsigned int nameMax) const {
+    const auto& identifierInfo = _data_hub.getIdentifierInfo();
+    identifierIndexes.clear();
+    if (locIdx < identifierInfo.getLocationsManager().locations().size()) { // Is this an actual location?
+        const auto& location = identifierInfo.getLocationsManager().locations()[locIdx].get();
+        _location_to_identifiers.at(location).get(identifierIndexes);
+        name = location->name();
+        bool combined = false;
+        for (unsigned int t = 0; t < identifierIndexes.size() && !combined; ++t)
+            combined = identifierInfo.getIdentifiers()[identifierIndexes[t]]->getCombinedWith().size();
+        // If the identifer is combined, try appending the string "et al" to indicate this situation - we detail this in the main results file.
+        if (combined && name.size() + strlen(" et al") <= nameMax)
+            name += " et al";
+    } else { // Or a meta identifier/location
+        name = identifierInfo.getMetaIdentifiersManager().getMetaIdentifiers()[(size_t)locIdx - identifierInfo.getIdentifiers().size()]->getIndentifier();
+        identifierIndexes.push_back(locIdx);
+    }
+    if (name.size() > nameMax) // Shorten the name as necessary to fix maximum length.
+        name.resize(nameMax);
+}
+
+//------------------------------ LocationRiskEstimateWriter ----------------------------------------
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                                   = ".rr";
 const char * LocationRiskEstimateWriter::TREND_IN_FIELD                                 = "IN_TREND";
@@ -23,30 +76,14 @@ const char * LocationRiskEstimateWriter::OLIVEIRA_F_MLC_FIELD                   
 const char * LocationRiskEstimateWriter::OLIVEIRA_F_HIERARCHICAL_FIELD                  = "F_HIERARCH";
 
 /** class constructor */
-LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub): AbstractDataFileWriter(DataHub.GetParameters()) {
+LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub): 
+    AbstractDataFileWriter(DataHub.GetParameters()) {
     try {
         DefineFields(DataHub);
         if (gParameters.GetOutputRelativeRisksAscii())
             gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
         if (gParameters.GetOutputRelativeRisksDBase())
         gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
-        // Compile the list locations to identifiers - this is the opposite of storage.
-        const auto& identifiers = DataHub.getIdentifierInfo().getIdentifiers();
-        for (size_t idx = 0; idx < static_cast<size_t>(DataHub.GetNumIdentifiers()); ++idx) {
-            const auto& locations = identifiers[idx]->getLocations();
-            for (size_t t = 0; t < locations.size(); ++t) {
-                const Location * location = locations[t];
-                if (_location_to_identifiers.find(location) == _location_to_identifiers.end())
-                    _location_to_identifiers.emplace(location, IndentifierList_t());
-                _location_to_identifiers[location].add(idx, false);
-            }
-        }
-        // Store which locations will be reported in results - sometimes not all locations are utilized by analysis - for example this could happen with networks.
-        _report_locations.resize(DataHub.getLocationsManager().locations().size());
-        for (auto& loc_ids : _location_to_identifiers)
-            _report_locations.set(loc_ids.first->index());
-        // Report all meta identifiers/locations.
-        _report_locations.resize(_report_locations.size() + DataHub.GetNumMetaIdentifiers(), true);
     } catch (prg_exception& x) {
         delete gpASCIIFileWriter; gpASCIIFileWriter=0;
         delete gpDBaseFileWriter; gpDBaseFileWriter=0;
@@ -55,9 +92,6 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
     }
 }
 
-/** class destructor */
-LocationRiskEstimateWriter::~LocationRiskEstimateWriter() {}
-
 // sets up the vector of field structs so that the FieldDef Vector can be created
 // pre: none
 // post : returns through reference a vector of FieldDef to determine the structure of the data
@@ -65,9 +99,12 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     unsigned short uwOffset = 0;
 
     try {
-        if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || 
-            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL /*|| gParameters.GetAnalysisType() == SPATIALVARTEMPTREND*/)
-            throw prg_error("Risk estimates file not implemented for %s model.", "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
+        if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
+            throw prg_error(
+                "Risk estimates file not implemented for %s model.", "SetupFields()",
+                ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString()
+            );
         CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, getLocationFieldLength(DataHub), 0, uwOffset, 0);
         if (gParameters.getNumFileSets() > 1)
             CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -85,7 +122,8 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
             CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
             CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
             CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION)
+                CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         }
         if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             CreateField(vFieldDefinitions, TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -114,39 +152,17 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     }
 }
 
-/*  Assigns the location name and obtains the identifier indexes associated with it. 
-    
-    In the most general and common application, identifier and location reference the same label/name. */
-void LocationRiskEstimateWriter::getLocationInfo(unsigned int locIdx, const CSaTScanData& DataHub, std::vector<tract_t>& identifierIndexes, std::string& name, unsigned int nameMax) const {
-    const auto& identifierInfo = DataHub.getIdentifierInfo();
-    identifierIndexes.clear();
-    if (locIdx < identifierInfo.getLocationsManager().locations().size()) { // Is this an actual location?
-        const auto& location = identifierInfo.getLocationsManager().locations()[locIdx].get();
-        _location_to_identifiers.at(location).get(identifierIndexes);
-        name = location->name();
-        bool combined = false;
-        for (unsigned int t = 0; t < identifierIndexes.size() && !combined; ++t)
-            combined = identifierInfo.getIdentifiers()[identifierIndexes[t]]->getCombinedWith().size();
-        // If the identifer is combined, try appending the string "et al" to indicate this situation - we detail this in the main results file.
-        if (combined && name.size() + strlen(" et al") <= nameMax)
-            name += " et al";
-    } else { // Or a meta identifier/location
-        name = identifierInfo.getMetaIdentifiersManager().getMetaIdentifiers()[(size_t)locIdx - identifierInfo.getIdentifiers().size()]->getIndentifier();
-        identifierIndexes.push_back(locIdx);
-    }
-    if (name.size() > nameMax) // Shorten the name as necessary to fix maximum length.
-        name.resize(nameMax);
-}
-
 /** writes relative risk data to record and appends to internal buffer of records */
-void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
+void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const LocationRelevance& location_relevance, const MostLikelyClustersContainer& mlc) {
     try {
         if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
-            RecordRelativeRiskDataAsOrdinal(DataHub);
-        else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
-            RecordRelativeRiskDataAsWeightedNormal(DataHub);
+            writeOrdinal(DataHub);
+        else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
+            writeWeightedNormal(DataHub);
+        else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+            writeSTP(DataHub, mlc);
         } else
-            RecordRelativeRiskDataStandard(DataHub, location_relevance);
+            writeGeneric(DataHub, location_relevance);
     } catch (prg_exception& x) {
         x.addTrace("Write()","LocationRiskEstimateWriter");
         throw;
@@ -154,7 +170,7 @@ void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub, const Locati
 }
 
 /** writes relative risk data to record and appends to internal buffer of records */
-void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanData& DataHub) {
+void LocationRiskEstimateWriter::writeOrdinal(const CSaTScanData& DataHub) {
     count_t * pCases;
     std::vector<count_t> dataSetIdentifierPopulation;
 
@@ -171,15 +187,17 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
                     dataSetIdentifierPopulation[m] += pCases[m];
             }
             // Iterate over all locations.
-            size_t loc_idx = _report_locations.find_first();
+            auto& report_helper = DataHub.getLocationReportHelper();
+            size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
-            while (loc_idx != _report_locations.npos) {
+            while (loc_idx != report_helper->getReportLocations().npos) {
                 // for each category in data set, record relative risk data
                 for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
                     RecordBuffer Record(vFieldDefinitions);
-                    if (gParameters.getNumFileSets() > 1) Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
+                    if (gParameters.getNumFileSets() > 1) 
+                        Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1);
                     // Obtain location information - the name and which identifier indexes are associated with it.
-                    getLocationInfo(loc_idx, DataHub, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
+                    report_helper->getLocationInfo(loc_idx, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
                     Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = static_cast<double>(j + 1);
                     // Some fields can just be accumulated in the record directly.
                     for (tract_t t: indentifierIndexes) {
@@ -197,12 +215,12 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
                     }
                     if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
                     if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-                    loc_idx = _report_locations.find_next(loc_idx);
+                    loc_idx = report_helper->getReportLocations().find_next(loc_idx);
                 }
             }
         }
     } catch (prg_exception& x) {
-        x.addTrace("RecordRelativeRiskDataAsOrdinal(const CSaTScanData&)","RelativeRiskData");
+        x.addTrace("writeOrdinal(const CSaTScanData&)","RelativeRiskData");
         throw;
     }
 }
@@ -226,21 +244,22 @@ std::pair<double, double> LocationRiskEstimateWriter::getNormalMeanForIdentifier
 }
 
 /** Writes observed, expected, observed/expected and relative risk to record.*/
-void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
-    const DataSetHandler& Handler = DataHub.GetDataSetHandler();
-
+void LocationRiskEstimateWriter::writeGeneric(const CSaTScanData& DataHub, const LocationRelevance& location_relevance) {
+    const DataSetHandler& handler = DataHub.GetDataSetHandler();
     try {
-        for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
-            count_t * pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
-            measure_t * pMeasureAux = 0, * pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
-            if (gParameters.GetProbabilityModelType() == NORMAL) pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
-            size_t loc_idx = _report_locations.find_first();
+        for (unsigned int i=0; i < handler.GetNumDataSets(); ++i) {
+            count_t * pCases = handler.GetDataSet(i).getCaseData().GetArray()[0];
+            measure_t * pMeasureAux = 0, * pMeasure = handler.GetDataSet(i).getMeasureData().GetArray()[0];
+            if (gParameters.GetProbabilityModelType() == NORMAL) pMeasureAux = handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
+            auto& report_helper = DataHub.getLocationReportHelper();
+            size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
-            while (loc_idx != _report_locations.npos) {
-                RecordBuffer Record(vFieldDefinitions);                
-                if (gParameters.getNumFileSets() > 1) Record.GetFieldValue(DATASET_FIELD).AsDouble() = Handler.getDataSetRelativeIndex(i) + 1;
+            while (loc_idx != report_helper->getReportLocations().npos) {
+                RecordBuffer Record(vFieldDefinitions);
+                if (gParameters.getNumFileSets() > 1) 
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(handler.getDataSetRelativeIndex(i) + 1);
                 // Obtain location information - the name and which identifier indexes are associated with it.
-                getLocationInfo(loc_idx, DataHub, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
+                report_helper->getLocationInfo(loc_idx, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
                 // Some fields can just be accumulated in the record directly.
                 for (tract_t idx : indentifierIndexes) {
                     if (gParameters.getCalculateOliveirasF()) {
@@ -261,50 +280,97 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
                     Record.GetFieldValue(STD_FIELD).AsDouble() = values.second;
                 } else if (Record.GetFieldValue(EXPECTED_FIELD).AsDouble()) {
                     Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / Record.GetFieldValue(EXPECTED_FIELD).AsDouble();
-                    double dDenominator = Handler.GetDataSet(i).getTotalCases() - Record.GetFieldValue(EXPECTED_FIELD).AsDouble();
-                    double dNumerator = Handler.GetDataSet(i).getTotalCases() - Record.GetFieldValue(OBSERVED_FIELD).AsDouble();
+                    double dDenominator = handler.GetDataSet(i).getTotalCases() - Record.GetFieldValue(EXPECTED_FIELD).AsDouble();
+                    double dNumerator = handler.GetDataSet(i).getTotalCases() - Record.GetFieldValue(OBSERVED_FIELD).AsDouble();
                     if (dDenominator && dNumerator / dDenominator)
                         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() / (dNumerator / dDenominator);
                 }
                 if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
                 if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-                loc_idx = _report_locations.find_next(loc_idx);
+                loc_idx = report_helper->getReportLocations().find_next(loc_idx);
             }
         }
     } catch (prg_exception& x) {
-        x.addTrace("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
+        x.addTrace("writeGeneric(const CSaTScanData&)","LocationRiskEstimateWriter");
+        throw;
+    }
+}
+
+/** Writes record(s) for the space-time permutation model. */
+void LocationRiskEstimateWriter::writeSTP(const CSaTScanData& DataHub, const MostLikelyClustersContainer& mlc) {
+    try {
+        const DataSetHandler& handler = DataHub.GetDataSetHandler();
+        bool storeRecordData = gParameters.getOutputGoogleMapsFile() && handler.GetNumDataSets() == 1/* Not implemented yet for multiple data sets. */;
+        int windowStart = 0, windowEnd = DataHub.GetNumTimeIntervals(), maxW = DataHub.GetNumTimeIntervals(); // Default window range - entire study period.
+        if (mlc.GetNumClustersRetained()) {
+            windowStart = mlc.GetCluster(0).m_nFirstInterval;
+            windowEnd = mlc.GetCluster(0).m_nLastInterval;
+        }
+        for (unsigned int i = 0; i < handler.GetNumDataSets(); ++i) {
+            count_t ** ppCases = handler.GetDataSet(i).getCaseData().GetArray();
+            measure_t ** ppMeasure = handler.GetDataSet(i).getMeasureData().GetArray();
+            auto& report_helper = DataHub.getLocationReportHelper();
+            size_t loc_idx = report_helper->getReportLocations().find_first();
+            std::vector<tract_t> indentifierIndexes;
+            while (loc_idx != report_helper->getReportLocations().npos) {
+                RecordBuffer Record(vFieldDefinitions);
+                if (gParameters.getNumFileSets() > 1) 
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(handler.getDataSetRelativeIndex(i) + 1);
+                // Obtain location information - the name and which identifier indexes are associated with it.
+                report_helper->getLocationInfo(loc_idx, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(),
+                    static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+                );
+                // Some fields can just be accumulated in the record directly.
+                for (tract_t idx : indentifierIndexes) {
+                    Record.GetFieldValue(OBSERVED_FIELD).AsDouble() += ppCases[windowStart][idx] - (windowEnd == maxW ? 0 : ppCases[windowEnd][idx]);
+                    Record.GetFieldValue(EXPECTED_FIELD).AsDouble() += ppMeasure[windowStart][idx] - (windowEnd == maxW ? 0 : ppMeasure[windowEnd][idx]);
+                }
+                if (Record.GetFieldValue(EXPECTED_FIELD).AsDouble()) 
+                    Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = Record.GetFieldValue(OBSERVED_FIELD).AsDouble() / Record.GetFieldValue(EXPECTED_FIELD).AsDouble();
+                if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
+                if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
+                // Store record data for use in visualizations.
+                if (storeRecordData)
+                    report_helper->addRptLocationRiskData(loc_idx, Record.GetFieldValues());
+                loc_idx = report_helper->getReportLocations().find_next(loc_idx);
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("writeSTP(const CSaTScanData&)", "LocationRiskEstimateWriter");
         throw;
     }
 }
 
 /** writes relative risk data to record and appends to internal buffer of records */
-void LocationRiskEstimateWriter::RecordRelativeRiskDataAsWeightedNormal(const CSaTScanData& DataHub) {
+void LocationRiskEstimateWriter::writeWeightedNormal(const CSaTScanData& DataHub) {
     try {
         for (unsigned int i=0; i < DataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
             const AbstractWeightedNormalRandomizer * pRandomizer = 0;
             if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(i))) == 0)
-                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.", "RecordRelativeRiskDataAsWeightedNormal()");
+                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.", "writeWeightedNormal()");
             AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics(DataHub);
-            size_t loc_idx = _report_locations.find_first();
+            auto& report_helper = DataHub.getLocationReportHelper();
+            size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
-            while (loc_idx != _report_locations.npos) {
+            while (loc_idx != report_helper->getReportLocations().npos) {
                 RecordBuffer Record(vFieldDefinitions);
-                if (gParameters.getNumFileSets() > 1) Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
+                if (gParameters.getNumFileSets() > 1) 
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1);
                 // Obtain location information - the name and which identifier indexes are associated with it.
-                getLocationInfo(loc_idx, DataHub, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
+                report_helper->getLocationInfo(loc_idx, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
                 // Support for multiple locations is not currently implemented.
-                if (indentifierIndexes.size() > 1) throw prg_error("Risk estimates for each location is not implemented for the weighted normal model with multiple locations.", "RecordRelativeRiskDataAsWeightedNormal()");
+                if (indentifierIndexes.size() > 1) throw prg_error("Risk estimates for each location is not implemented for the weighted normal model with multiple locations.", "writeWeightedNormal()");
                 for (tract_t t: indentifierIndexes) {
                     Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() += statistics.gtMean[t];
                     Record.GetFieldValue(WEIGHTED_MEAN_VALUE_FIELD).AsDouble() += statistics.gtWeightedMean[t];
                 }
                 if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
                 if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-                loc_idx = _report_locations.find_next(loc_idx);
+                loc_idx = report_helper->getReportLocations().find_next(loc_idx);
             }
         }
     } catch (prg_exception& x) {
-        x.addTrace("RecordRelativeRiskDataAsWeightedNormal()","LocationRiskEstimateWriter");
+        x.addTrace("writeWeightedNormal()","LocationRiskEstimateWriter");
         throw;
     }
 }
@@ -326,13 +392,15 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
             pPTCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_PT_NC();
             pPTMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_PT_NC();
             // now calculate the trends for each defined location
-            size_t loc_idx = _report_locations.find_first();
+            auto& report_helper = DataHub.getLocationReportHelper();
+            size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
-            while (loc_idx != _report_locations.npos) {
+            while (loc_idx != report_helper->getReportLocations().npos) {
                 RecordBuffer Record(vFieldDefinitions);
-                if (gParameters.getNumFileSets() > 1) Record.GetFieldValue(DATASET_FIELD).AsDouble() = DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1;
+                if (gParameters.getNumFileSets() > 1) 
+                    Record.GetFieldValue(DATASET_FIELD).AsDouble() = static_cast<double>(DataHub.GetDataSetHandler().getDataSetRelativeIndex(i) + 1);
                 // Obtain location information - the name and which identifier indexes are associated with it.
-                getLocationInfo(loc_idx, DataHub, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
+                report_helper->getLocationInfo(loc_idx, indentifierIndexes, Record.GetFieldValue(LOC_ID_FIELD).AsString(), static_cast<unsigned long>(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength()));
                 // Some fields can just be accumulated in the record directly.
                 std::vector<count_t> vTemporalTractCases(DataHub.GetNumTimeIntervals()), vTemporalGlobalCases(DataHub.GetNumTimeIntervals(), 0);
                 std::vector<measure_t> vTemporalTractObserved(DataHub.GetNumTimeIntervals()), vTemporalGlobalObserved(DataHub.GetNumTimeIntervals(), 0.0);
@@ -416,7 +484,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
                 }
                 if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
                 if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-                loc_idx = _report_locations.find_next(loc_idx);
+                loc_idx = report_helper->getReportLocations().find_next(loc_idx);
             }
         }
     } catch (prg_exception& x) {

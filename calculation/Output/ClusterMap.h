@@ -51,6 +51,7 @@ protected:
     std::stringstream                   _cluster_options;
     std::vector<EventType>              _event_types;
     Julian                              _recent_startdate;
+    double                              _mlc_ode;
 
 public:
     ClusterMap(const CSaTScanData& dataHub);

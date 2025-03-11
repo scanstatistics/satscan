@@ -441,9 +441,9 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
 // formats the information necessary in the relative risk output file and prints to the specified format
 // pre: none
 // post: prints the relative risk data to the output file
-void CSaTScanData::DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance) const {
+void CSaTScanData::DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance, const MostLikelyClustersContainer& mlc) const {
   try {
-    LocationRiskEstimateWriter(*this).Write(*this, location_relevance);
+    LocationRiskEstimateWriter(*this).Write(*this, location_relevance, mlc);
   }
   catch (prg_exception& x) {
     x.addTrace("DisplayRelativeRisksForEachTract()", "CSaTScanData");

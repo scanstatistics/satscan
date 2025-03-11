@@ -676,7 +676,7 @@ void AnalysisExecution::executeCentricEvaluation() {
                 if (_parameters.GetOutputRelativeRisksFiles()) {
                     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
                     _print_direction.Printf("Reporting relative risk estimates ...\n", BasePrint::P_STDOUT);
-                    _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker);
+                    _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker, _reportClusters);
                     macroRunTimeStopSerial();
                 }
                 logRunHistory();
@@ -879,7 +879,7 @@ void AnalysisExecution::executeSuccessively() {
                 if (_parameters.GetOutputRelativeRisksFiles()) {
                     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
                     _print_direction.Printf("Reporting relative risk estimates ...\n", BasePrint::P_STDOUT);
-                    _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker);
+                    _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker, _reportClusters);
                     macroRunTimeStopSerial();
                 }
                 logRunHistory();

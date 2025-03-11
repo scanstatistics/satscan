@@ -31,6 +31,7 @@ class RecordBuffer {
       FieldValue                      & GetFieldValue(const std::string& sFieldName);
       FieldValue                      & GetFieldValue(unsigned int iFieldIndex);
       const FieldValue                & GetFieldValue(unsigned int iFieldIndex) const;
+      const std::vector<FieldValue>   & GetFieldValues() const { return gvFieldValues; }
       unsigned int                      GetNumFields() const { return gvFieldValues.size();}
       void                              SetAllFieldsBlank(bool bBlank);
       void                              SetFieldIsBlank(const std::string& sFieldName, bool bBlank);

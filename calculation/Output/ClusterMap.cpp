@@ -11,6 +11,7 @@
 #include "SSException.h"
 #include "GisUtils.h"
 #include "DataDemographics.h"
+#include "LocationRiskEstimateWriter.h"
 
 ////////////////////////////// EventType ///////////////////////////
 
@@ -87,7 +88,7 @@ const char * ClusterMap::TEMPLATE = " \
         <meta name=\"viewport\" content=\"initial-scale=1.0, user-scalable=no\" charset=\"utf-8\"> \n \
         <link href=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.css\" rel=\"stylesheet\"> \n \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/nouislider.css\"> \n \
-        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/mapgoogle-1.1.css\"> \n \
+        <link rel=\"stylesheet\" href=\"--resource-path--javascript/clustercharts/mapgoogle-1.2.css\"> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/jquery/jquery-1.12.4/jquery-1.12.4.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/clustercharts/jQuery.resizeEnd.js\"></script> \n \
         <script type=\"text/javascript\" src=\"--resource-path--javascript/bootstrap/3.4.1/bootstrap.min.js\"></script> \n \
@@ -108,8 +109,6 @@ const char * ClusterMap::TEMPLATE = " \
     <div class='options-row'> \n \
     <div style='display: table;'> \n \
     <div class='btn-group' style='display: table-cell;'> \n \
-    <h5>Map Options</h5> \n \
-    <label><input type='checkbox' id='id_show_location_points'/>Show all location points</label> \n \
     <label><input type='checkbox' id='id_show_all_edges'/>Show all network edges</label> \n \
     <div id='id_individuals_options' style='display:none;'> \n \
     <h5>Display Individual Characteristics</h5> \n \
@@ -182,14 +181,17 @@ const char * ClusterMap::TEMPLATE = " \
                         <label><input type='checkbox' id='id_hierarchical' value='secondary' />Hierarchical</label>\n \
                         <label><input type='checkbox' id='id_gini' value='secondary' />Gini</label>\n \
                     </div> \n \
-                    <div>Show clusters using:</div>\n \
-                    <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />--cluster-display--</label>\n \
-                    <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_locations' value='cluster' />Locations</label>\n \
+                    <div>Use --cluster-display-- to Display</div>\n \
+                    <label class='cluster-show-opts'><input type='checkbox' id='id_cluster_circles' value='cluster' checked=checked />Clusters</label>\n \
+                    <div><label class='cluster-show-opts' style='margin-left:0;margin-right: 4px;'>Use Dots to Display</label><input type='checkbox' style='position:relative;top:2px;' id='id_use_dots' value='cluster' /></div> \n\
+                        <div style='margin-left:15px;'> \n \
+                       <label><input type='radio' class='locations-display' name='locations_display' id='id_cluster_locations' value='entire' checked=checked disabled/>Clusters Locations</label> \n \
+                       <label><input type='radio' class='locations-display' name='locations_display' id='id_show_location_points' value='cluster'disabled/>All Locations</label> \n \
+                       <label><input type='radio' class='locations-display' name='locations_display' id='id_locations_risk' value='cluster'disabled/>Observed / Expected</label> \n \
+                       <label><input type='radio' class='locations-display' name='locations_display' id='id_display_individuals' value='cluster' disabled/>Individuals</label> \n \
+                    </div> \n \
                 </div> \n \
                 <div class='options-row event-controls'> \n \
-                    <div id='id_display_events' style='margin-bottom: 8px;'> \n \
-                        <label><input type='checkbox' id='id_display_individuals' value='cluster'/>Display Individuals</label> \n \
-                    </div> \n \
                     <div id='id_events_display_options' style='display:none;'> \n \
                         <div class='slider-styled slider-round' id='slider_display'></div> \n \
                         <div class='slider_display_range'><span id='id_range_startdate'>11/23/2021</span> to <span id='id_range_enddate'>3/2/2022</span></div> \n \
@@ -208,7 +210,7 @@ const char * ClusterMap::TEMPLATE = " \
                         </select> \n \
                     </div> \n \
                 </div> \n \
-                <div id='id_additional_options'><a href='#' data-toggle='modal' data-target='#graphs-modal-modal'>Additional Options</a></div> \n \
+                <div id='id_additional_options' style='display:none;'><a href='#' data-toggle='modal' data-target='#graphs-modal-modal'>Additional Options</a></div> \n \
                 <div class='clearfix'></div> \n \
                 <div id='id_display_count'>\n \
                     <fieldset>\n \
@@ -248,16 +250,18 @@ const char * ClusterMap::TEMPLATE = " \
             var entire_region_points = [--entire-region-points--]; \n \
             var entire_region_edges = [--entire-region-edges--]; \n \
             var display_stats = {};\n \
+            const mlcODE = --mcl-ode--; \n \
             var clusters = [--cluster-definitions--]; \n \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.4.0.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.0.js\"></script> \n \
   </body> \n \
 </html> \n";
 
 ClusterMap::ClusterMap(const CSaTScanData& dataHub) :_dataHub(dataHub), _clusters_written(0),
-    _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()) { 
+    _recent_startdate(dataHub.GetParameters().GetIsProspectiveAnalysis() ? dataHub.GetTimeIntervalStartTimes().at(dataHub.getDataInterfaceIntervalStartIndex()) : dataHub.GetTimeIntervalStartTimes().front()),
+    _mlc_ode(0){
     _cluster_locations.resize(_dataHub.getLocationsManager().locations().size());
 }
 
@@ -283,7 +287,11 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
     for (int i=0; i < clusters.GetNumClustersRetained(); ++i) {
         //get reference to i'th top cluster
         const CCluster& cluster = clusters.GetCluster(i);
-        //skip purely temporal clusters
+        // record the ODE for the most likely cluster for the STP, we potentially use it in the map
+        if (i == 0 && iteration == 1 && parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && 
+            parameters.GetOutputRelativeRisksFiles() && _dataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            _mlc_ode = cluster.GetObservedDivExpected(_dataHub); // only one data set currently
+        //skip trying to map purely temporal clusters
         if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
             continue;
         if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (simVars.get_sim_count() == 0 || cluster.GetRank() <= simVars.get_sim_count()))))
@@ -501,8 +509,8 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
 
 /** Finalize generating the html page which will contain the Google Map, along with supporting html inputs and javascript variables. */
 void ClusterMap::finalize() {
-    std::string str_buffer, website(AppToolkit::getToolkit().GetWebSite());
-    std::stringstream html, stream_buffer;
+    std::string str_buffer, str_buffer2, website(AppToolkit::getToolkit().GetWebSite());
+    std::stringstream html, stream_buffer, location_info;
     const CParameters& params = _dataHub.GetParameters();
     std::vector<double> coordinates;
     std::ofstream html_out;
@@ -532,15 +540,40 @@ void ClusterMap::finalize() {
         }
         str_buffer = stream_buffer.str();
         templateReplace(html, "--entire-region-edges--", trimString(trimString(str_buffer, ","), ",").c_str());
+        templateReplace(html, "--mcl-ode--", getValueAsString(_mlc_ode, str_buffer));
         // create collection of all the location in the analysis
         stream_buffer.str("");
-        for (const auto& location: _dataHub.getLocationsManager().locations()) {
-            if (_cluster_locations.test(location->index())) continue; // skip locations which will already be represented with a cluster
-            std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(location.get()->coordinates()->retrieve(coordinates)));
-            stream_buffer << printString(str_buffer, "[%f, %f],", prLatitudeLongitude.second, prLatitudeLongitude.first).c_str();
+        auto& rptHelper = _dataHub.getLocationReportHelper();
+        size_t locIdx = rptHelper->getReportLocations().find_first();
+        std::vector<tract_t> indentifierIndexes;
+        while (locIdx != rptHelper->getReportLocations().npos) {
+            // Is this an actual location or a meta identifier/location - can't map meta locations.
+            if (locIdx < _dataHub.getLocationsManager().locations().size()) {
+                // Obtain location information - the name and which identifier indexes are associated with it.
+                rptHelper->getLocationInfo(locIdx, indentifierIndexes, str_buffer, 100);
+                std::pair<double, double> prLatitudeLongitude(ConvertToLatLong(
+                    _dataHub.getLocationsManager().locations()[locIdx].get()->coordinates()->retrieve(coordinates))
+                );
+                location_info.str("");
+                location_info << "<div style=\"padding:5px;margin-right:15px;\"><div style=\"text-decoration:underline;margin-bottom:3px;\">" << htmlencode(str_buffer, str_buffer2) << "</div>";
+                str_buffer = "";
+                if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION && params.GetOutputRelativeRisksFiles() && _dataHub.GetDataSetHandler().GetNumDataSets() == 1) {
+                    auto& riskData = rptHelper->getRptLocationRiskData(locIdx);
+                    location_info << "Observed: " << printString(str_buffer, "%g", riskData[1].AsDouble()) << "<br/>";
+                    location_info << "Expected: " << getValueAsString(riskData[2].AsDouble(), str_buffer) << "<br/>";
+                    location_info << "ODE: " << getValueAsString(riskData[3].AsDouble(), str_buffer) << "<br/>";
+                }
+                location_info << "</div>";
+                stream_buffer << printString(str_buffer2, "{coordinates: [%f, %f], info: '%s', ode: %s},",
+                    prLatitudeLongitude.second, prLatitudeLongitude.first, location_info.str().c_str(), str_buffer.empty() ? "0" : str_buffer.c_str()
+                ).c_str();
+            }
+            locIdx = rptHelper->getReportLocations().find_next(locIdx);
         }
         str_buffer = stream_buffer.str();
         templateReplace(html, "--entire-region-points--", trimString(trimString(str_buffer, ","), ",").c_str());
+
+
         // write clusters option
         stream_buffer.str("");
         if (_cluster_options.tellp())
