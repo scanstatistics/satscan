@@ -12,8 +12,8 @@
 
 class testAnalysisExecution : public AnalysisExecution {
 public:
-	testAnalysisExecution(CSaTScanData& data_hub, const CParameters& parameters, ExecutionType executing_type, time_t start, BasePrint& print)
-		: AnalysisExecution(data_hub, parameters, executing_type, start, print) {}
+	testAnalysisExecution(CSaTScanData& data_hub, ExecutionType executing_type, time_t start, unsigned int& drilldowns)
+		: AnalysisExecution(data_hub, executing_type, start, drilldowns) {}
 	virtual ~testAnalysisExecution() {}
 
 	virtual bool repeatAnalysis() {
@@ -26,12 +26,14 @@ public:
 };
 
 class testAnalysisRunner : public AnalysisRunner {
+    private:
+        mutable unsigned int _drilldowns;
     public:
         testAnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
             : AnalysisRunner(Parameters, StartTime, PrintDirection) {}
         virtual ~testAnalysisRunner() {}
 
-		virtual AnalysisExecution * getAnalysisExecution() const { return new testAnalysisExecution(*_data_hub, _parameters, _executing_type, _start_time, _print_direction); }
+		virtual AnalysisExecution * getAnalysisExecution() const { return new testAnalysisExecution(*_data_hub, _executing_type, _start_time, _drilldowns); }
 };
 
 struct squish66406_analysis_fixture : new_mexico_fixture {
