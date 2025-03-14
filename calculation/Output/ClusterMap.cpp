@@ -110,6 +110,9 @@ const char * ClusterMap::TEMPLATE = " \
     <div style='display: table;'> \n \
     <div class='btn-group' style='display: table-cell;'> \n \
     <label><input type='checkbox' id='id_show_all_edges'/>Show all network edges</label> \n \
+    <h5 style='margin-bottom:10px;'>Dot Size</h5> \n \
+    <div class='slider-styled slider-round' id='slider_size'></div> \n \
+    <div id='id_icon_range'><span>&#129048; smaller</span><span>larger&#x1F81A;</span></div> \n \
     <div id='id_individuals_options' style='display:none;'> \n \
     <h5>Display Individual Characteristics</h5> \n \
     <label><input type='checkbox' id='id_show_legend' checked=checked/>Display Individuals Legend</label> \n \
@@ -145,9 +148,6 @@ const char * ClusterMap::TEMPLATE = " \
             <div id='id_recent_range'>Recent as of <span id='id_range_recent'>11/23/2021</span></div> \n \
         </div> \n \
     </div> \n \
-    <div id='id_icon_size'><label>Individuals Icon Size</label></div> \n \
-    <div class='slider-styled slider-round' id='slider_size'></div> \n \
-    <div id='id_icon_range'><span>&#129048; smaller</span><span>larger&#x1F81A;</span></div> \n \
     </div> \n \
     </div></div></div></div></div></div></div> \n \
     <div class='container-fluid main-content'> \n \

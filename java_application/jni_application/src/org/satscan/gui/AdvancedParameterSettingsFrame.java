@@ -5029,6 +5029,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _temporalTrendAdjNonparametric.getAccessibleContext().setAccessibleName("Nonparametric temporal adjustment");
             _temporalTrendAdjLogLinear.getAccessibleContext().setAccessibleName("Log linear trend adjustment");
             _logLinearTextField.getAccessibleContext().setAccessibleName("log linear trend adjustment percentage");
+            _nonparametric_length.getAccessibleContext().setAccessibleName("nonparametric adjustment length");
 
             _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
 
