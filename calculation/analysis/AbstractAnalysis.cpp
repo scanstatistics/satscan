@@ -37,7 +37,7 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
         } else if (_parameters.GetProbabilityModelType() == NORMAL) {
             _replica_process_type = ClusterEvaluation;
             if (_data_hub.GetNumDataSets() == 1)
-                _cluster_data_factory.reset(new BatchedClusterDataFactory(_data_hub));
+                _cluster_data_factory.reset(new NormalClusterDataFactory(_data_hub));
             else
                 _cluster_data_factory.reset(new MultiSetNormalClusterDataFactory(_data_hub));
         } else if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
