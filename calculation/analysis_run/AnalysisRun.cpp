@@ -2232,6 +2232,11 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             /* The primary analysis is restricted to having a time aggregation length of 1 day and a study period of at least 14 days. But there is the possiblity
                that the detected cluster is less than 7 days long and therefore there wouldn't be cases/controls in all 7 data sets. */
             _parameters.setNumFileSets(std::min(7, detectedCluster.getClusterLength()));
+            // Set default data set names since we're introducing 6 new data sets.
+            std::vector<std::string> sourceNames = _parameters.getDataSourceNames();
+            for (size_t t=sourceNames.size(); t < _parameters.getNumFileSets(); ++t)
+                sourceNames.push_back(printString(buffer, "Data Set #%u", t + 1));
+            _parameters.setDataSourceNames(sourceNames);
         } else {
             _parameters.setNumFileSets(source_parameters.getNumFileSets());
         }
