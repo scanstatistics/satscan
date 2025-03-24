@@ -1128,60 +1128,61 @@ void AnalysisExecution::printCriticalValuesStatus(FILE* fp) {
 
     if (_parameters.GetReportCriticalValues() && getIsCalculatingSignificantRatios() && _sim_vars.get_sim_count() >= 19) {
         PrintFormat.SetMarginsAsOverviewSection();
-        fprintf(fp, "\n");
+        AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
+        fprintf(fp, "CRITICAL VALUES\n\n");
         printString(buffer, "A cluster is statistically significant when its %s "
             "is greater than the critical value, which is, for significance level:",
             (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"));
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
         bool printSelectiveGumbel = _parameters.GetPValueReportingType() == DEFAULT_PVALUE && _parameters.getCanReportGumbelInDefaultCombination();
-        bool printAllGumbel = _parameters.GetPValueReportingType() == GUMBEL_PVALUE || _parameters.getIsReportingGumbelAsAddon();
-        if (printAllGumbel || (printSelectiveGumbel && (_sim_vars.get_sim_count() > 0 && _sim_vars.get_sim_count() < 99999))) {
-            fprintf(fp, "\nGumbel Critical Values:\n");
+        if (_parameters.GetPValueReportingType() == GUMBEL_PVALUE || _parameters.getIsReportingGumbelAsAddon()) {
+            if (printSelectiveGumbel && (_sim_vars.get_sim_count() > 0 && _sim_vars.get_sim_count() < 99999)) {
+                fprintf(fp, "\nGumbel Critical Values:\n");
+            }
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 19) {
+                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.05);
+                fprintf(fp, "...... 0.05: %f\n", cv.first);
+            }
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99) {
+                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.01);
+                fprintf(fp, "...... 0.01: %f\n", cv.first);
+            }
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 999) {
+                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.001);
+                fprintf(fp, "..... 0.001: %f\n", cv.first);
+            }
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 9999) {
+                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.0001);
+                fprintf(fp, ".... 0.0001: %f\n", cv.first);
+            }
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99999) {
+                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.00001);
+                fprintf(fp, "... 0.00001: %f\n", cv.first);
+            }
         }
-        if (printAllGumbel || (printSelectiveGumbel && _sim_vars.get_sim_count() < 99999)) {
-            std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.00001);
-            fprintf(fp, "... 0.00001: %f\n", cv.first);
-        }
-        if (printAllGumbel || (printSelectiveGumbel && _sim_vars.get_sim_count() < 9999)) {
-            std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.0001);
-            fprintf(fp, ".... 0.0001: %f\n", cv.first);
-        }
-        if (printAllGumbel || (printSelectiveGumbel && _sim_vars.get_sim_count() < 999)) {
-            std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.001);
-            fprintf(fp, "..... 0.001: %f\n", cv.first);
-        }
-        if (printAllGumbel || (printSelectiveGumbel && _sim_vars.get_sim_count() < 99)) {
-            std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.01);
-            fprintf(fp, "...... 0.01: %f\n", cv.first);
-        }
-        if (printAllGumbel || (printSelectiveGumbel && _sim_vars.get_sim_count() < 19)) {
-            std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.05);
-            fprintf(fp, "...... 0.05: %f\n", cv.first);
-        }
-
         // skip reporting standard critical values if p-value reporting is gumbel
         if (_parameters.GetPValueReportingType() != GUMBEL_PVALUE) {
             if (_sim_vars.get_sim_count() >= 19)
                 fprintf(fp, "\nStandard Monte Carlo Critical Values:\n");
-            if (_sim_vars.get_sim_count() >= 99999) {
-                SignificantRatios::alpha_t alpha00001(_significant_ratios->getAlpha00001());
-                fprintf(fp, "... 0.00001: %f\n", alpha00001.second);
-            }
-            if (_sim_vars.get_sim_count() >= 9999) {
-                SignificantRatios::alpha_t alpha0001(_significant_ratios->getAlpha0001());
-                fprintf(fp, ".... 0.0001: %f\n", alpha0001.second);
-            }
-            if (_sim_vars.get_sim_count() >= 999) {
-                SignificantRatios::alpha_t alpha001(_significant_ratios->getAlpha001());
-                fprintf(fp, "..... 0.001: %f\n", alpha001.second);
+            if (_sim_vars.get_sim_count() >= 19) {
+                SignificantRatios::alpha_t alpha05(_significant_ratios->getAlpha05());
+                fprintf(fp, "...... 0.05: %f\n", alpha05.second);
             }
             if (_sim_vars.get_sim_count() >= 99) {
                 SignificantRatios::alpha_t alpha01(_significant_ratios->getAlpha01());
                 fprintf(fp, "...... 0.01: %f\n", alpha01.second);
             }
-            if (_sim_vars.get_sim_count() >= 19) {
-                SignificantRatios::alpha_t alpha05(_significant_ratios->getAlpha05());
-                fprintf(fp, "...... 0.05: %f\n", alpha05.second);
+            if (_sim_vars.get_sim_count() >= 999) {
+                SignificantRatios::alpha_t alpha001(_significant_ratios->getAlpha001());
+                fprintf(fp, "..... 0.001: %f\n", alpha001.second);
+            }
+            if (_sim_vars.get_sim_count() >= 9999) {
+                SignificantRatios::alpha_t alpha0001(_significant_ratios->getAlpha0001());
+                fprintf(fp, ".... 0.0001: %f\n", alpha0001.second);
+            }
+            if (_sim_vars.get_sim_count() >= 99999) {
+                SignificantRatios::alpha_t alpha00001(_significant_ratios->getAlpha00001());
+                fprintf(fp, "... 0.00001: %f\n", alpha00001.second);
             }
         }
     }
