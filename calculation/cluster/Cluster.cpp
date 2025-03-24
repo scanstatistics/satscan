@@ -356,13 +356,12 @@ void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, 
         printClusterData(fp, PrintFormat, "Observed positive", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
         printClusterData(fp, PrintFormat, "Expected positive", getValueAsString(llrCalc.getClusterExpected(*this, set_number), buffer), true, set_number);
         DisplayObservedDivExpected(fp, set_number, DataHub, PrintFormat);
-        printClusterData(fp, PrintFormat, "Sum positive", getValueAsString(pClusterData->GetMeasureAux2(set_number), buffer, 0), true, set_number);
-        printClusterData(fp, PrintFormat, "Sum negative", getValueAsString(pClusterData->GetMeasureAux(set_number), buffer, 0), true, set_number);
+        //printClusterData(fp, PrintFormat, "Sum positive", getValueAsString(pClusterData->GetMeasureAux2(set_number), buffer, 0), true, set_number);
+        //printClusterData(fp, PrintFormat, "Sum negative", getValueAsString(pClusterData->GetMeasureAux(set_number), buffer, 0), true, set_number);
         auto probabilities = llrCalc.getProbabilityPositive(*this, set_number);
-        printClusterData(fp, PrintFormat, "Positive pr. inside", getValueAsString(probabilities.first, buffer, 3), true, set_number);
-        printClusterData(fp, PrintFormat, "Positive pr. outside", getValueAsString(probabilities.second, buffer, 3), true, set_number);
-
-        DisplayRelativeRisk(fp, set_number, DataHub, PrintFormat);
+        printClusterData(fp, PrintFormat, "Positive pr. inside", getValueAsString(probabilities.first, buffer, 3), false, set_number);
+        printClusterData(fp, PrintFormat, "Positive pr. outside", getValueAsString(probabilities.second, buffer, 3), false, set_number);
+        //DisplayRelativeRisk(fp, set_number, DataHub, PrintFormat);
     }
 }
 

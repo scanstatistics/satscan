@@ -666,9 +666,6 @@
     <ClInclude Include="..\calculation\cluster\UniformTimeClusterData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\calculation\loglikelihood\UniformTimeLikelihoodCalculation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -677,6 +674,12 @@
     </ClInclude>
     <ClInclude Include="..\calculation\satscan_data\UniformTimeDataSetHandler.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\probability_model\BatchedModel.h">
+      <Filter>Header Files\source\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\cluster\MultiSetUniformTimeClusterData.h">
+      <Filter>Header Files\source\calculation\cluster</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1232,6 +1235,9 @@
     <ClCompile Include="integrationtest_squish66508.cpp">
       <Filter>Source Files\integration_tests</Filter>
     </ClCompile>
+    <ClCompile Include="integrationtest_batched.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
     <ClCompile Include="unittest_DataSource.cpp">
       <Filter>Source Files\unit_tests\satscan_data</Filter>
     </ClCompile>
@@ -1354,6 +1360,9 @@
     </ClCompile>
     <ClCompile Include="..\calculation\probability_model\UniformTimeModel.cpp">
       <Filter>Source Files\source\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_BatchedLikelihoodCalculation.cpp">
+      <Filter>Source Files\unit_tests\loglikelihood</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

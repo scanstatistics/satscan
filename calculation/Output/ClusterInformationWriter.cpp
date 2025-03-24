@@ -12,6 +12,7 @@
 #include "SSException.h"
 #include "WeightedNormalRandomizer.h"
 #include "GisUtils.h"
+#include "BatchedLikelihoodCalculation.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	            = ".col";
 const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	        = ".sci";
@@ -53,6 +54,9 @@ const char * ClusterInformationWriter::WEIGHT_INSIDE_FIELD          = "WEIGHT_IN
 
 const char * ClusterInformationWriter::GINI_CLUSTER_FIELD           = "GINI_CLUST";
 
+const char * ClusterInformationWriter::NUM_BATCHES_FIELD            = "BATCHES";
+const char * ClusterInformationWriter::PROB_POSITIVE_INSIDE_FIELD   = "PROB_P_IN";
+const char * ClusterInformationWriter::PROB_POSITIVE_OUTSIDE_FIELD  = "PROB_P_OUT";
 
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -154,6 +158,8 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
         CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
 
     if (gParameters.getNumFileSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
+      if (gParameters.GetProbabilityModelType() == BATCHED)
+        CreateField(vFieldDefinitions, NUM_BATCHES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
       if (gParameters.GetProbabilityModelType() == NORMAL) {
           if (!gParameters.getIsWeightedNormal()) {
@@ -175,8 +181,12 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       } else {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
         CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      }  
-      if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == BATCHED) {
+      }
+      if (gParameters.GetProbabilityModelType() == BATCHED) {
+          CreateField(vFieldDefinitions, PROB_POSITIVE_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 8);
+          CreateField(vFieldDefinitions, PROB_POSITIVE_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 8);
+      }
+      if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
           CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       }
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis()) ||
@@ -216,6 +226,8 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     CreateField(vDataFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(vDataFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(vDataFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if (gParameters.GetProbabilityModelType() == BATCHED)
+        CreateField(vDataFieldDefinitions, NUM_BATCHES_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     if (gParameters.GetProbabilityModelType() == NORMAL) {
         if (!gParameters.getIsWeightedNormal()) {
@@ -238,11 +250,14 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
       CreateField(vDataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
+    if (gParameters.GetProbabilityModelType() == BATCHED) {
+        CreateField(vDataFieldDefinitions, PROB_POSITIVE_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 8);
+        CreateField(vDataFieldDefinitions, PROB_POSITIVE_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 8);
+    }
     //Relative risk field only reported for these probability models
     //   - relative risk calculation not defined for STP, Exponential, another to be model
     if (gParameters.GetProbabilityModelType() == POISSON  ||
         gParameters.GetProbabilityModelType() == BERNOULLI ||
-        gParameters.GetProbabilityModelType() == BATCHED ||
         gParameters.GetProbabilityModelType() == ORDINAL ||
         gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
@@ -400,9 +415,16 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
       }
+      if (gParameters.GetProbabilityModelType() == BATCHED) {
+          Record.GetFieldValue(NUM_BATCHES_FIELD).AsDouble() = theCluster.GetClusterData()->GetMeasure();
+          BatchedLikelihoodCalculator llrCalc(gDataHub);
+          auto probabilities = llrCalc.getProbabilityPositive(theCluster);
+          Record.GetFieldValue(PROB_POSITIVE_INSIDE_FIELD).AsDouble() = probabilities.first;
+          Record.GetFieldValue(PROB_POSITIVE_OUTSIDE_FIELD).AsDouble() = probabilities.second;
+      }
       //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
       //because the relative risk could not be calculated
-      if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == BATCHED) &&
+      if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
           Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||
@@ -606,10 +628,17 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       } else {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
-      }  
+      }
+      if (gParameters.GetProbabilityModelType() == BATCHED) {
+          Record.GetFieldValue(NUM_BATCHES_FIELD).AsDouble() = theCluster.GetClusterData()->GetMeasure(iSetIndex);
+          BatchedLikelihoodCalculator llrCalc(gDataHub);
+          auto probabilities = llrCalc.getProbabilityPositive(theCluster, iSetIndex);
+          Record.GetFieldValue(PROB_POSITIVE_INSIDE_FIELD).AsDouble() = probabilities.first;
+          Record.GetFieldValue(PROB_POSITIVE_OUTSIDE_FIELD).AsDouble() = probabilities.second;
+      }
       //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
       //because the relative risk could not be calculated 
-      if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == BATCHED) &&
+      if ((gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
       if ((gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile() && !gParameters.GetIsPurelyTemporalAnalysis() && theCluster.GetClusterType() != PURELYTEMPORALCLUSTER) ||

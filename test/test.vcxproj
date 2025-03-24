@@ -491,6 +491,7 @@
     <ClCompile Include="integrationtest_squish66408.cpp" />
     <ClCompile Include="integrationtest_squish66425.cpp" />
     <ClCompile Include="integrationtest_squish66508.cpp" />
+    <ClCompile Include="integrationtest_batched.cpp" />
     <ClCompile Include="squish66406.cpp" />
     <ClCompile Include="squish66420.cpp" />
     <ClCompile Include="squish66455.cpp" />
@@ -500,6 +501,7 @@
     <ClCompile Include="unittest_JulianDates.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp" />
+    <ClCompile Include="unittest_BatchedLikelihoodCalculation.cpp" />
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

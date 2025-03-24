@@ -323,7 +323,7 @@ class CParameters {
     bool                                operator!=(const CParameters& rhs) const;
 
     
-    std::vector<std::string>            getDataSourceNames() const { return _data_source_names; }
+    const std::vector<std::string>    & getDataSourceNames() const { return _data_source_names; }
     void                                setDataSourceNames(const std::vector<std::string>& v) { _data_source_names = v; }
 
     double                              getCutoffLineListCSV() const { return _linelist_csv_cutoff; }
