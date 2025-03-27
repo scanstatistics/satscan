@@ -543,7 +543,7 @@ void ClusterMap::finalize() {
         templateReplace(html, "--mcl-ode--", getValueAsString(_mlc_ode, str_buffer));
         // create collection of all the location in the analysis
         stream_buffer.str("");
-        auto& rptHelper = _dataHub.getLocationReportHelper();
+        auto rptHelper = _dataHub.getLocationReportHelper();
         size_t locIdx = rptHelper->getReportLocations().find_first();
         std::vector<tract_t> indentifierIndexes;
         while (locIdx != rptHelper->getReportLocations().npos) {
