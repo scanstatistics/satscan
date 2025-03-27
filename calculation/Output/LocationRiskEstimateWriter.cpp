@@ -187,7 +187,7 @@ void LocationRiskEstimateWriter::writeOrdinal(const CSaTScanData& DataHub) {
                     dataSetIdentifierPopulation[m] += pCases[m];
             }
             // Iterate over all locations.
-            auto& report_helper = DataHub.getLocationReportHelper();
+            auto report_helper = DataHub.getLocationReportHelper();
             size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
             while (loc_idx != report_helper->getReportLocations().npos) {
@@ -251,7 +251,7 @@ void LocationRiskEstimateWriter::writeGeneric(const CSaTScanData& DataHub, const
             count_t * pCases = handler.GetDataSet(i).getCaseData().GetArray()[0];
             measure_t * pMeasureAux = 0, * pMeasure = handler.GetDataSet(i).getMeasureData().GetArray()[0];
             if (gParameters.GetProbabilityModelType() == NORMAL) pMeasureAux = handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
-            auto& report_helper = DataHub.getLocationReportHelper();
+            auto report_helper = DataHub.getLocationReportHelper();
             size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
             while (loc_idx != report_helper->getReportLocations().npos) {
@@ -309,7 +309,7 @@ void LocationRiskEstimateWriter::writeSTP(const CSaTScanData& DataHub, const Mos
         for (unsigned int i = 0; i < handler.GetNumDataSets(); ++i) {
             count_t ** ppCases = handler.GetDataSet(i).getCaseData().GetArray();
             measure_t ** ppMeasure = handler.GetDataSet(i).getMeasureData().GetArray();
-            auto& report_helper = DataHub.getLocationReportHelper();
+            auto report_helper = DataHub.getLocationReportHelper();
             size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
             while (loc_idx != report_helper->getReportLocations().npos) {
@@ -349,7 +349,7 @@ void LocationRiskEstimateWriter::writeWeightedNormal(const CSaTScanData& DataHub
             if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(i))) == 0)
                 throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.", "writeWeightedNormal()");
             AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics(DataHub);
-            auto& report_helper = DataHub.getLocationReportHelper();
+            auto report_helper = DataHub.getLocationReportHelper();
             size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
             while (loc_idx != report_helper->getReportLocations().npos) {
@@ -392,7 +392,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
             pPTCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_PT_NC();
             pPTMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_PT_NC();
             // now calculate the trends for each defined location
-            auto& report_helper = DataHub.getLocationReportHelper();
+            auto report_helper = DataHub.getLocationReportHelper();
             size_t loc_idx = report_helper->getReportLocations().find_first();
             std::vector<tract_t> indentifierIndexes;
             while (loc_idx != report_helper->getReportLocations().npos) {
