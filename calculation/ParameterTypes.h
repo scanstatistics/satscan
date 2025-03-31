@@ -33,7 +33,6 @@ enum ParameterType
     POWER_01,                       /* power evaluation critical value .01 (numeric) */
     TIMETREND,                      /* time trend adjustment type (enumeration) */
     TIMETRENDPERC,                  /* time trend adjustment percentage (numeric) */
-    TIMETRENDLENGTH,                /* nonparametric time trend adjustment length (integer) */
     PURETEMPORAL,                   /* include purely temporal clusters (boolean) */
     CONTROLFILE,                    /* control filename (vector<string>) */
     COORDTYPE,                      /* coordinates type (enumeration) */
@@ -185,7 +184,8 @@ enum ParameterType
     EMAIL_CUSTOM_BODY,              /* message - custom email */
     EMAIL_SUBJECT_NO_SIGNIFICANT,   /* no longer used */
     EMAIL_BODY_NO_SIGNIFICANT,      /* no longer used */
-    MULTIPLE_LOCATIONS_FILE         /* file which defines the locations of each group */
+    MULTIPLE_LOCATIONS_FILE,        /* file which defines the locations of each group */
+    TIMETRENDLENGTH                 /* nonparametric time trend adjustment length (integer) */
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {
