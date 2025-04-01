@@ -13,7 +13,7 @@ if %argCount% NEQ 5 (
 )
 
 REM script definitions
-set fileshare=\\oriole-03-int
+set fileshare=\\omni\btp
 
 set satscanversion=10.3
 set satscanversionf=10_3
@@ -26,9 +26,9 @@ set satscanguiexe=%fileshare%\satscan\build.area\satscan\java_application\jni_ap
 
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.12+7_windows_x64
+set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.14+7_windows_x64
 set runtimeoutputx64=%fileshare%\satscan\build.area\satscan\installers\java\jre_x64
-set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.12+7_windows_x86
+set javajdkx86=%fileshare%\satscan\installers\install.applications\java\jdk-17.0.14+7_windows_x86
 set runtimeoutputx86=%fileshare%\satscan\build.area\satscan\installers\java\jre_x86
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"
@@ -36,7 +36,7 @@ set innoiss=%fileshare%\satscan\build.area\satscan\installers\inno-setup\satscan
                          
 set signtool=%fileshare%\imsadmin\ims.codesign\AzureSignTool.exe
 set timestamp=http://timestamp.digicert.com/
-set du=https://www.treescan.org/
+set du=https://www.satscan.org/
 
 REM Codesigning 32-bit command-line exe.
 %signtool% sign -du "%du%" -kvu "%1" -kvi "%2" -kvt "%3" -kvs "%4" -kvc "%5" -tr %timestamp% -v %satscan32exe%
