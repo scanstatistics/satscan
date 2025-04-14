@@ -2222,9 +2222,9 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
         _parameters.SetSpatialAdjustmentType(SPATIAL_NOTADJUSTED);
         _parameters.SetTimeTrendAdjustmentType(TEMPORAL_NOTADJUSTED);
         _parameters.setOutputTemporalGraphFile(false);
-        // If parent analysis is prospective and it's top level analysis, then we want to switch cutoffs from recurrence interval to p-value in the drillown.
+        // If parent analysis is prospective and it's a top level analysis, then we want to switch cutoffs from recurrence interval to p-value in the drillown.
         if (source_parameters.GetIsProspectiveAnalysis() && downlevel == 1) {
-            _parameters.setDrilldownCutoff(0.5 /*DEFAULT_CUTOFF_PVALUE*/);
+            _parameters.setDrilldownCutoff(DEFAULT_CUTOFF_PVALUE);
             _parameters.setCutoffLineListCSV(DEFAULT_CUTOFF_PVALUE);
             _parameters.setTemporalGraphSignificantCutoff(DEFAULT_CUTOFF_PVALUE);
         }
