@@ -255,7 +255,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.0.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.1.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -561,11 +561,13 @@ void ClusterMap::finalize() {
                     auto& riskData = rptHelper->getRptLocationRiskData(locIdx);
                     location_info << "Observed: " << printString(str_buffer, "%g", riskData[1].AsDouble()) << "<br/>";
                     location_info << "Expected: " << getValueAsString(riskData[2].AsDouble(), str_buffer) << "<br/>";
-                    location_info << "ODE: " << getValueAsString(riskData[3].AsDouble(), str_buffer) << "<br/>";
+                    str_buffer.clear();
+                    if (riskData[2].AsDouble()) // only report ode if defined (i.e. not division by zero)
+                        location_info << "ODE: " << getValueAsString(riskData[3].AsDouble(), str_buffer) << "<br/>";
                 }
                 location_info << "</div>";
                 stream_buffer << printString(str_buffer2, "{coordinates: [%f, %f], info: '%s', ode: %s},",
-                    prLatitudeLongitude.second, prLatitudeLongitude.first, location_info.str().c_str(), str_buffer.empty() ? "0" : str_buffer.c_str()
+                    prLatitudeLongitude.second, prLatitudeLongitude.first, location_info.str().c_str(), str_buffer.empty() ? "-1" : str_buffer.c_str()
                 ).c_str();
             }
             locIdx = rptHelper->getReportLocations().find_next(locIdx);
