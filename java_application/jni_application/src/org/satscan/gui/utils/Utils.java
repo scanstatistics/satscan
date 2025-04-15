@@ -11,7 +11,6 @@ package org.satscan.gui.utils;
 import java.awt.Choice;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.Objects;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;

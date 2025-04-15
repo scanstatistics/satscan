@@ -1010,7 +1010,7 @@ void CParameters::SetAsDefaulted() {
   gsTitleName = "";
   _giniIndexPValueCutoff = 0.05;
   _reportHierarchicalClusters = true;
-  _reportGiniOptimizedClusters = true;
+  _reportGiniOptimizedClusters = false;
   _giniIndexReportType = OPTIMAL_ONLY;
   _reportGiniIndexCoefficients = false;
   _powerEvaluationTotalCases = 600;

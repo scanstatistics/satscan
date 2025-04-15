@@ -209,8 +209,8 @@ public class Parameters implements Cloneable {
     private String                          gsTitleName="";
     private double                          _giniIndexPValueCutoff=0.05; /* P-Value used to limit clusters in gini index coefficients calcuation */
 
-    private boolean                         _reportHierarchicalClusters=true;  /** print ASCII column headers */
-    private boolean                         _reportGiniOptimizedClusters=true;  /** print ASCII column headers */
+    private boolean                         _reportHierarchicalClusters=true;  /** report hierarchical clusters */
+    private boolean                         _reportGiniOptimizedClusters=false;  /** report gini clusters */
     GiniIndexReportType                     _giniIndexReportType=GiniIndexReportType.OPTIMAL_ONLY; /* type for the gini index cluster reporting */
     boolean                                 _outputGiniIndexCoefficients=false; /* output gini index coefficents */
     private boolean                         _calculate_oliveira_f=false;

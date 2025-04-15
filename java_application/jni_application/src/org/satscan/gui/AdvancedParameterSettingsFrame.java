@@ -441,7 +441,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 InputSourceSettings inputSourceSettings = (InputSourceSettings)_settings_window._input_source_map.get(key);
                 hasLineListData = !inputSourceSettings.getLinelistFieldMaps().isEmpty();
             }
-            
         }
         _cluster_lineline_panel.setEnabled(hasLineListData);
         _cluster_lineline_prelabel.setEnabled(hasLineListData);
@@ -862,12 +861,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Enables/disables TListBox that list defined data sets
      */
     private void enableDataSetList() {
-        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
-        _inputDataSetsList.setEnabled(bEnable);
+        _inputDataSetsList.setEnabled(
+            _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0
+        );
     }
 
     private void enableNetworkGroup(boolean enable) {
-        enable &= !(_specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected());
+        enable &= !Utils.selected(_specifiyNeighborsFileCheckBox);
         _network_group.setEnabled(enable);
         _locations_network.setEnabled(enable);
         _network_file_label.setEnabled(enable && _locations_network.isSelected());
@@ -2142,7 +2142,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Enables/disables controls that indicate purpose of additional data sets.
      */
     private void enableDataSetPurposeControls() {
-        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
+        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 1;
         _multivariateAdjustmentsRadioButton.setEnabled(
             bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.BATCHED
         );
@@ -2162,6 +2162,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _populationFileTextField.setText("");
         while (_dataSetsListModel.getSize() > 1)
             _dataSetsListModel.remove(_dataSetsListModel.getSize() - 1);
+        while (_datasetNames.size() > 1)
+            _datasetNames.remove(_datasetNames.size() - 1);
         _inputDataSetsList.setSelectedIndex(0);
         enableDataSetList();
         enableDataSetPurposeControls();
@@ -2950,9 +2952,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _mostLikelyClustersHierarchically.setEnabled(bEnableGroup);
         boolean enableIndexBased = eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL;
         enableIndexBased &= eModelType == Parameters.ProbabilityModelType.POISSON || eModelType == Parameters.ProbabilityModelType.BERNOULLI;
-        enableIndexBased &= !(_multivariateAdjustmentsRadioButton.isEnabled() && _multivariateAdjustmentsRadioButton.isSelected());
-        enableIndexBased &= !(_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected());
-        enableIndexBased &= !(_perform_iterative_scan.isEnabled() && _perform_iterative_scan.isSelected());
+        enableIndexBased &= !Utils.selected(_multivariateAdjustmentsRadioButton);
+        enableIndexBased &= !Utils.selected(_performIsotonicScanCheckBox);
+        enableIndexBased &= !Utils.selected(_perform_iterative_scan);
         _giniOptimizedClusters.setEnabled(bEnableGroup && enableIndexBased);
         enableClustersReportedOptions(bEnableGroup);
     }
