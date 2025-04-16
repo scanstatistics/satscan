@@ -1457,48 +1457,55 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     *
+     * Validates the input controls of the additional data sets.
      */
     private void validateInputFilesSettings() {
-        boolean bAnalysisIsPurelyTemporal = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
-                                            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
-                                            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL;
-        boolean bFirstDataSetHasPopulationFile = _settings_window.getEdtPopFileNameText().length() > 0;
-
-        if (!_additionalDataSetsGroup.isEnabled()) {
-            return;
-        }
-
-        for (int i=1; i < _caseFilenames.size(); i++) {
-            //Ensure that controls have this dataset display, should we need to show window regarding an error with settings.
+        if (!_additionalDataSetsGroup.isEnabled()) return;
+        String reserved = "'\\<>";
+        for (int i=0; i < _datasetNames.size(); ++i) { // validate the data set name
             _inputDataSetsList.setSelectedIndex(i);
-            //validate the case file for this dataset
-            if (_caseFilenames.get(i).length() == 0) {
-                throw new AdvFeaturesExpection("Please specify a case file for this additional data set.", FocusedTabSet.INPUT, (Component) _caseFileTextField);
+            if (_datasetNames.get(i).isBlank())
+                throw new AdvFeaturesExpection("Please specify a dataset name.", FocusedTabSet.INPUT, (Component) _dataSetNameTextField);
+            for (char c: reserved.toCharArray()) {
+                if (_datasetNames.get(i).indexOf(c) >= 0)
+                    throw new AdvFeaturesExpection(
+                        "Data set names cannot contain characters: apostrophe, backslash, angle brackets",
+                        FocusedTabSet.INPUT, (Component) _dataSetNameTextField
+                    );
             }
+        }
+        boolean bAnalysisIsPurelyTemporal = (
+            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
+            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
+            _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SEASONALTEMPORAL
+        );
+        boolean bFirstDataSetHasPopulationFile = _settings_window.getEdtPopFileNameText().length() > 0;
+        for (int i=0; i < _caseFilenames.size(); i++) {
+            //Ensure that controls have this dataset display, should we need to show window regarding an error with settings.
+            _inputDataSetsList.setSelectedIndex(i + 1);
+            //validate the case file for this dataset
+            if (_caseFilenames.get(i).length() == 0)
+                throw new AdvFeaturesExpection("Please specify a case file for this additional data set.", FocusedTabSet.INPUT, (Component) _caseFileTextField);
             if (!FileAccess.ValidateFileAccess(_caseFilenames.get(i), false, false)) {
                 throw new AdvFeaturesExpection(
                     "The case file for this additional data set could not be opened for reading.\nPlease confirm that the path and/or file name are valid\nand that you have permissions to read from this directory\nand file.",
                     FocusedTabSet.INPUT, (Component) _caseFileTextField
                 );
             }
-            if (!FileAccess.isValidFilename(_caseFilenames.get(i))) {                
+            if (!FileAccess.isValidFilename(_caseFilenames.get(i)))
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _caseFilenames.get(i)), FocusedTabSet.INPUT, (Component) _caseFileTextField);
-            }                
             String validationString = _settings_window.validateInputSourceDataFile(_caseFilenames.get(i), InputSourceSettings.InputFileType.Case.toString() + (i + 2), "case");
             if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _caseFileTextField);            
             //validate the control file for this dataset - Bernoulli model only
             if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI) {
-                if (_controlFilenames.get(i).length() == 0) {
+                if (_controlFilenames.get(i).length() == 0)
                     throw new AdvFeaturesExpection("For the Bernoulli model, please specify a control file for this additional data set.", FocusedTabSet.INPUT, (Component) _controlFileTextField);
-                }
                 if (!FileAccess.ValidateFileAccess(_controlFilenames.get(i), false, false)) {
                     throw new AdvFeaturesExpection("The control file for this additional data set could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                             FocusedTabSet.INPUT, (Component) _controlFileTextField);
                 }
-                if (!FileAccess.isValidFilename(_controlFilenames.get(i))) {                
+                if (!FileAccess.isValidFilename(_controlFilenames.get(i)))
                     throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _controlFilenames.get(i)), FocusedTabSet.INPUT, (Component) _controlFileTextField);
-                }                
                 validationString = _settings_window.validateInputSourceDataFile(_controlFilenames.get(i), InputSourceSettings.InputFileType.Control.toString() + (i + 2), "control");
                 if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _controlFileTextField);            
             }
@@ -1530,6 +1537,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             }
         }  //for loop
+        _inputDataSetsList.setSelectedIndex(0); // reset selection to the first
         //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
         if ((_settings_window.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL
                 || _settings_window.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)

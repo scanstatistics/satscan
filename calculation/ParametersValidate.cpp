@@ -55,6 +55,22 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
             }
         }
         const_cast<CParameters&>(gParameters).setProspectiveFrequency(std::max(gParameters.getProspectiveFrequency(), 1u));
+        std::string reserved("'\\<>");
+        for (size_t t = 0; t < gParameters.getDataSourceNames().size(); ++t) {
+            auto& name = gParameters.getDataSourceNames()[t];
+            if (name.empty()) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nPlease provide a data set name for %u%s set.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, t + 1, ordinal_suffix(t + 1));
+            }
+            for (auto c : reserved) {
+                if (name.find(c) != std::string::npos) {
+                    bValid = false;
+                    PrintDirection.Printf("%s:\nData set names cannot contain characters: apostrophe, backslash, angle brackets\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+                }
+            }
+        }
 
         bValid &= ValidateMonotoneRisk(PrintDirection);
         bValid &= ValidateSVTTAnalysisSettings(PrintDirection);

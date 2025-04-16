@@ -286,30 +286,6 @@ TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, cons
         _batched_likelihood_calculator.reset(new BatchedLikelihoodCalculator(dataHub));
 }
 
-/* TODO: Once we start creating Gini graph, we might break TEMPLATE into parts. A good portion of the header
-         will certainly be shared between the 2 files.
-*/
-
-/* TODO: It might be better to use a true template/generator library. Some possibilities are reference here: 
-          http://stackoverflow.com/questions/355650/c-html-template-framework-templatizing-library-html-generator-library
-
-         We'll see first if this simple implementation is adequate.
-*/
-
-/* TODO: I'm not certain whether the javascript libraries should be -- locally or from www.satscan.org.
-         locally: 
-            pros: user does not need internet access
-            cons: how do we know where the libraries are installed on user machine?
-         satscan.org:
-            pros: easy to maintain
-            cons: requires user to have internet access
-         library website:
-            pros: bug fixes automatically
-            cons: re-organization of site could break links, site goes away
-
-        I'm leaning towards hosting from satscan.org. In html, test for each library and display message if jQuery or highcharts does not exist.
-*/
-
 /** Creates HighCharts graph for purely temporal cluster. */
 void TemporalChartGenerator::generateChart() const {
     std::string clusterName, buffer, buffer2;
@@ -425,7 +401,7 @@ void TemporalChartGenerator::generateChart() const {
 						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / expected" : "Observed / expected outside cluster area"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
                         cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / expected in cluster area", "FF8000", "triangle", 1, ""));
-                } else if (_dataHub.GetParameters().GetProbabilityModelType() == BERNOULLI) {
+                } else if (parameters.GetProbabilityModelType() == BERNOULLI) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
@@ -438,13 +414,16 @@ void TemporalChartGenerator::generateChart() const {
                 }
                 
                 // set default chart title 
-                if (_dataHub.GetParameters().GetAnalysisType() == PURELYTEMPORAL)
+                if (parameters.GetAnalysisType() == PURELYTEMPORAL)
 					clusterName = "Detected Cluster";
                 else 
                     printString(clusterName, "Cluster #%u", clusterIdx + 1);
-                // potentially include data set index
-                if (handler.GetNumDataSets() > 1)
-					clusterName += printString(buffer2, " Data Set #%u", setIdx + 1);
+                if (handler.GetNumDataSets() > 1) { // include data set name with multiple sets
+                    clusterName += printString(buffer2, ": %s",
+                        parameters.getDataSourceNames()[_dataHub.GetDataSetHandler().getDataSetRelativeIndex(setIdx)].c_str()
+                    );
+                }
+
                 templateReplace(chart_js, "--chart-title--", clusterName);
                 templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
                 templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
