@@ -835,7 +835,10 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
     }
     
     // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
-    if ((Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER || Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && !isNullifiedIdentifier(tTractIndex))
+    if (!isNullifiedIdentifier(tTractIndex) && (
+        Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER ||
+        Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == SPACETIMECLUSTER
+        ))
         _nullified_identifiers.push_back(tTractIndex);
 }
 
