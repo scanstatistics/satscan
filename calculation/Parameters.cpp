@@ -181,7 +181,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
   if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
   if (_drilldown_cutoff != rhs._drilldown_cutoff) return false;
-  if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
   if (_locations_network_filename != rhs._locations_network_filename) return false;
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
@@ -436,7 +435,6 @@ void CParameters::Copy(const CParameters &rhs) {
   _drilldown_minimum_locations = rhs._drilldown_minimum_locations;
   _drilldown_minimum_cases = rhs._drilldown_minimum_cases;
   _drilldown_cutoff = rhs._drilldown_cutoff;
-  _drilldown_adjust_weekly_trends = rhs._drilldown_adjust_weekly_trends;
   _locations_network_filename = rhs._locations_network_filename;
   _use_locations_network_file = rhs._use_locations_network_file;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
@@ -1051,7 +1049,6 @@ void CParameters::SetAsDefaulted() {
   _drilldown_minimum_locations = 2;
   _drilldown_minimum_cases = 10;
   _drilldown_cutoff = 0.05;
-  _drilldown_adjust_weekly_trends = false;
   _locations_network_filename = "";
   _use_locations_network_file = false;
   _cluster_moniker_prefix = "";

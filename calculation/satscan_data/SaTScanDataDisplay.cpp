@@ -201,9 +201,10 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   }
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
     PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false);
-    getValueAsString(100.0 * gDataSets->GetDataSet(0).getTotalCases() / gDataSets->GetDataSet(0).getTotalPopulation(), buffer, 1);
+    auto getPopulation = [](count_t c, double p) { return 100.0 * (p ? c / p : 0.0); };
+    getValueAsString(getPopulation(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalPopulation()), buffer, 1);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-        getValueAsString(100.0 * gDataSets->GetDataSet(i).getTotalCases() / gDataSets->GetDataSet(i).getTotalPopulation(), work2, 1);
+        getValueAsString(getPopulation(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalPopulation()), work2, 1);
         printString(work, ", %s", work2.c_str());
         buffer += work;
     }

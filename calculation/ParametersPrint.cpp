@@ -631,11 +631,8 @@ void ParametersPrint::PrintDrilldownParameters(FILE* fp, bool isDrilldown) const
         if (permitsStandard || permitsBernoulli) {
             if (permitsStandard)
                 settings.push_back(std::make_pair("Same Design as Main Analysis", (_parameters.getPerformStandardDrilldown() ? "Yes" : "No")));
-            if (permitsBernoulli) {
+            if (permitsBernoulli)
                 settings.push_back(std::make_pair("Purely Spatial Bernoulli", (_parameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
-                if (_parameters.getPerformBernoulliDrilldown())
-                    settings.push_back(std::make_pair("Adjust for Weekly Trends, Nonparametric", (_parameters.getDrilldownAdjustWeeklyTrends() ? "Yes" : "No")));
-            }
             if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
                 settings.push_back(std::make_pair("Cutoff of Detected Cluster", printString(buffer, "%g", _parameters.getDrilldownCutoff())));
                 settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumLocationsCluster())));

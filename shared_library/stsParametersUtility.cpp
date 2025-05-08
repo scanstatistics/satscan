@@ -792,10 +792,6 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getDrilldownCutoff());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setDrilldownAdjustWeeklyTrends", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getDrilldownAdjustWeeklyTrends());
-  jni_error::_detectError(Env);
-
   mid = _getMethodId_Checked(Env, clazz, "setUseLocationsNetworkFile", "(Z)V");
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getUseLocationsNetworkFile());
   jni_error::_detectError(Env);
@@ -1586,10 +1582,6 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getDrilldownCutoff", "()D");
   Parameters.setDrilldownCutoff(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
-
-  mid = _getMethodId_Checked(Env, clazz, "getDrilldownAdjustWeeklyTrends", "()Z");
-  Parameters.setDrilldownAdjustWeeklyTrends(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getUseLocationsNetworkFile", "()Z");

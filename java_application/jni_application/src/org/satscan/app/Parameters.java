@@ -242,7 +242,6 @@ public class Parameters implements Cloneable {
     private int                             _drilldown_minimum_locations=2;
     private int                             _drilldown_minimum_cases=10;
     private double                          _drilldown_pvalue_cutoff=0.05;
-    private boolean                         _drilldown_adjust_weekly_trends=false;
     
     private String                          _locations_network_filename="";
     private boolean                         _use_locations_network_file=false;
@@ -448,7 +447,6 @@ public class Parameters implements Cloneable {
         if (_drilldown_minimum_locations != rhs._drilldown_minimum_locations) return false;
         if (_drilldown_minimum_cases != rhs._drilldown_minimum_cases) return false;
         if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
-        if (_drilldown_adjust_weekly_trends != rhs._drilldown_adjust_weekly_trends) return false;
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
@@ -519,8 +517,6 @@ public class Parameters implements Cloneable {
     public void setDrilldownMinimumCasesCluster(int u) { _drilldown_minimum_cases = u; }
     public double getDrilldownCutoff() { return _drilldown_pvalue_cutoff; }
     public void setDrilldownCutoff(double d) { _drilldown_pvalue_cutoff = d; }
-    public boolean getDrilldownAdjustWeeklyTrends() { return _drilldown_adjust_weekly_trends; }
-    public void setDrilldownAdjustWeeklyTrends(boolean b) { _drilldown_adjust_weekly_trends = b; }    
     public boolean getOutputGoogleMapsFile() { return _output_google_map; }
     public void setOutputGoogleMapsFile(boolean b) { _output_google_map = b; }
     public String getGoogleMapsApiKey() { return _google_maps_api_key; }

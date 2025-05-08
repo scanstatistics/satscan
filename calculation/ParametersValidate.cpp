@@ -323,6 +323,19 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection,
                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetAnalysisTypeAsString());
             return bValid;
         }
+        // If this is a space-time permutation analysis, adjusting for day of week, with multiple data sets, with multivariate purpose,
+        // then error since the purely spatial Bernoulli drilldown is stratified by day of week using multiple data sets with adjustment purpose.
+        // The correct way to handle this is a combination of both multivariate and adjustment, but that's too complicated to implement.
+        if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && gParameters.getAdjustForWeeklyTrends() && 
+            gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
+            bValid = false;
+            PrintDirection.Printf(
+                "%s:\nThe Bernoulli cluster drilldown is not implemented for the space-time permutation model,\n"
+                "with the adjustment for day of week and multiple data sets when purpose is multivariate.\n",
+                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+            );
+            return bValid;
+        }
     }
     if (gParameters.UseLocationNeighborsFile() && gParameters.UseMetaLocationsFile()) {
         bValid = false;
@@ -353,28 +366,6 @@ bool ParametersValidate::ValidateDrilldownParameters(BasePrint & PrintDirection,
             BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
         );
     }
-    if (gParameters.getPerformBernoulliDrilldown() && gParameters.getDrilldownAdjustWeeklyTrends()) {
-        if (gParameters.getNumFileSets() > 1) {
-            bValid = false;
-            PrintDirection.Printf("%s:\nThe adjustment for weekly trends, with the purely spatial Beroulli drilldown, cannot be performed with multiple data sets.\n",
-                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        }
-        if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
-            bValid = false;
-            PrintDirection.Printf("%s:\nThe adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.\n",
-                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-        }
-        double dStudyPeriodLengthInUnits = ceil(
-            CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
-            DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()), gParameters.GetTimeAggregationUnitsType(), 1)
-        );
-        // Primary analysis must adhere to study period restriction length.
-        if (gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
-            PrintDirection.Printf("%s:\nThe adjustment for day of week, in the purely spatial Beroulli drilldown, cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-            return false;
-        }
-    }
-
     return bValid;
 }
 
@@ -2291,9 +2282,16 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     return false;
   }
 
-  if (gParameters.getAdjustForWeeklyTrends() && gParameters.GetTimeAggregationUnitsType() == DAY && dStudyPeriodLengthInUnits < 14.0) {
-    PrintDirection.Printf("%s:\nThe adjustment for day of week cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
-    return false;
+  if (gParameters.getAdjustForWeeklyTrends()) {
+      if (!(gParameters.GetTimeAggregationUnitsType() == DAY && gParameters.GetTimeAggregationLength() == 1)) {
+          PrintDirection.Printf("%s:\nThe adjustment for weekly trends can only be performed with a time aggregation length of 1 day.\n",
+              BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+          return false;
+      }
+      if (dStudyPeriodLengthInUnits < 14.0) {
+          PrintDirection.Printf("%s:\nThe adjustment for day of week cannot be performed on a period less than 14 days.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+          return false;
+      }
   }
 
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) //svtt does not have a maximum temporal cluster size

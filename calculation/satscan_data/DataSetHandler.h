@@ -49,6 +49,7 @@ class DataSetHandler {
     virtual CountFileReadStatus         ReadCaseFile(RealDataSet& DataSet);
     virtual CountFileReadStatus         ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual void                        removeDataSet(size_t iSetIndex) { throw prg_error("removeDataSet().", "DataSetHandler()"); }
+    virtual void                        removeDataSet(size_t iSetIndex, bool noCases, bool noControls) { throw prg_error("removeDataSet().", "DataSetHandler()"); }
     RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
 

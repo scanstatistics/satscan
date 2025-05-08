@@ -4502,14 +4502,10 @@
                                           </Group>
                                       </Group>
                                       <Component id="_drilldown_restrictions" alignment="0" min="-2" pref="349" max="-2" attributes="0"/>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_purelySpatialDrilldown" min="-2" pref="222" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_drilldown_restriction_dow" min="-2" pref="241" max="-2" attributes="0"/>
-                                      </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="161" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="326" max="32767" attributes="0"/>
                               </Group>
+                              <Component id="_purelySpatialDrilldown" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -4521,10 +4517,7 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_mainAnalysisDrilldown" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_purelySpatialDrilldown" max="32767" attributes="0"/>
-                              <Component id="_drilldown_restriction_dow" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="_purelySpatialDrilldown" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="_drilldown_restrictions" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4615,11 +4608,6 @@
                 <Component class="javax.swing.JLabel" name="_drilldown_restrictions">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Drilldown for Clusters with:"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="_drilldown_restriction_dow">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="With Day of Week Adjustment"/>
                   </Properties>
                 </Component>
               </SubComponents>

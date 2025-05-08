@@ -434,11 +434,9 @@ bool CSaTScanData::isNullifiedIdentifier(tract_t tLocationIndex) const {
     iDataSet'th dataset. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    double dTotalCases = gDataSets->GetDataSet(tSetIndex).getTotalCases();
-    double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).getTotalPopulation();
-    return dTotalCases / dTotalPopulation;
-  }
-  else
+    double population = gDataSets->GetDataSet(tSetIndex).getTotalPopulation();
+    return population ? gDataSets->GetDataSet(tSetIndex).getTotalCases() / population : 0.0;
+  } else
     return 1.0;
 }
 

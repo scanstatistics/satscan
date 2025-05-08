@@ -552,7 +552,6 @@ void IniParameterFileAccess::WriteDrilldownSettings(IniFile& WriteFile) {
 		WriteIniParameter(WriteFile, DRILLDOWN_MIN_LOCATIONS, GetParameterString(DRILLDOWN_MIN_LOCATIONS, s).c_str(), GetParameterComment(DRILLDOWN_MIN_LOCATIONS));
 		WriteIniParameter(WriteFile, DRILLDOWN_MIN_CASES, GetParameterString(DRILLDOWN_MIN_CASES, s).c_str(), GetParameterComment(DRILLDOWN_MIN_CASES));
 		WriteIniParameter(WriteFile, DRILLDOWN_CUTOFF, GetParameterString(DRILLDOWN_CUTOFF, s).c_str(), GetParameterComment(DRILLDOWN_CUTOFF));
-		WriteIniParameter(WriteFile, DRILLDOWN_ADJ_WEEKLY_TRENDS, GetParameterString(DRILLDOWN_ADJ_WEEKLY_TRENDS, s).c_str(), GetParameterComment(DRILLDOWN_ADJ_WEEKLY_TRENDS));
 	} catch (prg_exception& x) {
 		x.addTrace("WriteDrilldownSettings()", "IniParameterFileAccess");
 		throw;

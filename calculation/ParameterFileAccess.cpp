@@ -237,7 +237,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case DRILLDOWN_MIN_LOCATIONS      : return "minimum number of locations in detected cluster to perform drilldown (positive integer)";
       case DRILLDOWN_MIN_CASES          : return "minimum number of cases in detected cluster to perform drilldown (positive integer)";
       case DRILLDOWN_CUTOFF             : return "cutoff of detected cluster to perform drilldown (0.0 to 1 for retrospective, > 0 for prospective)";
-      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "adjust for weekly trends, purely spatial Bernoulli drilldown";
+      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return "n/a";
       case USE_NETWORK_FILE             : return "use locations network file";
       case NETWORK_FILE                 : return "locations network filename";
       case NETWORK_PURPOSE              : return "n/a";
@@ -446,7 +446,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case DRILLDOWN_MIN_LOCATIONS      : return AsString(s, gParameters.getDrilldownMinimumLocationsCluster());
       case DRILLDOWN_MIN_CASES          : return AsString(s, gParameters.getDrilldownMinimumCasesCluster());
       case DRILLDOWN_CUTOFF             : return AsString(s, gParameters.getDrilldownCutoff());
-      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : return AsString(s, gParameters.getDrilldownAdjustWeeklyTrends());
+      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : s = ""; return s;
       case USE_NETWORK_FILE             : return AsString(s, gParameters.getUseLocationsNetworkFile());
       case NETWORK_FILE                 : s = gParameters.getLocationsNetworkFilename().c_str(); return s;
       case NETWORK_PURPOSE              : s = "0"; return s;
@@ -888,7 +888,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case DRILLDOWN_MIN_LOCATIONS      : gParameters.setDrilldownMinimumLocationsCluster(ReadUnsignedInt(sParameter, eParameterType)); break;
       case DRILLDOWN_MIN_CASES          : gParameters.setDrilldownMinimumCasesCluster(ReadUnsignedInt(sParameter, eParameterType)); break;
       case DRILLDOWN_CUTOFF             : gParameters.setDrilldownCutoff(ReadDouble(sParameter, eParameterType)); break;
-      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : gParameters.setDrilldownAdjustWeeklyTrends(ReadBoolean(sParameter, eParameterType)); break;
+      case DRILLDOWN_ADJ_WEEKLY_TRENDS  : /* no longer used */ break;
       case USE_NETWORK_FILE             : gParameters.setUseLocationsNetworkFile(ReadBoolean(sParameter, eParameterType)); break;
       case NETWORK_FILE                 : gParameters.setLocationsNetworkFilename(sParameter.c_str(), true); break;
       case NETWORK_PURPOSE              : /* no longer used */ break;

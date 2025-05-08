@@ -1214,21 +1214,23 @@ void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
         if (noCases.size()) {
             s << std::endl << "NOTE: The following data sets have zero cases";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
-            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
-            for (int i = noCases.size() - 1; i >= 0; --i) {
-                s << _parameters.getDataSourceNames()[noCases[i]].c_str() << (i == 0 ? "" : ", ");
-            }
+            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: ";
             printFormat.PrintAlignedMarginsDataString(fp, s.str());
+            s.str("");
+            for (int i = noCases.size() - 1; i >= 0; --i)
+                s << _parameters.getDataSourceNames()[noCases[i]].c_str() << (i == 0 ? "" : ", ");
+            printFormat.PrintAlignedMarginsDataString(fp, s.str(), 2);
         }
         if (noControls.size()) {
             s.str("");
             s << (noCases.size() ? "" : "\n") << "NOTE: The following data sets have zero controls";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
-            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: " << std::endl;
-            for (int i = noControls.size() - 1; i >= 0; --i) {
-                s << _parameters.getDataSourceNames()[noControls[i]].c_str() << (i == 0 ? "" : ", ");
-            }
+            s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: ";
             printFormat.PrintAlignedMarginsDataString(fp, s.str());
+            s.str("");
+            for (int i = noControls.size() - 1; i >= 0; --i)
+                s << _parameters.getDataSourceNames()[noControls[i]].c_str() << (i == 0 ? "" : ", ");
+            printFormat.PrintAlignedMarginsDataString(fp, s.str(), 2);
         }
     }
 }
@@ -2149,7 +2151,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
 ) {
     std::string buffer;
     const CParameters& source_parameters = source_data_hub.GetParameters();
-    // This is a drilldown on a most likely cluster of an iterative scan from a purely spatial Bernoulli drilldown (This class calling itself).
+    // This is a drilldown on a most likely cluster of an iterative scan from a purely spatial Bernoulli drilldown (This class calling down).
     if (downlevel > 1 && source_parameters.getIsBernoulliIterativeDrilldown()) {
         // Create new data hub that is only the data from detected cluster.
         _data_hub.reset(AnalysisRunner::getNewCSaTScanData(_parameters, _print_direction));
@@ -2190,9 +2192,9 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             unsigned int num_locations = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().Get2ndDimension();
             count_t** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().GetArray(),
                 ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
-            if (std::all_of(ppCases[0], ppCases[0] + num_locations, [](count_t i) { return i == 0; }) ||
-                std::all_of(ppControls[0], ppControls[0] + num_locations, [](count_t i) { return i == 0; }))
-                _data_hub->GetDataSetHandler().removeDataSet(d);
+            auto hascases = std::any_of(ppCases[0], ppCases[0] + num_locations, [](count_t i) { return i > 0; });
+            auto hascontrols = std::any_of(ppControls[0], ppControls[0] + num_locations, [](count_t i) { return i > 0; });
+            if (!(hascases && hascontrols)) _data_hub->GetDataSetHandler().removeDataSet(d, !hascases, !hascontrols);
         }
         if (_data_hub->GetDataSetHandler().GetNumDataSets() == 0)
             throw drilldown_exception("While attempting to perform a purely spatial Bernoulli drilldown, no data set was found to have both cases and controls.");
@@ -2206,7 +2208,6 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
         // Only one level with this drilldown type.
         _parameters.setPerformStandardDrilldown(false);
         _parameters.setPerformBernoulliDrilldown(true);
-        _parameters.setDrilldownAdjustWeeklyTrends(false);
         // Perform scan iteratively with default settings
         _parameters.SetIterativeScanning(true);
         _parameters.SetNumIterativeScans(DEFAULT_NUM_ITERATIVE_SCANS);
@@ -2228,16 +2229,27 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             _parameters.setCutoffLineListCSV(DEFAULT_CUTOFF_PVALUE);
             _parameters.setTemporalGraphSignificantCutoff(DEFAULT_CUTOFF_PVALUE);
         }
+        // If calling analysis is STP with the day of week adjustment, the Bernoulli drilldown must be stratified into multiple data sets.
+        bool autoDrilldownAdjustWeeklyTrends = source_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && source_parameters.getAdjustForWeeklyTrends();
         // If performing day of week adjustment on drilldown, potentially define multiple data sets.
-        if (source_parameters.getDrilldownAdjustWeeklyTrends()) {
-            /* The primary analysis is restricted to having a time aggregation length of 1 day and a study period of at least 14 days. But there is the possiblity
-               that the detected cluster is less than 7 days long and therefore there wouldn't be cases/controls in all 7 data sets. */
-            _parameters.setNumFileSets(std::min(7, detectedCluster.getClusterLength()));
-            // Set default data set names since we're introducing 6 new data sets.
-            std::vector<std::string> sourceNames = _parameters.getDataSourceNames();
-            for (size_t t=sourceNames.size(); t < _parameters.getNumFileSets(); ++t)
-                sourceNames.push_back(printString(buffer, "Data Set #%u", t + 1));
-            _parameters.setDataSourceNames(sourceNames);
+        if (autoDrilldownAdjustWeeklyTrends) {
+            // Sanity check
+            if (source_parameters.getNumFileSets() > 1 && source_parameters.GetMultipleDataSetPurposeType() == MULTIVARIATE)
+                throw prg_error("BernoulliAnalysisDrilldown is not implemented for STP, day-of-week, multiple sets, multivariate.", "BernoulliAnalysisDrilldown()");
+            /* The day of week adjustment requires the primary analysis to have a time aggregation length of 1 day and a study period of at least 14 days. 
+               There is the possiblity that the detected cluster is less than 7 days long. 
+               There is also the possibilty that the source analysis has more than one data set. */
+            // stratify into multiple sets - minimum of 7 or the length of cluster
+            size_t numSets = source_parameters.getNumFileSets() - source_data_hub.GetDataSetHandler().getRemovedDataSetDetails().size();
+            auto daysInAdjustment = std::min(7, detectedCluster.m_nLastInterval - detectedCluster.m_nFirstInterval);
+            _parameters.setNumFileSets(numSets * daysInAdjustment);
+            // Set default data set names since we're introducing new data sets.
+            std::vector<std::string> dayNames, sourceNames = _parameters.getDataSourceNames();
+            for (size_t t = 0; t < numSets; ++t)
+                for (int i=0; i < daysInAdjustment; ++i)
+                    dayNames.push_back(printString(buffer, "Day %d [%u]", i + 1, t + 1));
+            _parameters.setDataSourceNames(dayNames);
+            _parameters.SetMultipleDataSetPurposeType(ADJUSTMENT); // Fixed to Adjustment purpose in this situation.
         } else {
             _parameters.setNumFileSets(source_parameters.getNumFileSets());
         }
@@ -2257,11 +2269,12 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
         createReducedCoodinatesFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
         // Read files again but using the new coordinates file plus ignoring locations outside geographical area. Exclude reading case and control data.
         SaTScanDataReader(*_data_hub).ReadBernoulliDrilldown();
-        // Carry down knowledge of which sets have been removed in parent analysis.
-        for (auto details : source_data_hub.GetDataSetHandler().getRemovedDataSetDetails())
-            _data_hub->GetDataSetHandler().removeDataSet(details.get<0>());
+
         // Get detected clusters case data.
-        if (!source_parameters.getDrilldownAdjustWeeklyTrends()) {
+        if (!autoDrilldownAdjustWeeklyTrends) {
+            // Carry down knowledge of which sets have been removed in parent analysis.
+            for (auto details : source_data_hub.GetDataSetHandler().getRemovedDataSetDetails())
+                _data_hub->GetDataSetHandler().removeDataSet(details.get<0>());
             // Allocate the case and measure structures in new data hub - this is needed for the rare situation one
             // of the original data sets was removed because it contained no data.
             for (size_t d = 0; d < _data_hub->GetDataSetHandler().GetNumDataSets(); ++d) {
@@ -2279,47 +2292,50 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                     ppControls[0][drilldown_tract] = detectedCluster.GetCountForTractOutside(tTract, source_data_hub, d);
                 }
             }
-            // It's possible now that some of the data sets have zero cases or zero controls. Remove those that don't have both.
+            // It's now possible that some of the data sets have zero cases or zero controls - remove those that don't have both.
             size_t numSets = _data_hub->GetDataSetHandler().GetNumDataSets();
             for (int d = numSets - 1; d >= 0; --d) {
                 unsigned int num_locations = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().Get2ndDimension();
                 count_t** ppCases = _data_hub->GetDataSetHandler().GetDataSet(d).getCaseData().GetArray(),
                     ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
-                if (std::all_of(ppCases[0], ppCases[0] + num_locations, [](count_t i) { return i == 0; }) ||
-                    std::all_of(ppControls[0], ppControls[0] + num_locations, [](count_t i) { return i == 0; }))
-                    _data_hub->GetDataSetHandler().removeDataSet(d);
+                auto hascases = std::any_of(ppCases[0], ppCases[0] + num_locations, [](count_t i) { return i > 0; });
+                auto hascontrols = std::any_of(ppControls[0], ppControls[0] + num_locations, [](count_t i) { return i > 0; });
+                if (!(hascases && hascontrols)) _data_hub->GetDataSetHandler().removeDataSet(d, !hascases, !hascontrols);
             }
             if (_data_hub->GetDataSetHandler().GetNumDataSets() == 0)
                 throw drilldown_exception("While attempting to perform a purely spatial Bernoulli drilldown, no data set was found to have both cases and controls.");
         } else {
-            // Transform the data from calling analysis to purely spatial Bernoulli - stratifying by day of week.
-            size_t numSets = _data_hub->GetDataSetHandler().GetNumDataSets();
+            // Transform the data from calling analysis to purely spatial Bernoulli - stratifying by day of week and data sets
             // Allocate data structures for cases and controls.
             std::vector<count_t**> setCases, setControls;
-            for (size_t d = 0; d < numSets; ++d) {
+            for (size_t d = 0; d < _data_hub->GetDataSetHandler().GetNumDataSets(); ++d) {
                 setCases.push_back(_data_hub->GetDataSetHandler().GetDataSet(d).allocateCaseData().GetArray());
                 setControls.push_back(_data_hub->GetDataSetHandler().GetDataSet(d).allocateControlData().GetArray());
             }
-            count_t** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(0).getCaseData().GetArray();
-            for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
-                tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
-                // record number of cases by interval for current tract - stratifying by day of week.
-                for (int interval = detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
-                    setCases[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
-                // record number of controls by interval for current tract - stratifying by day of week.
-                for (int interval = 0; interval < detectedCluster.m_nFirstInterval; ++interval)
-                    setControls[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
-                // record number of controls by interval for current tract - stratifying by day of week
-                for (int interval = detectedCluster.m_nLastInterval + 1; interval < source_data_hub.GetNumTimeIntervals(); ++interval)
-                    setControls[interval % numSets][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
+            auto daysInAdjustment = std::min(7, detectedCluster.m_nLastInterval - detectedCluster.m_nFirstInterval);
+            for (size_t d = 0; d < source_data_hub.GetNumDataSets(); ++d) {
+                auto offset = d * daysInAdjustment; // data set offset; ex. 7 days, 2 data sets in parent analyssi, 14 data sets in drilldown
+                count_t** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(d).getCaseData().GetArray();
+                for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
+                    tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
+                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                    // record number of cases by interval for current tract - stratifying by day of week and data set
+                    for (int interval = detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
+                        setCases[offset + (interval % daysInAdjustment)][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
+                    // record number of controls by interval for current tract - stratifying by day of week and day of week
+                    for (int interval = 0; interval < detectedCluster.m_nFirstInterval; ++interval)
+                        setControls[offset + (interval % daysInAdjustment)][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
+                    // record number of controls by interval for current tract - stratifying by day of week and day of week
+                    for (int interval = detectedCluster.m_nLastInterval + 1; interval < source_data_hub.GetNumTimeIntervals(); ++interval)
+                        setControls[offset + (interval % daysInAdjustment)][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
+                }
             }
             // It's possible now that some of the data sets have zero cases or zero controls.
             unsigned int num_locations = _data_hub->GetDataSetHandler().GetDataSet(0).getCaseData().Get2ndDimension();
-            for (int d = numSets - 1; d >= 0; --d) {
-                if (std::all_of(setCases[d][0], setCases[d][0] + num_locations, [](count_t i) { return i == 0; }) ||
-                    std::all_of(setControls[d][0], setControls[d][0] + num_locations, [](count_t i) { return i == 0; }))
-                    _data_hub->GetDataSetHandler().removeDataSet(d);
+            for (int d = _data_hub->GetDataSetHandler().GetNumDataSets() - 1; d >= 0; --d) {
+                auto hascases = std::any_of(setCases[d][0], setCases[d][0] + num_locations, [](count_t i) { return i > 0; });
+                auto hascontrols = std::any_of(setControls[d][0], setControls[d][0] + num_locations, [](count_t i) { return i > 0; });
+                if (!(hascases && hascontrols)) _data_hub->GetDataSetHandler().removeDataSet(d, !hascases, !hascontrols);
             }
             if (_data_hub->GetDataSetHandler().GetNumDataSets() == 0)
                 throw drilldown_exception("While attempting to perform a purely spatial Bernoulli drilldown, with the day of week adjustment, no data set was found to have both cases and controls.");

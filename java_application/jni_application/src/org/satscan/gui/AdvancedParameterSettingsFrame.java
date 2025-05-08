@@ -763,7 +763,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
         
     public boolean isAdjustingForDayOfWeek() {
-        return _adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected();
+        return Utils.selected(_adjustDayOfWeek);
     }
 
     public void enableAdjustDayOfWeek(boolean enable) {
@@ -994,7 +994,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.doubleIs(_drilldown_restriction_cutoff, 0.05);
         bReturn &= Utils.integerIs(_drilldown_restriction_locations, 2);
         bReturn &= Utils.integerIs(_drilldown_restriction_cases, 10);
-        bReturn &= Utils.selected(_drilldown_restriction_dow, false);
         
         // Miscellaneous
         bReturn &= Utils.selected(_calculate_oliveiras_f, false);
@@ -1235,7 +1234,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void saveParameterSettings(Parameters parameters) {
         String sString;
 
-        parameters.SetRiskType(_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected() ? Parameters.RiskType.MONOTONERISK.ordinal() : Parameters.RiskType.STANDARDRISK.ordinal());
+        parameters.SetRiskType(Utils.selected(_performIsotonicScanCheckBox) ? Parameters.RiskType.MONOTONERISK.ordinal() : Parameters.RiskType.STANDARDRISK.ordinal());
         parameters.UseLocationNeighborsFile(_specifiyNeighborsFileCheckBox.isSelected());
         parameters.SetLocationNeighborsFileName(_neighborsFileTextField.getText());
         parameters.UseMetaLocationsFile(_specifiyMetaLocationsFileCheckBox.isSelected());
@@ -1257,9 +1256,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.SetIterativeCutOffPValue(Double.valueOf(_iterative_scan_cutoff.getText()).intValue());
         else
             parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterative_scan_cutoff.getText()));        
-        parameters.SetIterativeScanning(_perform_iterative_scan.isEnabled() && _perform_iterative_scan.isSelected());
+        parameters.SetIterativeScanning(Utils.selected(_perform_iterative_scan));
         parameters.SetNumIterativeScans(Integer.parseInt(_numIterativeScansTextField.getText()));
-        parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
+        parameters.SetUseAdjustmentForRelativeRisksFile(Utils.selected(_adjustForKnownRelativeRisksCheckBox));
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
         parameters.SetTimeTrendAdjustmentType(getAdjustmentTimeTrendControlType().ordinal());
         parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
@@ -1315,25 +1314,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetMaximumTemporalClusterSize(_percentageTemporalRadioButton.isSelected() ? Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) : Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()));
         parameters.SetMaximumTemporalClusterSizeType(_percentageTemporalRadioButton.isSelected() ? Parameters.TemporalSizeType.PERCENTAGETYPE.ordinal() : Parameters.TemporalSizeType.TIMETYPE.ordinal());
         parameters.SetIncludePurelyTemporalClusters(_inclPureTempClustCheckBox.isEnabled() && _inclPureTempClustCheckBox.isSelected());
-        parameters.SetIncludePurelySpatialClusters(_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected());
+        parameters.SetIncludePurelySpatialClusters(Utils.selected(_includePureSpacClustCheckBox));
         parameters.SetMultipleCoordinatesType(getMultipleCoordinatesType().ordinal());
         parameters.setMultipleLocationsFile(_multiple_locations_file.getText());
         parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
         parameters.setGiniIndexReportType(getIndexBasedClusterReportType().ordinal());
         parameters.setReportGiniIndexCoefficents(_checkboxReportIndexCoefficients.isSelected());
-        parameters.setReportHierarchicalClusters(_mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected());
-        parameters.setReportGiniOptimizedClusters(_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected());
+        parameters.setReportHierarchicalClusters(Utils.selected(_mostLikelyClustersHierarchically));
+        parameters.setReportGiniOptimizedClusters(Utils.selected(_giniOptimizedClusters));
         parameters.setIncludeLocationsKML(_includeClusterLocationsInKML.isSelected());
         parameters.setCompressClusterKML(_createCompressedKMZ.isSelected());
         parameters.setLaunchMapViewer(_launch_map_viewer.isSelected());
 
         // Miscellaneous analysis tab
-        parameters.setCalculateOliveirasF(_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected());
+        parameters.setCalculateOliveirasF(Utils.selected(_calculate_oliveiras_f));
         parameters.setNumRequestedOliveiraSets(Integer.parseInt(_number_oliveira_data_sets.getText()));
         parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
         
         // Power Evaluations tab
-        parameters.setPerformPowerEvaluation(_powerEvaluationsGroup.isEnabled() && _performPowerEvalautions.isSelected());
+        parameters.setPerformPowerEvaluation(Utils.selected(_performPowerEvalautions));
         parameters.setPowerEvaluationMethod(getPowerEvaluationMethodType().ordinal());
         parameters.setPowerEvaluationCaseCount(Integer.parseInt((_totalPowerCases.getText().length() > 0 ? _totalPowerCases.getText() : "600")));
         parameters.setNumPowerEvalReplicaPowerStep(Integer.parseInt(_numberPowerReplications.getText()));
@@ -1342,7 +1341,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setPowerEvaluationAltHypothesisFilename(_alternativeHypothesisFilename.getText());
 
         // Temporal Output tab
-        parameters.setOutputTemporalGraphFile(_reportTemporalGraph.isEnabled() && _reportTemporalGraph.isSelected());
+        parameters.setOutputTemporalGraphFile(Utils.selected(_reportTemporalGraph));
         if (_temporalGraphSignificant.isSelected()) {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY.ordinal());
         } else if (_temporalGraphMostLikelyX.isSelected()) {
@@ -1364,18 +1363,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.setRiskThresholdLowClusters(Double.parseDouble(_limit_low_clusters_value.getText()));
         
         // Drilldown tab
-        parameters.setPerformStandardDrilldown(_mainAnalysisDrilldown.isEnabled() && _mainAnalysisDrilldown.isSelected());
-        parameters.setPerformBernoulliDrilldown(_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected());
+        parameters.setPerformStandardDrilldown(Utils.selected(_mainAnalysisDrilldown));
+        parameters.setPerformBernoulliDrilldown(Utils.selected(_purelySpatialDrilldown));
         if (parameters.GetIsProspectiveAnalysis())
             parameters.setDrilldownCutoff(Double.valueOf(_drilldown_restriction_cutoff.getText()).intValue());
         else
             parameters.setDrilldownCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
         parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
         parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
-        parameters.setDrilldownAdjustWeeklyTrends(_drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected());
         
         // Network tab
-        parameters.setUseLocationsNetworkFile(_locations_network.isEnabled() && _locations_network.isSelected());
+        parameters.setUseLocationsNetworkFile(Utils.selected(_locations_network));
         parameters.setLocationsNetworkFilename(_network_filename.getText());
         
         // Notifications tab
@@ -1964,8 +1962,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /** validates parameter settings for the cluster drilldown tab */
     private void validateDrilldownSettings() {
-        if ((_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected()) ||
-             (_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected())) {
+        if (Utils.selected(_mainAnalysisDrilldown) || Utils.selected(_purelySpatialDrilldown)) {
             double cutoff = Double.parseDouble(_drilldown_restriction_cutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
@@ -1988,17 +1985,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cases
                 );                
         }
-        
-        if (_purelySpatialDrilldown.isEnabled() && _purelySpatialDrilldown.isSelected() &&
-            _drilldown_restriction_dow.isEnabled() && _drilldown_restriction_dow.isSelected()) {
-            if (isAdjustingForDayOfWeek()) {
-                int time_length = Integer.parseInt(_settings_window._timeAggregationLengthTextField.getText());            
-                if (!(time_length == 1 && _settings_window.getTimeAggregationControlType() == Parameters.DatePrecisionType.DAY))
-                    throw new AdvFeaturesExpection(
-                            "The adjustment for weekly trends, in the purely spatial Beroulli drilldown, can only be performed with a time aggregation length of 1 day.", 
-                            FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_dow
-                    );
-            }        
+        if (Utils.selected(_purelySpatialDrilldown) && 
+            _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
+            Utils.selected(_adjustDayOfWeek) && 
+            _inputDataSetsList.getModel().getSize() > 1 &&
+            Utils.selected(_multivariateAdjustmentsRadioButton)) {
+                throw new AdvFeaturesExpection(
+                    """
+                    The Bernoulli cluster drilldown is not implemented for the space-time permutation model,
+                    with the adjustment for day of week and multiple data sets when purpose is multivariate.""", 
+                    FocusedTabSet.ANALYSIS, (Component) _purelySpatialDrilldown
+                );                  
         }
     }    
 
@@ -2287,7 +2284,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cutoff.setText("0.05");
         _drilldown_restriction_locations.setText("2");
         _drilldown_restriction_cases.setText("10");
-        _drilldown_restriction_dow.setSelected(false);
         
         // Miscellaneous
         _calculate_oliveiras_f.setSelected(false);
@@ -2860,7 +2856,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _purelySpatialDrilldown.setSelected(parameters.getPerformBernoulliDrilldown());
         _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
         _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
-        _drilldown_restriction_dow.setSelected(parameters.getDrilldownAdjustWeeklyTrends());
         
         // Network tab
         _locations_network.setSelected(parameters.getUseLocationsNetworkFile());
@@ -3002,10 +2997,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_locations_label.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_locations.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_cases_label.setEnabled(bEnableGroup && drilldownSelected);
-        _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);
-        // Adjustment by day of week is permitted for only purely spatia Bernoulli and one data set.
-        _drilldown_restriction_dow.setEnabled(bEnableGroup && bernoulliSelected && _inputDataSetsList.getModel().getSize() == 1);
-        
+        _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);       
         
         double val = Double.parseDouble(_drilldown_restriction_cutoff.getText());
         if (_settings_window.isProspectiveScan()) {
@@ -3311,7 +3303,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cutoff_label = new javax.swing.JLabel();
         _drilldown_restriction_cutoff = new javax.swing.JTextField();
         _drilldown_restrictions = new javax.swing.JLabel();
-        _drilldown_restriction_dow = new javax.swing.JCheckBox();
         _network_tab = new javax.swing.JPanel();
         _network_group = new javax.swing.JPanel();
         _locations_network = new javax.swing.JCheckBox();
@@ -6707,8 +6698,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _drilldown_restrictions.setText("Drilldown for Clusters with:");
 
-            _drilldown_restriction_dow.setText("With Day of Week Adjustment");
-
             javax.swing.GroupLayout _drilldown_restrictions_groupLayout = new javax.swing.GroupLayout(_drilldown_restrictions_group);
             _drilldown_restrictions_group.setLayout(_drilldown_restrictions_groupLayout);
             _drilldown_restrictions_groupLayout.setHorizontalGroup(
@@ -6730,12 +6719,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                         .addComponent(_drilldown_restriction_locations, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
                                         .addComponent(_drilldown_restriction_cutoff, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
                                         .addComponent(_drilldown_restriction_cases, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)))
-                                .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(_drilldown_restrictions_groupLayout.createSequentialGroup()
-                                    .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 222, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGap(0, 161, Short.MAX_VALUE)))
+                                .addComponent(_drilldown_restrictions, javax.swing.GroupLayout.PREFERRED_SIZE, 349, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGap(0, 326, Short.MAX_VALUE))
+                        .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
             );
             _drilldown_restrictions_groupLayout.setVerticalGroup(
@@ -6744,9 +6730,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addContainerGap()
                     .addComponent(_mainAnalysisDrilldown)
                     .addGap(6, 6, 6)
-                    .addGroup(_drilldown_restrictions_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_purelySpatialDrilldown, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_drilldown_restriction_dow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_purelySpatialDrilldown)
                     .addGap(18, 18, 18)
                     .addComponent(_drilldown_restrictions)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -7118,7 +7102,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _drilldown_restriction_cases_label;
     private javax.swing.JTextField _drilldown_restriction_cutoff;
     private javax.swing.JLabel _drilldown_restriction_cutoff_label;
-    private javax.swing.JCheckBox _drilldown_restriction_dow;
     private javax.swing.JTextField _drilldown_restriction_locations;
     private javax.swing.JLabel _drilldown_restriction_locations_label;
     private javax.swing.JLabel _drilldown_restrictions;

@@ -10,6 +10,7 @@ class BernoulliDataSetHandler : public DataSetHandler {
     CountFileReadStatus                 ReadControlFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();
 	virtual void                        removeDataSet(size_t iSetIndex);
+    virtual void                        removeDataSet(size_t iSetIndex, bool hasCases, bool hasControls);
 
   public:
     BernoulliDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}

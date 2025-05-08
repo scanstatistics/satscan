@@ -274,7 +274,6 @@ class CParameters {
     unsigned int                        _drilldown_minimum_locations;
     unsigned int                        _drilldown_minimum_cases;
     double                              _drilldown_cutoff;
-    bool                                _drilldown_adjust_weekly_trends;
     std::vector<std::string>            _drilldown_result_filenames;
 
     std::string                         _locations_network_filename;
@@ -389,8 +388,6 @@ class CParameters {
     void                                setDrilldownMinimumCasesCluster(unsigned int u) { _drilldown_minimum_cases = u; }
     double                              getDrilldownCutoff() const { return _drilldown_cutoff; }
     void                                setDrilldownCutoff(double d) { _drilldown_cutoff = d; }
-    bool                                getDrilldownAdjustWeeklyTrends() const { return _drilldown_adjust_weekly_trends; }
-    void                                setDrilldownAdjustWeeklyTrends(bool b) { _drilldown_adjust_weekly_trends = b; }
     void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
     const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
     bool                                getIsBernoulliIterativeDrilldown() const;
