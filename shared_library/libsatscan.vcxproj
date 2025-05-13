@@ -53,7 +53,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -66,7 +66,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/verbose:lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.2.7\Win32\Release\zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.3.1\Win32\Release\zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)satscan32.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -88,7 +88,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.2.7\;$(SolutionDir)zlib\zlib-1.2.7\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)shapelib\shapelib_1.2.10\;$(SolutionDir)zlib\zlib-1.3.1\;$(SolutionDir)zlib\zlib-1.3.1\contrib\minizip;$(SolutionDir)jdk\include;$(SolutionDir)jdk\include\win32;$(SolutionDir)boost\boost_1_81_0;$(SolutionDir)xbase\xbase_2.0.0;$(SolutionDir)calculation\utility;$(SolutionDir)calculation\satscan_data;$(SolutionDir)calculation\randomization;$(SolutionDir)calculation\probability_model;$(SolutionDir)calculation\print;$(SolutionDir)calculation\Output;$(SolutionDir)calculation\loglikelihood;$(SolutionDir)calculation\cluster;$(SolutionDir)calculation\analysis_run;$(SolutionDir)calculation;$(SolutionDir)calculation\analysis;$(SolutionDir)newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;BOOST_FILESYSTEM_NO_CXX20_ATOMIC_REF;INTEL_BASED;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -101,7 +101,7 @@
     </ClCompile>
     <Link>
       <AdditionalOptions>/verbose:lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)zlib\zlib-1.2.7\x64\Release\zlib64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)zlib\zlib-1.3.1\x64\Release\zlib64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)satscan64.dll</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
