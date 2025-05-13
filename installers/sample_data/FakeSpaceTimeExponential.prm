@@ -197,8 +197,6 @@ DrilldownMinimumClusterLocations=2
 DrilldownMinimumClusterCases=10
 ;cutoff of detected cluster to perform drilldown (0.0 to 1 for retrospective, > 0 for prospective)
 DrilldownClusterCutoff=0.05
-;adjust for weekly trends, purely spatial Bernoulli drilldown
-DrilldownAdjustForWeeklyTrends=n
 
 [Miscellaneous Analysis]
 ;calculate Oliveira's F (y/n)
@@ -354,5 +352,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=10.3.0
+Version=10.3.1
 
