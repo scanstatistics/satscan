@@ -7,7 +7,7 @@ REM   1) License isn't presented to user -- not sure what I'm doing wrong.
 REM   2) I need to test update process - installing over previous installation.
 REM   3) How to properly identify beta releases vs public releases?
 
-set javabin=c:\jdk\jdk-17.0.14+7\bin
+set javabin=c:\jdk\jdk-17.0.15+6\bin
 set version=10.3
 set srcdir=C:\Users\hostovic\projects\satscan.development\satscan
 set bundledir=C:\Users\hostovic\projects\satscan.development\jpackage

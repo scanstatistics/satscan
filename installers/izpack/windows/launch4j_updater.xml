@@ -2,7 +2,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>/prj/satscan/build.area/satscan/java_application/updater_application/dist/updater_application.jar</jar>
-  <outfile>/prj/satscan/installers/v.10.0.x/update_app.exe</outfile>
+  <outfile>/prj/satscan/installers/v.10.3.x/update_app.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -17,12 +17,12 @@
     <path>jre</path>
   </jre>
   <versionInfo>
-    <fileVersion>10.0.0.0</fileVersion>
-    <txtFileVersion>Version 10.0.0</txtFileVersion>
+    <fileVersion>10.3.2.0</fileVersion>
+    <txtFileVersion>Version 10.3.2</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>10.0.0.0</productVersion>
-    <txtProductVersion>Version 10.0.0</txtProductVersion>
+    <productVersion>10.3.2.0</productVersion>
+    <txtProductVersion>Version 10.3.2</txtProductVersion>
     <productName>SaTScan update_app</productName>
     <companyName>SaTscan.org</companyName>
     <internalName>SaTScan update_app</internalName>
