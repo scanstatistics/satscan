@@ -53,7 +53,7 @@
 #define VERSION_MINOR   "3"
 #define VERSION_RELEASE "2"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "May 2025"
+#define VERSION_DATE    "June 2025"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
