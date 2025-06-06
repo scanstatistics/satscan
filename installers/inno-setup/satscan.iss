@@ -3,7 +3,7 @@
 
 #define MyAppName "SaTScan"
 #define MyAppVersion "10.3"
-#define MyAppPublisher "Information Management Services, Ins."
+#define MyAppPublisher "Information Management Services, Inc."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"
 

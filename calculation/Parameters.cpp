@@ -459,6 +459,9 @@ void CParameters::Copy(const CParameters &rhs) {
 
 /* Returns whether line list data is read from case file - the user used file wizard to define line list columns */
 bool CParameters::getReadingLineDataFromCasefile() const {
+    // Skip reporting line list data for purely spatial Bernoulli drilldown.
+    if (getIsBernoulliIterativeDrilldown()) return false;
+    // Check whether any case files source definition defines line list data.
     for (unsigned int idx = 1; idx <= getNumFileSets(); ++idx) {
         const InputSource * source = getInputSource(CASEFILE, idx);
         if (source && source->getLinelistFieldsMap().size())
@@ -522,7 +525,7 @@ void CParameters::setLinelistIndividualsCacheFileName(const char * s, bool bCorr
 
 /** Returns whether parameter settings indicate that this analysis is the purely spatial iterative Bernoulli drilldown. */
 bool CParameters::getIsBernoulliIterativeDrilldown() const {
-    // Infer the situation - iterative, purely spatial Bernoulli with control files.
+    // Infer the situation - iterative, purely spatial Bernoulli without control files.
     return GetIsIterativeScanning() && GetProbabilityModelType() == BERNOULLI && 
         GetIsPurelySpatialAnalysis() && (gvControlFilenames.empty() || gvControlFilenames.front().empty());
 }

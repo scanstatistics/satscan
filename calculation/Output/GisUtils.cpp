@@ -268,7 +268,7 @@ double VisualizationUtils::getSliderValue(const CSaTScanData& datahub, const CCl
 std::string VisualizationUtils::getSliderRange(const CSaTScanData& datahub) {
     std::stringstream jsHash;
     const auto& parameters = datahub.GetParameters();
-    if (parameters.GetIsProspectiveAnalysis()) {
+    if (parameters.GetIsProspectiveAnalysis() && !datahub.isDrilldown()) {
         unsigned int default_RI = parameters.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(parameters.getCutoffLineListCSV()) : 365;
         std::vector<unsigned int> ticks = {
            1, 20, 50, 100, 183, 365, 730, 1825, 3650, 7300, 18250, 36500, 73000, 365000, 3650000, 365000000, 730000000

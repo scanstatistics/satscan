@@ -255,7 +255,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.1.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.2.js\"></script> \n \
   </body> \n \
 </html> \n";
 
@@ -616,14 +616,14 @@ void ClusterMap::finalize() {
             templateReplace(html, "--true-dates--", "true");
         }
         templateReplace(html, "--parameters--", printString( // replace parameters hash
-            str_buffer, "scanrate:%d,giniscan:%s,prospective:%s,firsttimers:%s",
+            str_buffer, "scanrate:%d,giniscan:%s,filterbyri:%s,firsttimers:%s",
             params.GetAreaScanRateType(),
             params.getReportGiniOptimizedClusters() ? "true" : "false", 
             params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false",
             params.GetIsProspectiveAnalysis() && params.getLinelistIndividualsCacheFileName().size() && !_dataHub.isDrilldown() ? "true" : "false"
         ));
         templateReplace(html, "--slider-range--", VisualizationUtils::getSliderRange(_dataHub));
-        if (params.GetIsProspectiveAnalysis()) {
+        if (params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {
             unsigned int default_RI = params.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(params.getCutoffLineListCSV()) : 365;
             templateReplace(html, "--slider-range-start--", printString(str_buffer, "%u", default_RI));
         } else {

@@ -26,7 +26,7 @@ const char * CartesianGraph::TEMPLATE = " \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/jQuery.resizeEnd.js'></script> \n \
         <script type=\"text/javascript\">jQuery.noConflict();</script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-Core-1.6.0.js'></script> \n \
-        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.3.2.js'></script> \n \
+        <script type='text/javascript' src='--resource-path--javascript/clustercharts/clusterchart-1.3.3.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/mootools-1.6.0/MooTools-More-1.6.0.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/FileSaver-2014-06-24.js'></script> \n \
         <script type='text/javascript' src='--resource-path--javascript/clustercharts/Blob-2014-07-24.js'></script> \n \
@@ -327,12 +327,12 @@ void CartesianGraph::finalize() {
         templateReplace(html, "--cluster-options--", worker.str());
 
         // replace parameters hash
-        printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,prospective:%s", 
+        printString(buffer, "scanrate:%d/*high=1,low=2,highorlow=3*/,giniscan:%s,filterbyri:%s", 
             parameters.GetAreaScanRateType(), parameters.getReportGiniOptimizedClusters() ? "true": "false", parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false"
         );
         templateReplace(html, "--parameters--", buffer.c_str());
         templateReplace(html, "--slider-range--", VisualizationUtils::getSliderRange(_dataHub));
-        if (parameters.GetIsProspectiveAnalysis()) {
+        if (parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {
             unsigned int default_RI = parameters.getReadingLineDataFromCasefile() ? static_cast<unsigned int>(parameters.getCutoffLineListCSV()) : 365;
             templateReplace(html, "--slider-range-start--", printString(buffer, "%u", default_RI));
         } else {
