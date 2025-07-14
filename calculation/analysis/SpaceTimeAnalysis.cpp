@@ -11,7 +11,13 @@
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-:CAnalysis(Parameters, DataHub, PrintDirection), _top_clusters(DataHub) {}
+:CAnalysis(Parameters, DataHub, PrintDirection), _top_clusters(DataHub) {
+    _isMinimizingHypergeometric = (
+        _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION &&
+        _parameters.getSTPasHypergeometric() &&
+        _data_hub.GetNumDataSets() == 1
+    );
+}
 
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
@@ -22,6 +28,12 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway&
         _time_intervals.reset(GetNewTemporalDataEvaluatorObject(
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALLCLUSTERS : _parameters.GetIncludeClustersType(), SUCCESSIVELY
         ));
+        // If this is a space-time permutation analysis, using hypergeometric, then we now need to associate
+        // the probabilities lookup(s) with the time interval object.
+        if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && _parameters.getSTPasHypergeometric()) {
+            for (auto dataset : _data_hub.GetDataSetHandler().getDataSets())
+                _time_intervals->associate(dataset->getHyperProbLkup());
+        }
         //create simulation objects based upon which process used to perform simulations
         if (_replica_process_type == MeasureListEvaluation)
             _measure_list.reset(GetNewMeasureListObject());
@@ -39,6 +51,19 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
         _time_intervals.reset(GetNewTemporalDataEvaluatorObject(
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), SUCCESSIVELY
         ));
+        // If this is a space-time permutation analysis, using hypergeometric, then we now need to calculate
+        // the probabilities lookup(s), then associate with the time interval object.
+        if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && _parameters.getSTPasHypergeometric()) {
+            for (auto dataset: _data_hub.GetDataSetHandler().getDataSets()) {
+                std::set<count_t> collection;
+                _time_intervals->getCasesInTimeWindowsCollection(collection, dataset->getCaseData_PT());
+                dataset->refHyperProbLkup().buildLookup(
+                    collection, dataset->getTotalCases(),
+                    static_cast<count_t>(std::ceil(static_cast<double>(dataset->getTotalCases()) / 2))
+                );
+                _time_intervals->associate(dataset->getHyperProbLkup());
+            }
+        }
         //create cluster object used as comparator when iterating over centroids and time intervals
         _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory.get(), DataGateway));
         //initialize list of top circle/ellipse clusters
@@ -67,10 +92,12 @@ const SharedClusterVector_t CSpaceTimeAnalysis::CalculateTopClusters(tract_t tCe
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
 double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
-    tract_t                       t, tNumNeighbors, * pIntegerArray;
-    unsigned short              * pUnsignedShortArray;
-    double                        dMaximizingValue;
-    std::vector<double>           vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+    tract_t t, tNumNeighbors, * pIntegerArray;
+    unsigned short * pUnsignedShortArray;
+    double dMaximizingValue;
+    std::vector<double> vMaximizingValues(
+        _parameters.GetNumTotalEllipses() + 1, _isMinimizingHypergeometric ? 1.0 : -std::numeric_limits<double>::max()
+    );
     std::vector<double>::iterator itr, itr_end;
 
     _time_intervals->setIntervalRange(tCenter);
@@ -85,12 +112,13 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
         for (t=0; t < tNumNeighbors; ++t) {
             _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
             dMaximizingValue = _time_intervals->ComputeMaximizingValue(*_cluster_data);
-            if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+            if (!_isMinimizingHypergeometric && dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+            else if (_isMinimizingHypergeometric && dMaximizingValue < dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
         }
     }
     //if maximizing value is not a ratio/test statistic, convert them now
     if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
-        for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
+        for (itr = vMaximizingValues.begin(), itr_end = vMaximizingValues.end(); itr != itr_end; ++itr)
             *itr = _likelihood_calculator->CalculateFullStatistic(*itr);
     //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
     double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();

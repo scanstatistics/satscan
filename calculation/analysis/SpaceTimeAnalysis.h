@@ -19,6 +19,7 @@ class CSpaceTimeAnalysis : public CAnalysis {
         boost::shared_ptr<CMeasureList> _measure_list; // measure list object utilized in calculated simulation ratio
         boost::shared_ptr<CTimeIntervals> _time_intervals; // iterates through temporal windows of cluster data
         CClusterSetCollections _top_clusters; // collection of clusters representing top cluster for each shape
+        bool _isMinimizingHypergeometric; // indicates whether this analysis is using minimizing for hypergeometric
 
         virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
         virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);

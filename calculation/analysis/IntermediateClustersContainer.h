@@ -39,9 +39,10 @@ class CClusterSet {
 
     protected:
         ClusterContainer_t _cluster_set;
+        bool _maximizing;
 
     public:
-        CClusterSet() {}
+        CClusterSet(bool maximizing):_maximizing(maximizing){}
         virtual ~CClusterSet() {}
 
         static boost::shared_ptr<CClusterSet> getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub);
@@ -82,8 +83,16 @@ class CClusterSet {
         virtual void update(CCluster& runcluster) {
             // Updates cluster objects in set to runcluster if runcluster's LLR is greater.
             for (auto& clusterObj: _cluster_set) {
-                if (runcluster.getNumIdentifiers() <= clusterObj.getMaxNeighbors() && clusterObj.getCluster().m_nRatio < runcluster.GetRatio())
-                    clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
+                if (runcluster.getNumIdentifiers() <= clusterObj.getMaxNeighbors()) {
+                    if (_maximizing && clusterObj.getCluster().m_nRatio < runcluster.GetRatio()) {
+                        clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
+                    } else if (!_maximizing && (
+                        (clusterObj.getCluster().m_nRatio == 0.0 && runcluster.GetRatio()) ||
+                        (runcluster.GetRatio() < clusterObj.getCluster().m_nRatio)
+                    )) {
+                        clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
+                    }
+                }
             }
         }
 };
@@ -96,7 +105,7 @@ class CClusterSetTemporalOverlap : public CClusterSet {
         static double MIN_CLUSTER_LLR_RETAINED;
 
     public:
-        CClusterSetTemporalOverlap(const CCluster& cluster, int intervals) : CClusterSet() {
+        CClusterSetTemporalOverlap(const CCluster& cluster, int intervals, bool maximizing) : CClusterSet(maximizing) {
             boost::shared_ptr<CCluster> _copy_cluster(cluster.Clone());
             _copy_cluster->DeallocateEvaluationAssistClassMembers();
             for (int idxe=1; idxe <= intervals + 1; ++idxe) {
@@ -164,11 +173,12 @@ class CClusterSetCollections {
         const CParameters & _parameters;
         ClusterType _cluster_type;
         std::vector<boost::shared_ptr<CClusterSet>> _cluster_sets;
+        bool _isMinimizingHypergeometric;
 
         void setClusterCollections(const CCluster& cluster, size_t count);
 
     public:
-        CClusterSetCollections(const CSaTScanData& data_hub) : _data_hub(data_hub), _parameters(data_hub.GetParameters()), _cluster_type((ClusterType)0){}
+        CClusterSetCollections(const CSaTScanData& data_hub);
 
         CClusterSet& getClusterSet(int shapeOffset) {
             /** Returns reference to cluster set for shape offset. This function is tightly  coupled to the presumption that

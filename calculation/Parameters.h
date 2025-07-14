@@ -294,6 +294,7 @@ class CParameters {
     std::string                         _email_custom_message_body;
     bool                                _create_email_summary_file;
     double                              _email_summary_cutoff;
+    bool                                _stp_as_hypergeometric; // perform space-time permutation as hypergeometric
 
     boost::posix_time::ptime            _local_timestamp; // approxiate analysis start time
 
@@ -321,7 +322,8 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
-    
+    bool                                getSTPasHypergeometric() const { return _stp_as_hypergeometric; }
+    void                                setSTPasHypergeometric(bool b) { _stp_as_hypergeometric = b; }
     const std::vector<std::string>    & getDataSourceNames() const { return _data_source_names; }
     void                                setDataSourceNames(const std::vector<std::string>& v) { _data_source_names = v; }
 

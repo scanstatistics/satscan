@@ -27,6 +27,54 @@ class TemporalDataEvaluator : public CTimeIntervals {
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
+class AbstractHypergeometricTemporalDataEvaluator : public CTimeIntervals {
+    public:
+        AbstractHypergeometricTemporalDataEvaluator(
+            const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType
+        ):CTimeIntervals(DataHub, Calculator, eIncludeClustersType) {}
+
+        virtual void getCasesInTimeWindowsCollection(std::set<count_t>& collection, count_t* pCases);
+};
+
+/** Temporal window evaluator for the hypergeometric distribution. */
+class HypergeometricTemporalDataEvaluator : public AbstractHypergeometricTemporalDataEvaluator {
+    private:
+        typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, size_t) const;
+        MAXIMIZE_FUNCPTR gpCalculationMethod;
+        double _default_minimizing_value;
+        count_t* _pt_counts;
+        std::vector<const HypergeometricProbabilityLookup*> _look_ups;
+
+    public:
+        HypergeometricTemporalDataEvaluator(
+            const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+            IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
+        );
+
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void associate(const HypergeometricProbabilityLookup& lookup) { _look_ups.push_back(&lookup); }
+};
+
+/** Temporal window evaluator for the hypergeometric distribution. */
+class MultisetHypergeometricTemporalDataEvaluator : public AbstractHypergeometricTemporalDataEvaluator {
+    private:
+        std::vector<count_t*> _pt_counts;
+        std::vector<const HypergeometricProbabilityLookup*> _look_ups;
+
+    public:
+        MultisetHypergeometricTemporalDataEvaluator(
+            const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+            IncludeClustersType eIncludeClustersType
+        );
+
+        virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+        virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+        virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+        virtual void associate(const HypergeometricProbabilityLookup& lookup) { _look_ups.push_back(&lookup); }
+};
+
 /** Temporal window evaluator used when adjusting for temporal trends nonparametrically. */
 class TimeStratifiedTemporalDataEvaluator : public CTimeIntervals {
     private:

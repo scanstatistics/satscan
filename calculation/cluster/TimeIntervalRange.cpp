@@ -108,6 +108,187 @@ double TemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData
     return dMaxValue;
 }
 
+//********** AbstractHypergeometricTemporalDataEvaluator *******************
+
+/* Compiles collection of cases in time window, over the whole geographical region. */
+void AbstractHypergeometricTemporalDataEvaluator::getCasesInTimeWindowsCollection(std::set<count_t>& collection, count_t* pCases) {
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        int iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        int iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            collection.emplace(pCases[iWindowStart] - pCases[iWindowEnd]);
+        }
+    }
+}
+
+//********** HypergeometricTemporalDataEvaluator ***************************
+
+/** constructor */
+HypergeometricTemporalDataEvaluator::HypergeometricTemporalDataEvaluator(
+    const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
+    IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
+) : AbstractHypergeometricTemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType) {
+    gpCalculationMethod = &AbstractLikelihoodCalculator::CalculateMaximizingValue;
+    _default_minimizing_value = 1.0;
+    // get pointers to cumulative case and measure data, we'll need these during scanning
+    _pt_counts = DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT();
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+    of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    TemporalData& Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
+    count_t* pCases = Data.gpCases, T, S;
+    measure_t* pMeasure = Data.gpMeasure;
+    AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+    double probability;
+    S = pCases[gDataHub.getDataInterfaceIntervalStartIndex()]; // number of cases in spatial circle, over the whole study time period
+
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd]; // cases in time window, over the whole geographical region
+            Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
+            Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
+                probability = _look_ups.front()->getProbabilityFor(T, S, Data.gtCases);
+                //Running.m_nRatio = -log(probability);
+                Running.m_nRatio = probability;
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                clusterSet.update(Running);
+            }
+        }
+    }
+}
+
+/** No implemented for this class */
+void HypergeometricTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "HypergeometricTemporalDataEvaluator");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    TemporalData& Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
+    count_t* pCases = Data.gpCases, T, S;
+    measure_t* pMeasure = Data.gpMeasure;
+    double minValue(_default_minimizing_value);
+    AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+    S = pCases[gDataHub.getDataInterfaceIntervalStartIndex()]; // number of cases in spatial circle, over the whole study time period
+
+    int iWindowStart, iMaxStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+            T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd]; // cases in time window, over the whole geographical region
+            Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
+            Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
+                minValue = std::min(minValue, _look_ups.front()->getProbabilityFor(T, S, Data.gtCases));
+            }
+        }
+    }
+    return minValue;
+}
+
+//********** MultisetHypergeometricTemporalDataEvaluator **********
+
+/** constructor */
+MultisetHypergeometricTemporalDataEvaluator::MultisetHypergeometricTemporalDataEvaluator(
+    const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
+    IncludeClustersType eIncludeClustersType
+) : AbstractHypergeometricTemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType) {
+    // get pointers to cumulative case and measure data, we'll need these during scanning
+    for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t)
+        _pt_counts.push_back(DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT());
+}
+
+/** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
+    of clusters that have rates of which we are interested in and updates clusterset accordingly. */
+void MultisetHypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
+    AbstractMultiSetTemporalData& Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+    count_t T, S;
+
+    int iWindowStart, iMinWindowStart;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
+        for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
+                TemporalData& Datum = *(Data.gvSetClusterData[t]);
+                T = _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd]; // cases in time window, over the whole geographical region
+                S = Datum.gpCases[gDataHub.getDataInterfaceIntervalStartIndex()]; // number of cases in spatial circle, over the whole study time period
+                Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+                Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+                Unifier.AdjoinRatioHypergeometric(gLikelihoodCalculator, *_look_ups[t], T, S, Datum.gtCases, Datum.gtMeasure, t);
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false)) {
+                Running.m_nFirstInterval = iWindowStart;
+                Running.m_nLastInterval = iWindowEnd;
+                Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
+                Running._ratio_sets = Unifier.getUnifiedSets();
+                clusterSet.update(Running);
+            }
+        }
+    }
+}
+
+/** No implemented for this class */
+void MultisetHypergeometricTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
+    throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.", "MultisetHypergeometricTemporalDataEvaluator");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double MultisetHypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
+    AbstractMultiSetTemporalData& Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    double dRatio(0);
+    AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
+
+    count_t T, S;
+
+    //iterate through windows
+    int iWindowStart, iMaxStartWindow;
+    gpMaxWindowLengthIndicator->reset();
+    int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
+    for (int iWindowEnd = ENDRANGE_STARTDATE; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+        iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
+        iMaxStartWindow = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength() + 1);
+        for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+            Unifier.Reset();
+            for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
+                TemporalData& Datum = *(Data.gvSetClusterData[t]);
+                T = _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd]; // cases in time window, over the whole geographical region
+                S = Datum.gpCases[gDataHub.getDataInterfaceIntervalStartIndex()]; // number of cases in spatial circle, over the whole study time period
+                Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+                Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+                Unifier.AdjoinRatioHypergeometric(gLikelihoodCalculator, *_look_ups[t], T, S, Datum.gtCases, Datum.gtMeasure, t);
+            }
+            if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false))
+                dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+        }
+    }
+    return dRatio;
+}
+
 //********** TimeStratifiedTemporalDataEvaluator *******
 
 /** constructor */
@@ -707,8 +888,8 @@ MultiSetTemporalDataEvaluator::MultiSetTemporalDataEvaluator(
 /** Iterates through defined temporal window for accumulated data of 'Running' cluster. Calculates loglikelihood ratio
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void MultiSetTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
-    AbstractMultiSetTemporalData & Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
-    AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+    AbstractMultiSetTemporalData& Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
 
     int iWindowStart, iMinWindowStart;
@@ -745,9 +926,9 @@ void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&
     Calculates greatest loglikelihood ratio among clusterings that have rates
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
-    AbstractMultiSetTemporalData        & Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
-    AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
-    double                                dRatio(0);
+    AbstractMultiSetTemporalData& Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
+    AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
+    double dRatio(0);
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
 
     //iterate through windows

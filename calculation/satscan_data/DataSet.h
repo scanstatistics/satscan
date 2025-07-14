@@ -9,6 +9,7 @@
 #include "TimeTrend.h"
 #include "ptr_vector.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
+#include <unordered_map>
 
 //typedefs for multiple dimension arrays
 typedef TwoDimensionArrayHandler<count_t>        TwoDimCountArray_t;
@@ -129,6 +130,22 @@ class DataSet {
 
 };
 
+/** Provides a quick lookup table for the hypergeometric probabilities. */
+class HypergeometricProbabilityLookup {
+    protected:
+        boost::shared_ptr<ThreeDimMeasureArray_t> _HG;
+        mutable std::vector<unsigned int> _T_index;
+        //mutable std::unordered_map<count_t, unsigned int> _T_to_index;
+        void calculateHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K);
+
+    public:
+        HypergeometricProbabilityLookup() {}
+
+        void buildLookup(const std::set<count_t>& caseWindows, count_t C, count_t K);
+        double getProbabilityFor(count_t T, count_t S, count_t x) const;
+        void printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT);
+};
+
 /** Encapsulates real data of dataset. */
 class RealDataSet : public DataSet {
   friend class DataSetHandler;
@@ -159,8 +176,8 @@ class RealDataSet : public DataSet {
     std::string                 _calculatedQuadraticTrend; // calculated quadratic trend used to adjust temporal expected cases
     PopulationDataPair_t        _populationData; // population measure data and PopulationData
     TwoDimBitsetArray_t        * gpBatchIndexes; // batch index data by time interval and location, cumulative by intervals
-    BatchIndexes_t             * gpBatchIndexes_PT; // batch index data by time interval, cumulative by intervals 
-
+    BatchIndexes_t             * gpBatchIndexes_PT; // batch index data by time interval, cumulative by intervals
+    HypergeometricProbabilityLookup _hyper_probability_lkup;
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
@@ -180,6 +197,8 @@ class RealDataSet : public DataSet {
     TwoDimCountArray_t        & getCategoryCaseData(unsigned int iCategoryIndex, bool bCreateable=false);
     TwoDimCountArray_t        & getCaseData_Censored() const;
     TwoDimCountArray_t        & getControlData() const;
+    HypergeometricProbabilityLookup& refHyperProbLkup() { return _hyper_probability_lkup; }
+    const HypergeometricProbabilityLookup& getHyperProbLkup() { return _hyper_probability_lkup; }
     PopulationData            & getPopulationData() {return *_population;}
     const PopulationData      & getPopulationData() const {return *_population;}
     count_t                     getTotalCases() const {return gtTotalCases;}

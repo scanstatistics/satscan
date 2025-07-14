@@ -165,7 +165,7 @@ count_t * DataSet::allocateCaseData_PT_NC() {
     memset(gpCaseData_PT_NC, 0, giIntervalsDimensions * sizeof(count_t));
   }
   catch (prg_exception& x) {
-    x.addTrace("allocateCaseData_PT_NC()","RealDataSet");
+    x.addTrace("allocateCaseData_PT_NC()","DataSet");
     throw;
   }
   return gpCaseData_PT_NC;
@@ -792,9 +792,82 @@ void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
         *gpMeasureData_Aux2 = other;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//////////////////////////// RealDataSet ///////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+//************************ HypergeometricProbabilityLookup **************
+
+/** Builds lookup table from passed attributes. */
+void HypergeometricProbabilityLookup::buildLookup(const std::set<count_t>& caseWindows, count_t C, count_t K) {
+    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), K + 1, K + 1, 99));
+    calculateHG(*_HG, caseWindows, C, K);
+}
+
+/** Returns the probability at cases windows count, spatial count, and cases in cluster. */
+double HypergeometricProbabilityLookup::getProbabilityFor(count_t T, count_t S, count_t x) const {
+    //return _HG->GetArray()[_T_to_index[T]][S][x];
+    return _HG->GetArray()[_T_index[T]][S][x];
+}
+
+void HypergeometricProbabilityLookup::calculateHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K) {
+    measure_t*** pHG = HG.GetArray();
+    auto calc_hg_0 = [C](count_t T, count_t S) {
+        // probability of 0 cases in cylinder, based on hypergeometric distribution
+        double hg = static_cast<double>(C - S) / static_cast<double>(C);
+        for (count_t i = 1; i <= T - 1; ++i)
+            hg *= static_cast<double>(C - S - i) / static_cast<double>(C - i);
+        return hg;
+    };
+
+    // Find the largest case window value - so we know how large to allocate translation array.
+    count_t largest = *vT.rbegin();
+    _T_index.resize(largest + 1);
+
+    size_t i = 0;
+    double cumulative_probability;
+    for (auto T : vT) {
+        for (count_t S = 2; S <= K; ++S) {
+            pHG[i][S][0] = 1.0;
+            double hg = calc_hg_0(T, S);
+            pHG[i][S][1] = 1.0 - hg;
+            for (count_t x = 1; x < std::min(S, T); ++x) {
+                hg *= (static_cast<double>(S - x + 1) / static_cast<double>(x)) * (static_cast<double>(T - x + 1) / static_cast<double>(C - S - T + x));
+                cumulative_probability = pHG[i][S][x] - hg; // cumulative probability of (x + 1) or more cases in the cylinder
+                if (cumulative_probability <= 0) {
+                    // Round-off error is causing the probability to be calculated as negative.
+                    // Martin is going to consider ways to get around this.
+                    // This is just a hack for now.
+                    //pHG[i][S][x + 1] = std::numeric_limits<double>::min();
+                    pHG[i][S][x + 1] = pHG[i][S][x] - std::numeric_limits<double>::epsilon();
+                } else {
+                    pHG[i][S][x + 1] = cumulative_probability; // cumulative probability of (x + 1) or more cases in the cylinder
+                }
+            }
+        }
+        _T_index[T] = i;
+        //_T_to_index[T] = i;
+        ++i;
+    }
+    //printHG(HG, vT);
+}
+
+/** Prints HG lookup table to screen. */
+void HypergeometricProbabilityLookup::printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT) {
+    measure_t*** pHG = HG.GetArray();
+    if (vT.size() != HG.Get1stDimension())
+        throw prg_error("Dimensions do not match;", "printHG()");
+    for (auto T : vT) {
+        std::cout << std::endl;
+        for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
+            std::cout << std::endl;
+            for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
+                double probability = getProbabilityFor(T, S, x);
+                if (probability != 99)
+                   std::cout << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << probability << std::endl;
+            }
+        }
+        std::cout << std::endl << std::endl;
+    }
+}
+
+//************************ RealDataSet **********************************
 
 /** constructor */
 RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)

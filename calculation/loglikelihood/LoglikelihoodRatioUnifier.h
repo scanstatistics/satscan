@@ -36,6 +36,8 @@ class DataStreamAccumulator {
 };
 
 
+class HypergeometricProbabilityLookup;
+
 /** Abstract base class for unifying calculated data set loglikelihood ratios. */
 class AbstractLoglikelihoodRatioUnifier {
     protected:
@@ -51,13 +53,16 @@ class AbstractLoglikelihoodRatioUnifier {
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const = 0;
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex) = 0;
-        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) = 0;
+        virtual void AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure) {/* nop */ }
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) = 0;
         virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) = 0;
-        virtual void AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure) {/* nop */}
         virtual double GetLoglikelihoodRatio() const = 0;
         virtual void Reset() = 0;
         virtual const boost::dynamic_bitset<>& getUnifiedSets() const {
@@ -101,13 +106,15 @@ class MultivariateUnifierHighRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
         virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual double GetLoglikelihoodRatio() const { return _llr; }
         virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.reset(); }
 
@@ -136,13 +143,15 @@ class MultivariateUnifierLowRate : public AbstractLoglikelihoodRatioUnifier {
         const DataStreamAccumulator * getDataStreamAccumulator() const { return &_data_stream_accumulator; }
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-
         virtual double GetLoglikelihoodRatio() const { return _llr; }
         virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); _unified_sets.reset(); }
 
@@ -170,19 +179,20 @@ class MultivariateUnifierHighLowRate : public AbstractLoglikelihoodRatioUnifier 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const { return new MultivariateUnifierHighLowRate(*this); };
 
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
         virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
         virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-
         virtual const boost::dynamic_bitset<>& getUnifiedSets() const {
             if (_high_rate.GetLoglikelihoodRatio() > _low_rate.GetLoglikelihoodRatio())
                 return _high_rate.getUnifiedSets();
             return _low_rate.getUnifiedSets();
         }
-
         virtual double GetLoglikelihoodRatio() const { return std::max(_low_rate.GetLoglikelihoodRatio(), _high_rate.GetLoglikelihoodRatio()); }
         virtual void Reset() { _low_rate.Reset(); _high_rate.Reset(); }
 
@@ -210,16 +220,19 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
 
         virtual AbstractLoglikelihoodRatioUnifier * Clone() const {return new AdjustmentUnifier(*this);};
 
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-        virtual void        AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-        virtual double      GetLoglikelihoodRatio() const;
-        virtual double      GetRawLoglikelihoodRatio() const {return _llr;}
-        virtual void        Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+        virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+        virtual double GetLoglikelihoodRatio() const;
+        virtual double GetRawLoglikelihoodRatio() const {return _llr;}
+        virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
 
         // Method used for minimum number of cases evaulation.
         virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -243,20 +256,17 @@ public:
 
     virtual AbstractLoglikelihoodRatioUnifier* Clone() const { return new AdjustmentUnifierBatchModelTimeStratified(*this); };
 
-    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-    virtual void        AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
-    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
-    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
-    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
-
-    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-    virtual void        AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
-
-    virtual void        AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure);
-
-    virtual double      GetLoglikelihoodRatio() const;
-    virtual double      GetRawLoglikelihoodRatio() const { return _llr; }
-    virtual void        Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
+    virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+    virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+    virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex);
+    virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+    virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t casesInPeriod, measure_t measureInPeriod, size_t tSetIndex);
+    virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+    virtual void AdjoinRatio(double llr, AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure);
+    virtual void AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex);
+    virtual double GetLoglikelihoodRatio() const;
+    virtual double GetRawLoglikelihoodRatio() const { return _llr; }
+    virtual void Reset() { _llr = 0.0; _data_stream_accumulator.reset(); }
 
     // Method used for minimum number of cases evaulation.
     virtual count_t getObservedCount() const { return _data_stream_accumulator._sum_observed; };
@@ -273,8 +283,11 @@ class AdjustmentUnifierRiskThreshold : public AdjustmentUnifier {
         AdjustmentUnifierRiskThreshold(AreaRateType eScanningArea, ProbabilityModelType probability_model) : AdjustmentUnifier(eScanningArea, probability_model) {}
         virtual ~AdjustmentUnifierRiskThreshold() {}
 
-        virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
-        virtual void        AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
+        virtual void AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, size_t tSetIndex);
+        virtual void AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+            const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+        );
+        virtual void AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex);
 };
 //******************************************************************************
 #endif

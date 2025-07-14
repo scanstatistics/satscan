@@ -455,6 +455,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _linelist_csv_cutoff = rhs._linelist_csv_cutoff;
   _create_email_summary_file = rhs._create_email_summary_file;
   _email_summary_cutoff = rhs._email_summary_cutoff;
+  _stp_as_hypergeometric = rhs._stp_as_hypergeometric;
 }
 
 /* Returns whether line list data is read from case file - the user used file wizard to define line list columns */
@@ -620,17 +621,19 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
   return gbOutputSimLogLikeliRatiosAscii || gbOutputSimLogLikeliRatiosDBase;
 }
 
+/* Returns whether the centric execution is permited with these parameter settings. */
 bool CParameters::GetPermitsCentricExecution(bool excludePValue) const {
- if (GetIsPurelyTemporalAnalysis()) return false;
- if (GetProbabilityModelType() == HOMOGENEOUSPOISSON) return false;
- if (GetProbabilityModelType() == BATCHED) return false;
- if (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) return false;
- if (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) return false;
- if (!excludePValue && GetPValueReportingType() == TERMINATION_PVALUE && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) return false;
- if (UseLocationNeighborsFile()) return false;
- if (UsingMultipleCoordinatesMetaLocations()) return false;
- if (getCalculateOliveirasF()) return false;
- return true;
+    if (GetIsPurelyTemporalAnalysis()) return false;
+    if (GetProbabilityModelType() == HOMOGENEOUSPOISSON) return false;
+    if (GetProbabilityModelType() == BATCHED) return false;
+    if (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) return false;
+    if (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) return false;
+    if (!excludePValue && GetPValueReportingType() == TERMINATION_PVALUE && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) return false;
+    if (UseLocationNeighborsFile()) return false;
+    if (UsingMultipleCoordinatesMetaLocations()) return false;
+    if (getCalculateOliveirasF()) return false;
+    if (GetProbabilityModelType() == SPACETIMEPERMUTATION && _stp_as_hypergeometric) return false;
+    return true;
 }
 
 /** returns whether analysis type permits inclusion of purely spatial cluster */
@@ -1075,6 +1078,8 @@ void CParameters::SetAsDefaulted() {
   _linelist_csv_cutoff = 1;
   _create_email_summary_file = false;
   _email_summary_cutoff = 0.05;
+
+  _stp_as_hypergeometric = true;
 }
 
 /** Sets start range start date. Throws exception. */

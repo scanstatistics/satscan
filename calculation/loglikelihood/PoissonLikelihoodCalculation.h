@@ -24,5 +24,19 @@ class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
     virtual double      CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex=0) const;
     virtual double      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;
 };
+
+/** space-time permutation log likelihood calculator. */
+class HypergeometricLikelihoodCalculator : public AbstractLikelihoodCalculator {
+private:
+    const CParameters& gParameters;   /** const reference to CParameters object */
+    std::vector<double> gvDataSetLogLikelihoodUnderNull;
+    bool _time_stratified;
+
+public:
+    HypergeometricLikelihoodCalculator(const CSaTScanData& DataHub);
+    virtual ~HypergeometricLikelihoodCalculator() {}
+
+    virtual double CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex = 0) const;
+};
 //******************************************************************************
 #endif

@@ -9,11 +9,16 @@
 
 /** Returns a new cluster set object. */
 boost::shared_ptr<CClusterSet> CClusterSet::getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub) {
+    bool maximizing = !(
+        dataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION && 
+        dataHub.GetParameters().getSTPasHypergeometric() &&
+        dataHub.GetNumDataSets() == 1
+     );
     if (!dataHub.GetParameters().GetIsIterativeScanning() &&
         (dataHub.GetParameters().GetAnalysisType() == SPACETIME || dataHub.GetParameters().GetAnalysisType() == PURELYTEMPORAL))
-        return boost::shared_ptr<CClusterSet>(new CClusterSetTemporalOverlap(cluster, dataHub.GetNumTimeIntervals()));
+        return boost::shared_ptr<CClusterSet>(new CClusterSetTemporalOverlap(cluster, dataHub.GetNumTimeIntervals(), maximizing));
     else
-        return boost::shared_ptr<CClusterSet>(new CClusterSet());
+        return boost::shared_ptr<CClusterSet>(new CClusterSet(maximizing));
 }
 
 double CClusterSetTemporalOverlap::MIN_CLUSTER_LLR_RETAINED = 1.0;
@@ -64,6 +69,17 @@ void CClusterSetTemporalOverlap::findOtherNotTemporalOverlapping(CClusterSet::Cl
     });
 }
 
+//**************************** CClusterSetCollections *********************************************
+
+CClusterSetCollections::CClusterSetCollections(const CSaTScanData& data_hub)
+:_data_hub(data_hub), _parameters(data_hub.GetParameters()), _cluster_type((ClusterType)0) {
+    _isMinimizingHypergeometric = (
+        _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && 
+        _parameters.getSTPasHypergeometric() && 
+        _data_hub.GetNumDataSets() == 1
+    );
+}
+
 /* returns index into class vector _cluster_sets for 'shapeOffset' */
 int CClusterSetCollections::getClusterSetCollectionIndex(int shapeOffset) {
     // determine the correct ClusterSet for shapeOffset -- when no compactness penalty, index is always 0
@@ -80,6 +96,17 @@ int CClusterSetCollections::getClusterSetCollectionIndex(int shapeOffset) {
    for specified spatial window stops, taking into account the option of non-compactness penalizing for ellispes. */
 SharedClusterVector_t& CClusterSetCollections::getTopClusters(SharedClusterVector_t& clusterCollection) {
     clusterCollection.clear(); // clear collection of any existing objects.
+
+    if (_isMinimizingHypergeometric) {
+        // If performing the space-time permutation as hypergeometric, we need to convert cluster minizing value to LLR.
+        // This isn't applicable with multiple sets since we needed to calculate full statistic in that situation.
+        for (auto& clusterSetObj : _cluster_sets) {
+            for (auto& clusterObj : clusterSetObj->getSet()) {
+                if (clusterObj.getCluster().m_nRatio)
+                    clusterObj.getCluster().m_nRatio = -log(clusterObj.getCluster().m_nRatio);
+            }
+        }
+    }
 
     // Special behavior for retrospective space-time analyses
     // We're retaining the best clusters about current centroid which do not overlap temporally.
@@ -159,12 +186,14 @@ void CClusterSetCollections::setClusterCollections(const CCluster& cluster, size
     for (size_t t = 0; t < count; ++t) { // one cluster set for each ellipse/circle
         boost::shared_ptr<CClusterSet> cluster_set;
         if (!_parameters.GetIsIterativeScanning() && _parameters.GetAnalysisType() == SPACETIME && _cluster_type == SPACETIMECLUSTER)
-            cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals()));
+            cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals(), !_isMinimizingHypergeometric));
         else
-            cluster_set.reset(new CClusterSet());
+            cluster_set.reset(new CClusterSet(!_isMinimizingHypergeometric));
         // When analysis uses gini, there will be more than one spatial window stop (for the different max. spatial sizes of gini).
         for (size_t t = 0; t < _parameters.getExecuteSpatialWindowStops().size(); ++t) {
             CClusterObject addMe(cluster);
+            // If hypergeometric, we need to initialize the clusters minimizing value to the 
+            //addMe.getCluster().m_nRatio = _isMinimizingHypergeometric ? 1.0 : 0.0;
             cluster_set->add(addMe);
         }
         _cluster_sets.push_back(cluster_set);

@@ -10,6 +10,11 @@ CTimeIntervals::CTimeIntervals(const CSaTScanData& DataHub, AbstractLikelihoodCa
    Setup(eIncludeClustersType);
 }
 
+/* Not implemented by base class. */
+void CTimeIntervals::getCasesInTimeWindowsCollection(std::set<count_t>& collection, count_t* pCases) {
+    throw prg_error("getCasesInTimeWindowsCollection not implemented.", "CTimeIntervals");
+}
+
 /** Sets interval range to that of specified centroid point. If point does not have focus range, 'global' range used. */
 void  CTimeIntervals::setIntervalRange(tract_t centerpoint) {
     if (!_gInfo.hasFocusIntervals()) return;
@@ -52,4 +57,3 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
         throw;
     }
 }
-

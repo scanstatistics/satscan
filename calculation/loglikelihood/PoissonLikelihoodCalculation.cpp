@@ -6,6 +6,8 @@
 #include "PurelySpatialMonotoneCluster.h"
 #include "SVTTCluster.h"
 
+//*************************** PoissonLikelihoodCalculator **************************
+
 /** constructor */
 PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& DataHub)
                             :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {
@@ -105,3 +107,12 @@ double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal(size_t tSetIndex) c
   return gvDataSetLogLikelihoodUnderNull[tSetIndex];
 }
 
+//*************************** HypergeometricLikelihoodCalculator **************************
+
+HypergeometricLikelihoodCalculator::HypergeometricLikelihoodCalculator(const CSaTScanData& DataHub)
+:AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {}
+
+double HypergeometricLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex) const {
+    if (dMaximizingValue == 1.0) return 0.0;
+    return -log(dMaximizingValue);
+}
