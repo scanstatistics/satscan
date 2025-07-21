@@ -24,6 +24,7 @@ const unsigned int AsciiPrintFormat::giRightMargin                   = 95;
 const unsigned int AsciiPrintFormat::giVersionHeaderWidth            = 29;
 /** text appended to label for multiple dataset */
 const char * AsciiPrintFormat::gsPerDataSetText                      = "per data set";
+const char* AsciiPrintFormat::gsPerDayText                           = "per day";
 
 /** constructor */
 AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet, unsigned int labelextra) : _label_extra(labelextra), gbOneDataSet(bOneDataSet) {
@@ -125,7 +126,7 @@ void AsciiPrintFormat::PrintNonRightMarginedDataString(FILE* fp, const std::stri
 }
 
 /** Prints section label to file stream. */
-void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDataSetParticular, bool bPadLeftMargin) const {
+void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDataSetParticular, bool bPadLeftMargin, bool bernoulliDrilldown) const {
   unsigned int   iStringLength, iFillLength, iPad=0;
 
   iStringLength = 0;
@@ -138,7 +139,7 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
   iStringLength += fprintf(fp, "%s", sText);
   //add 'per data set' text if requested and there is more than one dataset
   if (bDataSetParticular && !gbOneDataSet)
-    iStringLength += fprintf(fp, " %s", gsPerDataSetText);
+    iStringLength += fprintf(fp, " %s", bernoulliDrilldown ? gsPerDayText : gsPerDataSetText);
   //check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
     throw prg_error("Label text has length of %u, but defined max length is %u.\n", "PrintSectionLabel()",

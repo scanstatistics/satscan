@@ -150,7 +150,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     //label for data is dependent on probability model
     case POISSON     : if (!gParameters.UsePopulationFile()) break;
                        PrintFormat.PrintSectionLabel(fp, "Population, averaged over time", true, false); break;
-    case BERNOULLI   : PrintFormat.PrintSectionLabel(fp, "Total population", true, false); break;
+    case BERNOULLI   : PrintFormat.PrintSectionLabel(fp, "Total population", true, false, gParameters.getIsBernoulliIterativeDrilldown()); break;
     case EXPONENTIAL : PrintFormat.PrintSectionLabel(fp, "Total individuals", true, false); break;
     case BATCHED     : PrintFormat.PrintSectionLabel(fp, "Total batches", true, false); break;
     default          : break;
@@ -178,7 +178,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     case ORDINAL:
     case NORMAL:
     case EXPONENTIAL:
-    case HOMOGENEOUSPOISSON: PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false); break;
+    case HOMOGENEOUSPOISSON: PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false, gParameters.getIsBernoulliIterativeDrilldown()); break;
     default: break;
   }
   switch (gParameters.GetProbabilityModelType()) {
@@ -200,7 +200,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     default: break;
   }
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false);
+    PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false, gParameters.getIsBernoulliIterativeDrilldown());
     auto getPopulation = [](count_t c, double p) { return 100.0 * (p ? c / p : 0.0); };
     getValueAsString(getPopulation(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalPopulation()), buffer, 1);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {

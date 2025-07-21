@@ -2237,17 +2237,23 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             if (source_parameters.getNumFileSets() > 1 && source_parameters.GetMultipleDataSetPurposeType() == MULTIVARIATE)
                 throw prg_error("BernoulliAnalysisDrilldown is not implemented for STP, day-of-week, multiple sets, multivariate.", "BernoulliAnalysisDrilldown()");
             /* The day of week adjustment requires the primary analysis to have a time aggregation length of 1 day and a study period of at least 14 days. 
-               There is the possiblity that the detected cluster is less than 7 days long. 
+               There is the possiblity that the detected cluster is less than 7 days long.
                There is also the possibilty that the source analysis has more than one data set. */
             // stratify into multiple sets - minimum of 7 or the length of cluster
-            size_t numSets = source_parameters.getNumFileSets() - source_data_hub.GetDataSetHandler().getRemovedDataSetDetails().size();
+            std::set<unsigned int> removedSets;
+            for (auto s : source_data_hub.GetDataSetHandler().getRemovedDataSetDetails()) removedSets.emplace(s.get<0>());
             auto daysInAdjustment = std::min(7, detectedCluster.m_nLastInterval - detectedCluster.m_nFirstInterval);
-            _parameters.setNumFileSets(numSets * daysInAdjustment);
+            _parameters.setNumFileSets((source_parameters.getNumFileSets() - removedSets.size()) * daysInAdjustment);
             // Set default data set names since we're introducing new data sets.
             std::vector<std::string> dayNames, sourceNames = _parameters.getDataSourceNames();
-            for (size_t t = 0; t < numSets; ++t)
-                for (int i=0; i < daysInAdjustment; ++i)
-                    dayNames.push_back(printString(buffer, "Day %d [%u]", i + 1, t + 1));
+            for (size_t t = 0; t < source_parameters.getNumFileSets(); ++t) {
+                if (removedSets.find(t) != removedSets.end()) continue; // skip removed sets
+                for (int i = 0; i < daysInAdjustment; ++i) { // This will be 1 - 7 days, starting at the cluster start interval.
+                    dayNames.push_back(printString(buffer, "%s | %s", sourceNames[t].c_str(), 
+                        getWeekDay(source_data_hub.GetTimeIntervalStartTimes()[detectedCluster.m_nFirstInterval + i]).as_long_string())
+                    );
+                }
+            }
             _parameters.setDataSourceNames(dayNames);
             _parameters.SetMultipleDataSetPurposeType(ADJUSTMENT); // Fixed to Adjustment purpose in this situation.
         } else {

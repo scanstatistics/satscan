@@ -373,10 +373,14 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
             default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetProbabilityModelType());
         }
         if (_parameters.getNumFileSets() > 1) {
-            switch (_parameters.GetMultipleDataSetPurposeType()) {
-                case MULTIVARIATE : statements.push_back(printString(buffer, "with multivariate scan using %u data sets", _parameters.getNumFileSets())); break;
-                case ADJUSTMENT   : statements.push_back(printString(buffer, "with adjustment using %u data sets", _parameters.getNumFileSets())); break;
-                default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetMultipleDataSetPurposeType());
+            if (_parameters.getIsBernoulliIterativeDrilldown()) {
+                statements.push_back(printString(buffer, "with day of week adjustment"));
+            } else {
+                switch (_parameters.GetMultipleDataSetPurposeType()) {
+                    case MULTIVARIATE: statements.push_back(printString(buffer, "with multivariate scan using %u data sets", _parameters.getNumFileSets())); break;
+                    case ADJUSTMENT: statements.push_back(printString(buffer, "with adjustment using %u data sets", _parameters.getNumFileSets())); break;
+                    default: throw prg_error("Unknown purpose for multiple data sets type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetMultipleDataSetPurposeType());
+                }
             }
         }
         if (_parameters.GetIsSpaceTimeAnalysis()) {

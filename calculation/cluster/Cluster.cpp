@@ -343,12 +343,7 @@ void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, 
     for (auto set_number : getDataSetIndexesComprisedInRatio(DataHub)) {
         //print data set number if analyzing more than data set
         if (params.getNumFileSets() > 1)
-            PrintFormat.PrintSectionStatement(fp,
-                printString(buffer, "%s (set %i)",
-                    params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
-                    (set_number + 1)
-                ).c_str()
-            );
+            PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str());
         auto pClusterData = dynamic_cast<const AbstractBatchedClusterData*>(GetClusterData());
         if (!pClusterData) throw prg_error("Data object could not casted to AbstractBatchedClusterData type.\n", "DisplayClusterDataBatched()");
         BatchedLikelihoodCalculator llrCalc(DataHub);
@@ -369,15 +364,11 @@ void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, 
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer; 
+  const CParameters& params = DataHub.GetParameters();
   for (auto set_number : getDataSetIndexesComprisedInRatio(DataHub)) {
      //print data set name if analyzing more than one
      if (DataHub.GetParameters().getNumFileSets() > 1)
-       PrintFormat.PrintSectionStatement(fp,
-           printString(buffer, "%s (set %i)",
-               DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
-               (set_number + 1)
-           ).c_str()
-       );
+       PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str());
      //print total individuals (censored and non-censored)
      GetPopulationAsString(buffer, DataHub.GetProbabilityModel().GetPopulation(set_number, *this, DataHub));
      printClusterData(fp, PrintFormat, "Total individuals", buffer, true, set_number);
@@ -400,14 +391,12 @@ void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, con
     std::string buffer, work;
     double n1, n2, r1, r2;
     const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+    const CParameters& params = DataHub.GetParameters();
     for (auto set_number: getDataSetIndexesComprisedInRatio(DataHub)) {
         //print data set number if analyzing more than data set
-        if (DataHub.GetParameters().getNumFileSets() > 1)
+        if (params.getNumFileSets() > 1)
             PrintFormat.PrintSectionStatement(fp,
-                printString(buffer, "%s (set %i)",
-                    DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
-                    (set_number + 1)
-                ).c_str()
+                params.getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str()
             );
         //print total cases
         printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
@@ -443,18 +432,14 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
   count_t tObserved;
   measure_t tExpected;
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  const CParameters& params = DataHub.GetParameters();
   const AbstractNormalClusterData * pClusterData = 0;
   if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(GetClusterData())) == 0)
     throw prg_error("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n", "DisplayClusterDataNormal()");
   for (auto set_number: getDataSetIndexesComprisedInRatio(DataHub)) {
      //print data set number if analyzing more than data set
      if (DataHub.GetParameters().getNumFileSets() > 1) 
-       PrintFormat.PrintSectionStatement(fp,
-           printString(buffer, "%s (set %i)",
-               DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
-               (set_number + 1)
-           ).c_str()
-       );
+        PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str());
      //print total cases
      printClusterData(fp, PrintFormat, "Number of cases", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
      //print estimated mean inside
@@ -482,6 +467,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
 void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string work, buffer, work2;
   double dTotalCasesInClusterDataSet=0;
+  const CParameters& params = DataHub.GetParameters();
   OrdinalLikelihoodCalculator Calculator(DataHub);
 
   const AbstractCategoricalClusterData * pClusterData = 0;
@@ -496,12 +482,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      if (!vCategoryContainer.size()) continue;
      //print data set name if analyzing more than one
      if (DataHub.GetParameters().getNumFileSets() > 1)
-       PrintFormat.PrintSectionStatement(fp,
-           printString(buffer, "%s (set %i)",
-               DataHub.GetParameters().getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
-               (set_number + 1)
-           ).c_str()
-       );
+        PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str());
      //print total cases per data set
      dTotalCasesInClusterDataSet = DataHub.GetProbabilityModel().GetPopulation(set_number, *this, DataHub);
      printClusterData(fp, PrintFormat, "Total cases", GetPopulationAsString(buffer, dTotalCasesInClusterDataSet), true, set_number);
@@ -599,12 +580,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   for (auto set_number: getDataSetIndexesComprisedInRatio(DataHub)) {
      //print data set number if analyzing more than data set
      if (params.getNumFileSets() > 1)
-       PrintFormat.PrintSectionStatement(fp,
-           printString(buffer, "%s (set %i)",
-               params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str(),
-               (set_number + 1)
-           ).c_str()
-       );
+        PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[DataHub.GetDataSetHandler().getDataSetRelativeIndex(set_number)].c_str());
      //print cluster population
      if ((params.GetProbabilityModelType() == POISSON && params.UsePopulationFile() && GetClusterType() != PURELYTEMPORALCLUSTER) ||
          params.GetProbabilityModelType() == BERNOULLI) {
@@ -634,6 +610,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
 void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  const CParameters& params = DataHub.GetParameters();
 
   std::vector<tract_t> tractIndexes;
   getIdentifierIndexes(DataHub, tractIndexes, true);
@@ -644,12 +621,7 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
         throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplayClusterDataWeightedNormal()");
      //print data set number if analyzing more than data set
      if (DataHub.GetParameters().getNumFileSets() > 1)
-       PrintFormat.PrintSectionStatement(fp,
-           printString(buffer, "%s (set %i)",
-               DataHub.GetParameters().getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str(),
-               (set_number + 1)
-           ).c_str()
-       );
+       PrintFormat.PrintSectionStatement(fp, params.getDataSourceNames()[Handler.getDataSetRelativeIndex(set_number)].c_str());
      AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
      statistics = pRandomizer->getClusterStatistics(m_nFirstInterval, m_nLastInterval, tractIndexes);
      //print total cases

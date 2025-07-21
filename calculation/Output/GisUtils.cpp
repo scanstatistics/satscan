@@ -345,10 +345,9 @@ std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, i
                     if (currSetIdx != std::numeric_limits<unsigned int>::max()) clusterDataSetLines << "</table>";
                     clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
                     clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
-                    clusterDataSetLines << getWrappedText(htmlencode(
-                            printString(buffer4, "%s (set %i)", 
-                            parameters.getDataSourceNames()[datahub.GetDataSetHandler().getDataSetRelativeIndex(rptline.second.second)].c_str(),
-                            (rptline.second.second + 1)), buffer2, false
+                    clusterDataSetLines << getWrappedText(
+                        htmlencode(
+                            parameters.getDataSourceNames()[datahub.GetDataSetHandler().getDataSetRelativeIndex(rptline.second.second)], buffer2, false
                         ), 0, 50, "<br>", buffer3
                     );
 
