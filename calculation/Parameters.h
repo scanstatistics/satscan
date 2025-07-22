@@ -306,9 +306,11 @@ class CParameters {
     CParameters();
     CParameters(const CParameters &other);
 
-    static const int                    giNumParameters;                        // number enumerated parameters
-    static const int                    MAXIMUM_ITERATIVE_ANALYSES;             // maximum number of permitted iterative scans
-    static const int                    MAXIMUM_ELLIPSOIDS;                     // maximum number of permitted ellipsoids
+    static const int                    giNumParameters; // number enumerated parameters
+    static const int                    MAXIMUM_ITERATIVE_ANALYSES; // maximum number of permitted iterative scans
+    static const int                    MAXIMUM_ELLIPSOIDS; // maximum number of permitted ellipsoids
+    static const unsigned int           DEFAULT_EARLY_TERM_THRESHOLD; // defaulted percentage for early termination
+    static const unsigned int           MIN_EARLY_TERM_THRESHOLD; // minimum number of replications with early termination
 
     bool                                _cluster_sig_by_ri_; // This class members are used to facilitate a refactor in v10.2.
     DatePrecisionType                   _cluster_sig_ri_type_;

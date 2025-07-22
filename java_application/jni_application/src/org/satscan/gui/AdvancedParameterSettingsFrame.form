@@ -2556,14 +2556,15 @@
                               <Component id="_radioStandardPValues" alignment="0" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioGumbelPValues" min="-2" pref="342" max="-2" attributes="0"/>
-                                  <EmptySpace pref="5" max="32767" attributes="0"/>
+                                  <EmptySpace pref="50" max="32767" attributes="0"/>
                                   <Component id="_checkReportGumbel" min="-2" pref="281" max="-2" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioEarlyTerminationPValues" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_earlyTerminationThreshold" min="-2" pref="73" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_earlyTerminationLabel" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -2580,6 +2581,7 @@
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_radioEarlyTerminationPValues" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_earlyTerminationThreshold" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_earlyTerminationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
@@ -2606,7 +2608,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_radioEarlyTerminationPValues">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early termination cutoff:"/>
+                    <Property name="text" type="java.lang.String" value="Sequential Monte Carlo       Early termination cutoff"/>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xd;&#xa;            enablePValueOptionsGroup();&#xd;&#xa;            enableSetDefaultsButton();&#xd;&#xa;            updateMonteCarloTextCaptions();&#xd;&#xa;        }&#xd;&#xa;    }&#xd;&#xa;});"/>
@@ -2636,14 +2638,19 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_earlyTerminationThreshold">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" value="5"/>
                   </Properties>
                   <AccessibilityProperties>
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="early termination cutoff"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {&#xd;&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xd;&#xa;        while (_earlyTerminationThreshold.getText().length() == 0 || Integer.parseInt(_earlyTerminationThreshold.getText()) &lt; 1)&#xd;&#xa;            if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText(&quot;50&quot;);&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {&#xd;&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xd;&#xa;        Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 10);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xd;&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xd;&#xa;        undo.addEdit(evt.getEdit());&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;        "/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {&#xd;&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xd;&#xa;        while (_earlyTerminationThreshold.getText().length() == 0 ||&#xd;&#xa;               Integer.parseInt(_earlyTerminationThreshold.getText()) &lt;= 0 ||&#xd;&#xa;               Integer.parseInt(_earlyTerminationThreshold.getText()) &gt;= 100)&#xd;&#xa;            if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText(&quot;5&quot;);&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {&#xd;&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xd;&#xa;        Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 3);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xd;&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xd;&#xa;        undo.addEdit(evt.getEdit());&#xd;&#xa;    }&#xd;&#xa;});"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_earlyTerminationLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="percent of replications"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

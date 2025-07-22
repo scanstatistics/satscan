@@ -42,7 +42,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
             gParameters.getNumFileSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
             bValid = false;
             PrintDirection.Printf(
-                "%s:\Multivariate purpose for multiple data sets is not permitted with the %s model.\n",
+                "%s:\nMultivariate purpose for multiple data sets is not permitted with the %s model.\n",
                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, ParametersPrint(gParameters).GetProbabilityModelTypeAsString()
             );
         }
@@ -800,10 +800,18 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
 
     try {
         if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE &&
-            (gParameters.GetEarlyTermThreshold() < 1 || gParameters.GetEarlyTermThreshold() > gParameters.GetNumReplicationsRequested())) {
+            (gParameters.GetEarlyTermThreshold() <= 0 || gParameters.GetEarlyTermThreshold() >= 100.0)) {
             bValid = false;
-            PrintDirection.Printf("%s:\nThe threshold for early termination of simulations must be from 1 to "
-                                  "number of replications.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            if (gParameters.GetCreationVersion() < CParameters::CreationVersion(10, 4, 0))
+                PrintDirection.Printf("%s:\nThe threshold for early termination of simulations is invalid.\n"
+                    "The threshold must be > 0 and <= the number of requested simulations.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            else
+                PrintDirection.Printf("%s:\nThe threshold for early termination of simulations is invalid.\n"
+                    "The threshold must be > 0 and < 100.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
         }
 
         /* Validate any restrictions on clusters by relative risk. */

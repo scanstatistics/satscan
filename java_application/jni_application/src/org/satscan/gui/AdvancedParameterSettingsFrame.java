@@ -599,6 +599,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected())
             _checkReportGumbel.setSelected(false);
         _earlyTerminationThreshold.setEnabled(_radioEarlyTerminationPValues.isSelected());
+        _earlyTerminationLabel.setEnabled(_radioEarlyTerminationPValues.isSelected());
     }
 
     public void enableSettingsForAnalysisModelCombination() {
@@ -3199,6 +3200,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _radioStandardPValues = new javax.swing.JRadioButton();
         _checkReportGumbel = new javax.swing.JCheckBox();
         _earlyTerminationThreshold = new javax.swing.JTextField();
+        _earlyTerminationLabel = new javax.swing.JLabel();
         _iterativeScanGroup = new javax.swing.JPanel();
         _perform_iterative_scan = new javax.swing.JCheckBox();
         _maxIterativeScansLabel = new javax.swing.JLabel();
@@ -5205,7 +5207,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff:");
+            _radioEarlyTerminationPValues.setText("Sequential Monte Carlo       Early termination cutoff");
             _radioEarlyTerminationPValues.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
                     if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -5241,17 +5243,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _checkReportGumbel.setText("Also report Gumbel based p-values");
             _checkReportGumbel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 
-            _earlyTerminationThreshold.setText("50");
+            _earlyTerminationThreshold.setText("5");
             _earlyTerminationThreshold.addFocusListener(new java.awt.event.FocusAdapter() {
                 public void focusLost(java.awt.event.FocusEvent e) {
-                    while (_earlyTerminationThreshold.getText().length() == 0 || Integer.parseInt(_earlyTerminationThreshold.getText()) < 1)
-                    if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText("50");
+                    while (_earlyTerminationThreshold.getText().length() == 0 ||
+                        Integer.parseInt(_earlyTerminationThreshold.getText()) <= 0 ||
+                        Integer.parseInt(_earlyTerminationThreshold.getText()) >= 100)
+                    if (undo.canUndo()) undo.undo(); else _earlyTerminationThreshold.setText("5");
                     enableSetDefaultsButton();
                 }
             });
             _earlyTerminationThreshold.addKeyListener(new java.awt.event.KeyAdapter() {
                 public void keyTyped(java.awt.event.KeyEvent e) {
-                    Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 10);
+                    Utils.validatePostiveNumericKeyTyped(_earlyTerminationThreshold, e, 3);
                 }
             });
             _earlyTerminationThreshold.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -5259,6 +5263,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     undo.addEdit(evt.getEdit());
                 }
             });
+
+            _earlyTerminationLabel.setText("percent of replications");
 
             javax.swing.GroupLayout _pValueOptionsGroupLayout = new javax.swing.GroupLayout(_pValueOptionsGroup);
             _pValueOptionsGroup.setLayout(_pValueOptionsGroupLayout);
@@ -5271,13 +5277,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_radioStandardPValues, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
                             .addComponent(_radioGumbelPValues, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
                             .addComponent(_checkReportGumbel, javax.swing.GroupLayout.PREFERRED_SIZE, 281, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(_pValueOptionsGroupLayout.createSequentialGroup()
                             .addComponent(_radioEarlyTerminationPValues)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(0, 0, Short.MAX_VALUE)))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_earlyTerminationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             _pValueOptionsGroupLayout.setVerticalGroup(
@@ -5289,7 +5296,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_radioEarlyTerminationPValues)
-                        .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_earlyTerminationThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_earlyTerminationLabel))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_pValueOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(_radioGumbelPValues)
@@ -6981,7 +6989,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _notificatons_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_notificatons_tabLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.PREFERRED_SIZE, 463, Short.MAX_VALUE)
+                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                     .addContainerGap())
             );
 
@@ -7107,6 +7115,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _drilldown_restrictions;
     private javax.swing.JPanel _drilldown_restrictions_group;
     private javax.swing.JPanel _drilldown_tab;
+    private javax.swing.JLabel _earlyTerminationLabel;
     private javax.swing.JTextField _earlyTerminationThreshold;
     private javax.swing.JRadioButton _ellipticRadioButton;
     private javax.swing.JLabel _endGenericRangeToLabel;

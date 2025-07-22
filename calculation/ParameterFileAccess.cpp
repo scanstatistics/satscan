@@ -827,7 +827,18 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case META_LOCATIONS_FILE          : gParameters.setMetaLocationsFilename(sParameter.c_str(), true); break;
       case USE_META_LOCATIONS_FILE      : gParameters.UseMetaLocationsFile(ReadBoolean(sParameter, eParameterType)); break;
       case OBSERVABLE_REGIONS           : break;
-      case EARLY_TERM_THRESHOLD         : gParameters.SetEarlyTermThreshold(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case EARLY_TERM_THRESHOLD         :
+          if (gParameters.GetCreationVersion() < CParameters::CreationVersion(10, 4, 0)) {
+              // The early termination threshold changed meaning in the 10.4 release to a percentage.
+              // Prior default was 50, with default 999 replications, equating 5%. Attempt to be backwards compatible.
+              gParameters.SetEarlyTermThreshold(std::max(1U,
+                  static_cast<unsigned int>(
+                      static_cast<double>(ReadUnsignedInt(sParameter, eParameterType)) / static_cast<double>(gParameters.GetNumReplicationsRequested() + 1) * 100.0
+                  )
+              ));
+          } else
+            gParameters.SetEarlyTermThreshold(ReadUnsignedInt(sParameter, eParameterType));
+          break;
       case PVALUE_REPORT_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, DEFAULT_PVALUE, GUMBEL_PVALUE);
                                           gParameters.SetPValueReportingType((PValueReportingType)iValue); break;
       case REPORT_GUMBEL                : gParameters.SetReportGumbelPValue(ReadBoolean(sParameter, eParameterType)); break;

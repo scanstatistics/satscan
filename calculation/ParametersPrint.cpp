@@ -779,7 +779,7 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
                 break;
             case TERMINATION_PVALUE :
                 settings.push_back(std::make_pair(buffer,"Sequential Monte Carlo Early Termination"));
-                printString(buffer, "%u", _parameters.GetEarlyTermThreshold());
+                printString(buffer, "%u percent of replications", _parameters.GetEarlyTermThreshold());
                 settings.push_back(std::make_pair("Termination Cutoff",buffer));
                 if (_parameters.GetAreaScanRateType() == HIGH)
                     settings.push_back(std::make_pair("Report Gumbel Based P-Values", (_parameters.GetReportGumbelPValue() ? "Yes" : "No")));

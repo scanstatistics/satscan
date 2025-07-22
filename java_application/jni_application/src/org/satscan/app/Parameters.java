@@ -105,7 +105,7 @@ public class Parameters implements Cloneable {
     private MultipleCoordinatesType         geMultipleCoordinatesType=MultipleCoordinatesType.ONEPERLOCATION; /** multiple locations type */
     /* PValue Reporting variables */
     private PValueReportingType             gePValueReportingType=PValueReportingType.DEFAULT_PVALUE; /** PValue reporting type */
-    private int                             giEarlyTermThreshold=50; /** early termination threshold */
+    private int                             giEarlyTermThreshold=5; /** early termination threshold */
     private boolean                         gbReportGumbelPValue=false;                   /** report Gumbel p-value */
 
     /* Maximum spatial cluster variables */

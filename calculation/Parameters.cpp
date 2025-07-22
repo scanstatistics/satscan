@@ -9,9 +9,11 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
 
-const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
-const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 180;
+const int CParameters::MAXIMUM_ITERATIVE_ANALYSES = 32000;
+const int CParameters::MAXIMUM_ELLIPSOIDS = 10;
+const int CParameters::giNumParameters = 180;
+const unsigned int CParameters::DEFAULT_EARLY_TERM_THRESHOLD = 5;
+const unsigned int CParameters::MIN_EARLY_TERM_THRESHOLD = 50;
 
 /** Constructor */
 CParameters::CParameters(): _cluster_sig_by_ri_(false), _cluster_sig_ri_type_(DAY), _cluster_sig_by_p_(false), _cluster_sig_p_val_(0.05){
@@ -483,13 +485,16 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   return gvControlFilenames[iSetIndex - 1];
 }
 
-/** Returns threshold for early termination. If reporting default p-value, then
-    threshold is determined by number of replications requested. */
+/** Returns threshold for early termination. */
 unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
-  if (GetPValueReportingType() == DEFAULT_PVALUE) {
-      return (GetNumReplicationsRequested() + 1)/20;
-  }
-  return giEarlyTermThreshold;
+    // Regardless of user specifications, 50 replications in the absolute minimum for early termination.
+    return std::max(
+        MIN_EARLY_TERM_THRESHOLD,
+        static_cast<unsigned int>(
+            static_cast<double>(GetNumReplicationsRequested() + 1) * 
+            static_cast<double>((GetPValueReportingType() == DEFAULT_PVALUE ? DEFAULT_EARLY_TERM_THRESHOLD : giEarlyTermThreshold))/100.0
+        )
+    );
 }
 
 const std::vector<double> & CParameters::getExecuteSpatialWindowStops() const {
@@ -1000,7 +1005,7 @@ void CParameters::SetAsDefaulted() {
   gvObservableRegions.clear();
   gbWeightedNormal = false;
   gbWeightedNormalCovariates = false;
-  giEarlyTermThreshold = 50;
+  giEarlyTermThreshold = 5;
   gePValueReportingType = DEFAULT_PVALUE;
   gbReportGumbelPValue = false;
   geTimeTrendType = LINEAR;
