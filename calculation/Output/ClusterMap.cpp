@@ -95,7 +95,7 @@ const char * ClusterMap::TEMPLATE = " \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
         <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
         <script src=\"--resource-path--javascript/clustercharts/nouislider.js\"></script> \n \
-        <script src=\"--resource-path--javascript/clustercharts/OverlappingMarkerSpiderfier_1.0.3_oms.min.js\"></script> \n \
+        <script src=\"--resource-path--javascript/clustercharts/oms-ame.1.0.3.1.min.js\"></script> \n \
     </head> \n \
     <body> \n \
     <div id='load_error'></div> \n \
@@ -255,7 +255,7 @@ const char * ClusterMap::TEMPLATE = " \
             clusters.reverse();\n \
             var resource_path = '--resource-path--'; \n \
     </script> \n \
-    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.5.2.js\"></script> \n \
+    <script src=\"--resource-path--javascript/clustercharts/mapgoogle-1.6.0.js\"></script> \n \
   </body> \n \
 </html> \n";
 
