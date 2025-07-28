@@ -34,7 +34,7 @@ const EventType::CategoryTuple_t& EventType::addCategory(const std::string& cate
             return category;
         }
     }
-    _categories.push_back(CategoryTuple_t(formatTypeString(category_label, _categories.size() + 1), category_label, 1));
+    _categories.emplace_back(formatTypeString(category_label, _categories.size() + 1), category_label, 1);
     return _categories.back();
 }
 
@@ -104,7 +104,7 @@ const char * ClusterMap::TEMPLATE = " \
     <div class='modal-content'> \n \
     <div class='modal-header'> \n \
     <button type='button' class='close' data-dismiss='modal' aria-label='Close'><span aria-hidden='true'>&times;</span></button> \n \
-    <h4 class='modal-title'>Advanced Options</h4></div> \n \
+    <h4 class='modal-title'>Additional Options</h4></div> \n \
     <div class='modal-body'> \n \
     <div class='options-row'> \n \
     <div style='display: table;'> \n \
@@ -375,7 +375,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                 continue;
             }
             if (std::find_if(_event_types.begin(), _event_types.end(), [&demographic](const EventType& et) { return et.name() == demographic.first.second; }) == _event_types.end())
-                _event_types.push_back(EventType(demographic.first.second));
+                _event_types.emplace_back(demographic.first.second);
         }
     }
     if (_event_types.size() == 0) {
@@ -393,7 +393,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
     UInt jyear, jmonth, jday;
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
         if (!demographics.getDataSetDemographics(idx).hasIndividualGeographically()) continue; // skip data sets w/o individual and descriptive lat/long.
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
             parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
         ));
@@ -440,7 +440,7 @@ void ClusterMap::add(const DataDemographicsProcessor& demographics) {
                         event_types << "'" << eventtype->second->className() << "': '" << eventtype->second->className() << "-" << category.get<0>() << "'";
                         unseen_events.erase(eventtype->second); // mark this event type as seen in this record
                     }
-                    event_attrs.push_back(std::make_pair(llfm.get<2>(), value));
+                    event_attrs.emplace_back(llfm.get<2>(), value);
                 }
             }
             // At least the minimal checking - confirm that individual, coordinates and group value are present in record.
