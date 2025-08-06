@@ -373,7 +373,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHa
             default : throw prg_error("Unknown probability model type '%d'.\n", "PrintAnalysisSummary()", _parameters.GetProbabilityModelType());
         }
         if (_parameters.getNumFileSets() > 1) {
-            if (_parameters.getIsBernoulliIterativeDrilldown()) {
+            if (_parameters.getIsBernoulliIterativeDrilldownAsDOW()) {
                 statements.push_back(printString(buffer, "with day of week adjustment"));
             } else {
                 switch (_parameters.GetMultipleDataSetPurposeType()) {

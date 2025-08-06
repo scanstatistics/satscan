@@ -430,6 +430,21 @@ bool CSaTScanData::isNullifiedIdentifier(tract_t tLocationIndex) const {
    return std::find(_nullified_identifiers.begin(), _nullified_identifiers.end(), tLocationIndex) != _nullified_identifiers.end();
 }
 
+/** Returns the data set label for reporting, taking into account removed sets. */
+std::string& CSaTScanData::getDatasetLabel(size_t set_number, std::string& label) const {
+    if (gParameters.getNumFileSets() == 1)
+        label = gParameters.getDataSourceNames()[0];
+    else if (gParameters.getIsBernoulliIterativeDrilldownAsDOW()) {
+        // In this situation, data set name is already baked in.
+        label = gParameters.getDataSourceNames()[GetDataSetHandler().getDataSetRelativeIndex(set_number)];
+    }
+    else {
+        auto idx = GetDataSetHandler().getDataSetRelativeIndex(set_number);
+        printString(label, "Data Set %u (%s)", idx + 1, gParameters.getDataSourceNames()[idx].c_str());
+    }
+    return label;
+}
+
 /** For Bernoulli model, returns ratio of total cases / total population for
     iDataSet'th dataset. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {

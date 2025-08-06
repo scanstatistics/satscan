@@ -419,9 +419,7 @@ void TemporalChartGenerator::generateChart() const {
                 else 
                     printString(clusterName, "Cluster #%u", clusterIdx + 1);
                 if (handler.GetNumDataSets() > 1) { // include data set name with multiple sets
-                    clusterName += printString(buffer2, ": %s",
-                        parameters.getDataSourceNames()[_dataHub.GetDataSetHandler().getDataSetRelativeIndex(setIdx)].c_str()
-                    );
+                    clusterName += printString(buffer2, ": %s", _dataHub.getDatasetLabel(setIdx, buffer).c_str());
                 }
 
                 templateReplace(chart_js, "--chart-title--", clusterName);

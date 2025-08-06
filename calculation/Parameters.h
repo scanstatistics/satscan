@@ -275,6 +275,7 @@ class CParameters {
     unsigned int                        _drilldown_minimum_cases;
     double                              _drilldown_cutoff;
     std::vector<std::string>            _drilldown_result_filenames;
+    bool                                _is_bernoulli_dow_drilldown; /** indicates multiple sets are dow adjustment */
 
     std::string                         _locations_network_filename;
     bool                                _use_locations_network_file;
@@ -393,6 +394,8 @@ class CParameters {
     void                                addDrilldownResultFilename(const std::string& s) { _drilldown_result_filenames.push_back(s);  }
     const std::vector<std::string>    & getDrilldownResultFilename() const { return _drilldown_result_filenames; }
     bool                                getIsBernoulliIterativeDrilldown() const;
+	bool                                getIsBernoulliIterativeDrilldownAsDOW() const { return getIsBernoulliIterativeDrilldown() && _is_bernoulli_dow_drilldown; }
+    void                                setIsBernoulliIterativeDrilldownAsDOW(bool b) { _is_bernoulli_dow_drilldown = b; }
 
     bool                                requestsGeogrphaicalOutput() const {	return _output_google_map || _output_kml || _output_shapefiles || _output_cartesian_graph;	}
     void                                toggleGeogrphaicalOutput(bool b) { _output_google_map = b; _output_kml = b; _output_shapefiles = b; _output_cartesian_graph = b; }

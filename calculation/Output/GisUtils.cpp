@@ -347,7 +347,7 @@ std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, i
                     clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
                     clusterDataSetLines << getWrappedText(
                         htmlencode(
-                            parameters.getDataSourceNames()[datahub.GetDataSetHandler().getDataSetRelativeIndex(rptline.second.second)], buffer2, false
+                            datahub.getDatasetLabel(rptline.second.second, buffer), buffer2, false
                         ), 0, 50, "<br>", buffer3
                     );
 

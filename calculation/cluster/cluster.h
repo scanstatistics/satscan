@@ -68,7 +68,7 @@ class CCluster {
     int                           m_nLastInterval;      // Index # of last time interval
 
     DataSetIndexes_t              getDataSetIndexesComprisedInRatio(const CSaTScanData& DataHub) const;
-    virtual AsciiPrintFormat      getAsciiPrintFormat() const {AsciiPrintFormat printFormat; return printFormat;}
+    virtual AsciiPrintFormat      getAsciiPrintFormat(const CParameters& parameters) const;
     virtual bool                  ClusterDefined() const {return _num_identifiers > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();

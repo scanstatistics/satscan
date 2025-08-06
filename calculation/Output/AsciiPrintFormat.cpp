@@ -55,6 +55,12 @@ void AsciiPrintFormat::putChar(char c, FILE* fp, unsigned int num) {
     }
 }
 
+/** Returns the suffix for summary section label. */
+std::string& AsciiPrintFormat::getSectionSuffix(std::string& s, bool bernoulliDrilldown) const {
+    if (gbOneDataSet) { s = ""; return s; }
+    return printString(s, " %s", bernoulliDrilldown ? gsPerDayText : gsPerDataSetText);
+}
+
 /** Prints data supplied by sDataString parameter to file in a manner
     such that data is aligned with left margin of section label and wraps when
     data will exceed right margin.
@@ -153,23 +159,29 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
   iStringLength += fprintf(fp, ": ");
 }
 
-/** Prints section label to file stream, but starts label text at data column. */
-void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines) const {
-  unsigned int  iStringLength=0, iPad=0;
+/** Prints summary section  entries to text file. */
+void AsciiPrintFormat::PrintSummaryEntries(FILE* fp, const std::vector<std::pair<std::string, std::string>>& summaryEntries) const {
+    size_t maxLabelLength = 0;
+    for (const auto& entry : summaryEntries) {
+        maxLabelLength = std::max(maxLabelLength, entry.first.length());
+    }
+    // Adjust margins for summary of data section. The left margin is zero and the label width and data margins are calculated.
+    giLeftMargin = 0;
+    giLabelWidth = static_cast<unsigned int>(maxLabelLength);
+    giDataLeftMargin = giLabelWidth + strlen(": ");
 
-  //add left margin spacing til data column left margin
-  while (iPad++ < giDataLeftMargin) {
-       putChar(' ', fp);
-       ++iStringLength;
-  }
-  //add label
-  iStringLength += fprintf(fp, "%s", sText);
-  //check that created label fits in data section
-  if (iStringLength > giRightMargin)
-    throw prg_error("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);
-  //append newlines as requested
-  while (iPostNewlines-- > 0)
-     putChar('\n', fp);
+    for (const auto& entry : summaryEntries) {
+        // add label
+        unsigned int iStringLength = fprintf(fp, entry.first.c_str());
+        // fill remaining label space with '.'
+        while (iStringLength < maxLabelLength)
+            iStringLength += fprintf(fp, ".");
+        // append label colon
+        iStringLength += fprintf(fp, ": ");
+
+        // add value
+        PrintAlignedMarginsDataString(fp, entry.second);
+    }
 }
 
 /** Prints statement to file stream, respecting left and right margins. */
@@ -238,8 +250,7 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
   giLabelWidth = (gbOneDataSet ? giOneDataSetClusterLabelWidth : giMultiDataSetClusterLabelWidth) + _label_extra;
 }
 
-/** Adjusts margins for run overview section. The overview section contains
-    no labels, only text. */
+/** Adjusts margins for run overview section. The overview section contains no labels, only text. */
 void AsciiPrintFormat::SetMarginsAsOverviewSection() {
   //no labels in overview section - purely wrapping text
   giLeftMargin = giDataLeftMargin = giLabelWidth = 0;
@@ -249,14 +260,6 @@ void AsciiPrintFormat::SetMarginsAsOverviewSection() {
 void AsciiPrintFormat::SetMarginsAsRunTimeReportSection() {
   giLeftMargin = 2;
   giLabelWidth = giRunTimeComponentsLabelWidth;
-  giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
-}
-
-/** Adjusts margins for summary of data section. The left margin is zero and the
-    label width and data margins are calculated. */
-void AsciiPrintFormat::SetMarginsAsSummarySection() {
-  giLeftMargin = 0;
-  giLabelWidth = (gbOneDataSet ? giOneDataSetSummuaryLabelWidth : giMultiDataSetSummaryLabelWidth);
   giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
 }
 

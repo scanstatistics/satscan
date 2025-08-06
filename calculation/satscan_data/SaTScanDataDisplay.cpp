@@ -121,322 +121,287 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
 
 /** Prints summary of section to results file - detailing input data. */
 void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod) {
-  std::string           buffer, work, work2, label;
-  AsciiPrintFormat      PrintFormat(gDataSets->GetNumDataSets() == 1);
-  unsigned int          i;
+    std::string buffer, work, work2, suffix;
+    AsciiPrintFormat PrintFormat(gDataSets->GetNumDataSets() == 1);
+    std::vector<std::pair<std::string, std::string>> summaryEntries;
 
-  PrintFormat.SetMarginsAsSummarySection();
-  PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
-  fprintf(fp, "%s\n\n", sSummaryText.c_str());
-  //print study period
-  if (bPrintPeriod && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
-    PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
-    fprintf(fp,"%s to %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
-  }  
-  if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile() || gParameters.getUseLocationsNetworkFile())) {
-    //print number locations scanned
-      if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
-          PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%u\n", static_cast<unsigned int>(_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers()));
-      } else {
-          PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-          fprintf(fp, "%u\n", static_cast<unsigned int>(getLocationsManager().locations().size()));
-          PrintFormat.PrintSectionLabel(fp, "Number of identifiers", false, false);
-          fprintf(fp, "%u\n", static_cast<unsigned int>(getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size()));
-      }
-  }  
-  //print total population per data set
-  switch (gParameters.GetProbabilityModelType()) {
-    //label for data is dependent on probability model
-    case POISSON     : if (!gParameters.UsePopulationFile()) break;
-                       PrintFormat.PrintSectionLabel(fp, "Population, averaged over time", true, false); break;
-    case BERNOULLI   : PrintFormat.PrintSectionLabel(fp, "Total population", true, false, gParameters.getIsBernoulliIterativeDrilldown()); break;
-    case EXPONENTIAL : PrintFormat.PrintSectionLabel(fp, "Total individuals", true, false); break;
-    case BATCHED     : PrintFormat.PrintSectionLabel(fp, "Total batches", true, false); break;
-    default          : break;
-  }
-  switch (gParameters.GetProbabilityModelType()) {
-    case POISSON     : if (!gParameters.UsePopulationFile()) break;
-    case BERNOULLI   :
-    case EXPONENTIAL : 
-    case BATCHED     : printString(buffer, "%.0f", gDataSets->GetDataSet(0).getTotalPopulation());
-                       for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-                         printString(work, ", %.0f", gDataSets->GetDataSet(i).getTotalPopulation());
-                         buffer += work;
-                       }
-                       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-                       break;
-    default          : break;
-  }
-  // print total cases per data set
-  switch (gParameters.GetProbabilityModelType()) {
-    case BATCHED: PrintFormat.PrintSectionLabel(fp, "Number positive batches", true, false); break;
-    case POISSON:
-    case BERNOULLI:
-    case SPACETIMEPERMUTATION:
-    case CATEGORICAL:
-    case ORDINAL:
-    case NORMAL:
-    case EXPONENTIAL:
-    case HOMOGENEOUSPOISSON: PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false, gParameters.getIsBernoulliIterativeDrilldown()); break;
-    default: break;
-  }
-  switch (gParameters.GetProbabilityModelType()) {
-    case POISSON              :
-    case BERNOULLI            :
-    case SPACETIMEPERMUTATION :
-    case CATEGORICAL          :
-    case ORDINAL              :
-    case NORMAL               :
-    case EXPONENTIAL          :
-    case BATCHED              :
-    case HOMOGENEOUSPOISSON   : printString(buffer, "%ld", gDataSets->GetDataSet(0).getTotalCases());
-                                for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-                                  printString(work, ", %ld", gDataSets->GetDataSet(i).getTotalCases());
-                                  buffer += work;
-                                }
-                                PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-                                break;
-    default: break;
-  }
-  if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    PrintFormat.PrintSectionLabel(fp, "Percent cases", true, false, gParameters.getIsBernoulliIterativeDrilldown());
-    auto getPopulation = [](count_t c, double p) { return 100.0 * (p ? c / p : 0.0); };
-    getValueAsString(getPopulation(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalPopulation()), buffer, 1);
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-        getValueAsString(getPopulation(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalPopulation()), work2, 1);
-        printString(work, ", %s", work2.c_str());
-        buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  //print total area per data set for Homogeneous Poisson model
-  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
-      const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
-    if (!pHandler)
-      throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","DisplaySummary()");
-    PrintFormat.PrintSectionLabel(fp, "Total Area", true, false);
-    printString(buffer, "%.0f", pHandler->getTotalArea());
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-
-  //for the ordinal probability model, also print category values and total cases per ordinal category
-  if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
-    if (gDataSets->GetNumDataSets() == 1) {
-      PrintFormat.PrintSectionLabel(fp, "Category values", false, false);
-      const PopulationData& Population = gDataSets->GetDataSet().getPopulationData();
-      buffer="";
-      for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         printString(work, "%s%s", (j ? ", " : ""), Population.GetCategoryTypeLabel(j).c_str());
-         buffer += work;
-      }
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-      PrintFormat.PrintSectionLabel(fp, "Total cases per category", false, false);
-      buffer="";
-      for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
-         buffer += work;
-      }
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-      PrintFormat.PrintSectionLabel(fp, "Percent cases per category", false, false);
-      buffer="";
-      for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-         getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1);
-         printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
-         buffer += work;
-      }
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    }
-    else {
-      for (i=0, buffer=""; i < gDataSets->GetNumDataSets(); ++i, buffer="") {
-        printString(label, "Category values, data set #%d", i + 1);
-        PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
-        const PopulationData& Population = gDataSets->GetDataSet(i).getPopulationData();
-        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           printString(work, "%s%s", (j ? ", " : ""), Population.GetCategoryTypeLabel(j).c_str());
-           buffer += work;
+    suffix = PrintFormat.getSectionSuffix(buffer, gParameters.getIsBernoulliIterativeDrilldownAsDOW());
+    PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
+    fprintf(fp, "%s\n\n", sSummaryText.c_str());
+    //print study period
+    if (bPrintPeriod && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        summaryEntries.emplace_back("Study period", printString(buffer, "%s to %s", 
+            gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str())
+        );
+    }  
+    if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile() || gParameters.getUseLocationsNetworkFile())) {
+        //print number locations scanned
+        if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
+            summaryEntries.emplace_back("Locations", 
+                std::to_string(static_cast<unsigned int>(_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers()))
+            );
+        } else {
+            summaryEntries.emplace_back("Locations", std::to_string(getLocationsManager().locations().size()));
+            summaryEntries.emplace_back("Identifiers", std::to_string(getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size()));
         }
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-        printString(label, "Total category cases, data set #%d ", i + 1);
-        PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
-        buffer="";
-        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
-           buffer += work;
+    }  
+    //print total population per data set
+    switch (gParameters.GetProbabilityModelType()) {
+        case POISSON: 
+            if (!gParameters.UsePopulationFile()) break;
+            summaryEntries.emplace_back("Population, averaged over time", "");
+            summaryEntries.back().first += suffix;
+            break;
+        case BERNOULLI: 
+            summaryEntries.emplace_back("Total population", ""); 
+            summaryEntries.back().first += suffix;
+            break;
+        case EXPONENTIAL: 
+            summaryEntries.emplace_back("Total individuals", ""); 
+            summaryEntries.back().first += suffix;
+            break;
+        case BATCHED: 
+            summaryEntries.emplace_back("Batches", ""); 
+            summaryEntries.back().first += suffix;
+            break;
+        default : break;
+    }
+    
+    switch (gParameters.GetProbabilityModelType()) {
+        case POISSON: if (!gParameters.UsePopulationFile()) break;
+        case BERNOULLI:
+        case EXPONENTIAL: 
+        case BATCHED: 
+            for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+                summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalPopulation());
+            } break;
+        default: break;
+    }
+    // print total cases per data set
+    switch (gParameters.GetProbabilityModelType()) {
+        case BATCHED: 
+            summaryEntries.emplace_back("Positive batches", ""); 
+            summaryEntries.back().first += suffix;
+            break;
+        case POISSON:
+        case BERNOULLI:
+        case SPACETIMEPERMUTATION:
+        case CATEGORICAL:
+        case ORDINAL:
+        case NORMAL:
+        case EXPONENTIAL:
+        case HOMOGENEOUSPOISSON: 
+            summaryEntries.emplace_back("Total number of cases", ""); 
+            summaryEntries.back().first += suffix;
+            break;
+        default: break;
+    }
+    switch (gParameters.GetProbabilityModelType()) {
+        case POISSON:
+        case BERNOULLI:
+        case SPACETIMEPERMUTATION:
+        case CATEGORICAL:
+        case ORDINAL:
+        case NORMAL:
+        case EXPONENTIAL:
+        case BATCHED:
+        case HOMOGENEOUSPOISSON:
+            for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+                summaryEntries.back().second += printString(work, "%s%ld", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalCases());
+            } break;
+        default: break;
+    }
+    if (gParameters.GetProbabilityModelType() == BATCHED) {
+        summaryEntries.emplace_back("Individuals", "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            summaryEntries.back().second += printString(work, "%s%u", (i ? ", " : ""),
+                static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasureAux() + gDataSets->GetDataSet(i).getTotalMeasureAux2())
+            );
         }
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-        printString(label, "Percent cases, data set #%d ", i + 1);
-        PrintFormat.PrintSectionLabel(fp, label.c_str(), false, false);
-        buffer="";
-        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-           getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(i).getTotalCases(), work2, 1);
-           printString(work, "%s%s", (j ? ", " : ""), work2.c_str());
-           buffer += work;
+    }
+    if (gParameters.GetProbabilityModelType() == BERNOULLI) {
+        summaryEntries.emplace_back("Percent cases", "");
+        summaryEntries.back().first += suffix;
+        auto getPopulation = [](count_t c, double p) { return 100.0 * (p ? c / p : 0.0); };
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+			if (i) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(
+                getPopulation(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalPopulation()), work2, 1
+            );
         }
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-      }
     }
-  }
-  //for the exponential probability model, also print total censored cases
-  if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
-    PrintFormat.PrintSectionLabel(fp, "Total censored", true, false);
-    printString(buffer, "%.0f", gDataSets->GetDataSet(0).getTotalPopulation() - gDataSets->GetDataSet(0).getTotalCases());
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.0f", gDataSets->GetDataSet(i).getTotalPopulation() - gDataSets->GetDataSet(i).getTotalCases());
-       buffer += work;
+    //print total area per data set for Homogeneous Poisson model
+    if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+        const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
+        if (!pHandler) throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","DisplaySummary()");
+        summaryEntries.emplace_back("Total Area", printString(buffer, "%.0f", pHandler->getTotalArea()));
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  //for the Poisson probability model, also print annual cases per population
-  if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
-    printString(buffer, "Annual cases / %.0f",  GetAnnualRatePop());
-    PrintFormat.PrintSectionLabel(fp, buffer.c_str(), true, false);
-    getValueAsString(GetAnnualRate(0), buffer, 1);
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       getValueAsString(GetAnnualRate(i), work, 1);
-       buffer += ", "; buffer += work;
+    //for the ordinal probability model, also print category values and total cases per ordinal category
+    if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
+        if (gDataSets->GetNumDataSets() == 1) {
+            summaryEntries.emplace_back("Category values", "");
+            const PopulationData& Population = gDataSets->GetDataSet().getPopulationData();
+            for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                if (j) summaryEntries.back().second += ", ";
+                summaryEntries.back().second += Population.GetCategoryTypeLabel(j);
+            }
+            summaryEntries.emplace_back("Total cases per category", "");
+            for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                summaryEntries.back().second += printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
+            }
+            summaryEntries.emplace_back("Percent cases per category", "");
+            for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                summaryEntries.back().second += printString(work, "%s%s", (j ? ", " : ""), 
+                    getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1).c_str()
+                );
+            }
+        } else {
+            for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+                summaryEntries.emplace_back(printString(buffer, "Category values, data set #%d", i + 1), "");
+                const PopulationData& Population = gDataSets->GetDataSet(i).getPopulationData();
+                for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                    if (j) summaryEntries.back().second += ", ";
+                    summaryEntries.back().second += Population.GetCategoryTypeLabel(j);
+                }
+                summaryEntries.emplace_back(printString(buffer, "Total category cases, data set #%d ", i + 1), "");
+                for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                    summaryEntries.back().second += printString(work, "%s%ld", (j ? ", " : ""), Population.GetNumCategoryTypeCases(j));
+                }
+                summaryEntries.emplace_back(printString(buffer, "Percent cases, data set #%d ", i + 1), "");
+                for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
+                    if (j) summaryEntries.back().second += ", ";
+                    summaryEntries.back().second += getValueAsString(
+                        100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(i).getTotalCases(), work2, 1
+                    );
+                }
+            }
+        }
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
-    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
-    getValueAsString(gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases(), buffer);
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       getValueAsString(gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalCases(), work);
-       buffer += ", "; buffer += work;
+    //for the exponential probability model, also print total censored cases
+    if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
+        summaryEntries.emplace_back("Total censored", "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""), 
+                gDataSets->GetDataSet(i).getTotalPopulation() - gDataSets->GetDataSet(i).getTotalCases()
+            );
+        }
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    getValueAsString(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()), buffer);
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       getValueAsString(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()), work);
-       buffer += ", "; buffer += work;
+    //for the Poisson probability model, also print annual cases per population
+    if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
+        summaryEntries.emplace_back(printString(buffer, "Annual cases / %.0f", GetAnnualRatePop()), "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            if (i) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(GetAnnualRate(i), work, 1);
+        }
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    getValueAsString(std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())), buffer);
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       getValueAsString(std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())), work);
-       buffer += ", "; buffer += work;
+    if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
+        summaryEntries.emplace_back("Mean", "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i=0; i < gDataSets->GetNumDataSets(); ++i) {
+            if (i) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(gDataSets->GetDataSet(i).getTotalMeasure() / gDataSets->GetDataSet(i).getTotalCases(), work);
+        }
+        summaryEntries.emplace_back("Variance", "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            if (i) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(GetUnbiasedVariance(
+                gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()
+            ), work);
+        }
+        summaryEntries.emplace_back("Standard deviation", "");
+        summaryEntries.back().first += suffix;
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            if (i) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(std::sqrt(GetUnbiasedVariance(
+                gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())
+            ), work);
+        }
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
-    AbstractWeightedNormalRandomizer *pRandomizer;
-    std::vector<AbstractWeightedNormalRandomizer::DataSetStatistics> dataSetStatistics;
-
-    //Check that all randomizers are derived from AbstractWeightedNormalRandomizer class.
-    for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
-      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
-        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-       dataSetStatistics.push_back(pRandomizer->getDataSetStatistics());
+    if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
+        AbstractWeightedNormalRandomizer *pRandomizer;
+        std::vector<AbstractWeightedNormalRandomizer::DataSetStatistics> dataSetStatistics;
+        //Check that all randomizers are derived from AbstractWeightedNormalRandomizer class.
+        for (unsigned int i=0; i < gDataSets->GetNumDataSets(); ++i) {
+            if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
+                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+            dataSetStatistics.push_back(pRandomizer->getDataSetStatistics());
+        }
+        summaryEntries.emplace_back("Total weights", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j=0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtTotalWeight, work);
+        }
+        summaryEntries.emplace_back("Mean", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtMean, work);
+        }
+        summaryEntries.emplace_back("Variance", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtVariance, work);
+        }
+        summaryEntries.emplace_back("Standard deviation", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(std::sqrt(dataSetStatistics[j].gtVariance), work);
+        }
+        summaryEntries.emplace_back("Weighted Mean", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtWeightedMean, work);
+        }
+        summaryEntries.emplace_back("Weighted Variance", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtWeightedVariance, work);
+        }
+        summaryEntries.emplace_back("Weighted Std deviation", "");
+        summaryEntries.back().first += suffix;
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
+            if (j) summaryEntries.back().second += ", ";
+            summaryEntries.back().second += getValueAsString(std::sqrt(dataSetStatistics[j].gtWeightedVariance), work);
+        }
     }
-
-    //Print total weight for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Total weights", true, false);
-    getValueAsString(dataSetStatistics.front().gtTotalWeight, buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(dataSetStatistics[i].gtTotalWeight, work);
-       buffer += ", "; buffer += work;
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        const AbstractTimeTrend& globalTrend = gDataSets->GetDataSet(0/*for now*/).getTimeTrend();
+        if (gParameters.getTimeTrendType() == LINEAR) {
+            double nAnnualTT = const_cast<AbstractTimeTrend&>(globalTrend).SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+            summaryEntries.emplace_back("Time trend", "");
+            summaryEntries.back().second += getValueAsString(fabs(nAnnualTT), work, 3);
+            summaryEntries.back().second += (nAnnualTT < 0 ? "% annual decrease" : "% annual increase");
+        }
+        //PrintFormat.PrintSectionLabel(fp, "Global Intercept", false, false);
+        //fprintf(fp, "%g\n", globalTrend.GetAlpha());
+        //PrintFormat.PrintSectionLabel(fp, "Global Linear", false, false);
+        //fprintf(fp, "%g\n", globalTrend.GetBeta());
+        const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&globalTrend);
+        if (pQTrend) {
+            //PrintFormat.PrintSectionLabel(fp, "Global Quadratic", false, false);
+            //fprintf(fp, "%g\n", pQTrend->GetBeta2());
+            summaryEntries.emplace_back("Global Risk Function", "");
+            pQTrend->getRiskFunction(summaryEntries.back().second, work, *this);
+        }
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print mean for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
-    getValueAsString(dataSetStatistics.front().gtMean, buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(dataSetStatistics[i].gtMean, work);
-       buffer += ", "; buffer += work;
+    if (gParameters.GetProbabilityModelType() == RANK) {
+        summaryEntries.emplace_back("Average Rank", "");
+        summaryEntries.emplace_back("Mean Rank", "");
+        summaryEntries.emplace_back("Average Category", "");
+        summaryEntries.emplace_back("Variance", "");
+        summaryEntries.emplace_back("Standard deviation", "");
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print variance for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    getValueAsString(dataSetStatistics.front().gtVariance, buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(dataSetStatistics[i].gtVariance, work);
-       buffer += ", "; buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print standard deviation for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    getValueAsString(std::sqrt(dataSetStatistics.front().gtVariance), buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(std::sqrt(dataSetStatistics[i].gtVariance), work);
-       buffer += ", "; buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print weighted mean for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Weighted Mean", true, false);
-    getValueAsString(dataSetStatistics.front().gtWeightedMean, buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(dataSetStatistics[i].gtWeightedMean, work);
-       buffer += ", "; buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print weighted variance for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Weighted Variance", true, false);
-    getValueAsString(dataSetStatistics.front().gtWeightedVariance, buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(dataSetStatistics[i].gtWeightedVariance, work);
-       buffer += ", "; buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-    //Print weighted variance for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Weighted Std deviation", true, false);
-    getValueAsString(std::sqrt(dataSetStatistics.front().gtWeightedVariance), buffer);
-    for (i=1; i < dataSetStatistics.size(); ++i) {
-       getValueAsString(std::sqrt(dataSetStatistics[i].gtWeightedVariance), work);
-       buffer += ", "; buffer += work;
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      const AbstractTimeTrend& globalTrend = gDataSets->GetDataSet(0/*for now*/).getTimeTrend();
-      if (gParameters.getTimeTrendType() == LINEAR) {
-         double nAnnualTT = const_cast<AbstractTimeTrend&>(globalTrend).SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-         PrintFormat.PrintSectionLabel(fp, "Time trend", false, false);
-         buffer = (nAnnualTT < 0 ? "annual decrease" : "annual increase");
-         getValueAsString(fabs(nAnnualTT), work, 3);
-         fprintf(fp, "%s%% %s\n", work.c_str(), buffer.c_str());
-      }
-      //PrintFormat.PrintSectionLabel(fp, "Global Intercept", false, false);
-      //fprintf(fp, "%g\n", globalTrend.GetAlpha());
-      //PrintFormat.PrintSectionLabel(fp, "Global Linear", false, false);
-      //fprintf(fp, "%g\n", globalTrend.GetBeta());
-      const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&globalTrend);
-      if (pQTrend) {
-        //PrintFormat.PrintSectionLabel(fp, "Global Quadratic", false, false);
-        //fprintf(fp, "%g\n", pQTrend->GetBeta2());
-        PrintFormat.PrintSectionLabel(fp, "Global Risk Function", false, true);
-        pQTrend->getRiskFunction(buffer, work, *this);
-        PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-        PrintFormat.PrintNonRightMarginedDataString(fp, work, true);
-      }
-  }
-  if (gParameters.GetProbabilityModelType() == RANK) {
-      std::string buffer("");
-      PrintFormat.PrintSectionLabel(fp, "Average Rank", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-      PrintFormat.PrintSectionLabel(fp, "Mean Rank", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-      PrintFormat.PrintSectionLabel(fp, "Average Category", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-      PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-      PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-
-  PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
+    PrintFormat.PrintSummaryEntries(fp, summaryEntries);
+    PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format

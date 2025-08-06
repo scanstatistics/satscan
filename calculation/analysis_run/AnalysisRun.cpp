@@ -2256,6 +2256,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
             }
             _parameters.setDataSourceNames(dayNames);
             _parameters.SetMultipleDataSetPurposeType(ADJUSTMENT); // Fixed to Adjustment purpose in this situation.
+            _parameters.setIsBernoulliIterativeDrilldownAsDOW(true);
         } else {
             _parameters.setNumFileSets(source_parameters.getNumFileSets());
         }

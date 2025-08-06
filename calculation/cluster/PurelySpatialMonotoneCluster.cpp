@@ -203,7 +203,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
 void CPSMonotoneCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const {
     CCluster::Display(fp, DataHub, supplementInfo, simVars);
     // now print step-wise information
-    AsciiPrintFormat PrintFormat = getAsciiPrintFormat();
+    AsciiPrintFormat PrintFormat = getAsciiPrintFormat(DataHub.GetParameters());
     PrintFormat.SetMarginsAsClusterSection(supplementInfo.getClusterReportIndex(*this));
     if (1 < gpClusterData->m_nSteps) {
         PrintFormat.PrintSectionLabel(fp, "Isotonic step-wise information", false, true);

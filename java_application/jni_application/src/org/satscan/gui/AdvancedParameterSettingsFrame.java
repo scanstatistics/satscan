@@ -523,7 +523,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         double val = Double.parseDouble(_iterative_scan_cutoff.getText());
         if (_settings_window.isProspectiveScan()) {
             if (val <= 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
-            _iterativeCutoffLabel.setText("Stop when the recurrance interval is less than:");
+            _iterativeCutoffLabel.setText("Stop when the recurrence interval is less than:");
         } else {
             _iterativeCutoffLabel.setText("Stop when the p-value is greater than:");
             if (val > 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);

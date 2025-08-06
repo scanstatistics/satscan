@@ -115,7 +115,8 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
-    boost::shared_ptr<LocationsReportHelper> getLocationReportHelper() const;
+    std::string                               & getDatasetLabel(size_t set_number, std::string& label) const;
+    boost::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }
     Network                                   & getLocationNetwork() { return  _locations_network; }
     const Network                             & refLocationNetwork() const { return  _locations_network; }

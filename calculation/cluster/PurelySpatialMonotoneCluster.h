@@ -24,7 +24,7 @@ class CPSMonotoneCluster : public CCluster {
     CPSMonotoneCluster         & operator=(const CPSMonotoneCluster& rhs);
     virtual CPSMonotoneCluster * Clone() const;
 
-    virtual AsciiPrintFormat    getAsciiPrintFormat() const {AsciiPrintFormat printFormat(true, 8); return printFormat;}
+    virtual AsciiPrintFormat    getAsciiPrintFormat(const CParameters& parameters) const { return AsciiPrintFormat(true, 8); }
     void                        AllocateForMaxCircles(tract_t nCircles) {gpClusterData->AllocateForMaxCircles(nCircles);}
     void                        CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                            const CentroidNeighbors& CentroidDef,
