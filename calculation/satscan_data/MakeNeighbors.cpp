@@ -255,25 +255,24 @@ void CentroidNeighborCalculator::ReduceMultipleCoordinates() {
     switch (gParameters.GetMultipleCoordinatesType()) {
         case ONEPERLOCATION: break;
         case ATLEASTONELOCATION: { 
-                boost::dynamic_bitset<> theSet(gNumTracts);
-                std::vector<DistanceToCentroid>::iterator itr = gvCentroidDistances.begin();
-                for (; itr != gvCentroidDistances.end(); ++itr) {
-                    if (theSet.test(itr->GetTractNumber()))
-                        itr = gvCentroidDistances.erase(itr) - 1;
-                    else
-                        theSet.set(itr->GetTractNumber());
-                }
-            } break;
+            boost::dynamic_bitset<> theSet(gNumTracts);
+            for (auto itr = gvCentroidDistances.begin(); itr != gvCentroidDistances.end(); ++itr) {
+                if (theSet.test(itr->GetTractNumber()))
+                    itr = gvCentroidDistances.erase(itr) - 1;
+                else
+                    theSet.set(itr->GetTractNumber());
+            }
+        } break;
         case ALLLOCATIONS: { 
-                boost::dynamic_bitset<> theSet(gNumTracts);
-                std::vector<DistanceToCentroid>::iterator itr(gvCentroidDistances.end() - 1);
-                for (;; --itr) {
-                    if (theSet.test(itr->GetTractNumber()))
-                        itr = gvCentroidDistances.erase(itr);
-                    else
-                        theSet.set(itr->GetTractNumber());
-                    if (itr == gvCentroidDistances.begin()) break;
-                }
+            boost::dynamic_bitset<> theSet(gNumTracts);
+            auto itr(gvCentroidDistances.end() - 1);
+            for (;; --itr) {
+                if (theSet.test(itr->GetTractNumber()))
+                    itr = gvCentroidDistances.erase(itr);
+                else
+                    theSet.set(itr->GetTractNumber());
+                if (itr == gvCentroidDistances.begin()) break;
+            }
         } break;
         default: throw prg_error("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gParameters.GetMultipleCoordinatesType());
     }
@@ -482,29 +481,30 @@ void CentroidNeighborCalculator::CalculateNeighborsByNetwork(const CSaTScanData&
         size_t t = std::distance(locationNetwork.getNodes().begin(), itrNode);
         NetworkLocationContainer_t locationPath;
         locationNetwork.buildNeighborsAboutNode(itrNode->second, locationPath, _identifier_mgr.getLocationsManager().locations().size());
-        //gvCentroidDistances.resize(_identifier_mgr.getNumLocationCoordinates());
         gvCentroidDistances.clear();
-        unsigned int c = 0;
         for (auto itrLoc = locationPath.begin(); itrLoc != locationPath.end(); ++itrLoc) {
-            // Translate location index into identifier index.
-            const Location & location = itrLoc->first->getLocation();
             // Which identifiers are at this location in the network.
-            MinimalGrowthArray<size_t>& identifiers = _identifiers_to_locations[&location];
-            for (unsigned int g=0; g < identifiers.size(); ++g) {
-                gvCentroidDistances.push_back(DistanceToCentroid(identifiers[g], itrLoc->second, 0));
-                ++c;
+            auto identifiers = _identifiers_to_locations.find(&itrLoc->first->getLocation());
+            if (identifiers == _identifiers_to_locations.end())  continue; // skip if none
+            for (unsigned int i=0; i < identifiers->second.size(); ++i) {
+				size_t idIdx = identifiers->second[i]; // get actual identifier index
+				unsigned int locOffset = 0; // identifier could be defined at multiple locations
+                for (;locOffset < _identifier_mgr.getIdentifiers()[idIdx]->getLocations().size();) {
+                    if (_identifier_mgr.getIdentifiers()[idIdx]->getLocations()[locOffset]->index() == itrLoc->first->getLocation().index())
+						break; // found the matching location for this identifier
+                    ++locOffset;
+                }
+                gvCentroidDistances.push_back(DistanceToCentroid(idIdx, itrLoc->second, locOffset));
             }
         }
-
-        //gvCentroidDistances = locationPath;
 
         ReduceMultipleCoordinates();
         CalculateNeighborsForCurrentState(prNeighborsCount);
         AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
         CoupleLocationsAtSameCoordinates(prNeighborsCount);
-        const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidDistances, 0, t /*itrNode->first*/, prNeighborsCount.second, prNeighborsCount.first);
-        if (t /*itrNode->first*/ == 9 || (frequent_estimations && ((t /*itrNode->first*/ + 1) % modulas == 0)))
-            frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t /*itrNode->first*/ + 1, gPrintDirection, false, t /*itrNode->first*/ != 9) > FREQUENT_ESTIMATES_SECONDS;
+        const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
+        if (t == 9 || (frequent_estimations && ((t + 1) % modulas == 0)))
+            frequent_estimations = ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t + 1, gPrintDirection, false, t != 9) > FREQUENT_ESTIMATES_SECONDS;
     }
 }
 
@@ -631,10 +631,9 @@ tract_t CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopul
 
 /** Calculates the number of neighboring locations as defined in gvCentroidToLocationDistances and maximum circle size. */
 tract_t CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize) const {
-  std::vector<DistanceToCentroid>::const_iterator itr=gvCentroidDistances.begin(),
-                                                itr_end=gvCentroidDistances.end();
-  tract_t                                       tCount=0;
-  measure_t                                     tCumMeasure=0;
+  auto itr=gvCentroidDistances.begin(), itr_end=gvCentroidDistances.end();
+  tract_t tCount=0;
+  measure_t tCumMeasure=0;
 
   for (; itr != itr_end && (tCumMeasure + gpPopulation[itr->GetTractNumber()]) <= tMaximumSize; ++itr) {
      tCumMeasure += gpPopulation[itr->GetTractNumber()];
@@ -692,11 +691,14 @@ void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int,
     if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) return;
     std::vector<DistanceToCentroid>::iterator tGroupStart=gvCentroidDistances.begin(), tGroupEnd=gvCentroidDistances.end();
     for (int tCurrent=0; tCurrent < prNeighborsCount.first; ++tCurrent) {
-        DistanceToCentroid& curr = gvCentroidDistances[tCurrent];
+        const Coordinates * nextCoords = 0;
+        const DistanceToCentroid& curr = gvCentroidDistances[tCurrent];
         const Coordinates * currCoords = _identifier_mgr.getIdentifiers()[curr.GetTractNumber()]->getLocations()[curr.GetRelativeCoordinateIndex()]->coordinates().get();
-        DistanceToCentroid& next = gvCentroidDistances[tCurrent+1];
-        const Coordinates * nextCoords = _identifier_mgr.getIdentifiers()[next.GetTractNumber()]->getLocations()[next.GetRelativeCoordinateIndex()]->coordinates().get();
-        if (*currCoords == *nextCoords)
+        if (tCurrent + 1 < gvCentroidDistances.size()) {
+            const DistanceToCentroid& next = gvCentroidDistances[tCurrent + 1];
+            nextCoords = _identifier_mgr.getIdentifiers()[next.GetTractNumber()]->getLocations()[next.GetRelativeCoordinateIndex()]->coordinates().get();
+        }
+        if (nextCoords && *currCoords == *nextCoords)
             tGroupEnd = gvCentroidDistances.begin() + (tCurrent + 1);
         else if (tGroupEnd != gvCentroidDistances.end()) {
             //create meta location that is locations from tGroupStart to tGroupEnd

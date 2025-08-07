@@ -363,7 +363,7 @@ NetworkLocationContainer_t& CSaTScanData::getClusterNetworkLocations(const CClus
     }
     // Obtain the clusters centroid location.
     const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(GetGInfo())->getCentroidLocation(cluster.GetCentroidIndex());
-    const NetworkNode& centroidNode = refLocationNetwork().getNodes().find(getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+    const NetworkNode& centroidNode = refLocationNetwork().getNodes().find(centroidLocation.index())->second;
     // Calculate the network expanding out from this centroid node.
     networkLocations.clear();
     refLocationNetwork().buildNeighborsAboutNode(centroidNode, networkLocations, getLocationsManager().locations().size());
@@ -379,24 +379,28 @@ NetworkLocationContainer_t& CSaTScanData::getClusterNetworkLocations(const CClus
     double dCurrent = -1;
     for (unsigned int i = 0; i < getIdentifierInfo().getIdentifiers()[lastTract]->getLocations().size(); ++i) {
         const Location * tractLocation = getIdentifierInfo().getIdentifiers()[lastTract]->getLocations()[i];
-        const auto& tractNode = &(refLocationNetwork().getNodes().find(getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
+        const auto& tractNode = &(refLocationNetwork().getNodes().find(tractLocation->index())->second);
+		// Attempt to find the distance between the centroid node and each location associated with last identifier of cluster.
+        // In rare situations, a location may not be in networkLocations, so we need to handle that (island node).
         double dDistance = -1;
-        for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
+        for (auto itr = networkLocations.begin(); itr != networkLocations.end() && dDistance == -1; ++itr) {
             if (itr->first == tractNode) {
                 dDistance = itr->second;
                 switch (GetParameters().GetMultipleCoordinatesType()) {
-                case ONEPERLOCATION: itrLastNode = itr; dCurrent = dDistance; break;
-                case ATLEASTONELOCATION: // Searching for the closest location.
-                    if (itrLastNode == networkLocations.end() || dCurrent > dDistance) { itrLastNode = itr; dCurrent = dDistance; } break;
-                case ALLLOCATIONS: //Searching for the farthest location.
-                    if (itrLastNode == networkLocations.end() || dCurrent < dDistance) { itrLastNode = itr; dCurrent = dDistance; } break;
-                default: throw prg_error("Unknown multiple coordinates type '%d'.", "getClusterNetworkLocations()", GetParameters().GetMultipleCoordinatesType());
+                    case ONEPERLOCATION: itrLastNode = itr; dCurrent = dDistance; break;
+                    case ATLEASTONELOCATION: // Searching for the closest location.
+                        if (itrLastNode == networkLocations.end() || dCurrent > dDistance) { itrLastNode = itr; dCurrent = dDistance; } break;
+                    case ALLLOCATIONS: //Searching for the farthest location.
+                        if (itrLastNode == networkLocations.end() || dCurrent < dDistance) { itrLastNode = itr; dCurrent = dDistance; } break;
+                    default: throw prg_error("Unknown multiple coordinates type '%d'.", "getClusterNetworkLocations()", GetParameters().GetMultipleCoordinatesType());
                 }
-                break;
             }
         }
-        if (dDistance == -1) throw prg_error("Unable to determine distance between locations '%s' and '%s'.", "getClusterNetworkLocations()", centroidLocation.name().c_str(), tractLocation->name().c_str());
     }
+    if (dCurrent == -1)
+        throw prg_error("Unable to determine distance between locations '%s' and '%s'.", "getClusterNetworkLocations()", 
+			centroidLocation.name().c_str(), getIdentifierInfo().getIdentifiers()[lastTract]->name().c_str()
+        );
     // Reduce the network locations collection to the last node in cluster.
     if (itrLastNode != networkLocations.end()) networkLocations.erase(itrLastNode + 1, networkLocations.end());
     // Add network locations to cache since we'll be asking for this information repeatedly in output files.
