@@ -18,6 +18,7 @@
 #include "ClusterScatterChart.h"
 #include "ClusterMap.h"
 #include "DataDemographics.h"
+#include "ChartGenerator.h"
 
 class ClusterRankHelper {
     private:
@@ -88,6 +89,7 @@ class AnalysisExecution {
         std::auto_ptr<ClusterKML>           _cluster_kml;
         std::auto_ptr<CartesianGraph>       _cluster_graph;
         std::auto_ptr<ClusterMap>           _cluster_map;
+        std::unique_ptr<TemporalChartGenerator> _temporal_graph;
         std::auto_ptr<SignificantRatios>    _significant_ratios;
         std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
         boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;

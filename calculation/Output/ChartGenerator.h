@@ -5,6 +5,7 @@
 #include "FileName.h"
 #include "MostLikelyClustersContainer.h"
 #include "UtilityFunctions.h"
+#include "BatchedLikelihoodCalculation.h"
 #include <fstream>
 
 /* abstract base class for chart generation. */
@@ -15,7 +16,6 @@ class AbstractChartGenerator {
 
     public:
         AbstractChartGenerator() {}
-        virtual void generateChart() const = 0;
 };
 
 class ChartSeries {
@@ -54,7 +54,6 @@ class ChartSeries {
 class CSaTScanData;
 class CCluster;
 class SimulationVariables;
-class BatchedLikelihoodCalculator; // forward declaration
 
 /* generator for temporal chart */
 class TemporalChartGenerator : public AbstractChartGenerator {
@@ -68,17 +67,19 @@ class TemporalChartGenerator : public AbstractChartGenerator {
         static const char * TEMPLATE_CHARTHEADER;
         static const char * TEMPLATE_CHARTSECTION;
         static const char * TEMPLATE_CLUSTERDETAILS;
-        const CSaTScanData & _dataHub;
-        const MostLikelyClustersContainer & _clusters;
-        const SimulationVariables & _simVars;
         std::unique_ptr<BatchedLikelihoodCalculator> _batched_likelihood_calculator;
+        std::stringstream charts_javascript;
+        std::stringstream cluster_sections;
+        std::stringstream chart_select_options;
+		unsigned int _cluster_count;
+        unsigned int _margin_bottom;
     
         // 0: Inside Cluster Window, Inside Cluster Area
         // 1: Outside Cluster Window, Inside Cluster Area
         // 2: Inside Cluster Window, Outside Cluster Area
         // 3: Outside Cluster Window, Outside Cluster Area
         typedef boost::tuple<count_t, count_t, count_t, count_t>  ClusterCaseTotals_t;
-        ClusterCaseTotals_t getClusterCaseTotals(const CCluster& cluster, size_t dataSetIdx) const;
+        ClusterCaseTotals_t getClusterCaseTotals(const CCluster& cluster, const CSaTScanData& datahub, size_t dataSetIdx) const;
 
         class intervalGroups {
             public:
@@ -89,8 +90,8 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                 void addGroup(int start, int end) {_interval_grps.push_back(std::make_pair(start,end));}
                 const intervals_t& getGroups() const {return _interval_grps;}
         };
-        intervalGroups getIntervalGroups(const CCluster& cluster) const;
-        std::pair<int, int> getSeriesStreams(const CCluster& cluster,
+        intervalGroups getIntervalGroups(const CCluster& cluster, const CSaTScanData& datahub) const;
+        std::pair<int, int> getSeriesStreams(const CCluster& cluster, const CSaTScanData& datahub,
                                               const intervalGroups& groups,
                                               size_t dataSetIdx,
                                               std::stringstream& categories,
@@ -103,9 +104,13 @@ class TemporalChartGenerator : public AbstractChartGenerator {
                                               ChartSeries * cluster_odeSeries) const;
 
     public:
-        TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars);
+        TemporalChartGenerator(const CParameters& parameters);
 
-        virtual void generateChart() const;
+        void finalize(const CSaTScanData& _dataHub);
+        void add(
+            const CSaTScanData& datahub, const MostLikelyClustersContainer& clusters,
+            const SimulationVariables& simVars, unsigned int iteration=1
+        );
         static FileName& getFilename(FileName& filename);
 };
 
@@ -125,7 +130,7 @@ class GiniChartGenerator : public AbstractChartGenerator {
     public:
         GiniChartGenerator(const MLC_Collections_t& mlc, const CSaTScanData& dataHub, const SimulationVariables& simVars) : _mlc(mlc), _dataHub(dataHub), _simVars(simVars) {}
 
-        virtual void generateChart() const;
+        void generateChart();
         static FileName& getFilename(FileName& filename);
 };
 //******************************************************************************

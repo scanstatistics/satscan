@@ -172,7 +172,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                         }); \n \
                         timerID = setTimeout(function() { renderNextChart() }, 10); \n \
                      }); \n \
-                     renderCharts = ['chart_1_1']; \n \
+                     renderCharts = ['chart_1_1_1']; \n \
                      timerID = setTimeout(function() { renderNextChart() }, 10); \n \
                 } catch (error) { \n \
                    $('#load_error').html('There was a problem loading the graph. Please <a href=\"mailto:--tech-support-email--?Subject=Graph%20Error\" target=\"_top\">email</a> technical support and attach the file:<br/>' + window.location.href.replace('file:///', '').replace(/%20/g, ' ') ).show(); \n \
@@ -280,33 +280,30 @@ const char* TemporalChartGenerator::TEMPLATE_CLUSTERDETAILS = "\n \
             </div> \n";
 
 /** constructor */
-TemporalChartGenerator::TemporalChartGenerator(const CSaTScanData& dataHub, const MostLikelyClustersContainer & clusters, const SimulationVariables& simVars) 
-    :_dataHub(dataHub), _clusters(clusters), _simVars(simVars){
-    if (_dataHub.GetParameters().GetProbabilityModelType() == BATCHED)
-        _batched_likelihood_calculator.reset(new BatchedLikelihoodCalculator(dataHub));
+TemporalChartGenerator::TemporalChartGenerator(const CParameters& parameters): _cluster_count(0){
+    // set margin bottom according to time precision
+    switch (parameters.GetPrecisionOfTimesType()) {
+        case YEAR: _margin_bottom = 90; break;
+        case MONTH: _margin_bottom = 110; break;
+        case DAY:
+        case GENERIC:
+        default: _margin_bottom = 130;
+    }
 }
 
-/** Creates HighCharts graph for purely temporal cluster. */
-void TemporalChartGenerator::generateChart() const {
-    std::string clusterName, buffer, buffer2;
-    FileName fileName;
+/** Render charts to html page. */
+void TemporalChartGenerator::finalize(const CSaTScanData& _dataHub) {
+    std::string clusterName, buffer;
+    std::stringstream html;
     const CParameters& parameters = _dataHub.GetParameters();
 
     try {
-        fileName.setFullPath(parameters.GetOutputFileName().c_str());
+        FileName fileName(parameters.GetOutputFileName().c_str());
         getFilename(fileName);
-
         std::ofstream HTMLout;
         //open output file
         HTMLout.open(fileName.getFullPath(buffer).c_str());
         if (!HTMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
-        if (!_clusters.GetNumClustersRetained()) {
-            HTMLout.close();
-            return;
-        }
-
-        std::stringstream html, charts_javascript, cluster_sections, chart_select_options;
-
         // read template into stringstream
         html << BASE_TEMPLATE << std::endl;
         // replace page title
@@ -317,21 +314,44 @@ void TemporalChartGenerator::generateChart() const {
         templateReplace(html, "--resource-path--", AppToolkit::getToolkit().GetWebSite());
         // site resource link path
         templateReplace(html, "--tech-support-email--", AppToolkit::getToolkit().GetTechnicalSupportEmail());
-
-        // set margin bottom according to time precision
-        int margin_bottom=130;
-        switch (parameters.GetPrecisionOfTimesType()) {
-            case YEAR : margin_bottom = 90; break;
-            case MONTH : margin_bottom = 110; break;
-            case DAY:
-            case GENERIC:
-            default: margin_bottom=130;
+        templateReplace(html, "--charts--", charts_javascript.str());
+        templateReplace(html, "--graph-list-options--", chart_select_options.str());
+        if (_cluster_count) {
+            templateReplace(html, "--main-content--", cluster_sections.str());
+        } else {
+            if (_dataHub.GetParameters().GetIsProspectiveAnalysis() && !_dataHub.isDrilldown())
+                printString(buffer, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a recurrence interval less than %.0lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            else
+                printString(buffer, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %g.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
+            templateReplace(html, "--main-content--", buffer.c_str());
         }
+        templateReplace(html, "--satscan-version--", printString(buffer,
+            "SaTScan v%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR, (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+            (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE
+        ).c_str());
+        HTMLout << html.str() << std::endl;
+        HTMLout.close();
+    } catch (prg_exception& x) {
+        x.addTrace("generate()", "TemporalChartGenerator");
+        throw;
+    }
+}
 
-        // We might need to calculate purely temporal data structures.
-        // TODO: Is there a better way to do this?
-        const DataSetHandler& handler = _dataHub.GetDataSetHandler();
-        if (parameters.GetAnalysisType() != PURELYTEMPORAL) {
+/** add graph for cluster(s). */
+void TemporalChartGenerator::add(
+    const CSaTScanData& datahub, const MostLikelyClustersContainer& _clusters,
+    const SimulationVariables& _simVars, unsigned int iteration
+) {
+    std::string clusterName, buffer, buffer2;
+    const CParameters& params = datahub.GetParameters();
+
+    try {
+        if (datahub.GetParameters().GetProbabilityModelType() == BATCHED)
+            _batched_likelihood_calculator.reset(new BatchedLikelihoodCalculator(datahub));
+
+        // We might need to calculate purely temporal data structures. (TODO: Is there a better way to do this?)
+        const DataSetHandler& handler = datahub.GetDataSetHandler();
+        if (params.GetAnalysisType() != PURELYTEMPORAL) {
             DataSetHandler& temp_handler = const_cast<DataSetHandler&>(handler);
             for (size_t idx=0; idx < temp_handler.GetNumDataSets(); ++idx) {
                 temp_handler.GetDataSet(idx).setCaseData_PT();
@@ -341,11 +361,11 @@ void TemporalChartGenerator::generateChart() const {
 
         // Determine clusters will have a graph generated based on settings.
         std::vector<const CCluster*> graphClusters;
-        switch (parameters.getTemporalGraphReportType()) {
+        switch (params.getTemporalGraphReportType()) {
             case MLC_ONLY :
                 graphClusters.push_back(&_clusters.GetCluster(0)); break;
             case X_MCL_ONLY :
-                for (int i = 0; i < parameters.getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i) {
+                for (int i = 0; i < params.getTemporalGraphMostLikelyCount() && i < _clusters.GetNumClustersRetained(); ++i) {
                     if (i == 0 || (_clusters.GetCluster(i).m_nRatio >= MIN_CLUSTER_LLR_REPORT && _clusters.GetCluster(i).GetRank() <= _simVars.get_sim_count()))
                         graphClusters.push_back(&_clusters.GetCluster(i));
                 }
@@ -354,11 +374,11 @@ void TemporalChartGenerator::generateChart() const {
                 for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
                     const CCluster & cluster = _clusters.GetCluster(i);
                     if (cluster.m_nRatio < MIN_CLUSTER_LLR_REPORT || cluster.GetRank() > _simVars.get_sim_count()) continue;
-                    if (parameters.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {
-                        if (cluster.reportableRecurrenceInterval(parameters, _simVars) && // round RI to whole days
-                            std::round(cluster.GetRecurrenceInterval(_dataHub, i + 1, _simVars).second) >= _dataHub.GetParameters().getTemporalGraphSignificantCutoff())
+                    if (params.GetIsProspectiveAnalysis() && !datahub.isDrilldown()) {
+                        if (cluster.reportableRecurrenceInterval(params, _simVars) && // round RI to whole days
+                            std::round(cluster.GetRecurrenceInterval(datahub, i + 1, _simVars).second) >= params.getTemporalGraphSignificantCutoff())
                             graphClusters.push_back(&cluster);
-                    } else if (cluster.getReportingPValue(_dataHub.GetParameters(), _simVars, i == 0) <= _dataHub.GetParameters().getTemporalGraphSignificantCutoff()) {
+                    } else if (cluster.getReportingPValue(params, _simVars, i == 0) <= params.getTemporalGraphSignificantCutoff()) {
                         graphClusters.push_back(&cluster);
                     }
                 }
@@ -370,38 +390,35 @@ void TemporalChartGenerator::generateChart() const {
             // This graph is only valid for temporal clusters.
             if (!(cluster.GetClusterType() == PURELYTEMPORALCLUSTER || cluster.GetClusterType() == SPACETIMECLUSTER || cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER))
                 continue;
+            ++_cluster_count;
             // calculate the graphs interval groups for this cluster
-            intervalGroups groups = getIntervalGroups(cluster);
+            intervalGroups groups = getIntervalGroups(cluster, datahub);
             for (size_t setIdx=0; setIdx < handler.GetNumDataSets(); ++setIdx) {
                 std::stringstream chart_js, chart_series, chart_section, categories, cluster_details;
                 // set the chart header for this cluster
                 chart_js << TEMPLATE_CHARTHEADER;
-
                 bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
                 std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed outside cluster area"), "8BB8EB", "square", 0, "observed"));
                 // the remaining series are conditionally present in the chart
                 std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
-
 				// expectedSeries.reset(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster Area)"), "89A54E", "triangle", 0, ""));
 				// clusterSeries.reset(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0, ""));
-
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster
                 if (!is_pt) {
                     observedClusterSeries.reset(new ChartSeries("cluster_obs", 3, "column", "Observed in cluster area (red=cluster)", "003264", "square", 0, "observed"));
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected in cluster area", "394521", "triangle", 0, ""));
                 }
-
                 // Poisson, Exponential, Space Time Permutation and batch models also graph observed / expected
-                if (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == EXPONENTIAL ||
-                    parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || parameters.GetProbabilityModelType() == BATCHED) {
+                if (params.GetProbabilityModelType() == POISSON || params.GetProbabilityModelType() == EXPONENTIAL ||
+                    params.GetProbabilityModelType() == SPACETIMEPERMUTATION || params.GetProbabilityModelType() == BATCHED) {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)
 						odeSeries.reset(new ChartSeries("obs_exp", 2, "line", (is_pt ? "Observed / expected" : "Observed / expected outside cluster area"), "00FF00", "triangle", 1, ""));
 					else // space-time clusters also graph series which allow comparison between inside and outside the cluster
                         cluster_odeSeries.reset(new ChartSeries("cluster_obs_exp", 2, "line", "Observed / expected in cluster area", "FF8000", "triangle", 1, ""));
-                } else if (parameters.GetProbabilityModelType() == BERNOULLI) {
+                } else if (params.GetProbabilityModelType() == BERNOULLI) {
                     // the Bernoulli model also graphs cases / (cases + controls)
                     // graphing cases ratio, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Cases ratio', style: { fontWeight: 'normal' } }, max: 1, min: 0, opposite: true, showEmpty: false }");
@@ -412,39 +429,34 @@ void TemporalChartGenerator::generateChart() const {
                 } else {
                     templateReplace(chart_js, "--additional-yaxis--", "");
                 }
-                
                 // set default chart title 
-                if (parameters.GetAnalysisType() == PURELYTEMPORAL)
+                if (params.GetAnalysisType() == PURELYTEMPORAL)
 					clusterName = "Detected Cluster";
                 else 
-                    printString(clusterName, "Cluster #%u", clusterIdx + 1);
+                    printString(clusterName, "Cluster #%u", clusterIdx + iteration);
                 if (handler.GetNumDataSets() > 1) { // include data set name with multiple sets
-                    clusterName += printString(buffer2, ": %s", _dataHub.getDatasetLabel(setIdx, buffer).c_str());
+                    clusterName += printString(buffer2, ": %s", datahub.getDatasetLabel(setIdx, buffer).c_str());
                 }
-
                 templateReplace(chart_js, "--chart-title--", clusterName);
-                templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", margin_bottom));
+                templateReplace(chart_js, "--margin-bottom--", printString(buffer, "%d", _margin_bottom));
                 templateReplace(chart_js, "--margin-right--", printString(buffer, "%d", (odeSeries.get() || cluster_odeSeries.get() ? 80 : 20)));
-
                 // increase x-axis 'step' if there are many intervals, so that labels are not crowded
                 //  -- empirically, 50 ticks seems like a good upper limit
                 templateReplace(chart_js, "--step--", printString(buffer, "%u", static_cast<int>(std::ceil(static_cast<double>(groups.getGroups().size())/50.0))));
-
                 // get series datastreams plus cluster indexes start and end ticks
                 std::pair<int,int> cluster_grp_idx = getSeriesStreams(
-                    cluster, groups, setIdx, categories, clusterSeries.get(), *observedSeries, expectedSeries.get(), 
+                    cluster, datahub, groups, setIdx, categories, clusterSeries.get(), *observedSeries, expectedSeries.get(), 
                     observedClusterSeries.get(), expectedClusterSeries.get(), odeSeries.get(), cluster_odeSeries.get()
                 );
-
                 // define the identifying attribute of this chart
-                printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
+                printString(buffer, "chart_%d_%u_%u", clusterIdx + 1, setIdx + 1, iteration);
 				// add select option for this chart
-				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << (clusterIdx == 0 ? "selected=selected" : "") << ">" << clusterName.c_str() << "</option>" << std::endl;
+				chart_select_options << "<option value=\"" << buffer.c_str() << "\" " << 
+                    (clusterIdx == 0 && iteration == 1 ? "selected=selected" : "") << ">" << clusterName.c_str() << "</option>" << std::endl;
                 templateReplace(chart_js, "--container-id--", buffer);
 				printString(buffer, "%u", static_cast<unsigned int>(std::ceil( static_cast<double>(groups.getGroups().size()) / static_cast<double>(MAX_X_AXIS_TICKS) )));
 				templateReplace(chart_js, "--tickinterval--", buffer);
                 templateReplace(chart_js, "--categories--", categories.str());
-
                 // replace the series
 				// if (clusterSeries.get()) chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << clusterSeries->toString(buffer).c_str();
                 if (observedClusterSeries.get())
@@ -458,24 +470,21 @@ void TemporalChartGenerator::generateChart() const {
                 if (odeSeries.get())
                     chart_series << (chart_series.rdbuf()->in_avail() ? "," : "") << odeSeries->toString(buffer).c_str();
                 templateReplace(chart_js, "--series--", chart_series.str());
-
                 // add this charts javascript to collection
                 charts_javascript << chart_js.str() << std::endl;
-
                 // create chart html section
                 chart_section << TEMPLATE_CHARTSECTION;
-                printString(buffer, "chart_%d_%u", clusterIdx + 1, setIdx + 1);
+                printString(buffer, "chart_%d_%u_%u", clusterIdx + 1, setIdx + 1, iteration);
                 templateReplace(chart_section, "--container-id--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.first);
                 templateReplace(chart_section, "--cluster-start-idx--", buffer);
                 printString(buffer, "%d", cluster_grp_idx.second);
                 templateReplace(chart_section, "--cluster-end-idx--", buffer);
                 templateReplace(chart_section, "--chart-switch-ids--", cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? "obs,cluster" : "obs,cluster,cluster_obs");
-
                 // create cluster details table for space time permutation analysis
                 cluster_details << TEMPLATE_CLUSTERDETAILS;
-                if (_dataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-                    ClusterCaseTotals_t caseTotals = getClusterCaseTotals(cluster, setIdx);
+                if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+                    ClusterCaseTotals_t caseTotals = getClusterCaseTotals(cluster, datahub, setIdx);
                     printString(buffer, "%d", caseTotals.get<0>());
                     templateReplace(cluster_details, "--inside-inside--", buffer);
                     printString(buffer, "%d", caseTotals.get<1>());
@@ -492,45 +501,20 @@ void TemporalChartGenerator::generateChart() const {
                 } else {
                     templateReplace(chart_section, "--cluster-details--", "");
                 }
-                               
                 // add section to collection of sections
                 cluster_sections << chart_section.str() << std::endl << std::endl;
             }
         }
-
-        templateReplace(html, "--charts--", charts_javascript.str());
-		templateReplace(html, "--graph-list-options--", chart_select_options.str());
-        if (graphClusters.size()) {
-            templateReplace(html, "--main-content--", cluster_sections.str());
-        } else {
-            if (_dataHub.GetParameters().GetIsProspectiveAnalysis() && !_dataHub.isDrilldown())
-                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a recurrence interval less than %.0lf.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
-            else
-                printString(buffer2, "<h3 style=\"text-align:center;\">No clusters to graph. All clusters had a p-value greater than %g.</h3>", _dataHub.GetParameters().getTemporalGraphSignificantCutoff());
-            templateReplace(html, "--main-content--", buffer2.c_str());
-        }
-		printString(buffer,
-			"SaTScan v%s.%s%s%s%s%s",
-			VERSION_MAJOR,
-			VERSION_MINOR,
-			(!strcmp(VERSION_RELEASE, "0") ? "" : "."),
-			(!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
-			(strlen(VERSION_PHASE) ? " " : ""),
-			VERSION_PHASE
-		);
-		templateReplace(html, "--satscan-version--", buffer.c_str());
-        HTMLout << html.str() << std::endl;
-        HTMLout.close();
     } catch (prg_exception& x) {
-        x.addTrace("generate()","TemporalChartGenerator");
+        x.addTrace("add()","TemporalChartGenerator");
         throw;
     }
 }
 
 /* Calculates the best fit graph groupings for this cluster. */
-TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups(const CCluster& cluster) const {
+TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups(const CCluster& cluster, const CSaTScanData& datahub) const {
     intervalGroups groups;
-    int intervals = _dataHub.GetNumTimeIntervals();
+    int intervals = datahub.GetNumTimeIntervals();
 
     if (intervals <= MAX_INTERVALS) {
         // number of groups equals the number of intervals
@@ -559,25 +543,25 @@ TemporalChartGenerator::intervalGroups TemporalChartGenerator::getIntervalGroups
 }
 
 /* Calculates the series values in a purely temporal context. */
-std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& cluster,const intervalGroups& groups, size_t dataSetIdx,
+std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& cluster, const CSaTScanData& datahub, const intervalGroups& groups, size_t dataSetIdx,
                                                              std::stringstream& categories, ChartSeries * clusterSeries,
                                                              ChartSeries& observedSeries, ChartSeries * expectedSeries,
                                                              ChartSeries * cluster_observedSeries, ChartSeries * cluster_expectedSeries,
                                                              ChartSeries * odeSeries, ChartSeries * cluster_odeSeries) const {
 
     std::string buffer;
-    double adjustment = _dataHub.GetMeasureAdjustment(dataSetIdx);
-    int intervals = _dataHub.GetNumTimeIntervals();
+    double adjustment = datahub.GetMeasureAdjustment(dataSetIdx);
+    int intervals = datahub.GetNumTimeIntervals();
     std::pair<int, int> groupClusterIdx(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
-    const DataSetHandler& handler = _dataHub.GetDataSetHandler();
+    const DataSetHandler& handler = datahub.GetDataSetHandler();
     count_t * pcases = handler.GetDataSet(dataSetIdx).getCaseData_PT();
     measure_t * pmeasure = handler.GetDataSet(dataSetIdx).getMeasureData_PT();
     count_t ** ppcases = handler.GetDataSet(dataSetIdx).getCaseData().GetArray();
     measure_t ** ppmeasure = handler.GetDataSet(dataSetIdx).getMeasureData().GetArray();
 
     // define categories and replace in template
-    const std::vector<Julian>& startDates = _dataHub.GetTimeIntervalStartTimes();
-    DatePrecisionType precision = _dataHub.GetParameters().GetPrecisionOfTimesType();
+    const std::vector<Julian>& startDates = datahub.GetTimeIntervalStartTimes();
+    DatePrecisionType precision = datahub.GetParameters().GetPrecisionOfTimesType();
     // iterate through groups, creating totals for each interval grouping
     for (intervalGroups::intervals_t::const_iterator itrGrp=groups.getGroups().begin(); itrGrp != groups.getGroups().end(); ++itrGrp) {
         // define date categories
@@ -596,7 +580,7 @@ std::pair<int, int> TemporalChartGenerator::getSeriesStreams(const CCluster& clu
         if (cluster_observedSeries || cluster_expectedSeries) {
             // calculate cluster observed and expected series across entire period, not just cluster window
             std::vector<tract_t> indexes;
-            cluster.getIdentifierIndexes(_dataHub, indexes, true);
+            cluster.getIdentifierIndexes(datahub, indexes, true);
             if (_batched_likelihood_calculator.get())
                 cluster_expected += _batched_likelihood_calculator->getExpectedInWindow(itrGrp->first, itrGrp->second, indexes, dataSetIdx);
             for (auto t : indexes) {
@@ -674,16 +658,16 @@ FileName& TemporalChartGenerator::getFilename(FileName& filename) {
       Outside Cluster Window, Inside Cluster Area
       Inside Cluster Window, Outside Cluster Area
       Outside Cluster Window, Outside Cluster Area */
-TemporalChartGenerator::ClusterCaseTotals_t TemporalChartGenerator::getClusterCaseTotals(const CCluster& cluster, size_t dataSetIdx) const {
-    count_t* pcases = _dataHub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData_PT();
-    count_t** ppcases = _dataHub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData().GetArray();
+TemporalChartGenerator::ClusterCaseTotals_t TemporalChartGenerator::getClusterCaseTotals(const CCluster& cluster, const CSaTScanData& datahub, size_t dataSetIdx) const {
+    count_t* pcases = datahub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData_PT();
+    count_t** ppcases = datahub.GetDataSetHandler().GetDataSet(dataSetIdx).getCaseData().GetArray();
     ClusterCaseTotals_t caseTotals(0, 0, 0, 0);
 
     std::vector<tract_t> indexes;
-    cluster.getIdentifierIndexes(_dataHub, indexes, true);
+    cluster.getIdentifierIndexes(datahub, indexes, true);
 
     // count_t totalCases = _dataHub.GetTotalDataSetCases(dataSetIdx);
-    int intervals = _dataHub.GetNumTimeIntervals();
+    int intervals = datahub.GetNumTimeIntervals();
 
     for (int i = 0; i < intervals; ++i) {
         count_t intervalTotalCases = (i == intervals - 1 ? pcases[i] : pcases[i] - pcases[i + 1]);
@@ -791,7 +775,7 @@ const char * GiniChartGenerator::TEMPLATE_CHARTSECTION = "\
          </div> \n";
 
 /** Creates HighCharts graph for Gini coefficients. */
-void GiniChartGenerator::generateChart() const {
+void GiniChartGenerator::generateChart() {
     std::string buffer;
     FileName fileName;
 

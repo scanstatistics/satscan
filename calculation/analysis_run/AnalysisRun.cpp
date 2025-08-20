@@ -37,7 +37,6 @@
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
 #include "ClusterKML.h"
-#include "ChartGenerator.h"
 #include "PoissonRandomizer.h"
 #include "OliveiraJobSource.h"
 #include "OliveiraFunctor.h"
@@ -685,6 +684,7 @@ void AnalysisExecution::executeCentricEvaluation() {
             if (_print_direction.GetIsCanceled()) return;
         } while (repeatAnalysis() == true); //repeat analysis - iterative scan
                                             // Finalize cluster graph writer if it was allocated.
+        if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
         if (_cluster_graph.get()) _cluster_graph->finalize();
         // Finalize kml writer if it was allocated.
         if (_cluster_kml.get()) _cluster_kml->finalize();
@@ -887,6 +887,7 @@ void AnalysisExecution::executeSuccessively() {
             if (_print_direction.GetIsCanceled()) return;
         } while (repeatAnalysis()); //repeat analysis - iterative scan
                                     // Finalize cluster graph writer if it was allocated.
+        if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
         if (_cluster_graph.get()) _cluster_graph->finalize();
         // Finalize kml writer if it was allocated.
         if (_cluster_kml.get()) _cluster_kml->finalize();
@@ -1579,14 +1580,19 @@ void AnalysisExecution::reportClusters() {
         // report clusters accordingly
         if (_parameters.GetIsIterativeScanning()) {
             printTopIterativeScanCluster(_reportClusters);
+            if (_parameters.getOutputTemporalGraphFile() && _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+                if (_analysis_count == 1) _temporal_graph.reset(new TemporalChartGenerator(_parameters));
+                _temporal_graph->add(_data_hub, _reportClusters, _sim_vars, _analysis_count);
+            }
         } else {
             printTopClusters(_reportClusters);
             // create temporal graph
             if ((_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) 
                 && _parameters.getOutputTemporalGraphFile()) {
                 _print_direction.Printf("Adding analysis results to temporal graph map ...\n", BasePrint::P_STDOUT);
-                TemporalChartGenerator generator(_data_hub, _reportClusters, _sim_vars);
-                generator.generateChart();
+                TemporalChartGenerator graph(_parameters);
+                graph.add(_data_hub, _reportClusters, _sim_vars);
+                graph.finalize(_data_hub);
             }
         }
 
