@@ -237,7 +237,7 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
     Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) {   
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
-    double expected = batchedCalc.getExpectedForBatches(Batches); // Calculate the expected number of cases
+    double expected = batchedCalc.getExpectedForBatches(Batches, tSetIndex); // Calculate the expected number of cases
     ProbabilitiesAOI probabilities;
     if (tCases > expected) {
         batchedCalc.CalculateProbabilities(probabilities, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
@@ -256,7 +256,7 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
     Also maintains data stream observed cases accumulation for minimum number of cases restriction.*/
 void AdjustmentUnifier::AdjoinRatioSimulation(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, measure_t tMeasureAux2, const boost::dynamic_bitset<>& positiveBatches, const boost::dynamic_bitset<>& Batches, size_t tSetIndex) {
     BatchedLikelihoodCalculator& batchedCalc = (BatchedLikelihoodCalculator&)Calculator;
-    double expected = batchedCalc.getExpectedForBatches(Batches); // Calculate the expected number of cases
+    double expected = batchedCalc.getExpectedForBatches(Batches, tSetIndex); // Calculate the expected number of cases
     ProbabilitiesAOI probability;
     if (tCases > expected) {
         batchedCalc.CalculateProbabilitiesForSimulation(probability, tCases, tMeasure, tMeasureAux2, tMeasureAux, positiveBatches, tSetIndex);
