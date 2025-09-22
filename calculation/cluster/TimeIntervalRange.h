@@ -41,7 +41,7 @@ class HypergeometricTemporalDataEvaluator : public AbstractHypergeometricTempora
     private:
         typedef double (AbstractLikelihoodCalculator::* MAXIMIZE_FUNCPTR) (count_t, measure_t, size_t) const;
         MAXIMIZE_FUNCPTR gpCalculationMethod;
-        double _default_minimizing_value;
+        double _default_maximizing_value;
         count_t* _pt_counts;
         std::vector<const HypergeometricProbabilityLookup*> _look_ups;
 

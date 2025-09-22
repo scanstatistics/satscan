@@ -796,55 +796,141 @@ void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
 
 /** Builds lookup table from passed attributes. */
 void HypergeometricProbabilityLookup::buildLookup(const std::set<count_t>& caseWindows, count_t C, count_t K) {
-    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), K + 1, K + 1, 99));
-    calculateHG(*_HG, caseWindows, C, K);
+    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), C + 1, C + 1, 99));
+    calculateHG(*_HG, caseWindows, C, C);
 }
 
 /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
 double HypergeometricProbabilityLookup::getProbabilityFor(count_t T, count_t S, count_t x) const {
     //return _HG->GetArray()[_T_to_index[T]][S][x];
-    return _HG->GetArray()[_T_index[T]][S][x];
+
+    double test = _HG->GetArray()[_T_index[T]][S][x];
+    return test;
+
+    //return _HG->GetArray()[_T_index[T]][S][x];
 }
 
-void HypergeometricProbabilityLookup::calculateHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K) {
+#include <boost/timer/timer.hpp>
+
+#include <boost/math/distributions/hypergeometric.hpp>
+
+void HypergeometricProbabilityLookup::calculateHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K/* remove K */) {
     measure_t*** pHG = HG.GetArray();
-    auto calc_hg_0 = [C](count_t T, count_t S) {
+    auto calc_hg_0 = [](count_t C, count_t T, count_t S) {
         // probability of 0 cases in cylinder, based on hypergeometric distribution
-        double hg = static_cast<double>(C - S) / static_cast<double>(C);
+        double hg = log(C - S) - log(C);
         for (count_t i = 1; i <= T - 1; ++i)
-            hg *= static_cast<double>(C - S - i) / static_cast<double>(C - i);
+            hg += log(static_cast<double>(C - S - i)) - log(static_cast<double>(C - i));
         return hg;
     };
+    auto calc_hg_t = [](count_t C, count_t T, count_t S) {
+        // probability of x cases in cylinder, based on hypergeometric distribution
+        double hg = log(static_cast<double>(T)) - log(static_cast<double>(C));
+        for (count_t i = 1; i <= C - S - 1; ++i) {
+            hg += log(static_cast<double>(T - i)) - log(static_cast<double>(C - i));
+            if (hg == 0)
+				break;
+        }
+        return hg;
+    };
+    auto calc_hg_s = [](count_t C, count_t T, count_t S) {
+        // probability of x cases in cylinder, based on hypergeometric distribution
+        double hg = log(static_cast<double>(S)) - log(static_cast<double>(C));
+        for (count_t i = 1; i <= C - T - 1; ++i) {
+            hg += log(static_cast<double>(S - i)) - log(static_cast<double>(C - i));
+            if (hg == 0)
+                break;
+        }
+        return hg;
+    };
+
+    /*
+    std::map<std::pair<int, int>, int> T_S_C = { 
+        {{8, 9}, 10},
+        {{80, 90}, 100},
+        {{800, 900}, 1000},
+        {{8000, 9000}, 10000},
+        {{2850, 230}, 2860},
+        {{550, 2320}, 2860},
+        {{55, 232}, 286}, {{232, 55}, 286},
+        {{10, 291}, 300}, 
+        {{20, 60}, 75},
+        {{1860, 1010}, 2860}, {{1010, 1860}, 2860}
+    };
+    //std::map<std::pair<int, int>, int> T_S = { {{1860, 1010}, 2860}};
+    int times = 10000;
+    double hg_t, hg_s;
+    const std::string default_fmt("%us");
+    std::cout << "times = " << times << std::endl << std::endl;
+    for (auto entry : T_S_C) {
+		std::cout << "C = " << entry.second << std::endl;
+
+        boost::timer::cpu_timer _timer_t;
+        _timer_t.start();
+        for (int i = 0; i < times; ++i) {
+            hg_t = calc_hg_t(entry.second, entry.first.first, entry.first.second);
+        }
+        _timer_t.stop();
+        std::cout << "calc_hg_t(T=" << entry.first.first << ", S=" << entry.first.second << ") = " << hg_t << " : " << boost::timer::format(_timer_t.elapsed(), 6, default_fmt) << std::endl;
+
+        boost::timer::cpu_timer _timer_s;
+        _timer_s.start();
+        for (int i = 0; i < times; ++i) {
+            hg_s = calc_hg_s(entry.second, entry.first.first, entry.first.second);
+        }
+        _timer_s.stop();
+        std::cout << "calc_hg_s(T=" << entry.first.first << ", S=" << entry.first.second << ") = " << hg_s << " : " << boost::timer::format(_timer_s.elapsed(), 6, default_fmt) << std::endl;
+
+        double probability;
+        boost::timer::cpu_timer _timer_b;
+        _timer_b.start();
+        for (int i = 0; i < times; ++i) {
+            boost::math::hypergeometric_distribution<> dist(entry.first.first, entry.first.second, entry.second);
+            probability = boost::math::pdf(dist, entry.first.second + entry.first.first - entry.second);
+        }
+        _timer_b.stop();
+        std::cout << "hypergeometric_distribution() = " << probability << " : " << boost::timer::format(_timer_b.elapsed(), 6, default_fmt) << std::endl;
+        std::cout << std::endl;
+    }
+
+	std::cout << std::numeric_limits<double>::min() << std::endl;
+    std::cout << std::numeric_limits<long double>::min() << std::endl;
+    */
 
     // Find the largest case window value - so we know how large to allocate translation array.
     count_t largest = *vT.rbegin();
     _T_index.resize(largest + 1);
-
     size_t i = 0;
-    double cumulative_probability;
+	count_t max_S = static_cast<count_t>(ceil((double)C/2.0));
     for (auto T : vT) {
-        for (count_t S = 2; S <= K; ++S) {
-            pHG[i][S][0] = 1.0;
-            double hg = calc_hg_0(T, S);
-            pHG[i][S][1] = 1.0 - hg;
-            for (count_t x = 1; x < std::min(S, T); ++x) {
-                hg *= (static_cast<double>(S - x + 1) / static_cast<double>(x)) * (static_cast<double>(T - x + 1) / static_cast<double>(C - S - T + x));
-                cumulative_probability = pHG[i][S][x] - hg; // cumulative probability of (x + 1) or more cases in the cylinder
-                if (cumulative_probability <= 0) {
-                    // Round-off error is causing the probability to be calculated as negative.
-                    // Martin is going to consider ways to get around this.
-                    // This is just a hack for now.
-                    //pHG[i][S][x + 1] = std::numeric_limits<double>::min();
-                    pHG[i][S][x + 1] = pHG[i][S][x] - std::numeric_limits<double>::epsilon();
-                } else {
-                    pHG[i][S][x + 1] = cumulative_probability; // cumulative probability of (x + 1) or more cases in the cylinder
-                }
-            }
+		for (count_t S = 2; S <= max_S; ++S) {
+            count_t m = std::min(S, T);
+            std::vector<double> hg_x(m + 1, 0);
+            if (S + T - C <= 0)
+                hg_x.front() = calc_hg_0(C, T, S);
+            else if (S >= T)
+                hg_x[S + T - C] = calc_hg_t(C, T, S);
+            else /* which means that S+T-C>0 and S<T */
+                hg_x[S + T - C] = calc_hg_s(C, T, S);
+
+            for (count_t x = std::max((count_t)0, S + T - C) + 1; x <= m; ++x)
+                hg_x[x] = hg_x[x - 1] + (log(static_cast<double>(S - x + 1)) - log(static_cast<double>(x))) + (log(static_cast<double>(T - x + 1)) - log(static_cast<double>(C - S - T + x)));
+            pHG[i][S][m] = -exp(hg_x[m]);
+            for (count_t x = m - 1; x >= 0; --x)
+                pHG[i][S][x] = pHG[i][S][x + 1] - exp(hg_x[x]);
         }
+        /* Gives same results as continuing the first S for loop until C-2, but computationally faster */
+        for (count_t S = max_S+1; S <= C - 2; ++S) {
+            count_t m = std::min(S, T);
+            for (count_t x = 0; x <= m; ++x)
+                pHG[i][S][x] = pHG[i][C - S][T - x];
+        }
+
         _T_index[T] = i;
         //_T_to_index[T] = i;
         ++i;
     }
+
     //printHG(HG, vT);
 }
 
@@ -856,12 +942,17 @@ void HypergeometricProbabilityLookup::printHG(ThreeDimMeasureArray_t& HG, const 
     for (auto T : vT) {
         std::cout << std::endl;
         for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
-            std::cout << std::endl;
             for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
                 double probability = getProbabilityFor(T, S, x);
-                if (probability != 99)
-                   std::cout << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << probability << std::endl;
+                if (probability != 99) {
+                    std::cout << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
+                    if (std::isnan(probability))
+                        std::cout << "NAN" << std::endl;
+                    else
+						std::cout << probability << std::endl;
+                }
             }
+            std::cout << std::endl;
         }
         std::cout << std::endl << std::endl;
     }

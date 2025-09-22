@@ -36,7 +36,7 @@ void MultivariateUnifierHighRate::AdjoinRatioHypergeometric(AbstractLikelihoodCa
 ) {
     // perform check only if expected cases.
     if (measure > 0.0 && Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
@@ -122,7 +122,7 @@ void MultivariateUnifierLowRate::AdjoinRatioHypergeometric(AbstractLikelihoodCal
 ) {
     // perform check only if expected cases.
     if (measure > 0.0 && Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
@@ -254,11 +254,11 @@ void AdjustmentUnifier::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& 
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
     if (Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
     }
     else if (Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -1 * -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
     }
 }
@@ -423,13 +423,13 @@ void AdjustmentUnifierRiskThreshold::AdjoinRatioHypergeometric(AbstractLikelihoo
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
     if (Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
     }
     else if (Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
-        _llr += -1 * -log(lookup.getProbabilityFor(T, S, cases));
+        _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;

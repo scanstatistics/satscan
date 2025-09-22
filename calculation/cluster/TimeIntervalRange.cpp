@@ -131,7 +131,7 @@ HypergeometricTemporalDataEvaluator::HypergeometricTemporalDataEvaluator(
     IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType
 ) : AbstractHypergeometricTemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType) {
     gpCalculationMethod = &AbstractLikelihoodCalculator::CalculateMaximizingValue;
-    _default_minimizing_value = 1.0;
+    _default_maximizing_value = -std::numeric_limits<double>::max();
     // get pointers to cumulative case and measure data, we'll need these during scanning
     _pt_counts = DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT();
 }
@@ -157,9 +157,7 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                probability = _look_ups.front()->getProbabilityFor(T, S, Data.gtCases);
-                //Running.m_nRatio = -log(probability);
-                Running.m_nRatio = probability;
+                Running.m_nRatio = _look_ups.front()->getProbabilityFor(T, S, Data.gtCases);;
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 clusterSet.update(Running);
@@ -180,7 +178,7 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
     TemporalData& Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
     count_t* pCases = Data.gpCases, T, S;
     measure_t* pMeasure = Data.gpMeasure;
-    double minValue(_default_minimizing_value);
+    double maxValue(_default_maximizing_value);
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
     S = pCases[gDataHub.getDataInterfaceIntervalStartIndex()]; // number of cases in spatial circle, over the whole study time period
 
@@ -195,11 +193,11 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                minValue = std::min(minValue, _look_ups.front()->getProbabilityFor(T, S, Data.gtCases));
+                maxValue = std::max(maxValue, _look_ups.front()->getProbabilityFor(T, S, Data.gtCases));
             }
         }
     }
-    return minValue;
+    return maxValue;
 }
 
 //********** MultisetHypergeometricTemporalDataEvaluator **********

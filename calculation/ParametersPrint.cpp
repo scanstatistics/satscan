@@ -313,6 +313,10 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
     try {
         settings.push_back(std::make_pair("Type of Analysis",GetAnalysisTypeAsString()));
         settings.push_back(std::make_pair("Probability Model",GetProbabilityModelTypeAsString()));
+
+        if (_parameters.getSTPasHypergeometric())
+			settings.back().second += " (Hypergeometric)";
+
         settings.push_back(std::make_pair("Scan For Areas With",GetAreaScanRateTypeAsString()));
         if (eAnalysisType != PURELYSPATIAL) {
             buffer = "Time Aggregation Units";

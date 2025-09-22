@@ -50,9 +50,9 @@
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "10"
-#define VERSION_MINOR   "3"
-#define VERSION_RELEASE "2"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
+#define VERSION_MINOR   "4"
+#define VERSION_RELEASE "0"
+#define VERSION_PHASE   "Dev-Hyper" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause

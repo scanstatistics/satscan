@@ -113,6 +113,6 @@ HypergeometricLikelihoodCalculator::HypergeometricLikelihoodCalculator(const CSa
 :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {}
 
 double HypergeometricLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex) const {
-    if (dMaximizingValue == 1.0) return 0.0;
-    return -log(dMaximizingValue);
+    if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
+    return -log(-dMaximizingValue);
 }

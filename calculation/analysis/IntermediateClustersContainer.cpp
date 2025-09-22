@@ -73,7 +73,7 @@ void CClusterSetTemporalOverlap::findOtherNotTemporalOverlapping(CClusterSet::Cl
 
 CClusterSetCollections::CClusterSetCollections(const CSaTScanData& data_hub)
 :_data_hub(data_hub), _parameters(data_hub.GetParameters()), _cluster_type((ClusterType)0) {
-    _isMinimizingHypergeometric = (
+    _isSpecializedHypergeometric = ( // Note hypergeometric specialization.
         _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && 
         _parameters.getSTPasHypergeometric() && 
         _data_hub.GetNumDataSets() == 1
@@ -97,13 +97,13 @@ int CClusterSetCollections::getClusterSetCollectionIndex(int shapeOffset) {
 SharedClusterVector_t& CClusterSetCollections::getTopClusters(SharedClusterVector_t& clusterCollection) {
     clusterCollection.clear(); // clear collection of any existing objects.
 
-    if (_isMinimizingHypergeometric) {
+    if (_isSpecializedHypergeometric) {
         // If performing the space-time permutation as hypergeometric, we need to convert cluster minizing value to LLR.
         // This isn't applicable with multiple sets since we needed to calculate full statistic in that situation.
         for (auto& clusterSetObj : _cluster_sets) {
             for (auto& clusterObj : clusterSetObj->getSet()) {
                 if (clusterObj.getCluster().m_nRatio)
-                    clusterObj.getCluster().m_nRatio = -log(clusterObj.getCluster().m_nRatio);
+                    clusterObj.getCluster().m_nRatio = -log(-clusterObj.getCluster().m_nRatio);
             }
         }
     }
@@ -186,9 +186,9 @@ void CClusterSetCollections::setClusterCollections(const CCluster& cluster, size
     for (size_t t = 0; t < count; ++t) { // one cluster set for each ellipse/circle
         boost::shared_ptr<CClusterSet> cluster_set;
         if (!_parameters.GetIsIterativeScanning() && _parameters.GetAnalysisType() == SPACETIME && _cluster_type == SPACETIMECLUSTER)
-            cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals(), !_isMinimizingHypergeometric));
+            cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals(), _isSpecializedHypergeometric));
         else
-            cluster_set.reset(new CClusterSet(!_isMinimizingHypergeometric));
+            cluster_set.reset(new CClusterSet(_isSpecializedHypergeometric));
         // When analysis uses gini, there will be more than one spatial window stop (for the different max. spatial sizes of gini).
         for (size_t t = 0; t < _parameters.getExecuteSpatialWindowStops().size(); ++t) {
             CClusterObject addMe(cluster);

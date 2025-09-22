@@ -39,10 +39,10 @@ class CClusterSet {
 
     protected:
         ClusterContainer_t _cluster_set;
-        bool _maximizing;
+        bool _isSpecializedHypergeometric;
 
     public:
-        CClusterSet(bool maximizing):_maximizing(maximizing){}
+        CClusterSet(bool isSpecializedHypergeometric):_isSpecializedHypergeometric(isSpecializedHypergeometric){}
         virtual ~CClusterSet() {}
 
         static boost::shared_ptr<CClusterSet> getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub);
@@ -84,11 +84,11 @@ class CClusterSet {
             // Updates cluster objects in set to runcluster if runcluster's LLR is greater.
             for (auto& clusterObj: _cluster_set) {
                 if (runcluster.getNumIdentifiers() <= clusterObj.getMaxNeighbors()) {
-                    if (_maximizing && clusterObj.getCluster().m_nRatio < runcluster.GetRatio()) {
+                    if (!_isSpecializedHypergeometric && clusterObj.getCluster().m_nRatio < runcluster.m_nRatio) {
                         clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
-                    } else if (!_maximizing && (
+                    } else if (_isSpecializedHypergeometric && (
                         (clusterObj.getCluster().m_nRatio == 0.0 && runcluster.GetRatio()) ||
-                        (runcluster.GetRatio() < clusterObj.getCluster().m_nRatio)
+                        (clusterObj.getCluster().m_nRatio < runcluster.m_nRatio)
                     )) {
                         clusterObj.getCluster().CopyEssentialClassMembers(runcluster);
                     }
@@ -105,7 +105,8 @@ class CClusterSetTemporalOverlap : public CClusterSet {
         static double MIN_CLUSTER_LLR_RETAINED;
 
     public:
-        CClusterSetTemporalOverlap(const CCluster& cluster, int intervals, bool maximizing) : CClusterSet(maximizing) {
+        CClusterSetTemporalOverlap(const CCluster& cluster, int intervals, bool isSpecializedHypergeometric):
+            CClusterSet(isSpecializedHypergeometric) {
             boost::shared_ptr<CCluster> _copy_cluster(cluster.Clone());
             _copy_cluster->DeallocateEvaluationAssistClassMembers();
             for (int idxe=1; idxe <= intervals + 1; ++idxe) {
@@ -173,7 +174,7 @@ class CClusterSetCollections {
         const CParameters & _parameters;
         ClusterType _cluster_type;
         std::vector<boost::shared_ptr<CClusterSet>> _cluster_sets;
-        bool _isMinimizingHypergeometric;
+        bool _isSpecializedHypergeometric;
 
         void setClusterCollections(const CCluster& cluster, size_t count);
 

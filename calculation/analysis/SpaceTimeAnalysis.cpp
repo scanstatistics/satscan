@@ -94,10 +94,7 @@ const SharedClusterVector_t CSpaceTimeAnalysis::CalculateTopClusters(tract_t tCe
 double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
     tract_t t, tNumNeighbors, * pIntegerArray;
     unsigned short * pUnsignedShortArray;
-    double dMaximizingValue;
-    std::vector<double> vMaximizingValues(
-        _parameters.GetNumTotalEllipses() + 1, _isMinimizingHypergeometric ? 1.0 : -std::numeric_limits<double>::max()
-    );
+    std::vector<double> vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
     std::vector<double>::iterator itr, itr_end;
 
     _time_intervals->setIntervalRange(tCenter);
@@ -111,18 +108,16 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
         pIntegerArray = CentroidDef.GetRawIntegerArray();
         for (t=0; t < tNumNeighbors; ++t) {
             _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-            dMaximizingValue = _time_intervals->ComputeMaximizingValue(*_cluster_data);
-            if (!_isMinimizingHypergeometric && dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
-            else if (_isMinimizingHypergeometric && dMaximizingValue < dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+            dShapeMaxValue = std::max(dShapeMaxValue, _time_intervals->ComputeMaximizingValue(*_cluster_data));
         }
     }
     //if maximizing value is not a ratio/test statistic, convert them now
     if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
-        for (itr = vMaximizingValues.begin(), itr_end = vMaximizingValues.end(); itr != itr_end; ++itr)
-            *itr = _likelihood_calculator->CalculateFullStatistic(*itr);
+        for (auto& maxVal: vMaximizingValues)
+            maxVal = _likelihood_calculator->CalculateFullStatistic(maxVal);
     //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
     double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();
-    dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);
+    double dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);
     for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
         *itr *= CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(t), dPenalty);
         dMaximizingValue = std::max(*itr, dMaximizingValue);
