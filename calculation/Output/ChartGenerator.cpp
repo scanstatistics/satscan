@@ -433,7 +433,7 @@ void TemporalChartGenerator::add(
                 if (params.GetAnalysisType() == PURELYTEMPORAL)
 					clusterName = "Detected Cluster";
                 else 
-                    printString(clusterName, "Cluster #%u", clusterIdx + iteration);
+                    printString(clusterName, "Cluster #%u%s", clusterIdx + iteration, iteration > 1 ? " (iterative)" : "");
                 if (handler.GetNumDataSets() > 1) { // include data set name with multiple sets
                     clusterName += printString(buffer2, ": %s", datahub.getDatasetLabel(setIdx, buffer).c_str());
                 }

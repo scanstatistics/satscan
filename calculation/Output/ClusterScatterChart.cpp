@@ -236,7 +236,7 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
             else
                 radius = cluster.GetCartesianRadius();
             // Add cluster definition to javascript hash collection.
-            VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, legend);
+            VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, iteration, legend);
             const char * cluster_def_format = "x : %f, y : %f, z : %f, semimajor : %f, angle : %.2lf, shape : %.2lf";
             _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
             transform(vCoordinates);
@@ -263,7 +263,8 @@ void CartesianGraph::add(const MostLikelyClustersContainer& clusters, const Simu
 				<< ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD")
                 << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
                 << "', tip : '" << legend.c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
-           _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " << (i + iteration) << "</option>";
+           _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " 
+               << (i + iteration) << (iteration > 1 ? " (iterative)" : "") << "</option>";
         }
         ++_clusters_written;
     }

@@ -343,9 +343,12 @@ void ClusterMap::add(const MostLikelyClustersContainer& clusters, const Simulati
             _cluster_definitions << "{ id: " << (i + iteration) << ", slider_value : " << VisualizationUtils::getSliderValue(_dataHub, cluster, i + iteration, simVars)
                 << ", highrate : " << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "true" : "false") << ", " << buffer
                 << ", hierarchical : " << (cluster.isHierarchicalCluster() ? "true" : "false") << ", gini : " << (cluster.isGiniCluster() ? "true" : "false")                
-                << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
-                << "', tip : '" << VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, legend).c_str() << "', edges : [" << edges << "], points : [" << points << "] },\n";
-            _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " << (i + iteration) << "</option>";
+                << ", color : '" << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#F13C3F" : "#5F8EBD") << "', pointscolor : '" 
+                << (cluster.getAreaRateForCluster(_dataHub) == HIGH ? "#FF1A1A" : "#1AC6FF") 
+                << "', tip : '" << VisualizationUtils::getHtmlClusterLegend(cluster, i + clusterOffset, _dataHub, iteration, legend).c_str()
+                << "', edges : [" << edges << "], points : [" << points << "] },\n";
+            _cluster_options << "<option value=" << (i + iteration) << " " << (i == 0 ? "selected" : "") << ">Cluster " << (i + iteration) 
+                << (iteration > 1 ? " (iterative)" : "") << "</option>";
         }
         ++_clusters_written;
     }

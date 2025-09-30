@@ -56,7 +56,10 @@ std::string BaseClusterKML::toKmlColor(const std::string& htmlColor, const std::
     return s.str();
 }
 
-void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster, const SimulationVariables& simVars) const {
+void BaseClusterKML::writeCluster(
+    file_collection_t& fileCollection, std::ofstream& outKML, const CCluster& cluster, int iCluster,
+    const SimulationVariables& simVars, unsigned int iteration
+) const {
     std::string                                legend, locations, buffer, buffer2;
     std::vector<double>                        vCoordinates;
     std::pair<double, double>                  prLatitudeLongitude;
@@ -69,8 +72,8 @@ void BaseClusterKML::writeCluster(file_collection_t& fileCollection, std::ofstre
         if (_dataHub.GetParameters().getClusterMonikerPrefix().size()) {
             printString(buffer2, " (%sC%u)", _dataHub.GetParameters().getClusterMonikerPrefix().c_str(), (iCluster + 1));
         }
-        outKML << "\t\t<name>#" << (iCluster + 1) << buffer2.c_str() << "</name>" << std::endl;
-        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << "</snippet>" << std::endl;
+        outKML << "\t\t<name>#" << (iCluster + 1) << buffer2.c_str() << (iteration > 1 ? " (iterative)" : "") << "</name>" << std::endl;
+        outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << (iteration > 1 ? " (iterative)" : "") << "</snippet>" << std::endl;
         outKML << "\t\t<visibility>" << (iCluster == 0 ? "1" : "0") << "</visibility>" << std::endl;
         //outKML << "\t\t<TimeSpan><begin>" << cluster.GetStartDate(buffer, _dataHub, "-") << "T00:00:00Z</begin><end>" << cluster.GetEndDate(buffer2, _dataHub, "-") << "T23:59:59Z</end></TimeSpan>" << std::endl;
         outKML << "\t\t<styleUrl>#cluster-" << (iCluster + 1) << "-stylemap</styleUrl>" << std::endl;
@@ -308,7 +311,10 @@ void BaseClusterKML::writeOpenBlockKML(std::ofstream& outKML) const {
 }
 
 /** Adds clusters of MostLikelyClustersContainer collection to KML file(s). Returns the number of caddClusterslusters written. */
-unsigned int BaseClusterKML::addClusters(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset) {
+unsigned int BaseClusterKML::addClusters(
+    const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration,
+    std::ofstream& outKML, file_collection_t& fileCollection, unsigned int clusterOffset
+) {
     unsigned int writtenClusters = 0;
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
@@ -322,7 +328,7 @@ unsigned int BaseClusterKML::addClusters(const MostLikelyClustersContainer& clus
             break;
         //write cluster details to 'cluster information' file
         if (cluster.m_nRatio >= _minRatioToReport) {
-            writeCluster(fileCollection, outKML, cluster, i + clusterOffset, simVars);
+            writeCluster(fileCollection, outKML, cluster, i + clusterOffset, simVars, iteration);
             ++writtenClusters;
         }
     }
@@ -343,7 +349,7 @@ ClusterKML::ClusterKML(const CSaTScanData& dataHub) : BaseClusterKML(dataHub), _
     writeOpenBlockKML(_kml_out);
 }
 
-void ClusterKML::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) {
+void ClusterKML::add(const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars, unsigned int iteration) {
     if (_dataHub.GetParameters().getIncludeLocationsKML()) {
         // Calculate the number of locations that will be reported. If there are many, we'll make them to NetworkLink links.
         tract_t tNumClustersToDisplay(simVars.get_sim_count() == 0 ? std::min(10, clusters.GetNumClustersRetained()) : clusters.GetNumClustersRetained());
@@ -357,7 +363,7 @@ void ClusterKML::add(const MostLikelyClustersContainer& clusters, const Simulati
                 _locations_written += static_cast<unsigned int>(clusters.GetCluster(i).getNumIdentifiers());
         }
     }
-    _clusters_written += addClusters(clusters, simVars, _kml_out, _kml_files, _clusters_written);
+    _clusters_written += addClusters(clusters, simVars, iteration, _kml_out, _kml_files, _clusters_written);
 }
 
 /* Adds individual level data to the Google Earth file. */

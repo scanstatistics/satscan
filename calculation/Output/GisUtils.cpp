@@ -315,13 +315,13 @@ std::string VisualizationUtils::getSliderRange(const CSaTScanData& datahub) {
 }
 
 /** Returns cluster legend to be used as popup in html page. */
-std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, int iCluster, const CSaTScanData& datahub, std::string& legend) {
+std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, int iCluster, const CSaTScanData& datahub, unsigned int iteration, std::string& legend) {
     std::string buffer, buffer2, buffer3, buffer4;
     std::stringstream  legendLines;
     const CParameters& parameters = datahub.GetParameters();
     unsigned int currSetIdx = std::numeric_limits<unsigned int>::max(), numFilesSets = parameters.getNumFileSets();
 
-    legendLines << "<div style=\"text-decoration:underline;font-weight:bold;margin-bottom:5px;\">Cluster " << iCluster + 1 << "</div>";
+    legendLines << "<div style=\"text-decoration:underline;font-weight:bold;margin-bottom:5px;\">Cluster " << iCluster + 1 << (iteration > 1 ? " (iterative)" : "") << "</div>";
     if (numFilesSets == 1) {
         legendLines << "<table border=\"0\" style=\"width:100%;\">";
         for (auto rptline: cluster.getReportLinesCache()) {

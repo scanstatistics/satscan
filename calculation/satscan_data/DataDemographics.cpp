@@ -97,40 +97,13 @@ bool DemographicAttributeSet::hasDescriptiveCoordinates() const {
 ///////////////////////////////////// DataDemographicsProcessor //////////////////////////////////////////
 
 DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handler) :
-    _handler(handler), _clusters(0), _sim_vars(0), _parameters(handler.gDataHub.GetParameters()) {}
-
-DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handler, const MostLikelyClustersContainer& clusters, const SimulationVariables& sim_vars)
-    :_handler(handler), _clusters(&clusters), _sim_vars(&sim_vars), _parameters(handler.gDataHub.GetParameters()) {
-
-    // Iterate over the most likely clusters, creating structures that will facilitate compiling data.
-    auto recordClusterLocations = [this](int idx, const CCluster& cluster, bool isReportedCsv) {
-        // Define which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
-        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
-            _cluster_locations[idx] = std::make_pair(boost::dynamic_bitset<>(_handler.gDataHub.GetNumIdentifiers()), isReportedCsv);
-            std::vector<tract_t> tractIndexes;
-            boost::dynamic_bitset<>& locations = _cluster_locations[idx].first;
-            for (auto tractIdx : cluster.getIdentifierIndexes(_handler.gDataHub, tractIndexes, true))
-                locations.set(tractIdx);
-        }
-    };
-    std::string buffer;
-    for (int i = 0; i < _clusters->GetNumClustersRetained(); ++i) {
-        _cluster_event_totals[i] = std::make_pair(0, 0);
-        const CCluster& cluster = _clusters->GetCluster(i);
-        if (isReportedInCsv(handler.gDataHub, cluster, i, sim_vars)) {
-            recordClusterLocations(i, cluster, true);
-            // Create collection of demographic attributes for this cluster.
-            _cluster_demographics_by_dataset[i] = std::deque<DemographicAttributeSet>();
-            // Create unique temporary filename to store linelist data for this cluster - we want the records grouped by cluster.
-            _cluster_location_files[i] = GetUserTemporaryFilename(buffer);
-        } else if (meetsMainResultsCutoff(cluster, i, sim_vars))
-            recordClusterLocations(i, cluster, false);
-    }
+    _handler(handler), _parameters(handler.gDataHub.GetParameters()) { 
     // Read individual ids from file cache - these signalled in significant clusters of previous analysis(es).
     if (boost::filesystem::exists(_parameters.getLinelistIndividualsCacheFileName().c_str())) {
+		std::string buffer;
         std::ifstream event_stream;
         event_stream.open(_parameters.getLinelistIndividualsCacheFileName().c_str());
-        if (!event_stream) 
+        if (!event_stream)
             throw resolvable_error(
                 "Error: Could not open file '%s' to read the prior signalling individuals.\n", _parameters.getLinelistIndividualsCacheFileName().c_str()
             );
@@ -147,13 +120,48 @@ DataDemographicsProcessor::~DataDemographicsProcessor() {
     removeTempClusterFiles();
 }
 
+/** Added clusters to accumulation, which the demographics will be reported in the context of. */
+void DataDemographicsProcessor::addClusters(MostLikelyClustersContainer& clusters, const SimulationVariables& sim_vars, unsigned int iteration) {
+    // Iterate over the most likely clusters, creating structures that will facilitate compiling data.
+    auto recordClusterLocations = [this, iteration](MostLikelyClustersContainer::Cluster_t& cluster, bool isReportedCsv) {
+        // Define which locations are in each cluster, using bitset for quick search while iterating over case line list data rows.
+        if (cluster->GetClusterType() != PURELYTEMPORALCLUSTER) {
+            auto clusterIdx = _reporting_clusters.size();
+            _reporting_clusters.emplace_back(ReportCluster(
+                cluster, boost::dynamic_bitset<>(_handler.gDataHub.GetNumIdentifiers()), isReportedCsv, iteration, clusterIdx
+            ));
+            std::vector<tract_t> tractIndexes;
+            boost::dynamic_bitset<>& locations = _reporting_clusters.back()._locations;
+            for (auto tractIdx : cluster->getIdentifierIndexes(_handler.gDataHub, tractIndexes, true))
+                locations.set(tractIdx);
+        }
+    };
+    for (int i = 0; i < clusters.GetNumClustersRetained(); ++i) {
+        auto& cluster = clusters.GetClusterRef(i);
+        if (isReportedInCsv(_handler.gDataHub, *cluster, i, sim_vars)) {
+            recordClusterLocations(cluster, true);
+        } else if (meetsMainResultsCutoff(*cluster, i, sim_vars))
+            recordClusterLocations(cluster, false);
+    }
+}
+
 /* Appends data record to temporary cluster file. */
-void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times, unsigned int analysis_count) {
-    std::ofstream temp_file(_cluster_location_files[clusterIdx].c_str(), std::ios_base::app | std::ios_base::binary);
+void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times) {
+    auto& cluster = _reporting_clusters[clusterIdx];
+    std::ofstream temp_file(
+        cluster._temporary_filename.c_str(),
+        std::ios_base::app | std::ios_base::binary
+    );
     std::string buffer;
     std::stringstream line;
-    line << (clusterIdx + analysis_count) << ",";
-    if (first) line << (first.get() == clusterIdx || analysis_count > 1 ? "Primary" : "Secondary") << ",";
+    line << (cluster._iteration > 1 ? cluster._iteration : (clusterIdx + 1)) << ",";
+    if (first) {
+        if (cluster._iteration > 1)
+            line << "Iterative";
+        else
+            line << (first.get() == clusterIdx ? "Primary" : "Secondary");
+        line << ",";
+    }
     line << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
     // typcically times == 1 but if not individual data, could be aggregated count
     for (int i=0; i < times; ++i) 
@@ -181,24 +189,24 @@ bool DataDemographicsProcessor::meetsMainResultsCutoff(const CCluster& cluster, 
 /* Returns bitset which indicates the clusters indexes which contain location/date in their cluster window. */
 boost::dynamic_bitset<>& DataDemographicsProcessor::getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters, bool reportedOnly) const {
     if (applicable_clusters.empty())
-        applicable_clusters.resize(_cluster_locations.size());
+        applicable_clusters.resize(_reporting_clusters.size());
     else
         applicable_clusters.reset();
     int startIdx = _handler.gDataHub.GetTimeIntervalOfDate(nDate), endIdx = _handler.gDataHub.GetTimeIntervalOfEndDate(nDate);
     // Determine which clusters this record applys to.
-    for (const auto& cluster_locs : _cluster_locations) {
-        if (reportedOnly && !cluster_locs.second.second) continue;
-        const CCluster& cluster = _clusters->GetCluster(cluster_locs.first);
-        if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER && !cluster_locs.second.first.test(tid))
+    for (const auto& clusterR : _reporting_clusters) {
+        if (reportedOnly && !clusterR._reportedInCsv) continue;
+        const auto& cluster = clusterR._cluster;
+        if (clusterR._cluster->GetClusterType() != PURELYTEMPORALCLUSTER && !clusterR._locations.test(tid))
             continue;
-        if (startIdx >= cluster.m_nFirstInterval && endIdx <= cluster.m_nLastInterval)
-            applicable_clusters.set(cluster_locs.first);
+        if (startIdx >= cluster->m_nFirstInterval && endIdx <= cluster->m_nLastInterval)
+            applicable_clusters.set(clusterR._index);
     }
     return applicable_clusters;
 }
 
 /* Re-reads cases file to accumulate line-list data inconjuction with detected clusters. */
-bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataSet, unsigned int analysis_count) {
+bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataSet) {
     try {
         removeTempClusterFiles(); // remove temporary cluster files from prior data set
         std::string buffer;
@@ -218,10 +226,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
             _individuals_filter = getNewBloomFilter(_handler._approximate_case_records);
         }
         // Create a new demographics attributes set for each cluster being reported.
-        for (const auto& cluster : _cluster_demographics_by_dataset)
-            _cluster_demographics_by_dataset[cluster.first].push_back(DemographicAttributeSet(Source->getLinelistFieldsMap()));
+        for (auto& cluster : _reporting_clusters)
+			cluster._demographics_by_dataset.push_back(DemographicAttributeSet(Source->getLinelistFieldsMap()));
         // Iterate over case file records of this data set.
-        boost::dynamic_bitset<> applicable_clusters(_cluster_locations.size());
+        boost::dynamic_bitset<> applicable_clusters(_reporting_clusters.size());
         bool storeSetting = _handler.gPrint.isSuppressingWarnings();
         _handler.gPrint.SetSuppressWarnings(true);
         DataSource::OrderedLineListField_t linelistFieldsMap;
@@ -267,24 +275,23 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 }
                 // Add attribute to cluster data set demographics.
                 for (size_t t=0; t < applicable_clusters.size(); ++t) {
-                    const CCluster& cluster = _clusters->GetCluster(static_cast<tract_t>(t));
                     // Add to cluster demographics only if location and time overlap.
                     if (applicable_clusters.test(t))
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap)->add(values.back(), static_cast<unsigned int>(nCount));
+                        _reporting_clusters[t]._demographics_by_dataset.back().get(fieldMap)->add(values.back(), static_cast<unsigned int>(nCount));
                     else if (fieldMap.get<1>() == LinelistType::CATEGORICAL_DATA)
                         // Always add the categorical attribute label though, just so we have a complete set with each cluster.
-                        _cluster_demographics_by_dataset[static_cast<int>(t)].back().get(fieldMap)->add(values.back(), 0);
+                        _reporting_clusters[t]._demographics_by_dataset.back().get(fieldMap)->add(values.back(), 0);
                 }
             }
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
             boost::optional<int> first(_demographics_by_dataset.back().hasIndividual() ? boost::make_optional(applicable_clusters.find_first()) : boost::none);
             for (boost::dynamic_bitset<>::size_type b= applicable_clusters.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable_clusters.find_next(b)) {
-                appendLinelistData(static_cast<int>(b), values, first, nCount, analysis_count);
+                appendLinelistData(static_cast<int>(b), values, first, nCount);
                 if (is_new_event) {
                     _new_individuals.emplace(individual);
-                    _cluster_event_totals[static_cast<int>(b)].first += nCount;
+                    _reporting_clusters[b]._event_totals.first += nCount;
                 }
-                _cluster_event_totals[static_cast<int>(b)].second += nCount;
+                _reporting_clusters[b]._event_totals.second += nCount;
             }
             // Maintain the individuals cache. Add if:
             // 1) new individual that signalled in significant cluster of this analysis.
@@ -294,7 +301,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         }
         if (individuals_stream.is_open()) individuals_stream.close();
         // Create the cluster line list file and concatenate each cluster line list file.
-        writeClusterLineListFile(linelistFieldsMap, DataSet.getSetIndex(), analysis_count);
+        writeClusterLineListFile(linelistFieldsMap, DataSet.getSetIndex());
     } catch (prg_exception& x) {
         x.addTrace("processCaseFileLinelist()", "DataDemographicsProcessor");
         throw;
@@ -318,7 +325,7 @@ bool DataDemographicsProcessor::hasIndividualGeographically() const {
 
 /** Returns whether a record (tid and nDate) is within a cluster. */
 bool DataDemographicsProcessor::inCluster(tract_t tid, Julian nDate) const {
-    boost::dynamic_bitset<> applicable_clusters(_cluster_locations.size());
+    boost::dynamic_bitset<> applicable_clusters(_reporting_clusters.size());
     return getApplicableClusters(tid, nDate, applicable_clusters, true).any();
 }
 
@@ -340,11 +347,11 @@ void DataDemographicsProcessor::finalize() {
 }
 
 /* Process line list data from each data set. */
-void DataDemographicsProcessor::process(unsigned int analysis_count) {
+void DataDemographicsProcessor::process() {
     bool storeSetting = _handler.gPrint.isSuppressingWarnings(); // prevent re-printing case file warnings
     _handler.gPrint.SetSuppressWarnings(true);
     for (const auto& dataset : _handler.getDataSets()) {
-        processCaseFileLinelist(*dataset, analysis_count);
+        processCaseFileLinelist(*dataset);
     }
     _handler.gPrint.SetSuppressWarnings(storeSetting);
 }
@@ -352,23 +359,23 @@ void DataDemographicsProcessor::process(unsigned int analysis_count) {
 void DataDemographicsProcessor::print() {
     for (const auto& attrpair : _demographics_by_dataset.back().getAttributes())
         attrpair.second->print();
-    for (const auto& cluster_dem : _cluster_demographics_by_dataset) {
-        for (const auto& attrpair : _cluster_demographics_by_dataset[cluster_dem.first].back().getAttributes())
+    for (auto& cluster: _reporting_clusters) {
+        for (const auto& attrpair : cluster._demographics_by_dataset.back().getAttributes())
             attrpair.second->print();
-    }
+	}
 }
 
 /* Attempts to remove any temporary cluster files. */
 void DataDemographicsProcessor::removeTempClusterFiles() {
-    for (const auto& cfiles : _cluster_location_files) {
+    for (const auto& cluster : _reporting_clusters) {
         try {
-            remove(cfiles.second.c_str());
+            remove(cluster._temporary_filename.c_str());
         } catch (...) {}
     }
 }
 
 /* Creates the final clusters line list file - adds header row then concatenates temporary cluster files into one. */
-void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet, unsigned int analysis_count) {
+void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet) {
     std::vector<std::string> v = { "Cluster" };
     for (auto const& itr : llmap) {
         if (itr.get<1>() == INDIVIDUAL_ID) {
@@ -383,15 +390,15 @@ void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::Order
         buffer, ".linelist%s.csv", (_handler.GetNumDataSets() > 1 ? printString(buffer2, ".dataset%u", idxDataSet).c_str() : "")
     ).c_str());
     std::ofstream lineliststream;
-    lineliststream.open(linelist.getFullPath(buffer).c_str(), analysis_count == 1 ? (std::ios_base::trunc | std::ios_base::binary) : (std::ios_base::app | std::ios_base::binary));
+    lineliststream.open(linelist.getFullPath(buffer).c_str(), std::ios_base::trunc | std::ios_base::binary);
     if (!lineliststream)
         throw resolvable_error(
             "Error: The line list csv file could not be opened for writing:\n'%s'\n", buffer.c_str()
         );
     // Write header row -- skip if secondary scans (iterative scan)
-    if (analysis_count == 1) lineliststream << typelist_to_csv_string<std::string>(v, buffer) << std::endl; // write header row
-    for (const auto& cfiles : _cluster_location_files) {
-        std::ifstream filestream(cfiles.second.c_str(), std::ios_base::binary);
+    lineliststream << typelist_to_csv_string<std::string>(v, buffer) << std::endl; // write header row
+    for (const auto& cluster : _reporting_clusters) {
+        std::ifstream filestream(cluster._temporary_filename.c_str(), std::ios_base::binary);
         lineliststream << filestream.rdbuf();
     }
     lineliststream.close();

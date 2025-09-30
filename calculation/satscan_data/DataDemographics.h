@@ -8,6 +8,7 @@
 #include <boost/dynamic_bitset.hpp>
 #include <boost/optional.hpp>
 #include <numeric> 
+#include "MostLikelyClustersContainer.h"
 
 /* Abtract base class for a demographic attribute. */
 class DemographicAttribute {
@@ -96,7 +97,6 @@ class DemographicAttributeSet {
 };
 
 class CSaTScanData;
-class MostLikelyClustersContainer;
 class SimulationVariables;
 class DataSetHandler;
 class RealDataSet;
@@ -106,47 +106,61 @@ class CParameters;
 /* A class which processes the line list attributes in the case files and facilitates generating csv, kml and maps output files. */
 class DataDemographicsProcessor{
     public:
-        typedef std::map<int, std::pair<unsigned int, unsigned int> > ClusterEventCounts_t;
+        struct ReportCluster {
+			MostLikelyClustersContainer::Cluster_t _cluster;
+			boost::dynamic_bitset<> _locations;
+			bool _reportedInCsv;
+			unsigned int _iteration;
+			unsigned int _index;
+            std::deque<DemographicAttributeSet> _demographics_by_dataset;
+			std::pair<unsigned int, unsigned int> _event_totals; // <total new individuals, total events/individuals>
+			std::string _temporary_filename;
 
-    protected:
+			ReportCluster(
+                MostLikelyClustersContainer::Cluster_t cluster,
+                const boost::dynamic_bitset<>& locations, bool reportedInCsv, unsigned int iteration, unsigned int index
+            ):_cluster(cluster), _locations(locations), _reportedInCsv(reportedInCsv), _iteration(iteration), _index(index) {
+                if (_reportedInCsv) {
+                    _event_totals = std::make_pair(0, 0);
+                    GetUserTemporaryFilename(_temporary_filename);
+                }
+            }
+        };
+		typedef std::vector<ReportCluster> ReportedClusters_t;
+
+    private:
         const DataSetHandler& _handler;
         const CParameters& _parameters;
-        const MostLikelyClustersContainer * _clusters;
-        const SimulationVariables * _sim_vars;
-
+		ReportedClusters_t _reporting_clusters;
         std::vector<DemographicAttributeSet> _demographics_by_dataset; // accumulates demographics by data
-        std::map<int, std::pair<boost::dynamic_bitset<>, bool>> _cluster_locations; // cluster locations <mlc cluster index, locations of cluster bitset, reported-in-csv>
-        std::map<int, std::deque<DemographicAttributeSet> > _cluster_demographics_by_dataset; // cluster demographics <mlc cluster index, demographics set>
         std::set<std::string> _existing_individuals; // individuals from previous analyses
         boost::shared_ptr<bloom_filter> _individuals_filter;
         std::set<std::string> _new_individuals; // new individuals
         std::string _temp_individuals_cache_filename;
-        std::map<int, std::string> _cluster_location_files; // cluster temporary filenames <mlc cluster index, temporary filename>
-        ClusterEventCounts_t _cluster_event_totals; // cluster event totals <mlc cluster index, <total new individuals, total events/individuals>>
 
-        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times, unsigned int analysis_count);
-        bool processCaseFileLinelist(const RealDataSet& DataSet, unsigned int analysis_count);
+        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
+        bool processCaseFileLinelist(const RealDataSet& DataSet);
         void removeTempClusterFiles();
-        void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet, unsigned int analysis_count);
+        void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet);
 
     public:
         DataDemographicsProcessor(const DataSetHandler& handler);
-        DataDemographicsProcessor(const DataSetHandler& handler, const MostLikelyClustersContainer& clusters, const SimulationVariables& sim_vars);
         ~DataDemographicsProcessor();
 
-        void                             finalize();
-        boost::dynamic_bitset<>        & getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters, bool reportedOnly) const;
-        const ClusterEventCounts_t     & getClusterEventTotals() const { return _cluster_event_totals; }
-        const DemographicAttributeSet  & getDataSetDemographics(unsigned int idx) const { return _demographics_by_dataset.at(idx); }
-        bool                             hasIndividualAttribute() const;
-        bool                             hasIndividualGeographically() const;
-        bool                             inCluster(tract_t tid, Julian nDate) const;
-        bool                             isExistingIndividual(const std::string& s) const { return _existing_individuals.find(s) != _existing_individuals.end(); }
-        bool                             isNewIndividual(const std::string& s) const { return _new_individuals.find(s) != _new_individuals.end(); }
-        static                           bool isReportedInCsv(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
-        static                           bool meetsMainResultsCutoff(const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
-        void                             print();
-        void                             process(unsigned int analysis_count);
+		void addClusters(MostLikelyClustersContainer& clusters, const SimulationVariables& sim_vars, unsigned int iteration);
+        void finalize();
+        boost::dynamic_bitset<>& getApplicableClusters(tract_t tid, Julian nDate, boost::dynamic_bitset<>& applicable_clusters, bool reportedOnly) const;
+		const ReportedClusters_t& getReportedClusters() const { return _reporting_clusters; }
+        const DemographicAttributeSet & getDataSetDemographics(unsigned int idx) const { return _demographics_by_dataset.at(idx); }
+        bool hasIndividualAttribute() const;
+        bool hasIndividualGeographically() const;
+        bool inCluster(tract_t tid, Julian nDate) const;
+        bool isExistingIndividual(const std::string& s) const { return _existing_individuals.find(s) != _existing_individuals.end(); }
+        bool isNewIndividual(const std::string& s) const { return _new_individuals.find(s) != _new_individuals.end(); }
+        static bool isReportedInCsv(const CSaTScanData& Data, const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
+        static bool meetsMainResultsCutoff(const CCluster& cluster, unsigned int iReportedCluster, const SimulationVariables& simVars);
+        void print();
+        void process();
 };
 
 //*****************************************************************************

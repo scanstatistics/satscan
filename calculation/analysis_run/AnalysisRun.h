@@ -65,6 +65,26 @@ class ClusterRankHelper {
         }
 };
 
+/** Assists the AnalysisExecution object with building emails which detail cluster findings. */
+class AnalysisEmailHelper {
+    private:
+        const CSaTScanData & _data_hub;
+        unsigned int _meetsSummaryCutoff;
+        unsigned int _meetsEmailCutoff;
+        std::stringstream _summaryParagraph;
+        std::stringstream _signaltext;
+
+    public:
+        AnalysisEmailHelper(const CSaTScanData& data_hub):_data_hub(data_hub), _meetsSummaryCutoff(0), _meetsEmailCutoff(0){}
+
+        void recordClusters(MostLikelyClustersContainer& clusters, SimulationVariables& simVars, unsigned int iteration);
+        void finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor);
+		unsigned int getNumClustersMeetingSummaryCutoff() const { return _meetsSummaryCutoff; }
+		unsigned int getNumClustersMeetingEmailCutoff() const { return _meetsEmailCutoff; }
+        const std::stringstream& getSignalText() const { return _signaltext; }
+        const std::stringstream& getSummaryParagraph() const { return _summaryParagraph; }
+};
+
 class AnalysisExecution {
     friend class stsMCSimJobSource;
     friend class OliveiraJobSource;
@@ -83,6 +103,7 @@ class AnalysisExecution {
         unsigned int                        _significant_clusters;
         MLC_Collections_t                   _top_clusters_containers;
         MostLikelyClustersContainer         _reportClusters;
+		AnalysisEmailHelper                 _email_helper;
         ClusterRankHelper                   _clusterRanker;
         SimulationVariables                 _sim_vars;
         std::auto_ptr<LocationRelevance>    _relevance_tracker;
@@ -139,7 +160,7 @@ class AnalysisExecution {
         const std::string                 & getDrilldownClusterPath() const { return _cluster_path; }
         ExecutionType                       getExecutioningType() const { return _executing_type; }
         bool                                getIsCalculatingSignificantRatios() const { return _significant_ratios.get() != 0; }
-        const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
+        const MostLikelyClustersContainer & getClusterCollection() const;
         unsigned short                      getNumSignificantAt005() const { return _significant_at005; }
         unsigned int                        getNumSignificantClusters() const { return _significant_clusters; }
         unsigned int                        getNumSimulationsExecuted() const { return _sim_vars.get_sim_count(); }

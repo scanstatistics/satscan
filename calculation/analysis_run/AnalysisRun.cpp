@@ -101,11 +101,129 @@ bool AbstractAnalysisDrilldown::shouldDrilldown(const CCluster& cluster, unsigne
     return should;
 }
 
+//////////////////////////// AnalysisEmailHelper //////////////////////////////////
+
+/** Record clusters for eventual email message. */
+void AnalysisEmailHelper::recordClusters(MostLikelyClustersContainer& clusters, SimulationVariables& simVars, unsigned int iteration) {
+	if (_data_hub.isDrilldown()) return; // No email for drilldown analyses.
+	const auto& params = _data_hub.GetParameters();
+    CCluster::RecurrenceInterval_t ri_cutoff_summary(1, params.getEmailSummaryValue());
+    CCluster::RecurrenceInterval_t ri_cutoff_email(1, params.getCutoffEmailValue());
+    for (tract_t i = 0; i < clusters.GetNumClustersRetained(); ++i) {
+        const auto& cluster = clusters.GetCluster(i);
+        // Record the number of clusters which met the cutoff defined for the summary email - if applicable.
+        if (params.getCreateEmailSummaryFile() && 
+            cluster.meetsCutoff(_data_hub, i/* 1 (which is correct?) */, simVars, ri_cutoff_summary, params.getEmailSummaryValue()))
+            ++_meetsSummaryCutoff;
+        // Record the number of clusters which met the cutoff defined for the receipents email - if applicable.
+        if ((params.getAlwaysEmailSummary() || params.getCutoffEmailSummary()) && simVars.get_sim_count() != 0 &&
+            cluster.meetsCutoff(_data_hub, i/* 1 (which is correct?) */, simVars, ri_cutoff_email, params.getCutoffEmailValue())) {
+            ++_meetsEmailCutoff;
+			// Build the summary paragraph for the first cluster ever added.
+            if (_summaryParagraph.str().empty()) {
+                if (!_meetsEmailCutoff)
+                    _summaryParagraph << "No clusters were found by this analysis.";
+                else {
+                    std::string buffer;
+                    _summaryParagraph << "SaTScan found a most likely cluster ";
+                    if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+                        _summaryParagraph << " centered on " << cluster.GetClusterLocation(buffer, _data_hub);
+                    if (!(params.GetIsPurelyTemporalAnalysis() || params.UseLocationNeighborsFile() ||
+                        (params.getUseLocationsNetworkFile() && !_data_hub.networkCanReportLocationCoordinates()))) {
+                        double span = cluster.getLocationsSpan(_data_hub);
+                        if (params.GetCoordinatesType() == CARTESIAN && params.GetSpatialWindowType() == ELLIPTIC) {
+                            double radius = cluster.GetCartesianRadius();
+                            _summaryParagraph << EmailText::LINEBREAK << "Semiminor Axis: " << getValueAsString(radius, buffer);
+                            _summaryParagraph << EmailText::LINEBREAK << "Semimajor Axis: " << getValueAsString(radius * _data_hub.GetEllipseShape(cluster.GetEllipseOffset()), buffer);
+                            if (span >= 0.0) _summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
+                        } else if (params.GetCoordinatesType() == CARTESIAN && params.GetSpatialWindowType() == CIRCULAR) {
+                            _summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetCartesianRadius(), buffer);
+                            if (span >= 0.0) _summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
+                        } else if (params.GetCoordinatesType() == LATLON && !params.getUseLocationsNetworkFile()) {
+                            _summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetLatLongRadius(), buffer) << " km";
+                            if (span >= 0.0) _summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
+                        } else if (span >= 0.0)
+                            _summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
+                    }
+                    // Create map to cluster cached values - easier and format will match that of other output files.
+                    std::map<std::string, std::string> clusterAttributes;
+                    for (const auto& entry : cluster.getReportLinesCache()) {
+                        if (clusterAttributes.find(entry.first) == clusterAttributes.end())
+                            clusterAttributes.insert(std::make_pair(entry.first, entry.second.first));
+                        else
+                            clusterAttributes[entry.first] += printString(buffer, ", %s", entry.second.first.c_str());
+                    }
+                    if (clusterAttributes.find("Time frame") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Time frame: " << clusterAttributes["Time frame"];
+                    if (clusterAttributes.find("Number of cases") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Number of cases: " << clusterAttributes["Number of cases"];
+                    if (clusterAttributes.find("Relative risk") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Relative risk: " << clusterAttributes["Relative risk"];
+                    else if (clusterAttributes.find("Observed / expected") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Observed / expected: " << clusterAttributes["Observed / expected"];
+                    if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Recurrence Interval: " << clusterAttributes["Recurrence interval"];
+                    else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "Gumbel P-value: " << clusterAttributes["Gumbel P-value"];
+                    else if (clusterAttributes.find("P-value") != clusterAttributes.end())
+                        _summaryParagraph << EmailText::LINEBREAK << "P-value: " << clusterAttributes["P-value"];
+                }
+            }
+        }
+    }
+}
+
+/** Finalize the object for reporting. */
+void AnalysisEmailHelper::finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor) {
+    const auto& params = _data_hub.GetParameters();
+	// Finish the summary paragraph - if applicable.
+    if (params.getCutoffEmailSummary() && _meetsEmailCutoff > 1) {
+		unsigned int othersCutoff = _meetsEmailCutoff - 1;
+        CCluster::RecurrenceInterval_t ri_cutoff(1, params.getCutoffEmailValue());
+        _summaryParagraph << EmailText::LINEBREAK << EmailText::LINEBREAK << "There " << (othersCutoff == 1 ? "was" : "were")
+                << " " << othersCutoff << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
+            if (params.GetIsProspectiveAnalysis())
+                _summaryParagraph << "recurrence interval >= " << ri_cutoff.second << " day" << (ri_cutoff.second == 1 ? "" : "s") << ".";
+            else
+                _summaryParagraph << "p-value <= " << params.getCutoffEmailValue() << ".";
+    }
+    // Build the clusters signal text - if applicable.
+    // If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
+    // cluster should be reviewed -- otherwise repeated noise (i.e. same cluster was reported yesterday).
+    if (params.getEmailCustom() && params.getReadingLineDataFromCasefile() && data_demographic_processor.get() && data_demographic_processor->hasIndividualAttribute()) {
+        bool usingCache = !params.getLinelistIndividualsCacheFileName().empty();
+        for (auto& cluster : data_demographic_processor->getReportedClusters()) {
+            if (cluster._reportedInCsv) {
+                unsigned int newcases = cluster._event_totals.first;
+                _signaltext << (_signaltext.str().size() ? "" : "All clusters in the line list file:") << EmailText::LINEBREAK << "Cluster #" << (cluster._index + 1);
+                count_t totalcases = cluster._event_totals.second;
+                if (newcases == totalcases)
+                    _signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s");
+                else
+                    _signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s");
+                // Report RI or p-value of cluster.
+                std::stringstream clustersigtext;
+                for (const auto& entry : cluster._cluster->getReportLinesCache()) {
+                    if (params.GetIsProspectiveAnalysis() && entry.first == "Recurrence interval") {
+                        clustersigtext << "RI=" << entry.second.first; break;
+                    }
+                    else if (!params.GetIsProspectiveAnalysis() && (entry.first == "Gumbel P-value" || entry.first == "P-value")) {
+                        clustersigtext << "P-value=" << entry.second.first; break;
+                    }
+                }
+                if (clustersigtext.rdbuf()->in_avail()) _signaltext << " (" << clustersigtext.str() << ")";
+                _signaltext << ".";
+            }
+		}
+    }
+}
+
 //////////////////////////// AnalysisExecution ///////////////////////////////////
 
 AnalysisExecution::AnalysisExecution(CSaTScanData& data_hub, ExecutionType executing_type, time_t start, unsigned int& drilldowns)
     :_print_direction(data_hub.GetPrintDirection()), _parameters(data_hub.GetParameters()), _data_hub(data_hub), _start_time(start), _clustersReported(false),
-    _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _reportClusters(0), _drilldowns(drilldowns){
+    _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _reportClusters(0), _drilldowns(drilldowns),
+    _email_helper(data_hub){
     try {
         for (std::vector<double>::const_iterator itr = _parameters.getExecuteSpatialWindowStops().begin(); itr != _parameters.getExecuteSpatialWindowStops().end(); ++itr)
             _top_clusters_containers.push_back(MostLikelyClustersContainer(*itr));
@@ -157,7 +275,7 @@ void AnalysisExecution::calculateMostLikelyClusters() {
             rankClusterCollections(_top_clusters_containers, _reportClusters, &_clusterRanker, _print_direction);
             // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
             //       We can't perform index based ordering here since we need to perform simulations first ... correct?
-            printTopClusterLogLikelihood(getLargestMaximaClusterCollection());
+            printTopClusterLogLikelihood(getClusterCollection());
         }
     } catch (prg_exception& x) {
         x.addTrace("calculateMostLikelyClusters()", "AnalysisExecution");
@@ -258,6 +376,19 @@ void AnalysisExecution::execute() {
                 default: executeSuccessively();
             }
         }
+        // Now that all analyses are done, process/finalize supplemental output.
+        if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
+        if (_cluster_graph.get()) _cluster_graph->finalize();
+        if (_data_demographic_processor.get()) _data_demographic_processor->process();
+        if (_cluster_kml.get()) {
+            if (_data_demographic_processor.get()) _cluster_kml->add(*_data_demographic_processor.get());
+            _cluster_kml->finalize();
+        }
+        if (_cluster_map.get()) {
+            if (_data_demographic_processor.get()) _cluster_map->add(*_data_demographic_processor.get());
+            _cluster_map->finalize();
+        }
+        _email_helper.finalize(_data_demographic_processor);
         // conditionally perform power evaluation
         if (_parameters.getPerformPowerEvaluation())
             executePowerEvaluations();
@@ -279,19 +410,13 @@ void AnalysisExecution::execute() {
   }
 }
 
+/** Finalize the reporting to result output file. */
 void AnalysisExecution::finalize() {
     FILE * fp = 0;
     try {
         // Finalize the data demograhics process now -- updating cache file for this analysis.
         if (_data_demographic_processor.get()) _data_demographic_processor->finalize();
 
-        /** Finalizes the reporting to result output file.
-        - indicates whether clusters were found
-        - indicates whether no clusters were reported because their loglikelihood
-        ratios are less than defined minimum value
-        - if the number of simulations are less 98, reported that the reported
-        clusters intentially do not contain p-values */
-        
         time_t CompletionTime;
         double nTotalTime, nSeconds, nMinutes, nHours;
         const char * szHours = "hours", * szMinutes = "minutes", * szSeconds = "seconds";
@@ -334,133 +459,31 @@ void AnalysisExecution::finalize() {
         fclose(fp); fp = 0;
         // Create a temporary file which will be used to generate the multiple analyses summary email.
         if (!_data_hub.isDrilldown() && _parameters.getCreateEmailSummaryFile()) {
-            CCluster::RecurrenceInterval_t ri_cutoff(1, _parameters.getEmailSummaryValue());
-            unsigned int metCutoff = 0;
-            for (tract_t i=0; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getEmailSummaryValue()))
-                    break;
-                ++metCutoff;
-            }
             // Write temp file that will be used when creating the multiple analysis summary email.
             printString(buffer, "%s%s", _parameters.GetOutputFileName().c_str(), MultipleAnalyses::_EMAIL_TEMP_EXTENSION.c_str());
             std::ofstream summary_tmp(buffer.c_str(), std::ios_base::trunc);
-            summary_tmp << metCutoff;
+            summary_tmp << _email_helper.getNumClustersMeetingSummaryCutoff();
         }
 
         // Send email per user settings.
         bool clusterMeetsCutoff = false;
         if ((_parameters.getAlwaysEmailSummary() || _parameters.getCutoffEmailSummary()) && !_data_hub.isDrilldown() && _sim_vars.get_sim_count() != 0) {
-            std::stringstream messageSubjectLine, messageBody, messagePlain, messageHTML, summaryParagraph;
-            // Create a summary paragraph of the analysis results. 
-            if (_reportClusters.GetNumClustersRetained() == 0) {
-                summaryParagraph << "No clusters were found by this analysis.";
-            } else {
-                CCluster::RecurrenceInterval_t ri_cutoff(1, _parameters.getCutoffEmailValue());
-                const auto& cluster = _reportClusters.GetCluster(0); // Get the most likely cluster
-                clusterMeetsCutoff = (bool)cluster.meetsCutoff(_data_hub, 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue());
-                summaryParagraph << "SaTScan found a most likely cluster ";
-                if (cluster.GetClusterType() != PURELYTEMPORALCLUSTER)
-                    summaryParagraph << " centered on " << cluster.GetClusterLocation(buffer, _data_hub);
-                if (!(_parameters.GetIsPurelyTemporalAnalysis() || _parameters.UseLocationNeighborsFile() ||
-                    (_parameters.getUseLocationsNetworkFile() && !_data_hub.networkCanReportLocationCoordinates()))) {
-                    double span = cluster.getLocationsSpan(_data_hub);
-                    if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == ELLIPTIC) {
-                        double radius = cluster.GetCartesianRadius();
-                        summaryParagraph << EmailText::LINEBREAK << "Semiminor Axis: " << getValueAsString(radius, buffer);
-                        summaryParagraph << EmailText::LINEBREAK << "Semimajor Axis: " << getValueAsString(radius * _data_hub.GetEllipseShape(cluster.GetEllipseOffset()), buffer);
-                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
-                    } else if (_parameters.GetCoordinatesType() == CARTESIAN && _parameters.GetSpatialWindowType() == CIRCULAR) {
-                        summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetCartesianRadius(), buffer);
-                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer);
-                    } else if (_parameters.GetCoordinatesType() == LATLON && !_parameters.getUseLocationsNetworkFile()) {
-                        summaryParagraph << EmailText::LINEBREAK << "Radius: " << getValueAsString(cluster.GetLatLongRadius(), buffer) << " km";
-                        if (span >= 0.0) summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
-                    } else if (span >= 0.0) 
-                        summaryParagraph << EmailText::LINEBREAK << "Span: " << getValueAsString(span, buffer) << " km";
-                }
-                // Create map to cluster cached values - easier and format will match that of other output files.
-                std::map<std::string, std::string> clusterAttributes;
-                for (const auto& entry : cluster.getReportLinesCache()) {
-                    if (clusterAttributes.find(entry.first) == clusterAttributes.end())
-                        clusterAttributes.insert(std::make_pair(entry.first, entry.second.first));
-                    else
-                        clusterAttributes[entry.first] += printString(buffer, ", %s", entry.second.first.c_str());
-                }
-                if (clusterAttributes.find("Time frame") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Time frame: " << clusterAttributes["Time frame"];
-                if (clusterAttributes.find("Number of cases") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Number of cases: " << clusterAttributes["Number of cases"];
-                if (clusterAttributes.find("Relative risk") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Relative risk: " << clusterAttributes["Relative risk"];
-                else if (clusterAttributes.find("Observed / expected") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Observed / expected: " << clusterAttributes["Observed / expected"];
-                if (clusterAttributes.find("Recurrence interval") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Recurrence Interval: " << clusterAttributes["Recurrence interval"];
-                else if (clusterAttributes.find("Gumbel P-value") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "Gumbel P-value: " << clusterAttributes["Gumbel P-value"];
-                else if (clusterAttributes.find("P-value") != clusterAttributes.end())
-                    summaryParagraph << EmailText::LINEBREAK << "P-value: " << clusterAttributes["P-value"];
-                if (_parameters.getCutoffEmailSummary() && clusterMeetsCutoff) {
-                    // If cluster meets cut-off, count the number of other clusters that also met it.
-                    unsigned int othersCutoff = 0;
-                    for (tract_t i=1; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                        if (!_reportClusters.GetCluster(i).meetsCutoff(_data_hub, i + 1, _sim_vars, ri_cutoff, _parameters.getCutoffEmailValue()))
-                            continue;
-                        ++othersCutoff;
-                    }
-                    if (othersCutoff) {
-                        summaryParagraph << EmailText::LINEBREAK << EmailText::LINEBREAK << "There " << (othersCutoff == 1 ? "was" : "were")
-                            << " " << othersCutoff << " additional cluster" << (othersCutoff == 1 ? "" : "s") << " with a ";
-                        if (_parameters.GetIsProspectiveAnalysis())
-                            summaryParagraph << "recurrence interval >= " << ri_cutoff.second << " day" << (ri_cutoff.second == 1 ? "" : "s") << ".";
-                        else
-                            summaryParagraph << "p-value <= " << _parameters.getCutoffEmailValue() << ".";
-                    }
-                }
-            }
+            std::stringstream messageSubjectLine, messageBody, messagePlain, messageHTML;
             // If the user defined a custom message, build that message now.
             if (_parameters.getEmailCustom()) {
                 messageSubjectLine << _parameters.getEmailCustomSubject();
                 messageBody << _parameters.getEmailCustomMessageBody();
-                bool usingCache = !_parameters.getLinelistIndividualsCacheFileName().empty();
-                std::stringstream signaltext;
                 std::string customMessageBody(messageBody.str());
-                /* If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
-                    cluster should be considered when emailing -- otherwise repeated noise i.e.same cluster as yesterdays run. */
-                if (_parameters.getReadingLineDataFromCasefile() && _data_demographic_processor.get() && _data_demographic_processor->hasIndividualAttribute()) {
-                    const auto& cluster_counts = _data_demographic_processor->getClusterEventTotals();
-                    for (tract_t i = 0; i < _reportClusters.GetNumClustersRetained(); ++i) {
-                        if (!DataDemographicsProcessor::isReportedInCsv(_data_hub, _reportClusters.GetCluster(i), i + 1, _sim_vars))
-                            continue; // Use same cutoff as line list cluster csv
-                        unsigned int newcases = cluster_counts.at(static_cast<int>(i)).first;
-                        signaltext << (signaltext.str().size() ? "" : "All clusters in the line list file:") << EmailText::LINEBREAK << "Cluster #" << (i + 1);
-                        count_t totalcases = cluster_counts.at(static_cast<int>(i)).second;
-                        if (newcases == totalcases)
-                            signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s");
-                        else
-                            signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s");
-                        // Report RI or p-value of cluster.
-                        std::stringstream clustersigtext;
-                        const auto& cluster = _reportClusters.GetCluster(i);
-                        for (const auto& entry : cluster.getReportLinesCache()) {
-                            if (_parameters.GetIsProspectiveAnalysis() && entry.first == "Recurrence interval") {
-                                clustersigtext << "RI=" << entry.second.first; break;
-                            } else if (!_parameters.GetIsProspectiveAnalysis() && (entry.first == "Gumbel P-value" || entry.first == "P-value")) {
-                                clustersigtext << "P-value=" << entry.second.first; break;
-                            }
-                        }
-                        if (clustersigtext.rdbuf()->in_avail()) signaltext << " (" << clustersigtext.str() << ")";
-                        signaltext << ".";
-                    }
-                }
-                ireplace_all(customMessageBody, EmailText::LINELIST_PAR, (signaltext.str().size() ? signaltext.str() : std::string("No clusters signaled in this analysis.")));
-                ireplace_all(customMessageBody, EmailText::SUMMARY_PAR, summaryParagraph.str());
+                ireplace_all(customMessageBody, EmailText::LINELIST_PAR, 
+                    (_email_helper.getSignalText().str().size() ? _email_helper.getSignalText().str() : std::string("No clusters signaled in this analysis."))
+                );
+                ireplace_all(customMessageBody, EmailText::SUMMARY_PAR, _email_helper.getSummaryParagraph().str());
                 messageBody.str("");
                 messageBody << customMessageBody;
             } else { // Otherwise create the standard email.
                 messageSubjectLine << _parameters.GetTitleName(); // Create the email subject line from either title parameter or default string.
                 messageSubjectLine << "SaTScan Results" << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
-                messageBody << summaryParagraph.rdbuf();
+                messageBody << _email_helper.getSummaryParagraph().rdbuf();
                 // Add output summaries, if user requested it.
                 if (_parameters.getEmailIncludeResultsDirectory()) messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::LOCATION_PAR;
                 messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::FOOTER_PAR;
@@ -473,7 +496,7 @@ void AnalysisExecution::finalize() {
             std::vector<std::string> recipients;
             if (_parameters.getAlwaysEmailSummary())
                 for (const auto& r : _parameters.getEmailAlwaysRecipientsList()) recipients.push_back(r);
-            if (_parameters.getCutoffEmailSummary() && clusterMeetsCutoff)
+            if (_parameters.getCutoffEmailSummary() && _email_helper.getNumClustersMeetingEmailCutoff())
                 for (const auto& r : _parameters.getEmailCutoffRecipientsList()) recipients.push_back(r);
             // Remove any duplicate recipients.
             std::sort(recipients.begin(), recipients.end());
@@ -521,35 +544,30 @@ void AnalysisExecution::createReport() {
     macroRunTimeStopSerial();
 }
 
-/** starts analysis execution */
+/** starts analysis execution centrically */
 void AnalysisExecution::executeCentricEvaluation() {
-    unsigned long         ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(_data_hub.m_nGridTracts));
-    DataSetHandler      & DataHandler = _data_hub.GetDataSetHandler();
+    unsigned long ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(_data_hub.m_nGridTracts));
+    DataSetHandler& DataHandler = _data_hub.GetDataSetHandler();
 
     try {
         do { //start analyzing data
             ++_analysis_count;
             _significant_at005 = 0;
             _sim_vars.reset(0.0);
-
-            //simualtion data randomizer
-            RandomizerContainer_t                       RandomizationContainer;
+            RandomizerContainer_t RandomizationContainer; //simualtion data randomizer
             //allocate a simulation data set for each requested replication
-            std::vector<SimulationDataContainer_t>      vRandomizedDataSets(_parameters.GetNumReplicationsRequested());
+            std::vector<SimulationDataContainer_t> vRandomizedDataSets(_parameters.GetNumReplicationsRequested());
             //allocate a data gateway for each requested replication
-            ptr_vector<AbstractDataSetGateway>          vSimDataGateways(_parameters.GetNumReplicationsRequested());
+            ptr_vector<AbstractDataSetGateway> vSimDataGateways(_parameters.GetNumReplicationsRequested());
             //allocate an array to contain simulation llr values
             AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
             //data gateway object for real data
-            std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
-            std::auto_ptr<LoglikelihoodRatioWriter>      RatioWriter;
-            std::auto_ptr<AbstractDataSetWriter>         DataSetWriter;
+            std::auto_ptr<AbstractDataSetGateway> DataSetGateway(DataHandler.GetNewDataGatewayObject());
+            std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
+            std::auto_ptr<AbstractDataSetWriter> DataSetWriter;
             std::string simulation_out;
-
-            //get data randomizers
-            DataHandler.GetRandomizerContainer(RandomizationContainer);
-            //set data gateway object
-            DataHandler.GetDataGateway(*DataSetGateway);
+            DataHandler.GetRandomizerContainer(RandomizationContainer); //get data randomizers
+            DataHandler.GetDataGateway(*DataSetGateway); //set data gateway object
             if (_parameters.GetNumReplicationsRequested())
                 _print_direction.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, _parameters.GetNumReplicationsRequested());
             if (_parameters.GetOutputSimulationData()) {
@@ -565,9 +583,8 @@ void AnalysisExecution::executeCentricEvaluation() {
                     thisDataCollection.push_back(new DataSet(_data_hub.GetNumTimeIntervals(), _data_hub.GetNumIdentifiers(), _data_hub.GetNumMetaIdentifiersReferenced(), _parameters, j + 1));
                 //allocate appropriate data structure for given data set handler (probablility model)
                 DataHandler.AllocateSimulationData(thisDataCollection);
-                //randomize data
                 macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
-                _data_hub.RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+                _data_hub.RandomizeData(RandomizationContainer, thisDataCollection, i + 1); //randomize data
                 macroRunTimeStopSerial();
                 //print simulation data to file, if requested
                 if (_parameters.GetOutputSimulationData()) {
@@ -578,19 +595,15 @@ void AnalysisExecution::executeCentricEvaluation() {
                 vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
                 DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection, RandomizationContainer);
             }
-            //detect user cancellation
-            if (_print_direction.GetIsCanceled()) return;
-
+            if (_print_direction.GetIsCanceled()) return; // detect user cancellation
             //construct centric-analyses and centroid calculators for each thread:
-            std::deque<boost::shared_ptr<AbstractCentricAnalysis> > seqCentricAnalyses(ulParallelProcessCount);
-            std::deque<boost::shared_ptr<CentroidNeighborCalculator> > seqCentroidCalculators(ulParallelProcessCount);
+            std::deque<boost::shared_ptr<AbstractCentricAnalysis>> seqCentricAnalyses(ulParallelProcessCount);
+            std::deque<boost::shared_ptr<CentroidNeighborCalculator>> seqCentroidCalculators(ulParallelProcessCount);
             for (unsigned u = 0; u<ulParallelProcessCount; ++u) {
                 seqCentricAnalyses[u].reset(getNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
                 seqCentroidCalculators[u].reset(new CentroidNeighborCalculator(_data_hub, _print_direction));
             }
-
-            //analyze real and simulation data about each centroid
-            {
+            { //analyze real and simulation data about each centroid
                 stsCentricAlgoJobSource::result_type purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
                 PrintQueue tmpPrintDirection(_print_direction, _parameters.GetSuppressingWarnings());
                 AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
@@ -599,7 +612,7 @@ void AnalysisExecution::executeCentricEvaluation() {
                 contractor_type theContractor(jobSource);
                 //run threads:
                 boost::thread_group tg;
-                boost::mutex        thread_mutex;
+                boost::mutex thread_mutex;
                 unsigned uThreadIdx = 0;
                 if (_parameters.GetIncludePurelyTemporalClusters()) {
                     //launch specialized first thread:
@@ -615,10 +628,8 @@ void AnalysisExecution::executeCentricEvaluation() {
                     tg.create_thread(subcontractor<contractor_type, stsCentricAlgoFunctor>(theContractor, mcsf));
                 }
                 tg.join_all();
-
                 // Since we are evaluating real and simulation data simultaneuosly, there is no early termination option. 
                 _sim_vars.set_sim_count_explicit(_parameters.GetNumReplicationsRequested());
-
                 //propagate exceptions if needed:
                 if (_parameters.GetIncludePurelyTemporalClusters() && purelyTemporalExecutionExceptionStatus.bExceptional) {
                     if (purelyTemporalExecutionExceptionStatus.eException_type == stsCentricAlgoJobSource::result_type::memory)
@@ -641,20 +652,17 @@ void AnalysisExecution::executeCentricEvaluation() {
             seqCentricAnalyses.clear();
             seqCentroidCalculators.clear();
             vSimDataGateways.killAll();
-            //detect user cancellation
-            if (_print_direction.GetIsCanceled())
-                return;
+            if (_print_direction.GetIsCanceled()) return; //detect user cancellation
             //rank top clusters and apply criteria for reporting secondary clusters
             rankClusterCollections(_top_clusters_containers, _reportClusters, &_clusterRanker, _print_direction);
             // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
-            //       We can't perform index based ordering here since we need to perform simulations first ... correct?
-            printTopClusterLogLikelihood(getLargestMaximaClusterCollection());
+            // We can't perform index based ordering here since we need to perform simulations first ... correct?
+            printTopClusterLogLikelihood(getClusterCollection());
             //report calculated simulation llr values
             if (SimulationRatios) {
                 if (getIsCalculatingSignificantRatios()) _significant_ratios->initialize();
                 RatioWriter.reset(new LoglikelihoodRatioWriter(_parameters, _analysis_count > 1, false));
-                std::vector<double>::const_iterator itr = SimulationRatios->begin(), itr_end = SimulationRatios->end();
-                for (; itr != itr_end; ++itr) {
+                for (auto itr = SimulationRatios->begin(); itr != SimulationRatios->end(); ++itr) {
                     //update most likely clusters given latest simulated loglikelihood ratio
                     _clusterRanker.update(*itr);
                     //update significance indicator
@@ -669,7 +677,6 @@ void AnalysisExecution::executeCentricEvaluation() {
             }
             //report clusters to output files
             reportClusters();
-            //log history for first analysis run
             if (_analysis_count == 1) {
                 // report relative risk estimates for each location
                 if (_parameters.GetOutputRelativeRisksFiles()) {
@@ -678,20 +685,11 @@ void AnalysisExecution::executeCentricEvaluation() {
                     _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker, _reportClusters);
                     macroRunTimeStopSerial();
                 }
-                logRunHistory();
+                logRunHistory(); //log history for first analysis run
             }
-            //report additional output file: 'relative risks for each location'
             if (_print_direction.GetIsCanceled()) return;
         } while (repeatAnalysis() == true); //repeat analysis - iterative scan
-                                            // Finalize cluster graph writer if it was allocated.
-        if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
-        if (_cluster_graph.get()) _cluster_graph->finalize();
-        // Finalize kml writer if it was allocated.
-        if (_cluster_kml.get()) _cluster_kml->finalize();
-        // Finalize google writer if it was allocated.
-        if (_cluster_map.get()) _cluster_map->finalize();
-    }
-    catch (prg_exception& x) {
+    } catch (prg_exception& x) {
         x.addTrace("executeCentricEvaluation()", "AnalysisExecution");
         throw;
     }
@@ -853,27 +851,24 @@ void AnalysisExecution::executePowerEvaluations() {
 /** starts analysis execution - evaluating real data then replications */
 void AnalysisExecution::executeSuccessively() {
     try {
-        do { //start analyzing data
+        do { // start analyzing data
             ++_analysis_count;
             _significant_at005 = 0;
-            //calculate most likely clusters
+            // calculate most likely clusters
             macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
             calculateMostLikelyClusters();
             macroRunTimeStopSerial();
-            //detect user cancellation
-            if (_print_direction.GetIsCanceled()) return;
-            _sim_vars.reset(_parameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
-
-            //Do Monte Carlo replications.
-            if (getLargestMaximaClusterCollection().GetNumClustersRetained())
+            if (_print_direction.GetIsCanceled()) return; // detect user cancellation
+            _sim_vars.reset(
+                _parameters.GetNumReplicationsRequested() > 0 && getClusterCollection().GetNumClustersRetained() > 0 ? 
+                getClusterCollection().GetTopRankedCluster().GetRatio() : 0.0
+            );
+            // Do Monte Carlo replications.
+            if (getClusterCollection().GetNumClustersRetained())
                 executeSuccessiveSimulations();
-
-            //detect user cancellation
-            if (_print_direction.GetIsCanceled()) return;
+            if (_print_direction.GetIsCanceled()) return; // detect user cancellation
             // report clusters to output files
             reportClusters();
-
-            //log history for first analysis run
             if (_analysis_count == 1) {
                 // report relative risk estimates for each location
                 if (_parameters.GetOutputRelativeRisksFiles()) {
@@ -882,17 +877,10 @@ void AnalysisExecution::executeSuccessively() {
                     _data_hub.DisplayRelativeRisksForEachTract(*_relevance_tracker, _reportClusters);
                     macroRunTimeStopSerial();
                 }
-                logRunHistory();
+                logRunHistory(); // log history for first analysis run
             }
             if (_print_direction.GetIsCanceled()) return;
-        } while (repeatAnalysis()); //repeat analysis - iterative scan
-                                    // Finalize cluster graph writer if it was allocated.
-        if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
-        if (_cluster_graph.get()) _cluster_graph->finalize();
-        // Finalize kml writer if it was allocated.
-        if (_cluster_kml.get()) _cluster_kml->finalize();
-        // Finalize google writer if it was allocated.
-        if (_cluster_map.get()) _cluster_map->finalize();
+        } while (repeatAnalysis()); // repeat analysis? (iterative scan)
     } catch (prg_exception& x) {
         x.addTrace("executeSuccessively()", "AnalysisExecution");
         throw;
@@ -925,14 +913,13 @@ void AnalysisExecution::executeSuccessiveSimulations() {
     }
 }
 
-/** Returns the most likely cluster collection associated with largest spatial maxima. */
-const MostLikelyClustersContainer & AnalysisExecution::getLargestMaximaClusterCollection() const {
+/** Returns the most likely cluster collection of the analysis. */
+const MostLikelyClustersContainer & AnalysisExecution::getClusterCollection() const {
     if (_reportClusters.GetNumClustersRetained() > 0)
         return _reportClusters;
-    else if (_top_clusters_containers.size() > 0)
+    else if (_top_clusters_containers.size() > 0) // Returns the most likely cluster collection associated with largest spatial maxima (GINI).
         return _top_clusters_containers.back();
-    else
-        /* Default to the _reportClusters collection, since we must return a reference to something. */
+    else // Default to the _reportClusters collection, since we must return a reference to something.
         return _reportClusters;
 }
 
@@ -1495,8 +1482,8 @@ bool AnalysisExecution::repeatAnalysis() {
     try {
         if (!_parameters.GetIsIterativeScanning()) return false;
         if (_analysis_count >= _parameters.GetNumIterativeScansRequested()) return false;
-        if (!getLargestMaximaClusterCollection().GetNumClustersRetained()) return false;
-        const CCluster& cluster = getLargestMaximaClusterCollection().GetTopRankedCluster();
+        if (!getClusterCollection().GetNumClustersRetained()) return false;
+        const CCluster& cluster = getClusterCollection().GetTopRankedCluster();
         //if user requested replications, validate that cluster does not exceed user defined cutoff 
         if (_parameters.GetNumReplicationsRequested()) {
             if (_parameters.GetIsProspectiveAnalysis()) {
@@ -1564,63 +1551,51 @@ void AnalysisExecution::reportClusters() {
     try {
         if (_parameters.getCalculateOliveirasF())
             calculateOliveirasF();
-
         _print_direction.Printf("Printing analysis results to file ...\n", BasePrint::P_STDOUT);
         // since the simulations have been completed, we can calculate the gini index and add to collections
         if (_parameters.getReportGiniOptimizedClusters())
             addGiniClusters(_top_clusters_containers, _reportClusters, _parameters.getGiniIndexPValueCutoff());
-
-        // Process line list data if selected.
+        // Process line list data - if applicable.
         if (_parameters.getReadingLineDataFromCasefile()) {
             _print_direction.Printf("Processing line list data and adding results to cluster line list file ...\n", BasePrint::P_STDOUT);
-            _data_demographic_processor.reset(new DataDemographicsProcessor(_data_hub.GetDataSetHandler(), _reportClusters, _sim_vars));
-            _data_demographic_processor->process(_analysis_count);
+            if (!_data_demographic_processor.get()) _data_demographic_processor.reset(new DataDemographicsProcessor(_data_hub.GetDataSetHandler()));
+            _data_demographic_processor->addClusters(_reportClusters, _sim_vars, _analysis_count);
         }
-
-        // report clusters accordingly
+		// report clusters to main output file and create any requested additional output files
         if (_parameters.GetIsIterativeScanning()) {
             printTopIterativeScanCluster(_reportClusters);
             if (_parameters.getOutputTemporalGraphFile() && _parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-                if (_analysis_count == 1) _temporal_graph.reset(new TemporalChartGenerator(_parameters));
+                _print_direction.Printf("Adding analysis results to temporal graph map ...\n", BasePrint::P_STDOUT);
+                if (!_temporal_graph.get()) _temporal_graph.reset(new TemporalChartGenerator(_parameters));
                 _temporal_graph->add(_data_hub, _reportClusters, _sim_vars, _analysis_count);
             }
         } else {
             printTopClusters(_reportClusters);
-            // create temporal graph
-            if ((_parameters.GetIsPurelyTemporalAnalysis() || _parameters.GetIsSpaceTimeAnalysis() || _parameters.GetAnalysisType() == SPATIALVARTEMPTREND) 
-                && _parameters.getOutputTemporalGraphFile()) {
+            if (_parameters.getOutputTemporalGraphFile()) {
                 _print_direction.Printf("Adding analysis results to temporal graph map ...\n", BasePrint::P_STDOUT);
                 TemporalChartGenerator graph(_parameters);
                 graph.add(_data_hub, _reportClusters, _sim_vars);
                 graph.finalize(_data_hub);
             }
         }
-
-        // Create Cartesian graph, if requested.
+		// Record clusters to email helper - if applicable.
+        if (!_data_hub.isDrilldown() && (_parameters.getCreateEmailSummaryFile() || _parameters.getAlwaysEmailSummary() || _parameters.getCutoffEmailSummary()))
+		    _email_helper.recordClusters(_reportClusters, _sim_vars, _analysis_count);
         if (_parameters.getOutputCartesianGraph() && !_parameters.GetIsPurelyTemporalAnalysis() &&
             ((_parameters.GetCoordinatesType() == CARTESIAN && _data_hub.getLocationsManager().expectedDimensions() == 2) || _parameters.GetCoordinatesType() == LATLON)) {
-            // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Cartesian map file ...\n", BasePrint::P_STDOUT);
-            if (_analysis_count == 1) _cluster_graph.reset(new CartesianGraph(_data_hub));
+            if (!_cluster_graph.get()) _cluster_graph.reset(new CartesianGraph(_data_hub));
             _cluster_graph->add(_reportClusters, _sim_vars, _analysis_count);
         }
-
-        // Create Google Maps file if requested.
         if (_parameters.getOutputGoogleMapsFile()) {
-            // If first iteration of analyses, create the ClusterMap object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Google map file ...\n", BasePrint::P_STDOUT);
-            if (_analysis_count == 1) _cluster_map.reset(new ClusterMap(_data_hub));
+            if (!_cluster_map.get()) _cluster_map.reset(new ClusterMap(_data_hub));
             _cluster_map->add(_reportClusters, _sim_vars, _analysis_count);
-            if (_data_demographic_processor.get() && _analysis_count == 1) _cluster_map->add(*_data_demographic_processor.get());
         }
-
-        // Create KML file if requested.
         if (_parameters.getOutputKMLFile()) {
-            // If first iteration of analyses, create the ClusterKML object -- this is both with and without iterative scan.
             _print_direction.Printf("Adding analysis results to Google Earth file ...\n", BasePrint::P_STDOUT);
-            if (_analysis_count == 1) _cluster_kml.reset(new ClusterKML(_data_hub));
-            if (_data_demographic_processor.get() && _analysis_count == 1) _cluster_kml->add(*_data_demographic_processor);
-            _cluster_kml->add(_reportClusters, _sim_vars);
+            if (!_cluster_kml.get()) _cluster_kml.reset(new ClusterKML(_data_hub));
+            _cluster_kml->add(_reportClusters, _sim_vars, _analysis_count);
         }
     } catch (prg_exception& x) {
         x.addTrace("reportClusters()", "AnalysisExecution");
@@ -2095,7 +2070,7 @@ void AbstractAnalysisDrilldown::execute(const std::string& parentOutputFilename)
     // Attempt to drilldown on most likely clusters, unless the analysis is an iterative scan. Iterative scans drilldown on clusters
     // at the end of each scan iteration.
     if ((_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) && !_parameters.GetIsIterativeScanning()) {
-        const MostLikelyClustersContainer & mlc = execution.getLargestMaximaClusterCollection();
+        const MostLikelyClustersContainer & mlc = execution.getClusterCollection();
         for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
             drilldownCluster(execution, mlc.GetCluster(c), c, _drilldowns);
         }
@@ -2419,7 +2394,7 @@ void AnalysisRunner::run() {
 
         // Perform analysis drilldowns - if requested by user.
         if ((_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) && !_parameters.GetIsIterativeScanning()) {
-            const MostLikelyClustersContainer & mlc = execution->getLargestMaximaClusterCollection();
+            const MostLikelyClustersContainer & mlc = execution->getClusterCollection();
             for (tract_t c = 0; c < mlc.GetNumClustersRetained(); ++c) {
                 const CCluster& cluster = mlc.GetCluster(c);
                 if (execution->getClusterSupplement().test(cluster)/*reported?*/ && AbstractAnalysisDrilldown::shouldDrilldown(cluster, c + 1, *_data_hub, _parameters, execution->getSimVariables())) {

@@ -326,8 +326,8 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisExecution& analysisExecution
     bool bPrintPValue = params.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
     if (bPrintPValue) {
         double dTopClusterRatio = 0;
-        if (analysisExecution.getLargestMaximaClusterCollection().GetNumClustersRetained()) {
-            const CCluster & topCluster = analysisExecution.getLargestMaximaClusterCollection().GetTopRankedCluster();
+        if (analysisExecution.getClusterCollection().GetNumClustersRetained()) {
+            const CCluster & topCluster = analysisExecution.getClusterCollection().GetTopRankedCluster();
             dTopClusterRatio = topCluster.getReportingPValue(params, analysisExecution.getSimVariables(), true);
         }
         SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
