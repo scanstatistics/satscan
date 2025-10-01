@@ -474,9 +474,16 @@ void AnalysisExecution::finalize() {
                 messageSubjectLine << _parameters.getEmailCustomSubject();
                 messageBody << _parameters.getEmailCustomMessageBody();
                 std::string customMessageBody(messageBody.str());
-                ireplace_all(customMessageBody, EmailText::LINELIST_PAR, 
-                    (_email_helper.getSignalText().str().size() ? _email_helper.getSignalText().str() : std::string("No clusters signaled in this analysis."))
-                );
+                if (_parameters.getReadingLineDataFromCasefile()) {
+                    ireplace_all(customMessageBody, EmailText::LINELIST_PAR,
+                        (_email_helper.getSignalText().str().size() ? _email_helper.getSignalText().str() : std::string("No clusters signaled in this analysis."))
+                    );
+                } else {
+					// Replace any line-list paragraph with nothing if there is no line-list data.
+					printString(buffer, "%s%s", EmailText::LINELIST_PAR, EmailText::LINEBREAK);
+					ireplace_all(customMessageBody, buffer.c_str(), std::string("")); // with line-break
+					ireplace_all(customMessageBody, EmailText::LINELIST_PAR, std::string("")); // without line-break
+				}
                 ireplace_all(customMessageBody, EmailText::SUMMARY_PAR, _email_helper.getSummaryParagraph().str());
                 messageBody.str("");
                 messageBody << customMessageBody;
