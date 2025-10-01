@@ -561,7 +561,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 								  gpPolyLineShapeDataFileWriter->writePolyline(x, y);
 							  }
 						  }
-                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = gParameters.getUseLocationsNetworkFile() ? 0.0 : thisCluster.GetLatLongRadius();
+                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = thisCluster.GetRadiusDefined() ? thisCluster.GetLatLongRadius() : 0.0;
                           break;
          default : throw prg_error("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());
        }

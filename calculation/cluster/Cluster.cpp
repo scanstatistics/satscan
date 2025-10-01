@@ -673,6 +673,9 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
           buffer += printString(work, " / %s", getValueAsString(m_CartesianRadius, work2).c_str());
 	  }
 	  printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
+      if (Data.GetParameters().getUseLocationsNetworkFile() && m_CartesianRadius != -1.0) {
+          printClusterData(fp, PrintFormat, "Ctr to utmost location", getValueAsString(m_CartesianRadius, work2), false);
+      }
     } else {//print ellipse settings
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
           buffer += printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
@@ -712,8 +715,11 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
 	if (!Data.GetParameters().getUseLocationsNetworkFile()) {
 		printString(work2, " / %s km", getValueAsString(GetLatLongRadius(), work).c_str());
 		buffer += work2;
-	}
+    }
 	printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
+    if (Data.GetParameters().getUseLocationsNetworkFile() && m_CartesianRadius != -1.0) {
+        printClusterData(fp, PrintFormat, "Ctr to utmost location", printString(work2, "%s km", getValueAsString(GetLatLongRadius(), work).c_str()), false);
+    }
   } catch (prg_exception& x) {
     x.addTrace("DisplayLatLongCoords()","CCluster");
     throw;
@@ -1314,19 +1320,22 @@ bool CCluster::reportableRecurrenceInterval(const CParameters& parameters, const
 /** Set class member 'm_CartesianRadius' from neighbor information obtained from
     CSaTScanData object. */
 void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
-  std::vector<double> ClusterCenter, TractCoords;
+    auto& params = DataHub.GetParameters();
+    std::vector<double> ClusterCenter, TractCoords;
 
-  if (ClusterDefined() && !DataHub.GetParameters().UseLocationNeighborsFile() && !DataHub.GetParameters().getUseLocationsNetworkFile()) {
-    DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), ClusterCenter);
-    CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, _num_identifiers), TractCoords);
-    if (m_iEllipseOffset) {
-     CentroidNeighborCalculator::Transform(ClusterCenter[0], ClusterCenter[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
-                                           DataHub.GetEllipseShape(m_iEllipseOffset), &ClusterCenter[0], &ClusterCenter[1]);
-     CentroidNeighborCalculator::Transform(TractCoords[0], TractCoords[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
-                                           DataHub.GetEllipseShape(m_iEllipseOffset), &TractCoords[0], &TractCoords[1]);
-    }
-    m_CartesianRadius = Coordinates::distanceBetween(ClusterCenter, TractCoords);
-  }  
+    if (ClusterDefined() && !params.UseLocationNeighborsFile() &&
+      (!params.getUseLocationsNetworkFile() || (params.getUseLocationsNetworkFile() && DataHub.networkCanReportLocationCoordinates()))
+    ) {
+        DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), ClusterCenter);
+        CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, _num_identifiers), TractCoords);
+        if (m_iEllipseOffset) {
+            CentroidNeighborCalculator::Transform(ClusterCenter[0], ClusterCenter[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                                   DataHub.GetEllipseShape(m_iEllipseOffset), &ClusterCenter[0], &ClusterCenter[1]);
+            CentroidNeighborCalculator::Transform(TractCoords[0], TractCoords[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                                DataHub.GetEllipseShape(m_iEllipseOffset), &TractCoords[0], &TractCoords[1]);
+        }
+        m_CartesianRadius = Coordinates::distanceBetween(ClusterCenter, TractCoords);
+    }  
 }
 
 /** Sets centroid index of cluster as defined in CSaTScanData. */

@@ -792,11 +792,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedMaxDistanceLabel.setText(sRadioCaption);
         switch (_settings_window.getCoordinatesType()) {
             case CARTESIAN:
-                sLabelCaption = String.format("Cartesian units %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
+                if (Utils.selected(_locations_network))
+                    sLabelCaption = "Cartesian units from the cluster center";
+                else
+                    sLabelCaption = String.format("Cartesian units %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
             case LATLON:
                 if (Utils.selected(_locations_network))
-                    sLabelCaption = "kilometers";
+                    sLabelCaption = "kilometers from the cluster center";
                 else
                     sLabelCaption = String.format("kilometer %1$s", (_circularRadioButton.isSelected() ? "radius" : "minor axis"));
                 break;
