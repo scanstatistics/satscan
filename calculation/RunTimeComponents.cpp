@@ -12,6 +12,8 @@ SerialRunTimeComponent::Type RunTimeComponentManager::GetCorrespondingRunTimeCom
   switch (eType) {
     case FocusRunTimeComponent::MeasureListScanningAdding   : return SerialRunTimeComponent::ScanningSimulatedData;
     case FocusRunTimeComponent::MeasureListRatioCalculation : return SerialRunTimeComponent::ScanningSimulatedData;
+    case FocusRunTimeComponent::AddNeighborData: return SerialRunTimeComponent::ScanningSimulatedData;
+    case FocusRunTimeComponent::ComputeMaximizingValue: return SerialRunTimeComponent::ScanningSimulatedData;
   }
   return SerialRunTimeComponent::CatchAll;
 }
@@ -35,6 +37,8 @@ const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComp
   switch (eComponent) {
     case FocusRunTimeComponent::MeasureListScanningAdding   : return "MeasureList - Scan/Add";
     case FocusRunTimeComponent::MeasureListRatioCalculation : return "MeasureList - Ratio Calculation";
+    case FocusRunTimeComponent::AddNeighborData: return "Monte Carlo - Add Data";
+    case FocusRunTimeComponent::ComputeMaximizingValue: return "Monte Carlo - Maximizing";
   }
   return "?";
 }

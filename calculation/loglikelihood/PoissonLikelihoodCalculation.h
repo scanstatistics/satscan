@@ -27,11 +27,6 @@ class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
 
 /** space-time permutation log likelihood calculator. */
 class HypergeometricLikelihoodCalculator : public AbstractLikelihoodCalculator {
-private:
-    const CParameters& gParameters;   /** const reference to CParameters object */
-    std::vector<double> gvDataSetLogLikelihoodUnderNull;
-    bool _time_stratified;
-
 public:
     HypergeometricLikelihoodCalculator(const CSaTScanData& DataHub);
     virtual ~HypergeometricLikelihoodCalculator() {}

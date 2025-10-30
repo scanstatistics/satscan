@@ -110,7 +110,7 @@ double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal(size_t tSetIndex) c
 //*************************** HypergeometricLikelihoodCalculator **************************
 
 HypergeometricLikelihoodCalculator::HypergeometricLikelihoodCalculator(const CSaTScanData& DataHub)
-:AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {}
+:AbstractLikelihoodCalculator(DataHub) {}
 
 double HypergeometricLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex) const {
     if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;

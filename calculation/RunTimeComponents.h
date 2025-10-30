@@ -40,7 +40,7 @@ class SerialRunTimeComponent : public AbstractRunTimeComponent {
 class FocusRunTimeComponent : public AbstractRunTimeComponent {
   public:
     /** Runtime types where time can overlap. */
-    enum Type {MeasureListScanningAdding=1, MeasureListRatioCalculation};
+    enum Type {MeasureListScanningAdding=1, MeasureListRatioCalculation, AddNeighborData, ComputeMaximizingValue};
 
   protected:
     SerialRunTimeComponent::Type _serial_type;

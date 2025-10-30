@@ -15,11 +15,14 @@ class MinimalGrowthArray {
      unsigned int    giSize;
 
    public:
+     MinimalGrowthArray(unsigned int iSize, const T& t);
      MinimalGrowthArray(const std::vector<T>& v);
      MinimalGrowthArray(const MinimalGrowthArray& a);
      MinimalGrowthArray() : gpArray(0), giSize(0) {}
      ~MinimalGrowthArray();
 
+     T* getArray() const { return gpArray; }
+     T             & operator[](const unsigned int i) { return gpArray[i]; }
      const T       & operator[](const unsigned int i) const {return gpArray[i];}
      bool            operator!=(const MinimalGrowthArray<T> & rhs) const;
      void            add(const T& x, bool bSort);
@@ -33,6 +36,12 @@ class MinimalGrowthArray {
      void            set(const std::vector<T>& v);
      unsigned int    size() const {return giSize;}
 };
+
+template <class T>
+MinimalGrowthArray<T>::MinimalGrowthArray(unsigned int iSize, const T& t):giSize(iSize) {
+    gpArray = new T[giSize];
+    memset(gpArray, t, giSize * sizeof(T));
+}
 
 template <class T>
 MinimalGrowthArray<T>::MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {

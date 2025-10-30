@@ -35,7 +35,7 @@ void MultivariateUnifierHighRate::AdjoinRatioHypergeometric(AbstractLikelihoodCa
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
     // perform check only if expected cases.
-    if (measure > 0.0 && Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
+    if (measure > 0.0 && macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
@@ -121,7 +121,7 @@ void MultivariateUnifierLowRate::AdjoinRatioHypergeometric(AbstractLikelihoodCal
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
     // perform check only if expected cases.
-    if (measure > 0.0 && Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
+    if (measure > 0.0 && macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
@@ -253,11 +253,10 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
 void AdjustmentUnifier::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
-    if (Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
+    if (macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
-    }
-    else if (Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
+    } else if (macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
     }
@@ -422,13 +421,13 @@ void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& C
 void AdjustmentUnifierRiskThreshold::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
     const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
 ) {
-    if (Calculator.HighRateDataStream(cases, measure, tSetIndex)) {
+    if (macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
     }
-    else if (Calculator.LowRateDataStream(cases, measure, tSetIndex)) {
+    else if (macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
         _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
         _data_stream_accumulator._sum_observed += cases;
         _data_stream_accumulator._sum_expected += measure;

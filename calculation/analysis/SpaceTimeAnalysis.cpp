@@ -6,8 +6,8 @@
 #include "MakeNeighbors.h"
 #include "ClusterData.h"
 #include "SSException.h"
-
 #include "BatchedLikelihoodCalculation.h"
+#include "SpaceTimePermutationDataSetHandler.h"
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -54,12 +54,12 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
         // If this is a space-time permutation analysis, using hypergeometric, then we now need to calculate
         // the probabilities lookup(s), then associate with the time interval object.
         if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && _parameters.getSTPasHypergeometric()) {
+            const std::vector<double>& caseLog = dynamic_cast<const SpaceTimePermutationDataSetHandler&>(_data_hub.GetDataSetHandler()).getCaseLog();
             for (auto dataset: _data_hub.GetDataSetHandler().getDataSets()) {
                 std::set<count_t> collection;
                 _time_intervals->getCasesInTimeWindowsCollection(collection, dataset->getCaseData_PT());
                 dataset->refHyperProbLkup().buildLookup(
-                    collection, dataset->getTotalCases(),
-                    static_cast<count_t>(std::ceil(static_cast<double>(dataset->getTotalCases()) / 2))
+                    _parameters.GetAreaScanRateType(), caseLog, collection, dataset->getTotalCases()
                 );
                 _time_intervals->associate(dataset->getHyperProbLkup());
             }
@@ -91,6 +91,50 @@ const SharedClusterVector_t CSpaceTimeAnalysis::CalculateTopClusters(tract_t tCe
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
+double CSpaceTimeAnalysis::MonteCarlo(const AbstractDataSetGateway& DataGateway) {
+    tract_t t, tNumNeighbors, * pIntegerArray;
+    unsigned short * pUnsignedShortArray;
+    std::vector<double> vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+
+    //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
+    for (tract_t j = 0; j <= _parameters.GetNumTotalEllipses(); ++j) {
+        double& dShapeMaxValue = vMaximizingValues[j];
+        CentroidNeighbors CentroidDef(j, _data_hub);
+        for (tract_t tCenter = 0; tCenter < _data_hub.m_nGridTracts; ++tCenter) {
+            _time_intervals->setIntervalRange(tCenter);
+            _cluster_data->InitializeData();
+            CentroidDef.Set(tCenter);
+            tNumNeighbors = CentroidDef.GetNumNeighbors();
+            pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+            pIntegerArray = CentroidDef.GetRawIntegerArray();
+            for (t = 0; t < tNumNeighbors; ++t) {
+                macroRunTimeStartFocused(FocusRunTimeComponent::AddNeighborData);
+                _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+                macroRunTimeStopFocused(FocusRunTimeComponent::AddNeighborData);
+                macroRunTimeStartFocused(FocusRunTimeComponent::ComputeMaximizingValue);
+                dShapeMaxValue = std::max(dShapeMaxValue, _time_intervals->ComputeMaximizingValue(*_cluster_data));
+                macroRunTimeStopFocused(FocusRunTimeComponent::ComputeMaximizingValue);
+            }
+        }
+    }
+
+    //if maximizing value is not a ratio/test statistic, convert them now
+    if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
+        for (auto& maxVal : vMaximizingValues)
+            maxVal = _likelihood_calculator->CalculateFullStatistic(maxVal);
+
+    //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
+    tract_t ellipseOffset=0;
+    double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();
+    double dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(ellipseOffset), dPenalty);
+    for (auto& m: vMaximizingValues) {
+        m *= CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(ellipseOffset), dPenalty);
+        dMaximizingValue = std::max(m, dMaximizingValue);
+    }
+    return dMaximizingValue;
+}
+
+/** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
 double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
     tract_t t, tNumNeighbors, * pIntegerArray;
     unsigned short * pUnsignedShortArray;
@@ -101,20 +145,24 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
     for (int j=0; j <= _parameters.GetNumTotalEllipses(); ++j) {
         double& dShapeMaxValue = vMaximizingValues[j];
         _cluster_data->InitializeData();
-        CentroidNeighbors CentroidDef(j, _data_hub);
-        CentroidDef.Set(tCenter);
+        CentroidNeighbors CentroidDef(j, _data_hub, tCenter);
         tNumNeighbors = CentroidDef.GetNumNeighbors();
         pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
         pIntegerArray = CentroidDef.GetRawIntegerArray();
         for (t=0; t < tNumNeighbors; ++t) {
+            macroRunTimeStartFocused(FocusRunTimeComponent::AddNeighborData);
             _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+            macroRunTimeStopFocused(FocusRunTimeComponent::AddNeighborData);
+            macroRunTimeStartFocused(FocusRunTimeComponent::ComputeMaximizingValue);
             dShapeMaxValue = std::max(dShapeMaxValue, _time_intervals->ComputeMaximizingValue(*_cluster_data));
+            macroRunTimeStopFocused(FocusRunTimeComponent::ComputeMaximizingValue);
         }
     }
     //if maximizing value is not a ratio/test statistic, convert them now
     if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
         for (auto& maxVal: vMaximizingValues)
             maxVal = _likelihood_calculator->CalculateFullStatistic(maxVal);
+
     //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
     double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();
     double dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);

@@ -26,6 +26,7 @@ class CSpaceTimeAnalysis : public CAnalysis {
         virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
         virtual double                      MonteCarlo(const DataSetInterface& Interface);
         virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+        virtual double                      MonteCarlo(const AbstractDataSetGateway& DataGateway);
 
     public:
         CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);

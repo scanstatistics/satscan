@@ -58,13 +58,13 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
             _cluster_data_factory.reset(new MultiSetClusterDataFactory(_parameters));
             _replica_process_type = ClusterEvaluation;
         } else if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-            _cluster_data_factory.reset(new ClusterDataFactory());
+            _cluster_data_factory.reset(new ClusterDataFactory(_parameters));
             if (_parameters.getSTPasHypergeometric())
                 _replica_process_type = ClusterEvaluation;
             else
                 _replica_process_type = MeasureListEvaluation;
         } else {
-            _cluster_data_factory.reset(new ClusterDataFactory());
+            _cluster_data_factory.reset(new ClusterDataFactory(_parameters));
             if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND || (_parameters.GetAnalysisType() == PURELYSPATIAL && _parameters.GetRiskType() == MONOTONERISK))
                 _replica_process_type = ClusterEvaluation;
             else if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)

@@ -289,7 +289,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
       iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
     }
     // Once we're determined which intervals are not evaluated, store that index for use in data interface code.
-    if (iNumCollapsibleIntervals > 1 && !gParameters.getSTPasHypergeometric()) // todo - refactor somehow
+    if (iNumCollapsibleIntervals > 1)
         _data_interface_start_idex = std::max(0, iNumCollapsibleIntervals);
   }
   // Calculate the temporal adjustment windows if performing time-stratified nonparametric and 

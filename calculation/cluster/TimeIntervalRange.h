@@ -43,7 +43,7 @@ class HypergeometricTemporalDataEvaluator : public AbstractHypergeometricTempora
         MAXIMIZE_FUNCPTR gpCalculationMethod;
         double _default_maximizing_value;
         count_t* _pt_counts;
-        std::vector<const HypergeometricProbabilityLookup*> _look_ups;
+        const HypergeometricProbabilityLookup * _look_up;
 
     public:
         HypergeometricTemporalDataEvaluator(
@@ -54,7 +54,7 @@ class HypergeometricTemporalDataEvaluator : public AbstractHypergeometricTempora
         virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
-        virtual void associate(const HypergeometricProbabilityLookup& lookup) { _look_ups.push_back(&lookup); }
+        virtual void associate(const HypergeometricProbabilityLookup& lookup) { _look_up = &lookup; }
 };
 
 /** Temporal window evaluator for the hypergeometric distribution. */

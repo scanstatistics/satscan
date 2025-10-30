@@ -9,7 +9,7 @@
 
 /** constructor */
 SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-                                      :DataSetHandler(DataHub, Print) {}
+:DataSetHandler(DataHub, Print) {}
 
 /** destructor */
 SpaceTimePermutationDataSetHandler::~SpaceTimePermutationDataSetHandler() {}
@@ -214,6 +214,16 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
                 return false;
         }
         removeDataSetsWithNoData();
+
+        // If performing as hypergeometric, calculate the maximum number of cases in all data sets
+        if (gDataHub.GetParameters().getSTPasHypergeometric()) {
+			unsigned int maxCases = 0;
+            for (size_t t = 0; t < numDataSet; ++t)
+                maxCases = std::max(maxCases, (unsigned int)GetDataSet(t).getTotalCases());
+			_case_log.resize(maxCases + 1, 0.0);
+            for (size_t t = 1; t < _case_log.size(); ++t)
+				_case_log[t] = log(t);
+        }
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
         throw;

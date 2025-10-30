@@ -10,7 +10,8 @@
 #include "SSException.h"
 
 /** class constructor*/
-ClusterDataFactory::ClusterDataFactory() : AbstractClusterDataFactory() {}
+ClusterDataFactory::ClusterDataFactory(const CParameters& parameters):
+AbstractClusterDataFactory(), _parameters(parameters){}
 
 /** class destructor */
 ClusterDataFactory::~ClusterDataFactory() {}
@@ -66,23 +67,27 @@ AbstractTemporalClusterData * ClusterDataFactory::GetNewTemporalClusterData(cons
 /** Returns newly created SpaceTimeData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewSpaceTimeClusterData(const DataSetInterface& Interface) const {
+  if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && _parameters.getSTPasHypergeometric())
+      return new SpaceTimeDataHyper(Interface);
   return new SpaceTimeData(Interface);
 }
 
 /** Returns newly created SpaceTimeData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
 AbstractTemporalClusterData * ClusterDataFactory::GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const {
-  return new SpaceTimeData(DataGateway);
+    if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION && _parameters.getSTPasHypergeometric())
+        return new SpaceTimeDataHyper(DataGateway);
+    return new SpaceTimeData(DataGateway);
 }
 
 //******************************************************************************
 
 /** class constructor */
-MultiSetClusterDataFactory::MultiSetClusterDataFactory(const CParameters& Parameters) : AbstractClusterDataFactory() {
+MultiSetClusterDataFactory::MultiSetClusterDataFactory(const CParameters& Parameters)
+:AbstractClusterDataFactory(), gClusterDataFactory(Parameters){
   try {
     Setup(Parameters);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","MultiSetClusterDataFactory");
     throw;
   }

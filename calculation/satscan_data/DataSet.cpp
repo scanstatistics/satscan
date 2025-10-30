@@ -792,179 +792,265 @@ void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
         *gpMeasureData_Aux2 = other;
 }
 
-//************************ HypergeometricProbabilityLookup **************
+const double HypergeometricProbabilityLookup::PROBABILITY_UNSET = -99;
 
 /** Builds lookup table from passed attributes. */
-void HypergeometricProbabilityLookup::buildLookup(const std::set<count_t>& caseWindows, count_t C, count_t K) {
-    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), C + 1, C + 1, 99));
-    calculateHG(*_HG, caseWindows, C, C);
+void HypergeometricProbabilityLookup::buildLookup(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C) {
+    std::cout << "Building Hypergeometric Probability Lookup Table with dimnesions: " << caseWindows.size() << " " << C + 1 << " " << C + 1 << std::endl;
+    time_t RunTime, CompletionTime;
+
+    // Original implementation using 3D array - too large for practical use
+    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), C + 1, C + 1, PROBABILITY_UNSET));
+    _HG_array = _HG->GetArray();
+    // Original implementation using 3D array - too large for practical use
+
+    time(&RunTime);
+    calculateHG(scanrate, caseLog , caseWindows, C);
+    time(&CompletionTime);
+
+    double nTotalTime = difftime(CompletionTime, RunTime);
+    double nHours = floor(nTotalTime / (60 * 60));
+    double nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
+    double nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
+    const char* szHours = "hours", * szMinutes = "minutes", * szSeconds = "seconds";
+    if (0 < nHours && nHours < 1.5) szHours = "hour";
+    if (0 < nMinutes && nMinutes < 1.5) szMinutes = "minute";
+    if (0.5 <= nSeconds && nSeconds < 1.5) szSeconds = "second";
+    printf("Total Running Time : %.0f %s %.0f %s %.0f %s\n", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
 }
 
-/** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-double HypergeometricProbabilityLookup::getProbabilityFor(count_t T, count_t S, count_t x) const {
-    //return _HG->GetArray()[_T_to_index[T]][S][x];
+#define STD_LOG(c) caseLog[(unsigned int)c]
+//#define STD_LOG(c) log(static_cast<double>(c))
 
-    double test = _HG->GetArray()[_T_index[T]][S][x];
-    return test;
+void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& vT, count_t C) {
 
-    //return _HG->GetArray()[_T_index[T]][S][x];
-}
+    measure_t*** nHG = _HG->GetArray();
 
-#include <boost/timer/timer.hpp>
-
-#include <boost/math/distributions/hypergeometric.hpp>
-
-void HypergeometricProbabilityLookup::calculateHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K/* remove K */) {
-    measure_t*** pHG = HG.GetArray();
-    auto calc_hg_0 = [](count_t C, count_t T, count_t S) {
+    auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) {
         // probability of 0 cases in cylinder, based on hypergeometric distribution
-        double hg = log(C - S) - log(C);
+        double hg = STD_LOG(C - S) - STD_LOG(C);
         for (count_t i = 1; i <= T - 1; ++i)
-            hg += log(static_cast<double>(C - S - i)) - log(static_cast<double>(C - i));
+            hg += STD_LOG(C - S - i) - STD_LOG(C - i);
         return hg;
     };
-    auto calc_hg_t = [](count_t C, count_t T, count_t S) {
+    auto calc_hg_t = [&caseLog](count_t C, count_t T, count_t S) {
         // probability of x cases in cylinder, based on hypergeometric distribution
-        double hg = log(static_cast<double>(T)) - log(static_cast<double>(C));
+        double hg = STD_LOG(T) - STD_LOG(C);
         for (count_t i = 1; i <= C - S - 1; ++i) {
-            hg += log(static_cast<double>(T - i)) - log(static_cast<double>(C - i));
-            if (hg == 0)
-				break;
-        }
-        return hg;
-    };
-    auto calc_hg_s = [](count_t C, count_t T, count_t S) {
-        // probability of x cases in cylinder, based on hypergeometric distribution
-        double hg = log(static_cast<double>(S)) - log(static_cast<double>(C));
-        for (count_t i = 1; i <= C - T - 1; ++i) {
-            hg += log(static_cast<double>(S - i)) - log(static_cast<double>(C - i));
-            if (hg == 0)
-                break;
+            hg += STD_LOG(T - i) - STD_LOG(C - i);
+            if (hg == 0) break;
         }
         return hg;
     };
 
-    /*
-    std::map<std::pair<int, int>, int> T_S_C = { 
-        {{8, 9}, 10},
-        {{80, 90}, 100},
-        {{800, 900}, 1000},
-        {{8000, 9000}, 10000},
-        {{2850, 230}, 2860},
-        {{550, 2320}, 2860},
-        {{55, 232}, 286}, {{232, 55}, 286},
-        {{10, 291}, 300}, 
-        {{20, 60}, 75},
-        {{1860, 1010}, 2860}, {{1010, 1860}, 2860}
-    };
-    //std::map<std::pair<int, int>, int> T_S = { {{1860, 1010}, 2860}};
-    int times = 10000;
-    double hg_t, hg_s;
-    const std::string default_fmt("%us");
-    std::cout << "times = " << times << std::endl << std::endl;
-    for (auto entry : T_S_C) {
-		std::cout << "C = " << entry.second << std::endl;
-
-        boost::timer::cpu_timer _timer_t;
-        _timer_t.start();
-        for (int i = 0; i < times; ++i) {
-            hg_t = calc_hg_t(entry.second, entry.first.first, entry.first.second);
-        }
-        _timer_t.stop();
-        std::cout << "calc_hg_t(T=" << entry.first.first << ", S=" << entry.first.second << ") = " << hg_t << " : " << boost::timer::format(_timer_t.elapsed(), 6, default_fmt) << std::endl;
-
-        boost::timer::cpu_timer _timer_s;
-        _timer_s.start();
-        for (int i = 0; i < times; ++i) {
-            hg_s = calc_hg_s(entry.second, entry.first.first, entry.first.second);
-        }
-        _timer_s.stop();
-        std::cout << "calc_hg_s(T=" << entry.first.first << ", S=" << entry.first.second << ") = " << hg_s << " : " << boost::timer::format(_timer_s.elapsed(), 6, default_fmt) << std::endl;
-
-        double probability;
-        boost::timer::cpu_timer _timer_b;
-        _timer_b.start();
-        for (int i = 0; i < times; ++i) {
-            boost::math::hypergeometric_distribution<> dist(entry.first.first, entry.first.second, entry.second);
-            probability = boost::math::pdf(dist, entry.first.second + entry.first.first - entry.second);
-        }
-        _timer_b.stop();
-        std::cout << "hypergeometric_distribution() = " << probability << " : " << boost::timer::format(_timer_b.elapsed(), 6, default_fmt) << std::endl;
-        std::cout << std::endl;
-    }
-
-	std::cout << std::numeric_limits<double>::min() << std::endl;
-    std::cout << std::numeric_limits<long double>::min() << std::endl;
-    */
+    if (vT.empty())
+        return; // What do we do here?
 
     // Find the largest case window value - so we know how large to allocate translation array.
     count_t largest = *vT.rbegin();
     _T_index.resize(largest + 1);
+    _spatial_cases.resize(C + 1); // create SpatialCases vector for all C
+    std::vector<double> negativeProbabilities(C + 1, PROBABILITY_UNSET); // temporary storage for negative probabilities
     size_t i = 0;
-	count_t max_S = static_cast<count_t>(ceil((double)C/2.0));
     for (auto T : vT) {
-		for (count_t S = 2; S <= max_S; ++S) {
-            count_t m = std::min(S, T);
-            std::vector<double> hg_x(m + 1, 0);
+        if (!T) continue; // skip T=0, which shouldn't be here anyway
+        //std::cout << "Calculating HG for T=" << T << " (" << i + 1 << " of " << vT.size() << ")" << std::endl;
+        for (count_t S = 2; S <= C - 2; ++S) {
+            std::fill(negativeProbabilities.begin(), negativeProbabilities.end(), PROBABILITY_UNSET);
+            count_t min = std::max((count_t)0, S + T - C);
+            count_t max = std::min(S, T);
+            count_t mean = ceil((double)S * (double)T / (double)C);
+            // The natural logarithm of the probability of x cases in cylinder, based on hypergeometric distribution,
+            // to be temporarily stored in a one-dimensional array. To get the actial probability, take exp[hgp(x)].
+            std::vector<double> hgp(max + 1, 0);
             if (S + T - C <= 0)
-                hg_x.front() = calc_hg_0(C, T, S);
-            else if (S >= T)
-                hg_x[S + T - C] = calc_hg_t(C, T, S);
-            else /* which means that S+T-C>0 and S<T */
-                hg_x[S + T - C] = calc_hg_s(C, T, S);
-
-            for (count_t x = std::max((count_t)0, S + T - C) + 1; x <= m; ++x)
-                hg_x[x] = hg_x[x - 1] + (log(static_cast<double>(S - x + 1)) - log(static_cast<double>(x))) + (log(static_cast<double>(T - x + 1)) - log(static_cast<double>(C - S - T + x)));
-            pHG[i][S][m] = -exp(hg_x[m]);
-            for (count_t x = m - 1; x >= 0; --x)
-                pHG[i][S][x] = pHG[i][S][x + 1] - exp(hg_x[x]);
+                hgp.front() = calc_hg_0(C, T, S);
+            else
+                hgp[S + T - C] = calc_hg_t(C, T, S);
+            for (count_t x = min + 1; x <= max; ++x)
+                hgp[x] = hgp[x - 1] + (STD_LOG(S - x + 1) - STD_LOG(x)) + (STD_LOG(T - x + 1) - STD_LOG(C - S - T + x));
+            if (scanrate == HIGH || scanrate == HIGHANDLOW) {
+                // For high rates nHG(x|S,T) = negative of the cumulative probability of x or more cases, x>=2. 
+                //nHG[i][S][max] = -exp(hgp[max]);
+                negativeProbabilities[max] = -exp(hgp[max]);
+                for (count_t x = max - 1; x >= mean; --x) {
+                    //nHG[i][S][x] = nHG[i][S][x + 1] - exp(hgp[x]);
+                    negativeProbabilities[x] = negativeProbabilities[x + 1] - exp(hgp[x]);
+                }
+            }
+            if (scanrate == LOW || scanrate == HIGHANDLOW) {
+                // For low rates nHG(x|S,T) = negative of the cumulative probability of x or less cases, x >= 0.
+                //nHG[i][S][min] = -exp(hgp[min]);
+                negativeProbabilities[min] = -exp(hgp[min]);
+                for (count_t x = min + 1; x <= mean - 1; ++x) {
+                    //nHG[i][S][x] = nHG[i][S][x - 1] - exp(hgp[x]);
+                    negativeProbabilities[x] = negativeProbabilities[x - 1] - exp(hgp[x]);
+                }
+            }
+            _spatial_cases[S].addNegativeProbabilitiesFor(i, negativeProbabilities);
         }
-        /* Gives same results as continuing the first S for loop until C-2, but computationally faster */
-        for (count_t S = max_S+1; S <= C - 2; ++S) {
-            count_t m = std::min(S, T);
-            for (count_t x = 0; x <= m; ++x)
-                pHG[i][S][x] = pHG[i][C - S][T - x];
-        }
-
-        _T_index[T] = i;
-        //_T_to_index[T] = i;
+        _T_index[T] = i; // map T to index in HG table
         ++i;
     }
 
     //printHG(HG, vT);
 }
 
+void HypergeometricProbabilityLookup::SpatialCases::addNegativeProbabilitiesFor(size_t idx_T, const std::vector<double>& np) {
+    // We're expecting idx_T to be added in order, so we can just check the size.
+    if (_probabilities_of_x_at_T.size() != idx_T)
+        throw prg_error("SpatialCases::addFor: idx_T out of order.", "HypergeometricProbabilityLookup::SpatialCases");
+    // Figure out what will be the zero-based index for x.
+    size_t zero_base = std::distance(np.begin(),
+        std::find_if_not(np.begin(), np.end(), [](double d) { return d == PROBABILITY_UNSET; })
+    );
+    // Figure out how big the array will be after removing PROBABILITY_UNSET values.
+    auto setnp_front = np.begin();
+    for (; setnp_front != np.end(); ) {
+        if (*setnp_front != PROBABILITY_UNSET) break;
+        ++setnp_front;
+    }
+    auto in_front = std::distance(np.begin(), setnp_front);
+    auto setnp_back = np.rbegin();
+    for (; setnp_back != np.rend(); ) {
+        if (*setnp_back != PROBABILITY_UNSET) break;
+        ++setnp_back;
+    }
+    auto in_back = std::distance(setnp_back.base(), np.rbegin().base());
+    // Emplace the data to the back of vector - which is at index idx_T.
+    _probabilities_of_x_at_T.emplace_back(zero_base, MinimalGrowthArray<double>(np.size() - in_front - in_back, PROBABILITY_UNSET));
+    auto& data = _probabilities_of_x_at_T.back().second;
+    int i = 0;
+    for (std::vector<double>::const_iterator it=setnp_front; it != (setnp_front + data.size()); ++it, ++i) {
+        data[i] = *it;
+    }
+}
+
+//void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K/* remove K */) {
+//    measure_t*** nHG = HG.GetArray();
+//    auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) {
+//        // probability of 0 cases in cylinder, based on hypergeometric distribution
+//        double hg = STD_LOG(C - S) - STD_LOG(C);
+//        for (count_t i = 1; i <= T - 1; ++i)
+//            hg += STD_LOG(C - S - i) - STD_LOG(C - i);
+//        return hg;
+//    };
+//    auto calc_hg_t = [&caseLog](count_t C, count_t T, count_t S) {
+//        // probability of x cases in cylinder, based on hypergeometric distribution
+//        double hg = STD_LOG(T) - STD_LOG(C);
+//        for (count_t i = 1; i <= C - S - 1; ++i) {
+//            hg += STD_LOG(T - i) - STD_LOG(C - i);
+//            if (hg == 0) break;
+//        }
+//        return hg;
+//    };
+//
+//    if (vT.empty())
+//        return; // What do we do here?
+//
+//    // Find the largest case window value - so we know how large to allocate translation array.
+//    count_t largest = *vT.rbegin();
+//    _T_index.resize(largest + 1);
+//    size_t i = 0;
+//    for (auto T : vT) {
+//        if (!T) continue; // skip T=0, which shouldn't be here anyway
+//		for (count_t S = 2; S <= C - 2; ++S) {
+//            count_t min = std::max((count_t)0, S + T - C);
+//            count_t max = std::min(S, T);
+//            count_t mean = ceil((double)S * (double)T / (double)C);
+//            // The natural logarithm of the probability of x cases in cylinder, based on hypergeometric distribution,
+//            // to be temporarily stored in a one-dimensional array. To get the actial probability, take exp[hgp(x)].
+//            std::vector<double> hgp(max + 1, 0); 
+//            if (S + T - C <= 0)
+//                hgp.front() = calc_hg_0(C, T, S);
+//            else
+//                hgp[S + T - C] = calc_hg_t(C, T, S);
+//            for (count_t x = min + 1; x <= max; ++x)
+//                hgp[x] = hgp[x - 1] + (STD_LOG(S - x + 1) - STD_LOG(x)) + (STD_LOG(T - x + 1) - STD_LOG(C - S - T + x));
+//            if (scanrate == HIGH || scanrate == HIGHANDLOW) {
+//                // For high rates nHG(x|S,T) = negative of the cumulative probability of x or more cases, x>=2. 
+//                nHG[i][S][max] = -exp(hgp[max]);
+//                for (count_t x = max - 1; x >= mean; --x)
+//                    nHG[i][S][x] = nHG[i][S][x + 1] - exp(hgp[x]);
+//            }
+//            if (scanrate == LOW || scanrate == HIGHANDLOW) {
+//                // For low rates nHG(x|S,T) = negative of the cumulative probability of x or less cases, x >= 0.
+//                nHG[i][S][min] = -exp(hgp[min]);
+//                for (count_t x = min + 1; x <= mean - 1; ++x)
+//                    nHG[i][S][x] = nHG[i][S][x - 1] - exp(hgp[x]);
+//            }
+//        }
+//        _T_index[T] = i; // map T to index in HG table
+//        ++i;
+//    }
+//
+//    //printHG(HG, vT);
+//}
+
 /** Prints HG lookup table to screen. */
-void HypergeometricProbabilityLookup::printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT) {
+void HypergeometricProbabilityLookup::printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT) const {
+	std::ofstream outfile("C:/Users/hostovic/projects/satscan.development/local-support/squish25173-hypergeometric/HG_lookup.txt");
+
+    outfile << std::endl << "Next" << std::endl << std::endl;
+
     measure_t*** pHG = HG.GetArray();
     if (vT.size() != HG.Get1stDimension())
         throw prg_error("Dimensions do not match;", "printHG()");
     for (auto T : vT) {
-        std::cout << std::endl;
+        if (!T) continue;
+        outfile << std::endl;
         for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
             for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
                 double probability = getProbabilityFor(T, S, x);
-                if (probability != 99) {
-                    std::cout << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
+                if (probability != PROBABILITY_UNSET) {
+                    outfile << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
                     if (std::isnan(probability))
-                        std::cout << "NAN" << std::endl;
+                        outfile << "NAN" << std::endl;
                     else
-						std::cout << probability << std::endl;
-                }
+                        outfile << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << probability << " : ";
+                        outfile << std::scientific << probability << std::endl;
+                } else
+                    outfile << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << PROBABILITY_UNSET << " (unset)" << std::endl;
             }
-            std::cout << std::endl;
+            outfile << std::endl;
         }
-        std::cout << std::endl << std::endl;
+        outfile << std::endl << std::endl;
     }
+
+    std::ofstream outfile_spatial("C:/Users/hostovic/projects/satscan.development/local-support/squish25173-hypergeometric/HG_lookup_spatial.txt");
+    outfile_spatial << std::endl << "Next" << std::endl << std::endl;
+    for (auto T : vT) {
+        if (!T) continue;
+        outfile_spatial << std::endl;
+        for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
+            for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
+                double probability = getProbabilityForTSX_Checked(T, S, x);
+                if (probability != PROBABILITY_UNSET) {
+                    outfile_spatial << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
+                    if (std::isnan(probability))
+                        outfile_spatial << "NAN" << std::endl;
+                    else
+                        outfile_spatial << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << probability << " : ";
+                    outfile_spatial << std::scientific << probability << std::endl;
+                }
+                else
+                    outfile_spatial << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << PROBABILITY_UNSET << " (unset)" << std::endl;
+            }
+            outfile_spatial << std::endl;
+        }
+        outfile_spatial << std::endl << std::endl;
+    }
+
 }
 
 //************************ RealDataSet **********************************
 
 /** constructor */
 RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
-            :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
-             gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0), gpControlData(0), gtTotalMeasure(0),
-             gtTotalMeasureAtStart(0), gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gpBatchIndexes(0), gpBatchIndexes_PT(0) {
+:DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
+gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0), gpControlData(0), gtTotalMeasure(0),
+gtTotalMeasureAtStart(0), gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gpBatchIndexes(0), 
+gpBatchIndexes_PT(0), _hyper_probability_lkup(parameters){
     _population.reset(new PopulationData());
     _population->SetNumTracts(giLocationDimensions);
     boost::gregorian::greg_weekday week_day = boost::date_time::Sunday;
@@ -977,7 +1063,8 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
 }
 
 /** copy constructor */
-RealDataSet::RealDataSet(const RealDataSet& thisSet) : DataSet(thisSet) {}
+RealDataSet::RealDataSet(const RealDataSet& thisSet):
+DataSet(thisSet), _hyper_probability_lkup(thisSet._hyper_probability_lkup){}
 
 /** destructor */
 RealDataSet::~RealDataSet() {
