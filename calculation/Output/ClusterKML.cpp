@@ -223,36 +223,38 @@ std::string & BaseClusterKML::getClusterBalloonTemplate(const CCluster& cluster,
     templateLines << "<![CDATA[<u><b>$[snippet]</b></u><br/>";
     if (numFilesSets == 1) {
         templateLines << "<table border=\"0\" style=\"width:100%;\">";
-        for (auto itr=cluster.getReportLinesCache().begin(); itr != cluster.getReportLinesCache().end(); ++itr) {
+        for (const auto& entry : cluster.getReportLinesCache()) {
+            if (!entry._mapping_dialog) continue;
             templateLines << printString(buffer,
                 "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s:</th><td style=\"white-space:nowrap;text-align:left;\">$[%s]</td></tr>",
-                encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str()
+                encode(entry._label, buffer2).c_str(), encode(entry._label, buffer3).c_str()
             );
         }
         templateLines << "</table>";
     } else {
         std::stringstream clusterLines, clusterDataSetLines;
         clusterLines << "<table border=\"0\" style=\"width:100%;\">";
-        for (auto itr=cluster.getReportLinesCache().begin(); itr != cluster.getReportLinesCache().end(); ++itr) {
-            if (itr->second.second == std::numeric_limits<unsigned int>::max()) { // cluster level
+        for (const auto& entry : cluster.getReportLinesCache()) {
+            if (!entry._mapping_dialog) continue;
+            if (entry._set_idx == std::numeric_limits<unsigned int>::max()) { // cluster level
                 clusterLines << printString(buffer,
                     "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s</th><td style=\"white-space:nowrap;text-align:right;\">$[%s]</td></tr>",
-                    encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str()
+                    encode(entry._label, buffer2).c_str(), encode(entry._label, buffer3).c_str()
                 );
             } else { // cluster data set level
-                if (currSetIdx != itr->second.second) {
+                if (currSetIdx != entry._set_idx) {
                     if (currSetIdx != std::numeric_limits<unsigned int>::max()) clusterDataSetLines << "</table>";
                     clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
                     clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
                     clusterDataSetLines << getWrappedText(
-                        encode(_dataHub.getDatasetLabel(itr->second.second, buffer), buffer2), 0, 40, "<br>", buffer3
+                        encode(_dataHub.getDatasetLabel(entry._set_idx, buffer), buffer2), 0, 40, "<br>", buffer3
                     );
                     clusterDataSetLines << "</caption>";
-                    currSetIdx = itr->second.second;
+                    currSetIdx = entry._set_idx;
                 }
                 clusterDataSetLines << printString(buffer,
                     "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">$[%s%s]</td></tr>",
-                    encode(itr->first, buffer2).c_str(), encode(itr->first, buffer3).c_str(), printString(buffer4, " set%u", itr->second.second).c_str()
+                    encode(entry._label, buffer2).c_str(), encode(entry._label, buffer3).c_str(), printString(buffer4, " set%u", entry._set_idx).c_str()
                 );
             }
         }
@@ -279,15 +281,15 @@ std::string& BaseClusterKML::encode(const std::string& data, std::string& buffer
 std::string & BaseClusterKML::getClusterExtendedData(const CCluster& cluster, int iCluster, std::string& buffer) const {
     const CParameters& parameters = _dataHub.GetParameters();
     std::stringstream lines;
-    CCluster::ReportCache_t::const_iterator itr = cluster.getReportLinesCache().begin(), itr_end = cluster.getReportLinesCache().end();
     std::string bufferSetIdx;
     unsigned int numDataSets = parameters.getNumFileSets();
 
     lines << "<ExtendedData>";
-    for (; itr != itr_end; ++itr) {
-        lines << "<Data name=\"" << itr->first.c_str()
-            << (numDataSets > 1 && itr->second.second != std::numeric_limits<unsigned int>::max() ? printString(bufferSetIdx, " set%u", itr->second.second).c_str() : "")
-            << "\"><value>" << encode(itr->second.first, buffer).c_str() << "</value></Data>";
+    for (const auto& entry : cluster.getReportLinesCache()) {
+        if (!entry._mapping_dialog) continue;
+        lines << "<Data name=\"" << entry._label.c_str()
+            << (numDataSets > 1 && entry._set_idx != std::numeric_limits<unsigned int>::max() ? printString(bufferSetIdx, " set%u", entry._set_idx).c_str() : "")
+            << "\"><value>" << encode(entry._formatted_value, buffer).c_str() << "</value></Data>";
     }
     lines << "</ExtendedData>";
     buffer = lines.str();

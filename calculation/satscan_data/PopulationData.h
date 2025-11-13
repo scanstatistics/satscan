@@ -72,6 +72,7 @@ public:
 
 
 class CSaTScanData; /** forward class declaration */
+class AnalysisResultsWriter; /** forward class declaration */
 
 /** Population data. Maintains:
     - list of population dates as read from population, if Poisson model.
@@ -145,7 +146,7 @@ class PopulationData {
                                                                   int iPopulationDateIndex, const std::vector<double>& vRisk) const;
     int                                 LowerPopIndex(Julian Date) const;
     void                                RemoveCategoryTypeCases(size_t iCategoryIndex, count_t tCount);
-    void                                ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const;
+    void                                ReportZeroPops(const CSaTScanData& Data, AnalysisResultsWriter& resultsWriter, BasePrint& PrintDirection) const;
     void                                setAdditionalCovariates(CovariatesNames_t& covariates);
     void                                SetAggregateCovariateCategories(bool b);
     void                                SetNumTracts(unsigned int iTracts) {gCovariateCategoriesPerLocation.resize(iTracts, 0);}

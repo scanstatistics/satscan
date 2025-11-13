@@ -6,6 +6,7 @@
 #include "AsciiPrintFormat.h"
 
 class DataSetHandler; /* forward class declaration */
+class AnalysisResultsWriter; /* forward class declaration */
 
 /** Provides methods to print CParameters in an organized manner to the main output
     file of an analysis. */
@@ -14,33 +15,33 @@ class ParametersPrint {
     typedef std::vector<std::pair<std::string,std::string>> SettingContainer_t;
     const CParameters & _parameters;
 
-    void                PrintAdditionalOutputFiles(FILE* fp) const;
-    void                PrintAnalysisParameters(FILE* fp) const;
-    void                PrintMiscellaneousAnalysisParameters(FILE* fp) const;
-    void                PrintSpatialOutputParameters(FILE* fp) const;
-    void                PrintDataCheckingParameters(FILE* fp) const;
-    void                PrintDrilldownParameters(FILE* fp, bool isDrilldown) const;
-    void                PrintEllipticScanParameters(FILE* fp) const;
-    void                PrintNotificationsParameters(FILE* fp) const;
-    void                PrintClusterRestrictionsParameters(FILE* fp) const;
-    void                PrintInferenceParameters(FILE* fp) const;
-    void                PrintInputParameters(FILE* fp) const;
-    void                PrintMultipleDataSetParameters(FILE* fp) const;
-    void                PrintOtherOutputParameters(FILE* fp) const;
-    void                PrintOutputParameters(FILE* fp) const;
-    void                PrintPowerEvaluationsParameters(FILE* fp) const;
-    void                PrintPowerSimulationsParameters(FILE* fp) const;
-    void                PrintPolygonParameters(FILE* fp) const;
-    void                PrintRunOptionsParameters(FILE* fp) const;
-    void                PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const;
-    void                PrintSpatialNeighborsParameters(FILE* fp) const;
-    void                PrintLocationNetworkParameters(FILE* fp) const;
-    void                PrintSpatialWindowParameters(FILE* fp) const;
-    void                PrintSystemParameters(FILE* fp) const;
-    void                PrintTemporalWindowParameters(FILE* fp) const;
-    void                PrintTemporalOutputParameters(FILE* fp) const;
-
-    void                WriteSettingsContainer(const SettingContainer_t& settings, const std::string& section, FILE* fp, unsigned int margin=2) const;
+    SettingContainer_t& getAdditionalOutputFiles(SettingContainer_t& settings) const;
+    SettingContainer_t& getInputParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getAnalysisParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getOutputParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getPolygonParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getMultipleDataSetParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getDataCheckingParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getSpatialNeighborsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getTemporalWindowParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getClusterRestrictionsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getSpaceAndTimeAdjustmentsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getInferenceParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getDrilldownParameters(SettingContainer_t& settings, bool isDrilldown) const;
+    SettingContainer_t& getLocationNetworkParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getMiscellaneousAnalysisParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getPowerEvaluationsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getSpatialOutputParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getTemporalOutputParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getOtherOutputParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getNotificationsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getEllipticScanParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getPowerSimulationsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getRunOptionsParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getSpatialWindowParameters(SettingContainer_t& settings) const;
+    SettingContainer_t& getSystemParameters(SettingContainer_t& settings) const;
+    void                writeSettingPairsHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::ostream& out) const;
+    void                writeSettingPairsTextFile(const SettingContainer_t& settings, const std::string& section, FILE* fp, unsigned int margin=2) const;
 
   public:
     ParametersPrint(const CParameters& Parameters) : _parameters(Parameters) {}
@@ -51,8 +52,10 @@ class ParametersPrint {
     const char        * GetAreaScanRateTypeAsString() const;
     const char        * GetProbabilityModelTypeAsString() const;
     const char        * getPowerEvaluationMethodAsString() const;
-    void                Print(FILE* fp, bool isDrilldown=false) const;
+    void                Print(FILE* fp, std::ofstream * fstream=0, bool isDrilldown=false) const;
+    void                Print(AnalysisResultsWriter& resultsWriter, bool isDrilldown = false) const;
     void                PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHandler) const;
+    std::vector<std::string>& getAnalysisSummaryStatements(std::vector<std::string>& statements, const DataSetHandler& SetHandler) const;
     std::string         getCalculatedTimeTrendAsString(const DataSetHandler& SetHandler) const;
 };
 //******************************************************************************

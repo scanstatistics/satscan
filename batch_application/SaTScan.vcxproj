@@ -244,6 +244,7 @@
     <ClCompile Include="..\calculation\utility\OliveiraFunctor.cpp" />
     <ClCompile Include="..\calculation\utility\OliveiraJobSource.cpp" />
     <ClCompile Include="..\calculation\utility\ZipUtils.cpp" />
+    <ClCompile Include="..\calculation\Output\AnalysisResultsWriter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
@@ -595,6 +596,7 @@
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
     <ClInclude Include="..\calculation\utility\ZipUtils.h" />
+    <ClInclude Include="..\calculation\Output\AnalysisResultsWriter.h" />
     <ClInclude Include="ParameterProgramOptions.h" />
     <ClInclude Include="..\calculation\Output\ClusterMap.h" />
   </ItemGroup>

@@ -119,97 +119,94 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
   fprintf(pFile,"\n");
 }
 
-/** Prints summary of section to results file - detailing input data. */
-void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod) {
+/** Collects summary lines for results file - detailing input data. */
+CSaTScanData::SummaryPairs_t& CSaTScanData::getSummaryPairs(std::vector<std::pair<std::string, std::string>>& summaryEntries, bool bPrintPeriod) const {
     std::string buffer, work, work2, suffix;
     AsciiPrintFormat PrintFormat(gDataSets->GetNumDataSets() == 1);
-    std::vector<std::pair<std::string, std::string>> summaryEntries;
 
     suffix = PrintFormat.getSectionSuffix(buffer, gParameters.getIsBernoulliIterativeDrilldownAsDOW());
-    PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
-    fprintf(fp, "%s\n\n", sSummaryText.c_str());
     //print study period
     if (bPrintPeriod && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
-        summaryEntries.emplace_back("Study period", printString(buffer, "%s to %s", 
+        summaryEntries.emplace_back("Study period", printString(buffer, "%s to %s",
             gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str())
         );
-    }  
+    }
     if (!gParameters.GetIsPurelyTemporalAnalysis() && (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile() || gParameters.getUseLocationsNetworkFile())) {
         //print number locations scanned
         if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) {
-            summaryEntries.emplace_back("Locations", 
+            summaryEntries.emplace_back("Locations",
                 std::to_string(static_cast<unsigned int>(_num_identifiers + GetNumMetaIdentifiersReferenced() - GetNumNullifiedIdentifiers()))
             );
         } else {
             summaryEntries.emplace_back("Locations", std::to_string(getLocationsManager().locations().size()));
             summaryEntries.emplace_back("Identifiers", std::to_string(getIdentifierInfo().getIdentifiers().size() + getIdentifierInfo().getAggregated().size()));
         }
-    }  
+    }
     //print total population per data set
     switch (gParameters.GetProbabilityModelType()) {
-        case POISSON: 
-            if (!gParameters.UsePopulationFile()) break;
-            summaryEntries.emplace_back("Population, averaged over time", "");
-            summaryEntries.back().first += suffix;
-            break;
-        case BERNOULLI: 
-            summaryEntries.emplace_back("Total population", ""); 
-            summaryEntries.back().first += suffix;
-            break;
-        case EXPONENTIAL: 
-            summaryEntries.emplace_back("Total individuals", ""); 
-            summaryEntries.back().first += suffix;
-            break;
-        case BATCHED: 
-            summaryEntries.emplace_back("Batches", ""); 
-            summaryEntries.back().first += suffix;
-            break;
-        default : break;
+    case POISSON:
+        if (!gParameters.UsePopulationFile()) break;
+        summaryEntries.emplace_back("Population, averaged over time", "");
+        summaryEntries.back().first += suffix;
+        break;
+    case BERNOULLI:
+        summaryEntries.emplace_back("Total population", "");
+        summaryEntries.back().first += suffix;
+        break;
+    case EXPONENTIAL:
+        summaryEntries.emplace_back("Total individuals", "");
+        summaryEntries.back().first += suffix;
+        break;
+    case BATCHED:
+        summaryEntries.emplace_back("Batches", "");
+        summaryEntries.back().first += suffix;
+        break;
+    default: break;
     }
-    
+
     switch (gParameters.GetProbabilityModelType()) {
-        case POISSON: if (!gParameters.UsePopulationFile()) break;
-        case BERNOULLI:
-        case EXPONENTIAL: 
-        case BATCHED: 
-            for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
-                summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalPopulation());
-            } break;
-        default: break;
+    case POISSON: if (!gParameters.UsePopulationFile()) break;
+    case BERNOULLI:
+    case EXPONENTIAL:
+    case BATCHED:
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalPopulation());
+        } break;
+    default: break;
     }
     // print total cases per data set
     switch (gParameters.GetProbabilityModelType()) {
-        case BATCHED: 
-            summaryEntries.emplace_back("Positive batches", ""); 
-            summaryEntries.back().first += suffix;
-            break;
-        case POISSON:
-        case BERNOULLI:
-        case SPACETIMEPERMUTATION:
-        case CATEGORICAL:
-        case ORDINAL:
-        case NORMAL:
-        case EXPONENTIAL:
-        case HOMOGENEOUSPOISSON: 
-            summaryEntries.emplace_back("Total number of cases", ""); 
-            summaryEntries.back().first += suffix;
-            break;
-        default: break;
+    case BATCHED:
+        summaryEntries.emplace_back("Positive batches", "");
+        summaryEntries.back().first += suffix;
+        break;
+    case POISSON:
+    case BERNOULLI:
+    case SPACETIMEPERMUTATION:
+    case CATEGORICAL:
+    case ORDINAL:
+    case NORMAL:
+    case EXPONENTIAL:
+    case HOMOGENEOUSPOISSON:
+        summaryEntries.emplace_back("Total number of cases", "");
+        summaryEntries.back().first += suffix;
+        break;
+    default: break;
     }
     switch (gParameters.GetProbabilityModelType()) {
-        case POISSON:
-        case BERNOULLI:
-        case SPACETIMEPERMUTATION:
-        case CATEGORICAL:
-        case ORDINAL:
-        case NORMAL:
-        case EXPONENTIAL:
-        case BATCHED:
-        case HOMOGENEOUSPOISSON:
-            for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
-                summaryEntries.back().second += printString(work, "%s%ld", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalCases());
-            } break;
-        default: break;
+    case POISSON:
+    case BERNOULLI:
+    case SPACETIMEPERMUTATION:
+    case CATEGORICAL:
+    case ORDINAL:
+    case NORMAL:
+    case EXPONENTIAL:
+    case BATCHED:
+    case HOMOGENEOUSPOISSON:
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
+            summaryEntries.back().second += printString(work, "%s%ld", (i ? ", " : ""), gDataSets->GetDataSet(i).getTotalCases());
+        } break;
+    default: break;
     }
     if (gParameters.GetProbabilityModelType() == BATCHED) {
         summaryEntries.emplace_back("Individuals", "");
@@ -225,7 +222,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         summaryEntries.back().first += suffix;
         auto getPopulation = [](count_t c, double p) { return 100.0 * (p ? c / p : 0.0); };
         for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
-			if (i) summaryEntries.back().second += ", ";
+            if (i) summaryEntries.back().second += ", ";
             summaryEntries.back().second += getValueAsString(
                 getPopulation(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalPopulation()), work2, 1
             );
@@ -233,8 +230,8 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     //print total area per data set for Homogeneous Poisson model
     if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
-        const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
-        if (!pHandler) throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","DisplaySummary()");
+        const HomogeneousPoissonDataSetHandler* pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
+        if (!pHandler) throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.", "getSummaryPairs()");
         summaryEntries.emplace_back("Total Area", printString(buffer, "%.0f", pHandler->getTotalArea()));
     }
     //for the ordinal probability model, also print category values and total cases per ordinal category
@@ -252,7 +249,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
             }
             summaryEntries.emplace_back("Percent cases per category", "");
             for (size_t j = 0; j < Population.GetNumOrdinalCategories(); ++j) {
-                summaryEntries.back().second += printString(work, "%s%s", (j ? ", " : ""), 
+                summaryEntries.back().second += printString(work, "%s%s", (j ? ", " : ""),
                     getValueAsString(100.0 * Population.GetNumCategoryTypeCases(j) / gDataSets->GetDataSet(0).getTotalCases(), work2, 1).c_str()
                 );
             }
@@ -283,7 +280,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         summaryEntries.emplace_back("Total censored", "");
         summaryEntries.back().first += suffix;
         for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
-            summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""), 
+            summaryEntries.back().second += printString(work, "%s%.0f", (i ? ", " : ""),
                 gDataSets->GetDataSet(i).getTotalPopulation() - gDataSets->GetDataSet(i).getTotalCases()
             );
         }
@@ -300,7 +297,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         summaryEntries.emplace_back("Mean", "");
         summaryEntries.back().first += suffix;
-        for (unsigned int i=0; i < gDataSets->GetNumDataSets(); ++i) {
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
             if (i) summaryEntries.back().second += ", ";
             summaryEntries.back().second += getValueAsString(gDataSets->GetDataSet(i).getTotalMeasure() / gDataSets->GetDataSet(i).getTotalCases(), work);
         }
@@ -322,17 +319,17 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         }
     }
     if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
-        AbstractWeightedNormalRandomizer *pRandomizer;
+        AbstractWeightedNormalRandomizer* pRandomizer;
         std::vector<AbstractWeightedNormalRandomizer::DataSetStatistics> dataSetStatistics;
         //Check that all randomizers are derived from AbstractWeightedNormalRandomizer class.
-        for (unsigned int i=0; i < gDataSets->GetNumDataSets(); ++i) {
+        for (unsigned int i = 0; i < gDataSets->GetNumDataSets(); ++i) {
             if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
-                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "getSummaryPairs()");
             dataSetStatistics.push_back(pRandomizer->getDataSetStatistics());
         }
         summaryEntries.emplace_back("Total weights", "");
         summaryEntries.back().first += suffix;
-        for (size_t j=0; j < dataSetStatistics.size(); ++j) {
+        for (size_t j = 0; j < dataSetStatistics.size(); ++j) {
             if (j) summaryEntries.back().second += ", ";
             summaryEntries.back().second += getValueAsString(dataSetStatistics[j].gtTotalWeight, work);
         }
@@ -385,7 +382,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         //fprintf(fp, "%g\n", globalTrend.GetAlpha());
         //PrintFormat.PrintSectionLabel(fp, "Global Linear", false, false);
         //fprintf(fp, "%g\n", globalTrend.GetBeta());
-        const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&globalTrend);
+        const QuadraticTimeTrend* pQTrend = dynamic_cast<const QuadraticTimeTrend*>(&globalTrend);
         if (pQTrend) {
             //PrintFormat.PrintSectionLabel(fp, "Global Quadratic", false, false);
             //fprintf(fp, "%g\n", pQTrend->GetBeta2());
@@ -400,8 +397,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
         summaryEntries.emplace_back("Variance", "");
         summaryEntries.emplace_back("Standard deviation", "");
     }
-    PrintFormat.PrintSummaryEntries(fp, summaryEntries);
-    PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
+    return summaryEntries;
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
@@ -410,8 +406,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
 void CSaTScanData::DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance, const MostLikelyClustersContainer& mlc) const {
   try {
     LocationRiskEstimateWriter(*this).Write(*this, location_relevance, mlc);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("DisplayRelativeRisksForEachTract()", "CSaTScanData");
     throw;
   }

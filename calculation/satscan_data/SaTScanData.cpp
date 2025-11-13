@@ -435,16 +435,18 @@ bool CSaTScanData::isNullifiedIdentifier(tract_t tLocationIndex) const {
 }
 
 /** Returns the data set label for reporting, taking into account removed sets. */
-std::string& CSaTScanData::getDatasetLabel(size_t set_number, std::string& label) const {
+std::string& CSaTScanData::getDatasetLabel(size_t set_number, std::string& label, bool prefixed) const {
     if (gParameters.getNumFileSets() == 1)
         label = gParameters.getDataSourceNames()[0];
     else if (gParameters.getIsBernoulliIterativeDrilldownAsDOW()) {
         // In this situation, data set name is already baked in.
         label = gParameters.getDataSourceNames()[GetDataSetHandler().getDataSetRelativeIndex(set_number)];
-    }
-    else {
+    } else {
         auto idx = GetDataSetHandler().getDataSetRelativeIndex(set_number);
-        printString(label, "Data Set %u (%s)", idx + 1, gParameters.getDataSourceNames()[idx].c_str());
+        if (prefixed)
+            printString(label, "Data Set %u: %s", idx + 1, gParameters.getDataSourceNames()[idx].c_str());
+        else
+            label = gParameters.getDataSourceNames()[idx];
     }
     return label;
 }

@@ -148,10 +148,10 @@ void AnalysisEmailHelper::recordClusters(MostLikelyClustersContainer& clusters, 
                     // Create map to cluster cached values - easier and format will match that of other output files.
                     std::map<std::string, std::string> clusterAttributes;
                     for (const auto& entry : cluster.getReportLinesCache()) {
-                        if (clusterAttributes.find(entry.first) == clusterAttributes.end())
-                            clusterAttributes.insert(std::make_pair(entry.first, entry.second.first));
+                        if (clusterAttributes.find(entry._label) == clusterAttributes.end())
+                            clusterAttributes.insert(std::make_pair(entry._label, entry._formatted_value));
                         else
-                            clusterAttributes[entry.first] += printString(buffer, ", %s", entry.second.first.c_str());
+                            clusterAttributes[entry._label] += printString(buffer, ", %s", entry._formatted_value.c_str());
                     }
                     if (clusterAttributes.find("Time frame") != clusterAttributes.end())
                         _summaryParagraph << EmailText::LINEBREAK << "Time frame: " << clusterAttributes["Time frame"];
@@ -204,11 +204,10 @@ void AnalysisEmailHelper::finalize(boost::shared_ptr<DataDemographicsProcessor> 
                 // Report RI or p-value of cluster.
                 std::stringstream clustersigtext;
                 for (const auto& entry : cluster._cluster->getReportLinesCache()) {
-                    if (params.GetIsProspectiveAnalysis() && entry.first == "Recurrence interval") {
-                        clustersigtext << "RI=" << entry.second.first; break;
-                    }
-                    else if (!params.GetIsProspectiveAnalysis() && (entry.first == "Gumbel P-value" || entry.first == "P-value")) {
-                        clustersigtext << "P-value=" << entry.second.first; break;
+                    if (params.GetIsProspectiveAnalysis() && entry._label == "Recurrence interval") {
+                        clustersigtext << "RI=" << entry._formatted_value; break;
+                    } else if (!params.GetIsProspectiveAnalysis() && (entry._label == "Gumbel P-value" || entry._label == "P-value")) {
+                        clustersigtext << "P-value=" << entry._formatted_value; break;
                     }
                 }
                 if (clustersigtext.rdbuf()->in_avail()) _signaltext << " (" << clustersigtext.str() << ")";
@@ -223,7 +222,7 @@ void AnalysisEmailHelper::finalize(boost::shared_ptr<DataDemographicsProcessor> 
 AnalysisExecution::AnalysisExecution(CSaTScanData& data_hub, ExecutionType executing_type, time_t start, unsigned int& drilldowns)
     :_print_direction(data_hub.GetPrintDirection()), _parameters(data_hub.GetParameters()), _data_hub(data_hub), _start_time(start), _clustersReported(false),
     _executing_type(executing_type), _analysis_count(0), _significant_at005(0), _significant_clusters(0), _reportClusters(0), _drilldowns(drilldowns),
-    _email_helper(data_hub){
+    _email_helper(data_hub), _results_writer(data_hub) {
     try {
         for (std::vector<double>::const_iterator itr = _parameters.getExecuteSpatialWindowStops().begin(); itr != _parameters.getExecuteSpatialWindowStops().end(); ++itr)
             _top_clusters_containers.push_back(MostLikelyClustersContainer(*itr));
@@ -367,7 +366,7 @@ void AnalysisExecution::calculateOliveirasF() {
 /* Creates executes analysis and writes results to output files. */
 void AnalysisExecution::execute() {
     try {
-        createReport();
+        _results_writer.writeHeaderAndSummary(_start_time);
         // conditionally perform standard analysis based upon power evaluation settings
         if (!_parameters.getPerformPowerEvaluation() || (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_WITH_ANALYSIS)) {
             switch (_executing_type) {
@@ -376,6 +375,7 @@ void AnalysisExecution::execute() {
                 default: executeSuccessively();
             }
         }
+        _results_writer.writeHtmlTableEnd();
         // Now that all analyses are done, process/finalize supplemental output.
         if (_temporal_graph.get()) _temporal_graph->finalize(_data_hub);
         if (_cluster_graph.get()) _cluster_graph->finalize();
@@ -412,51 +412,33 @@ void AnalysisExecution::execute() {
 
 /** Finalize the reporting to result output file. */
 void AnalysisExecution::finalize() {
-    FILE * fp = 0;
     try {
         // Finalize the data demograhics process now -- updating cache file for this analysis.
         if (_data_demographic_processor.get()) _data_demographic_processor->finalize();
-
         time_t CompletionTime;
-        double nTotalTime, nSeconds, nMinutes, nHours;
-        const char * szHours = "hours", * szMinutes = "minutes", * szSeconds = "seconds";
-        AsciiPrintFormat PrintFormat;
         std::string buffer;
-
         _print_direction.Printf("Printing analysis settings to the results file ...\n", BasePrint::P_STDOUT);
-        openReportFile(fp, true);
-        PrintFormat.SetMarginsAsOverviewSection();
         if (_clustersReported && _parameters.GetNumReplicationsRequested() == 0) {
-            fprintf(fp, "\n");
-            buffer = "Note: As the number of Monte Carlo replications was set to zero, no hypothesis testing was done and no p-values are reported.";
-            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+            _results_writer.writeMessage(
+                "Note: As the number of Monte Carlo replications was set to zero, no hypothesis testing was done and no p-values are reported.",
+                "warning"
+            );
         }
         if (_clustersReported && _parameters.GetNumReplicationsRequested() > 0 && _parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE) {
-            fprintf(fp, "\n");
-            buffer = "Note: The number of Monte Carlo replications was set too low, "
-            "and a meaningful hypothesis test cannot be done. Consequently, no p-values are reported.";
-            PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+            _results_writer.writeMessage(
+                "Note: The number of Monte Carlo replications was set too low, "
+                "and a meaningful hypothesis test cannot be done. Consequently, no p-values are reported.",
+                "warning"
+            );
         }
         if (_parameters.GetProbabilityModelType() == POISSON && !_data_hub.isDrilldown())
-            _data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, fp, &_print_direction);
+            _data_hub.GetDataSetHandler().ReportZeroPops(_data_hub, _results_writer, &_print_direction);
         if (!_data_hub.isDrilldown() && _parameters.GetMultipleCoordinatesType() == ONEPERLOCATION)
-            _data_hub.getIdentifierInfo().reportCombinedIdentifiers(fp);
-        ParametersPrint(_parameters).Print(fp, _data_hub.isDrilldown());
-        macroRunTimeManagerPrint(fp);
+            _data_hub.getIdentifierInfo().reportCombinedIdentifiers(_results_writer);
+        _results_writer.writeParameters(_data_hub.isDrilldown());
+        macroRunTimeManagerPrint(_results_writer.getTextFile());
         time(&CompletionTime);
-        nTotalTime = difftime(CompletionTime, _start_time);
-        nHours = floor(nTotalTime / (60 * 60));
-        nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
-        nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
-        fprintf(fp, "\nRUN INFORMATION\n\nProgram completed  : %s", ctime(&CompletionTime));
-        if (0 < nHours && nHours < 1.5) szHours = "hour";
-        if (0 < nMinutes && nMinutes < 1.5) szMinutes = "minute";
-        if (0.5 <= nSeconds && nSeconds < 1.5) szSeconds = "second";
-        if (nHours > 0) fprintf(fp, "Total Running Time : %.0f %s %.0f %s %.0f %s", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
-        else if (nMinutes > 0) fprintf(fp, "Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
-        else fprintf(fp, "Total Running Time : %.0f %s", nSeconds, szSeconds);
-        if (_parameters.GetNumParallelProcessesToExecute() > 1) fprintf(fp, "\nProcessor Usage    : %u processors", _parameters.GetNumParallelProcessesToExecute());
-        fclose(fp); fp = 0;
+        _results_writer.writeComputationCompletion(_start_time, CompletionTime);
         // Create a temporary file which will be used to generate the multiple analyses summary email.
         if (!_data_hub.isDrilldown() && _parameters.getCreateEmailSummaryFile()) {
             // Write temp file that will be used when creating the multiple analysis summary email.
@@ -517,38 +499,9 @@ void AnalysisExecution::finalize() {
                 );
         }
     } catch (prg_exception& x) {
-        if (fp) fclose(fp);
         x.addTrace("finalize()", "AnalysisExecution");
         throw;
     }
-}
-
-/** Creates/overwrites result file specified by user in parameter settings. Only header summary information is printed. File pointer does not remain open. */
-void AnalysisExecution::createReport() {
-    macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-    FILE              * fp = 0;
-    std::string         sStartTime;
-    std::string         sTitleName;
-    AsciiPrintFormat    PrintFormat;
-
-    try {
-        openReportFile(fp, false);
-        AsciiPrintFormat::PrintVersionHeader(fp);
-        if (_parameters.GetTitleName() != "") {
-            sTitleName = _parameters.GetTitleName().c_str();
-            PrintFormat.PrintAlignedMarginsDataString(fp, sTitleName);
-        }
-        sStartTime = ctime(&_start_time);
-        fprintf(fp, "\nProgram run on: %s\n", sStartTime.c_str());
-        ParametersPrint(_parameters).PrintAnalysisSummary(fp, _data_hub.GetDataSetHandler());
-        _data_hub.DisplaySummary(fp, "SUMMARY OF DATA", true);
-        fclose(fp); fp = 0;
-    } catch (prg_exception& x) {
-        if (fp) fclose(fp);
-        x.addTrace("CreateReport()", "AnalysisExecution");
-        throw;
-    }
-    macroRunTimeStopSerial();
 }
 
 /** starts analysis execution centrically */
@@ -709,11 +662,9 @@ void AnalysisExecution::executePowerEvaluations() {
         std::auto_ptr<SimulationVariables> storeSimVars;
         if (_parameters.getPerformBernoulliDrilldown() || _parameters.getPerformStandardDrilldown())
             storeSimVars.reset(new SimulationVariables(_sim_vars));
-
-        FILE * fp = 0;
+        FILE * fpTextFile = _results_writer.getTextFile();
         std::string buffer;
-        openReportFile(fp, true);
-        fprintf(fp, "\nESTIMATED POWER\n");
+        //openReportFile(fp, true);
         _clusterRanker.sort(_data_hub); // need to sort otherwise simulation process of ranking clusters will fail
         boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
         // if simulations not already done is analysis stage, perform them now
@@ -728,9 +679,10 @@ void AnalysisExecution::executePowerEvaluations() {
                 remove(simulation_out.c_str());
             }
             runSuccessiveSimulations(randomizers, _parameters.GetNumReplicationsRequested(), simulation_out, false, 1);
+        } else {
+            AsciiPrintFormat::PrintSectionSeparatorString(fpTextFile, 0, 2);
+            fprintf(fpTextFile, "ESTIMATED POWER\n");
         }
-        else
-            AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
         double critical05, critical01, critical001;
         switch (_parameters.getPowerEvaluationCriticalValueType()) {
         case CV_MONTECARLO:
@@ -786,18 +738,18 @@ void AnalysisExecution::executePowerEvaluations() {
             remove(simulation_out.c_str());
         }
         if (number_randomizations == 0) {
-            fprintf(fp, "\nNo alternative hypothesis sets found in source files.\n");
+            fprintf(fpTextFile, "\nNo alternative hypothesis sets found in source files.\n");
         }
         else {
             // report critical values gathered from simulations and/or user specified
-            AsciiPrintFormat::printPadRight(fp, "\nAlpha", 25);
-            AsciiPrintFormat::printPadRight(fp, "0.05", 20);
-            AsciiPrintFormat::printPadRight(fp, "0.01", 20);
-            AsciiPrintFormat::printPadRight(fp, "0.001", 20);
-            AsciiPrintFormat::printPadRight(fp, "\n-----", 25);
-            AsciiPrintFormat::printPadRight(fp, "----", 20);
-            AsciiPrintFormat::printPadRight(fp, "----", 20);
-            AsciiPrintFormat::printPadRight(fp, "-----", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "\nAlpha", 25);
+            AsciiPrintFormat::printPadRight(fpTextFile, "0.05", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "0.01", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "0.001", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "\n-----", 25);
+            AsciiPrintFormat::printPadRight(fpTextFile, "----", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "----", 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, "-----", 20);
         }
         SimulationVariables simVarsCopy(_sim_vars);
         for (size_t t = 0; t < number_randomizations; ++t) {
@@ -837,16 +789,15 @@ void AnalysisExecution::executePowerEvaluations() {
                 break;
             default: throw prg_error("Unknown type '%d'.", "executePowerEvaluations()", _parameters.getPowerEstimationType());
             }
-            AsciiPrintFormat::printPadRight(fp, printString(buffer, "\nAlternative #%d", t + 1).c_str(), 25);
-            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power05, buffer, 3).c_str(), 20);
-            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power01, buffer, 3).c_str(), 20);
-            AsciiPrintFormat::printPadRight(fp, getRoundAsString(power001, buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, printString(buffer, "\nAlternative #%d", t + 1).c_str(), 25);
+            AsciiPrintFormat::printPadRight(fpTextFile, getRoundAsString(power05, buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, getRoundAsString(power01, buffer, 3).c_str(), 20);
+            AsciiPrintFormat::printPadRight(fpTextFile, getRoundAsString(power001, buffer, 3).c_str(), 20);
 
             // reset simualtion variables for next power estimation interation
             _sim_vars = simVarsCopy;
         }
-        fprintf(fp, "\n");
-        fclose(fp); fp = 0;
+        fprintf(fpTextFile, "\n");
         if (storeSimVars.get()) _sim_vars = *storeSimVars.get();
     } catch (prg_exception& x) {
         x.addTrace("executePowerEvaluations()", "AnalysisExecution");
@@ -1081,21 +1032,6 @@ void  AnalysisExecution::logRunHistory() {
     }
 }
 
-/** Attempts to open result output file stream and assign to passed file pointer address. Open mode is determined to boolean paramter. */
-void AnalysisExecution::openReportFile(FILE*& fp, bool bOpenAppend) {
-    try {
-        if ((fp = fopen(_parameters.GetOutputFileName().c_str(), (bOpenAppend ? "a" : "w"))) == NULL) {
-            if (!bOpenAppend)
-                throw resolvable_error("Error: Results file '%s' could not be created.\n", _parameters.GetOutputFileName().c_str());
-            else if (bOpenAppend)
-                throw resolvable_error("Error: Results file '%s' could not be opened.\n", _parameters.GetOutputFileName().c_str());
-        }
-    } catch (prg_exception& x) {
-        x.addTrace("openReportFile()", "AnalysisExecution");
-        throw;
-    }
-}
-
 /** Displays progress information to print direction indicating that analysis
 is calculating the most likely clusters in data. If iterative scan option
 was requested, the message printed reflects which iteration of the scan it
@@ -1114,184 +1050,164 @@ void AnalysisExecution::printFindClusterHeading() {
 }
 
 /** Prints calculated critical values to report file. */
-void AnalysisExecution::printCriticalValuesStatus(FILE* fp) {
-    AsciiPrintFormat      PrintFormat;
-    std::string           buffer;
+void AnalysisExecution::printCriticalValuesStatus() {
+    std::vector<std::string> message;
+    std::string buffer;
 
     // Martin is not sure that critical values should be reported if early termination occurs.
     if (_sim_vars.get_sim_count() != _parameters.GetNumReplicationsRequested()) return;
 
     if (_parameters.GetReportCriticalValues() && getIsCalculatingSignificantRatios() && _sim_vars.get_sim_count() >= 19) {
-        PrintFormat.SetMarginsAsOverviewSection();
-        AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
-        fprintf(fp, "CRITICAL VALUES\n\n");
-        printString(buffer, "A cluster is statistically significant when its %s "
-            "is greater than the critical value, which is, for significance level:",
-            (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"));
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+        message.emplace_back();
+        printString(message.back(),
+            "A cluster is statistically significant when its %s is greater than the critical value, which is, for significance level:",
+            (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio")
+        );
+        message.emplace_back();
+
         bool printSelectiveGumbel = _parameters.GetPValueReportingType() == DEFAULT_PVALUE && _parameters.getCanReportGumbelInDefaultCombination();
         if (_parameters.GetPValueReportingType() == GUMBEL_PVALUE || _parameters.getIsReportingGumbelAsAddon()) {
-            if (printSelectiveGumbel && (_sim_vars.get_sim_count() > 0 && _sim_vars.get_sim_count() < 99999)) {
-                fprintf(fp, "\nGumbel Critical Values:\n");
-            }
-            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 19) {
-                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.05);
-                fprintf(fp, "...... 0.05: %f\n", cv.first);
-            }
-            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99) {
-                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.01);
-                fprintf(fp, "...... 0.01: %f\n", cv.first);
-            }
-            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 999) {
-                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.001);
-                fprintf(fp, "..... 0.001: %f\n", cv.first);
-            }
-            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 9999) {
-                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.0001);
-                fprintf(fp, ".... 0.0001: %f\n", cv.first);
-            }
-            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99999) {
-                std::pair<double, double> cv = calculateGumbelCriticalValue(_sim_vars, (double)0.00001);
-                fprintf(fp, "... 0.00001: %f\n", cv.first);
-            }
+            if (printSelectiveGumbel && (_sim_vars.get_sim_count() > 0 && _sim_vars.get_sim_count() < 99999))
+                message.emplace_back("Gumbel Critical Values:");
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 19)
+                message.emplace_back(printString(buffer, "...... 0.05: %f", calculateGumbelCriticalValue(_sim_vars, (double)0.05).first));
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99)
+                message.emplace_back(printString(buffer, "...... 0.01: %f", calculateGumbelCriticalValue(_sim_vars, (double)0.01).first));
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 999)
+                message.emplace_back(printString(buffer, "..... 0.001: %f", calculateGumbelCriticalValue(_sim_vars, (double)0.001).first));
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 9999)
+                message.emplace_back(printString(buffer, ".... 0.0001: %f", calculateGumbelCriticalValue(_sim_vars, (double)0.0001).first));
+            if (printSelectiveGumbel && _sim_vars.get_sim_count() < 99999)
+                message.emplace_back(printString(buffer, "... 0.00001: %f", calculateGumbelCriticalValue(_sim_vars, (double)0.00001).first));
         }
         // skip reporting standard critical values if p-value reporting is gumbel
         if (_parameters.GetPValueReportingType() != GUMBEL_PVALUE) {
             if (_sim_vars.get_sim_count() >= 19)
-                fprintf(fp, "\nStandard Monte Carlo Critical Values:\n");
+                message.emplace_back("Standard Monte Carlo Critical Values:");
             if (_sim_vars.get_sim_count() >= 19) {
                 SignificantRatios::alpha_t alpha05(_significant_ratios->getAlpha05());
-                fprintf(fp, "...... 0.05: %f\n", alpha05.second);
+                message.emplace_back(printString(buffer, "...... 0.05: %f", alpha05.second));
             }
             if (_sim_vars.get_sim_count() >= 99) {
                 SignificantRatios::alpha_t alpha01(_significant_ratios->getAlpha01());
-                fprintf(fp, "...... 0.01: %f\n", alpha01.second);
+                message.emplace_back(printString(buffer, "...... 0.01: %f", alpha01.second));  
             }
             if (_sim_vars.get_sim_count() >= 999) {
                 SignificantRatios::alpha_t alpha001(_significant_ratios->getAlpha001());
-                fprintf(fp, "..... 0.001: %f\n", alpha001.second);
+                message.emplace_back(printString(buffer, "..... 0.001: %f", alpha001.second));
             }
             if (_sim_vars.get_sim_count() >= 9999) {
                 SignificantRatios::alpha_t alpha0001(_significant_ratios->getAlpha0001());
-                fprintf(fp, ".... 0.0001: %f\n", alpha0001.second);
+                message.emplace_back(printString(buffer, ".... 0.0001: %f", alpha0001.second));
             }
             if (_sim_vars.get_sim_count() >= 99999) {
                 SignificantRatios::alpha_t alpha00001(_significant_ratios->getAlpha00001());
-                fprintf(fp, "... 0.00001: %f\n", alpha00001.second);
+                message.emplace_back(printString(buffer, "... 0.00001: %f", alpha00001.second));
             }
         }
+        _results_writer.writeMessage(message, "CRITICAL VALUES", "information");
     }
 }
 
 /** Prints early termination status to report file. */
-void AnalysisExecution::printEarlyTerminationStatus(FILE* fp) {
+void AnalysisExecution::printEarlyTerminationStatus() {
     bool anyClusters = false;
     for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end() && !anyClusters; ++itrMLC)
         anyClusters = itrMLC->GetNumClustersRetained() > 0;
     if (anyClusters && _sim_vars.get_sim_count() < _parameters.GetNumReplicationsRequested()) {
         std::string buffer;
-        AsciiPrintFormat printFormat;
-        printString(buffer, "\nNOTE: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.", _sim_vars.get_sim_count());
-        printFormat.PrintAlignedMarginsDataString(fp, buffer);
+        _results_writer.writeMessage(
+            printString(buffer, 
+                "Note: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.",
+                _sim_vars.get_sim_count()
+            ), "warning"
+        );
+
     }
 }
 
 /* Reports dataset that were ignored by analysis. */
-void AnalysisExecution::printIgnoredDataSets(FILE* fp) {
+void AnalysisExecution::printIgnoredDataSets() {
     if (getDataHub().GetDataSetHandler().getRemovedDataSetDetails().size()) {
+        std::vector<std::string> message;
         std::vector<int> noCases, noControls;
         for (auto const& removed : getDataHub().GetDataSetHandler().getRemovedDataSetDetails()) {
             if (removed.get<1>()) noCases.push_back(removed.get<0>());
             if (removed.get<2>()) noControls.push_back(removed.get<0>());
         }
         std::stringstream s;
-        AsciiPrintFormat printFormat;
         if (noCases.size()) {
-            s << std::endl << "NOTE: The following data sets have zero cases";
+            s << "Note: The following data sets have zero cases";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: ";
-            printFormat.PrintAlignedMarginsDataString(fp, s.str());
-            s.str("");
+            message.emplace_back(s.str());
             for (int i = noCases.size() - 1; i >= 0; --i)
-                s << _parameters.getDataSourceNames()[noCases[i]].c_str() << (i == 0 ? "" : ", ");
-            printFormat.PrintAlignedMarginsDataString(fp, s.str(), 2);
+                message.emplace_back(_parameters.getDataSourceNames()[noCases[i]]);
         }
         if (noControls.size()) {
+            if (message.size()) message.emplace_back();
             s.str("");
-            s << (noCases.size() ? "" : "\n") << "NOTE: The following data sets have zero controls";
+            s << (noCases.size() ? "" : "\n") << "Note: The following data sets have zero controls";
             if (getDataHub().isDrilldown()) s << " in the drilldown area";
             s << ", hence they are uninformative and do not contribute to the " << (getDataHub().isDrilldown() ?  "drilldown " : "") << "analysis: ";
-            printFormat.PrintAlignedMarginsDataString(fp, s.str());
-            s.str("");
+            message.emplace_back(s.str());
             for (int i = noControls.size() - 1; i >= 0; --i)
-                s << _parameters.getDataSourceNames()[noControls[i]].c_str() << (i == 0 ? "" : ", ");
-            printFormat.PrintAlignedMarginsDataString(fp, s.str(), 2);
+                message.emplace_back(_parameters.getDataSourceNames()[noControls[i]]);
         }
+        _results_writer.writeMessage(message, "", "warning");
     }
 }
 
 /** Print GINI coefficients */
-void AnalysisExecution::printGiniCoefficients(FILE* fp) {
+void AnalysisExecution::printGiniCoefficients() {
     if (!(_parameters.getReportGiniOptimizedClusters() && _parameters.getReportGiniIndexCoefficents())) return;
-    AsciiPrintFormat printFormat;
+
+    std::vector<std::string> message;
     std::string buffer;
-    printFormat.SetMarginsAsClusterSection(0);
-    printFormat.PrintSectionSeparatorString(fp, 0, 2);
-    printString(buffer, "Gini Indexes");
-    printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-    printString(buffer, "----------------------------------------------------------");
-    printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
     double minSize = std::numeric_limits<double>::max(), maxSize = 0, minGINI = std::numeric_limits<double>::max(), maxGINI = 0;
     const MostLikelyClustersContainer* maximizedCollection = 0;
     for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end(); ++itrMLC) {
-        printString(buffer, "%g percent", itrMLC->getMaximumWindowSize());
-        printFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
+        message.emplace_back(printString(buffer, "%g percent", itrMLC->getMaximumWindowSize()));
+        while (message.back().size() < 15) message.back().append(".");
         double gini = itrMLC->getGiniCoefficient(_data_hub, _sim_vars, _parameters.getGiniIndexPValueCutoff());
-        printFormat.PrintAlignedMarginsDataString(fp, getValueAsString(gini, buffer, 4));
+        message.back().append(": ").append(getValueAsString(gini, buffer, 4));
         if (gini > maxGINI) { maximizedCollection = &(*itrMLC); maxGINI = gini; }
         minSize = std::min(minSize, itrMLC->getMaximumWindowSize());
         maxSize = std::max(maxSize, itrMLC->getMaximumWindowSize());
         minGINI = std::min(minGINI, gini);
     }
-    if (maximizedCollection) {
-        printString(buffer, "Optimal Gini coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize());
-        printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-    }
-    if (_parameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
-        std::string buffer2;
-        printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(_parameters.getGiniIndexPValueCutoff(), buffer).c_str());
-        printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-    }
+    if (maximizedCollection)
+        message.emplace_back(printString(buffer, "Optimal Gini coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize()));
+    if (_parameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE)
+        message.emplace_back(printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(_parameters.getGiniIndexPValueCutoff(), buffer).c_str()));
+    _results_writer.writeMessage(message, "GINI COEFFICIENTS", "information");
 
     // create gini html chart file
-    GiniChartGenerator giniGenerator(_top_clusters_containers, _data_hub, _sim_vars);
-    giniGenerator.generateChart();
+    GiniChartGenerator(_top_clusters_containers, _data_hub, _sim_vars).generateChart();
 }
 
 
 /** Prints indication of whether no clusters were retained nor reported. */
-void AnalysisExecution::printRetainedClustersStatus(FILE* fp, bool bClusterReported) {
-    AsciiPrintFormat    PrintFormat;
-    std::string         buffer;
+void AnalysisExecution::printRetainedClustersStatus(bool bClusterReported) {
+    std::string buffer;
+    std::vector<std::string> messages;
 
-    PrintFormat.SetMarginsAsOverviewSection();
     //if zero clusters retained in real data, then no clusters of significance were retained.
-
     bool anyClusters = false;
     for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end() && !anyClusters; ++itrMLC)
         anyClusters = itrMLC->GetNumClustersRetained() > 0;
     if (!anyClusters) {
         if (_parameters.GetIsIterativeScanning() && _analysis_count > 1)
-            fprintf(fp, "\nNo further clusters were found.\n");
+            messages.emplace_back("No further clusters were found.");
         else
-            fprintf(fp, "\nNo clusters were found.\n");
+            messages.emplace_back("No clusters were found.");
         switch (_parameters.GetProbabilityModelType()) {
         case POISSON:
             if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
                 switch (_parameters.GetAreaScanRateType()) {
-                case HIGH: buffer = "All potential cluster areas scanned had either only one case or a lower trend inside than outside the area."; break;
-                case LOW: buffer = "All potential cluster areas scanned had either only one case or a higher trend inside than outside the area."; break;
-                case HIGHANDLOW: buffer = "All potential cluster areas scanned had either only one case or the same time trend inside and outside the area."; break;
+                case HIGH: messages.emplace_back("All potential cluster areas scanned had either only one case or a lower trend inside than outside the area."); break;
+                case LOW: messages.emplace_back("All potential cluster areas scanned had either only one case or a higher trend inside than outside the area."); break;
+                case HIGHANDLOW: messages.emplace_back("All potential cluster areas scanned had either only one case or the same time trend inside and outside the area."); break;
                 default: throw prg_error("Unknown area scan rate type '%d'.\n", "printRetainedClustersStatus()", _parameters.GetAreaScanRateType());
                 }
                 break;
@@ -1303,54 +1219,53 @@ void AnalysisExecution::printRetainedClustersStatus(FILE* fp, bool bClusterRepor
         case HOMOGENEOUSPOISSON:
         case UNIFORMTIME:
             switch (_parameters.GetAreaScanRateType()) {
-            case HIGH: buffer = "All potential cluster areas scanned had either only one case or fewer observed cases than expected."; break;
-            case LOW: buffer = "All potential cluster areas scanned had either only one case or more observed cases than expected."; break;
-            case HIGHANDLOW: buffer = "All potential cluster areas scanned had either only one case or an equal number of observed and expected cases."; break;
+            case HIGH: messages.emplace_back("All potential cluster areas scanned had either only one case or fewer observed cases than expected."); break;
+            case LOW: messages.emplace_back("All potential cluster areas scanned had either only one case or more observed cases than expected."); break;
+            case HIGHANDLOW: messages.emplace_back("All potential cluster areas scanned had either only one case or an equal number of observed and expected cases."); break;
             default: throw prg_error("Unknown area scan rate type '%d'.\n", "printRetainedClustersStatus()", _parameters.GetAreaScanRateType());
             }
             break;
         case CATEGORICAL:
-            buffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
-            break;
+            messages.emplace_back("All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."); break;
         case ORDINAL:
             switch (_parameters.GetAreaScanRateType()) {
-            case HIGH: buffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
-            case LOW: buffer = "All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."; break;
-            case HIGHANDLOW: buffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
+            case HIGH: messages.emplace_back("All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut - off."); break;
+            case LOW: messages.emplace_back("All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."); break;
+            case HIGHANDLOW: messages.emplace_back("All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."); break;
             default: throw prg_error("Unknown area scan rate type '%d'.\n", "printRetainedClustersStatus()", _parameters.GetAreaScanRateType());
             }
             break;
         case NORMAL:
             switch (_parameters.GetAreaScanRateType()) {
-            case HIGH: buffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
-            case LOW: buffer = "All areas scanned had either only one case or an equal or higher mean than outside the area."; break;
-            case HIGHANDLOW: buffer = "All areas scanned had either only one case or an equal mean to outside the area."; break;
+            case HIGH: messages.emplace_back("All areas scanned had either only one case or an equal or lower mean than outside the area."); break;
+            case LOW: messages.emplace_back("All areas scanned had either only one case or an equal or higher mean than outside the area."); break;
+            case HIGHANDLOW: messages.emplace_back("All areas scanned had either only one case or an equal mean to outside the area."); break;
             default: throw prg_error("Unknown area scan rate type '%d'.\n", "printRetainedClustersStatus()", _parameters.GetAreaScanRateType());
             }
             break;
         case EXPONENTIAL:
             switch (_parameters.GetAreaScanRateType()) {
-            case HIGH: buffer = "All areas scanned had either only one case or equal or longer survival than outside the area."; break;
-            case LOW: buffer = "All areas scanned had either only one case or equal or shorter survival than outside the area."; break;
-            case HIGHANDLOW: buffer = "All areas scanned had either only one case or equal survival to outside the area."; break;
+            case HIGH: messages.emplace_back("All areas scanned had either only one case or equal or longer survival than outside the area."); break;
+            case LOW: messages.emplace_back("All areas scanned had either only one case or equal or shorter survival than outside the area."); break;
+            case HIGHANDLOW: messages.emplace_back("All areas scanned had either only one case or equal survival to outside the area."); break;
             default: throw prg_error("Unknown area scan rate type '%d'.\n", "printRetainedClustersStatus()", _parameters.GetAreaScanRateType());
             }
             break;
         default: throw prg_error("Unknown probability model '%d'.", "printRetainedClustersStatus()", _parameters.GetProbabilityModelType());
         }
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    }
-    else if (!bClusterReported) {
-        fprintf(fp, "\nNo clusters reported.\n");
+    } else if (!bClusterReported) {
+        messages.emplace_back("No clusters reported.");
         anyClusters = false;
         for (MLC_Collections_t::const_iterator itrMLC = _top_clusters_containers.begin(); itrMLC != _top_clusters_containers.end() && !anyClusters; ++itrMLC)
             anyClusters = itrMLC->GetNumClustersRetained() && itrMLC->GetTopRankedCluster().GetRatio() < MIN_CLUSTER_LLR_REPORT;
         if (!anyClusters)
-            printString(buffer, "All clusters had a %s less than %g.", (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"), MIN_CLUSTER_LLR_REPORT);
+            messages.emplace_back(printString(buffer, "All clusters had a %s less than %g.", (_parameters.IsTestStatistic() ? "test statistic" : "log likelihood ratio"), MIN_CLUSTER_LLR_REPORT));
         else
-            printString(buffer, "All clusters had a rank greater than %i.", _parameters.GetNumReplicationsRequested());
-        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+            messages.emplace_back(printString(buffer, "All clusters had a rank greater than %i.", _parameters.GetNumReplicationsRequested()));
+        //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
+    if (messages.size())
+        _results_writer.writeMessage(messages, "", "information");
 }
 
 /** Displays most likely clusters loglikelihood ratio(test statistic) to print
@@ -1618,7 +1533,6 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
     std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
     std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-    FILE * fp = 0;
     _clusterSupplement.reset(new ClusterSupplementInfo());
 
     try {
@@ -1628,8 +1542,7 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
         //if creating 'cluster information' files, create record data buffers
         if (_parameters.GetOutputClusterLevelFiles() || _parameters.GetOutputClusterCaseFiles() || _parameters.getOutputShapeFiles())
             ClusterWriter.reset(new ClusterInformationWriter(_data_hub));
-        //open result output file
-        openReportFile(fp, true);
+
         // determine how many clusters are being reported and define supplement information for each
         // if no replications requested, attempt to display up to top 10 clusters
         tract_t maxDisplay = _sim_vars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained();
@@ -1652,34 +1565,30 @@ void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc)
             //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
             //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
             switch (i) {
-                case 0: fprintf(fp, "\nCLUSTERS DETECTED\n\n"); break;
+                case 0: fprintf(_results_writer.getTextFile(), "\nCLUSTERS DETECTED\n\n"); break;
                 //case 1  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
-                default: fprintf(fp, "\n"); break;
+                default: fprintf(_results_writer.getTextFile(), "\n"); break;
             }
             //print cluster definition to file stream
-            TopCluster.Display(fp, _data_hub, *_clusterSupplement, _sim_vars);
+            TopCluster.Display(_results_writer.getTextFile(), _data_hub, *_clusterSupplement, _sim_vars);
+            _results_writer.writeClusterToHtmlTable(TopCluster, *_clusterSupplement, _sim_vars);
             //check track of whether this cluster was significant in top five percentage
-
             if (getIsCalculatingSignificantRatios() && macro_less_than(_significant_ratios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
                 ++_significant_at005;
             if (TopCluster.isSignificant(_data_hub, _clusterSupplement->getClusterReportIndex(TopCluster), _sim_vars))
                 ++_significant_clusters;
-
             //print cluster definition to 'location information' record buffer
             if (_parameters.GetOutputAreaSpecificFiles())
                 ClusterLocationWriter->WriteClusterLocations(TopCluster, _data_hub, i + 1, _sim_vars, *_relevance_tracker);
             _clustersReported = true;
         }
 
-        printRetainedClustersStatus(fp, _clustersReported);
-        printCriticalValuesStatus(fp);
-        printEarlyTerminationStatus(fp);
-        printGiniCoefficients(fp);
-        printIgnoredDataSets(fp);
-        fclose(fp); fp = 0;
-    }
-    catch (prg_exception& x) {
-        if (fp) fclose(fp);
+        printRetainedClustersStatus(_clustersReported);
+        printCriticalValuesStatus();
+        printEarlyTerminationStatus();
+        printGiniCoefficients();
+        printIgnoredDataSets();
+    } catch (prg_exception& x) {
         x.addTrace("printTopClusters()", "AnalysisExecution");
         throw;
     }
@@ -1698,27 +1607,41 @@ iteration of the iterative scan.
 If user requested 'location information' output file(s), they are created
 simultaneously with reported clusters. */
 void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc) {
-    FILE * fp = 0;
     std::string buffer;
     _clusterSupplement.reset(new ClusterSupplementInfo());
 
     try {
-        //open result output file
-        openReportFile(fp, true);
         if (mlc.GetNumClustersRetained()) {
             if (_analysis_count > 1) {
                 if (_analysis_count == 2)
-                    _data_hub.DisplaySummary(fp, printString(buffer, "REMAINING DATA AFTER TOP CLUSTER REMOVED"), false);
+                    printString(buffer, "REMAINING DATA AFTER TOP CLUSTER REMOVED");
                 else
-                    _data_hub.DisplaySummary(fp, printString(buffer, "REMAINING DATA AFTER TOP %d CLUSTERS REMOVED", _analysis_count - 1), false);
+                    printString(buffer, "REMAINING DATA AFTER TOP %d CLUSTERS REMOVED", _analysis_count - 1);
+
+                CSaTScanData::SummaryPairs_t summaryEntries;
+                _data_hub.getSummaryPairs(summaryEntries, false);
+
+                AsciiPrintFormat PrintFormat(_data_hub.GetNumDataSets() == 1);
+                PrintFormat.PrintSectionSeparatorString(_results_writer.getTextFile(), 0, 2);
+                fprintf(_results_writer.getTextFile(), "%s\n\n", buffer.c_str());
+                PrintFormat.PrintSummaryEntries(_results_writer.getTextFile(), summaryEntries);
+                PrintFormat.PrintSectionSeparatorString(_results_writer.getTextFile(), 0, 1);
+
+                _results_writer.getHtmlMessages() << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div><div class='information'>" << std::endl;
+                _results_writer.getHtmlMessages() << "<div>" << buffer << "</div>" << std::endl;
+                _results_writer.getHtmlMessages() << "<table class='analysis-summary'><tbody>" << std::endl;
+                for (auto& entry : summaryEntries)
+                    _results_writer.getHtmlMessages() << "<tr><th>" << entry.first << ":</th><td>" << entry.second << "</td></tr>" << std::endl;
+                _results_writer.getHtmlMessages() << "</tbody></table></div>" << std::endl;
             }
 
             //get most likely cluster
             const CCluster& TopCluster = mlc.GetTopRankedCluster();
             _clusterSupplement->addCluster(TopCluster, _analysis_count);
-            fprintf(fp, "\nCLUSTER DETECTED\n\n");
+            fprintf(_results_writer.getTextFile(), "\nCLUSTER DETECTED\n\n");
             //print cluster definition to file stream
-            TopCluster.Display(fp, _data_hub, *_clusterSupplement, _sim_vars);
+            TopCluster.Display(_results_writer.getTextFile(), _data_hub, *_clusterSupplement, _sim_vars);
+            _results_writer.writeClusterToHtmlTable(TopCluster, *_clusterSupplement, _sim_vars);
             //print cluster definition to 'cluster information' record buffer
             if (_parameters.GetOutputClusterLevelFiles() || _parameters.GetOutputClusterCaseFiles())
                 ClusterInformationWriter(_data_hub, _analysis_count > 1).Write(TopCluster, _analysis_count, _sim_vars);
@@ -1735,16 +1658,13 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 
         //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
         if (!_clusterSupplement->size() && _clustersReported)
-            fprintf(fp, "                  _____________________________\n\n");
+            fprintf(_results_writer.getTextFile(), "                  _____________________________\n\n");
 
-        printRetainedClustersStatus(fp, _clusterSupplement->size() > 0);
-        printCriticalValuesStatus(fp);
-        printEarlyTerminationStatus(fp);
-        printIgnoredDataSets(fp);
-        fclose(fp); fp = 0;
-    }
-    catch (prg_exception& x) {
-        if (fp) fclose(fp);
+        printRetainedClustersStatus(_clusterSupplement->size() > 0);
+        printCriticalValuesStatus();
+        printEarlyTerminationStatus();
+        printIgnoredDataSets();
+    } catch (prg_exception& x) {
         x.addTrace("PrintTopIterativeScanCluster()", "AnalysisExecution");
         throw;
     }

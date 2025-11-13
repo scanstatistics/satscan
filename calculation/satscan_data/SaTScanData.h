@@ -35,6 +35,7 @@ class CSaTScanData {
     typedef std::pair<boost::dynamic_bitset<>, std::vector<tract_t>> ClusterLocationCacheData_t;
     typedef std::map<std::string, ClusterLocationCacheData_t> ClusterLocationCache_t;
     typedef std::map<std::string, NetworkLocationContainer_t> ClusterNetworkLocationCache_t;
+    typedef std::vector<std::pair<std::string, std::string>> SummaryPairs_t;
 
   private:
     void                                        AllocateSortedArray();
@@ -115,7 +116,7 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
-    std::string                               & getDatasetLabel(size_t set_number, std::string& label) const;
+    std::string                               & getDatasetLabel(size_t set_number, std::string& label, bool prefixed=true) const;
     boost::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }
     Network                                   & getLocationNetwork() { return  _locations_network; }
@@ -127,8 +128,8 @@ class CSaTScanData {
     void                                        clearClusterLocationsCache();
     virtual void                                DisplayNeighbors(FILE* pFile) const;
     virtual void                                DisplayRelativeRisksForEachTract(const LocationRelevance& location_relevance, const MostLikelyClustersContainer& mlc) const;
-    void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
+    SummaryPairs_t                            & getSummaryPairs(std::vector<std::pair<std::string, std::string>>& summaryEntries, bool bPrintPeriod) const;
     bool                                        networkCanReportLocationCoordinates() const { return _network_can_report_coordinates;  }
     NetworkLocationContainer_t                & getClusterNetworkLocations(const CCluster& cluster, NetworkLocationContainer_t& networkLocations) const;
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}

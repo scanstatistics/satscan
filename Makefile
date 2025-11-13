@@ -124,6 +124,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(OUTPUT)/ChartGenerator.cpp \
                $(OUTPUT)/ClusterMap.cpp \
                $(OUTPUT)/GisUtils.cpp \
+               $(OUTPUT)/AnalysisResultsWriter.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \

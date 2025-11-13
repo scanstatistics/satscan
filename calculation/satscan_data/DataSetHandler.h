@@ -81,7 +81,7 @@ class DataSetHandler {
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
-    void                                ReportZeroPops(CSaTScanData& Data, FILE* pDisplay, BasePrint* pPrintDirection);
+    void                                ReportZeroPops(CSaTScanData& Data, AnalysisResultsWriter& resultsWriter, BasePrint* pPrintDirection);
 	RecordStatusType                    RetrieveCaseCounts(DataSource& Source, count_t& nCount) const;
 	RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate) const;
 	RecordStatusType                    RetrieveIdentifierIndex(DataSource& Source, tract_t& tLocationIndex) const;

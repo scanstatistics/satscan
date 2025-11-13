@@ -714,6 +714,9 @@
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Output\AnalysisResultsWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1285,6 +1288,9 @@
     </ClInclude>
     <ClInclude Include="org_satscan_gui_BatchAnalysisFrame.h">
       <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="..\calculation\Output\AnalysisResultsWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -17,11 +17,23 @@
 class LocationInformationWriter; // forward class declaration
 class ClusterSupplementInfo; // forward class declaration
 
+class AnalysisResultsWriter; // forward class declaration
+
 /** Defines properties of each potential cluster evaluated by analysis. */
 class CCluster {
   public:
+      struct FieldCache {
+        std::string _label;
+        std::string _formatted_value;
+        unsigned int _set_idx;
+        bool _mapping_dialog;
+        FieldCache(): _set_idx(0), _mapping_dialog(false){}
+        FieldCache(const std::string& label, const std::string& formatted, bool mapping_dialog, unsigned int set_idx = std::numeric_limits<unsigned int>::max())
+            : _label(label), _formatted_value(formatted), _set_idx(set_idx), _mapping_dialog(mapping_dialog) { }
+      };
+
     typedef std::pair<double,double> RecurrenceInterval_t;
-    typedef std::deque<std::pair<std::string, std::pair<std::string, unsigned int> > > ReportCache_t; // <Label, <Value, Set Index> >
+    typedef std::deque<FieldCache> ReportCache_t;
     static unsigned int           MIN_RANK_RPT_GUMBEL;
 
   protected:
@@ -33,13 +45,13 @@ class CCluster {
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
     mutable ReportCache_t       * gpCachedReportLines;
-	mutable bool                  _gini_cluster;           // indicates that cluster is gini cluster
+    mutable bool                  _gini_cluster;           // indicates that cluster is gini cluster
     mutable bool                  _hierarchical_cluster;   // indicates that cluster is hierarchical cluster
     mutable double                _span_of_locations;      // the distance between furthest locations in cluster
 
-    void                          cacheReportLine(std::string& label, std::string& value, unsigned int setIdx=std::numeric_limits<unsigned int>::max()) const;
+    void                          cacheReportLine(const std::string& label, const std::string& value, bool mapping, unsigned int setIdx=std::numeric_limits<unsigned int>::max()) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
-    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx= std::numeric_limits<unsigned int>::max()) const;
+    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool markForMapping, unsigned int setIdx= std::numeric_limits<unsigned int>::max()) const;
 
   public:
     CCluster();
@@ -131,7 +143,7 @@ class CCluster {
     double                        GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases, double dTotalMeasure) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    ReportCache_t               & getReportLinesCache() const;
+    ReportCache_t              & getReportLinesCache() const;
     RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep="/") const;
     void                          IncrementRank() {m_nRank++;}

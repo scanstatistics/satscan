@@ -324,40 +324,42 @@ std::string& VisualizationUtils::getHtmlClusterLegend(const CCluster& cluster, i
     legendLines << "<div style=\"text-decoration:underline;font-weight:bold;margin-bottom:5px;\">Cluster " << iCluster + 1 << (iteration > 1 ? " (iterative)" : "") << "</div>";
     if (numFilesSets == 1) {
         legendLines << "<table border=\"0\" style=\"width:100%;\">";
-        for (auto rptline: cluster.getReportLinesCache()) {
+        for (const auto& rptline: cluster.getReportLinesCache()) {
+            if (!rptline._mapping_dialog) continue;
             legendLines << printString(buffer,
                 "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">%s:</th><td style=\"white-space:nowrap;text-align:left;\">%s</td></tr>",
-                htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+                htmlencode(rptline._label, buffer2).c_str(), htmlencode(rptline._formatted_value, buffer3).c_str()
             );
         }
         legendLines << "</table>";
     } else {
         std::stringstream clusterLines, clusterDataSetLines;
         clusterLines << "<table border=\"0\" style=\"width:100%;\">";
-        for (auto rptline : cluster.getReportLinesCache()) {
-            if (rptline.second.second == std::numeric_limits<unsigned int>::max()) { // cluster level
+        for (const auto& rptline : cluster.getReportLinesCache()) {
+            if (!rptline._mapping_dialog) continue;
+            if (rptline._set_idx == std::numeric_limits<unsigned int>::max()) { // cluster level
                 clusterLines << printString(buffer,
                     "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">%s</td></tr>",
-                    htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+                    htmlencode(rptline._label, buffer2).c_str(), htmlencode(rptline._formatted_value, buffer3).c_str()
                 );
             } else { // cluster data set level
-                if (currSetIdx != rptline.second.second) {
+                if (currSetIdx != rptline._set_idx) {
                     if (currSetIdx != std::numeric_limits<unsigned int>::max()) clusterDataSetLines << "</table>";
                     clusterDataSetLines << "<table border=\"0\" style=\"width:100%;\">";
                     clusterDataSetLines << "<caption style=\"text-align:left;white-space:nowrap;padding:2px 0 2px 0;text-decoration:underline;font-weight:bold;color:#555;\">";
                     clusterDataSetLines << getWrappedText(
                         htmlencode(
-                            datahub.getDatasetLabel(rptline.second.second, buffer), buffer2, false
+                            datahub.getDatasetLabel(rptline._set_idx, buffer), buffer2, false
                         ), 0, 50, "<br>", buffer3
                     );
 
 
                     clusterDataSetLines << "</caption>";
-                    currSetIdx = rptline.second.second;
+                    currSetIdx = rptline._set_idx;
                 }
                 clusterDataSetLines << printString(buffer,
                     "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;color:#333;font-weight:400;\">%s:</th><td style=\"white-space:nowrap;text-align:right;\">%s</td></tr>",
-                    htmlencode(rptline.first, buffer2).c_str(), htmlencode(rptline.second.first, buffer3).c_str()
+                    htmlencode(rptline._label, buffer2).c_str(), htmlencode(rptline._formatted_value, buffer3).c_str()
                 );
             }
         }

@@ -8,6 +8,7 @@
 #include "AsciiPrintFormat.h"
 #include "SSException.h"
 #include "DataSource.h"
+#include "AnalysisResultsWriter.h"
 
 /** Constructor */
 CovariateCategory::CovariateCategory(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {
@@ -913,68 +914,64 @@ void PopulationData::RemoveCategoryTypeCases(size_t iCategoryIndex, count_t tCou
 /** Scans for tracts that have population dates which have zero populations.
     Reports such tract populations dates for pDisplay (is not NULL) and
     PrintDirection as formatted warning. */
-void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const {
-  int                           i, j, nPEndIndex, nPStartIndex = 0;
-  bool                          bZeroFound = false;
-  std::string                   sBuffer;
-  char                          sDateBuffer[20];
-  const CovariateCategory     * pCategoryDescriptor;
+void PopulationData::ReportZeroPops(const CSaTScanData& Data, AnalysisResultsWriter& resultsWriter, BasePrint& PrintDirection) const {
+    int nPStartIndex = _introduced_start_as_pop ? 1 : 0, nPEndIndex = GetNumPopulationDates() - (_introduced_end_as_pop ? 2 : 1);
+    bool bZeroFound = false;
+    std::string buffer, work;
+    std::vector<std::string> locationDates;
 
-  try {
-    if (_introduced_start_as_pop)
-      nPStartIndex = 1;
-    if (_introduced_end_as_pop)
-      nPEndIndex = GetNumPopulationDates() - 2;
-    else
-      nPEndIndex = GetNumPopulationDates() - 1;
-
-    std::vector<float> PopTotalsArray(gvPopulationDates.size());
-    for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
-       std::fill(PopTotalsArray.begin(), PopTotalsArray.end(), static_cast<float>(0));
-       pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
-       while (pCategoryDescriptor) {
-          for (j=nPStartIndex; j <= nPEndIndex; j++)
-             PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
-          pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
-       }
-       Julian popdate, lastdate=0;
-       for (j=nPStartIndex; j <= nPEndIndex; j++) {
-          if (PopTotalsArray[j]==0) {
-            if (!bZeroFound) {
-              bZeroFound = true;
-              AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 0, 2);
-              fprintf(pDisplay,"Warning: The following locations have a population totaling zero for the specified date(s).\n");
-              PrintDirection.Printf("Warning: The following locations have a population totaling zero for the specified date(s).\n", BasePrint::P_WARNING);
+    try {
+        std::vector<float> PopTotalsArray(gvPopulationDates.size());
+        for (int i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
+            //buffer = "";
+            locationDates.clear();
+            std::fill(PopTotalsArray.begin(), PopTotalsArray.end(), static_cast<float>(0));
+            const CovariateCategory* pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
+            while (pCategoryDescriptor) {
+            for (int j=nPStartIndex; j <= nPEndIndex; j++)
+                PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+                pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
             }
-            /* Suppress printing the same population date for a location; this can happen when original population date from input file was precise to the day.
-              
-              https://www.squishlist.com/ims/satscan/66489/
-              There exists special logic when reading the population file for the population date. If the population date is precise to the day, then we
-              create a population record for that date and the folllowing date. It is also possible that that following date is specified in the population
-              file - so that date will exist twice in the collection of population dates. See referenced issue for more details on why we're doing this.
-
-              When calling this function to check for zero population dates, we can't be certain if a population date is:
-                - an actual date read from file
-                - a population date created as described above
-                - a population date read with year or month precision and assigned default (e.g. 2016 -> 2016/07/01, 2016/30 -> 2016/30/15)
-
-              We've chosen to error on the side of caution, in place of potentially reporting incorrect warnings. */
-            popdate = gvPopulationDates[j];
-            if ((lastdate != popdate - 1) && lastdate != popdate) {
-              JulianToChar(sDateBuffer, gvPopulationDates[j]);
-              if (pDisplay)
-                fprintf(pDisplay,"Location %s, %s\n", Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), sDateBuffer);
-              PrintDirection.Printf("Location %s, %s\n", BasePrint::P_WARNING, Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), sDateBuffer);
+            Julian popdate, lastdate=0;
+            for (int j=nPStartIndex; j <= nPEndIndex; j++) {
+                if (PopTotalsArray[j]==0) {
+                    if (!bZeroFound) {
+                        bZeroFound = true;
+                        resultsWriter.writeMessageListStart("Warning: The following locations have a population totaling zero for the specified date(s):", "warning", 0);
+                        PrintDirection.Printf("Warning: The following locations have a population totaling zero for the specified date(s):\n", BasePrint::P_WARNING);
+                    }
+                    /* Suppress printing the same population date for a location; this can happen when original population date from input file was precise to the day.
+                        https://www.squishlist.com/ims/satscan/66489/
+                        There exists special logic when reading the population file for the population date. If the population date is precise to the day, then we
+                        create a population record for that date and the folllowing date. It is also possible that that following date is specified in the population
+                        file - so that date will exist twice in the collection of population dates. See referenced issue for more details on why we're doing this.
+                        When calling this function to check for zero population dates, we can't be certain if a population date is:
+                            - an actual date read from file
+                            - a population date created as described above
+                            - a population date read with year or month precision and assigned default (e.g. 2016 -> 2016/07/01, 2016/30 -> 2016/30/15)
+                        We've chosen to error on the side of caution, in place of potentially reporting incorrect warnings. */
+                    popdate = gvPopulationDates[j];
+                    if ((lastdate != popdate - 1) && lastdate != popdate) {
+                        locationDates.emplace_back();
+                        JulianToString(locationDates.back(), gvPopulationDates[j], Data.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
+                    }
+                    lastdate = gvPopulationDates[j];
+                }
             }
-            lastdate = gvPopulationDates[j];
-          }
-       }
+            if (locationDates.size()) {
+                resultsWriter.writeMessageListLine(
+                    printString(buffer, "%s: %s", 
+                        Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), typelist_to_csv_string<std::string>(locationDates, work).c_str()
+                    )
+                );
+                PrintDirection.Printf("%s\n", BasePrint::P_WARNING, buffer.c_str());
+            }
+        }
+        if (bZeroFound) resultsWriter.writeMessageListEnd(0);
+    } catch (prg_exception& x) {
+        x.addTrace("ReportZeroPops()","PopulationData");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ReportZeroPops()","PopulationData");
-    throw;
-  }
 }
 
 /** Sets internal flag that indicates to aggregate population categories. Calling

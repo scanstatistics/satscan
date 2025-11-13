@@ -207,10 +207,10 @@ DataSetHandler::CountFileReadStatus DataSetHandler::ReadCounts(RealDataSet& Data
 
 
 /** reports whether any dataset has cases with a zero population. */
-void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
-  if (!gParameters.GetSuppressingWarnings())
-    for (size_t t=0; t < gvDataSets.size(); ++t)
-      gvDataSets.at(t)->getPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+void DataSetHandler::ReportZeroPops(CSaTScanData & Data, AnalysisResultsWriter& resultsWriter, BasePrint * pPrintDirection) {
+    if (gParameters.GetSuppressingWarnings()) return; // skip if warnings are suppressed
+    for (const auto& dataset: gvDataSets)
+        dataset->getPopulationData().ReportZeroPops(Data, resultsWriter, *pPrintDirection);
 }
 
 /* Removes data sets from collection which do not contain case, or potentially control, data. 

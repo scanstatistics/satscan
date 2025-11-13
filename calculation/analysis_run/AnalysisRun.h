@@ -19,6 +19,7 @@
 #include "ClusterMap.h"
 #include "DataDemographics.h"
 #include "ChartGenerator.h"
+#include "AnalysisResultsWriter.h"
 
 class ClusterRankHelper {
     private:
@@ -115,6 +116,7 @@ class AnalysisExecution {
         std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
         boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
 
+		AnalysisResultsWriter               _results_writer;
         std::string                         _base_output;
         std::string                         _cluster_path;
         unsigned int                      & _drilldowns;
@@ -123,7 +125,6 @@ class AnalysisExecution {
         void                                calculateMostLikelyClusters();
         void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
         void                                calculateOliveirasF();
-        void                                createReport();
         void                                executeCentricEvaluation();
         void                                executePowerEvaluations();
         void                                executeSuccessively();
@@ -133,13 +134,12 @@ class AnalysisExecution {
         const MostLikelyClustersContainer * getOptimalGiniContainerByPValue(const MLC_Collections_t& mlc_collections, double p_value_cutoff) const;
         OptimalGiniByLimit_t                getOptimalGiniContainerByLimit(const MLC_Collections_t& mlc_collections, const std::vector<unsigned int>& atmost) const;
         void                                logRunHistory();
-        void                                openReportFile(FILE*& fp, bool bOpenAppend);
         void                                printFindClusterHeading();
-        void                                printCriticalValuesStatus(FILE* fp);
-        void                                printEarlyTerminationStatus(FILE* fp);
-        void                                printGiniCoefficients(FILE* fp);
-        void                                printRetainedClustersStatus(FILE* fp, bool bClusterReported);
-        void                                printIgnoredDataSets(FILE* fp);
+        void                                printCriticalValuesStatus();
+        void                                printEarlyTerminationStatus();
+        void                                printGiniCoefficients();
+        void                                printRetainedClustersStatus(bool bClusterReported);
+        void                                printIgnoredDataSets();
         void                                printTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
         void                                printTopClusters(const MostLikelyClustersContainer& mlc);
         void                                printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);

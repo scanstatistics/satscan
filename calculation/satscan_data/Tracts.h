@@ -99,6 +99,7 @@ class CompareLocationByCoordinates {
 };
 
 class IdentifiersManager; // forward class declaration
+class AnalysisResultsWriter;
 /* A class to oversee the addition and access to all locations. */
 class LocationsManager {
 	friend class IdentifiersManager;
@@ -247,7 +248,7 @@ class IdentifiersManager {
 		size_t                              getNumLocationCoordinates() const { return _num_location_coordinates; }
         const WriteStatus                   getWriteStatus() const { return _write_status; }
         void                                print(FILE* pFile) const;
-        void                                reportCombinedIdentifiers(FILE * fDisplay) const;
+        void                                reportCombinedIdentifiers(AnalysisResultsWriter& resultsWriter) const;
         Identifier::CombinedIdentifierNames_t & retrieveAll(size_t tIndex, Identifier::CombinedIdentifierNames_t& Identifiers) const;
         void                                setExpectedCoordinateDimensions(unsigned int expected_dimension) {
 			if (_aggregating_identifiers) return;

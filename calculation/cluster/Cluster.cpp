@@ -61,9 +61,7 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   m_nFirstInterval        = rhs.m_nFirstInterval;
   m_nLastInterval         = rhs.m_nLastInterval;
   m_iEllipseOffset        = rhs.m_iEllipseOffset;
-  if (rhs.gpCachedReportLines) {
-      gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
-  }
+  if (rhs.gpCachedReportLines) gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
   _gini_cluster = rhs._gini_cluster;
   _hierarchical_cluster = rhs._hierarchical_cluster;
   _span_of_locations = rhs._span_of_locations;
@@ -71,10 +69,10 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
 }
 
 /** Adds report line to cluster report cache. */
-void CCluster::cacheReportLine(std::string& label, std::string& value, unsigned int setIdx) const {
+void CCluster::cacheReportLine(const std::string& label, const std::string& value, bool mapping, unsigned int setIdx) const {
   if (!gpCachedReportLines)
       gpCachedReportLines = new ReportCache_t();
-  gpCachedReportLines->push_back(std::make_pair(label, std::make_pair(value, setIdx) ));
+  gpCachedReportLines->push_back(FieldCache(label, value, mapping, setIdx));
 }
 
 /** returns the area rate for cluster */ 
@@ -188,29 +186,21 @@ AsciiPrintFormat CCluster::getAsciiPrintFormat(const CParameters& parameters) co
     return AsciiPrintFormat(true, parameters.GetProbabilityModelType() == BATCHED ? 6 : 0);
 }
 
-CCluster::ReportCache_t & CCluster::getReportLinesCache() const {
-  if (!gpCachedReportLines)
-      gpCachedReportLines = new ReportCache_t();
-  return *gpCachedReportLines;
+CCluster::ReportCache_t& CCluster::getReportLinesCache() const {
+    if (!gpCachedReportLines)
+        gpCachedReportLines = new ReportCache_t();
+    return *gpCachedReportLines;
 }
 
-/** prints cluster information to file stream, via AsciiPrintFormat object. If 'saveToCache' is true, adds label/value to cache.
-
+/** prints cluster information to file stream, via AsciiPrintFormat object.
     Caching the data provides a mechanism to store cluster information to be displayed later, in other types of reports (e.g. KML file).
     The logic that creates the label/value pairs can be involved. Rather than repeating this logic in other classes, this function stores
     the result of that logic in a cache for later retrieval.
-
-    The fields currently marked for caching are specific to reporting in the KML file. This caching implementation is not ideal, but I don't
-    have a better solution at the moment. When/or if we have another cluster report file that needs to report a different collection of fields,
-    we'll need to come up with a better solution.
 */
-void CCluster::printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool saveToCache, unsigned int setIdx) const {
+void CCluster::printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value, bool markForMapping, unsigned int setIdx) const {
     PrintFormat.PrintSectionLabel(fp, label, false, true);
     PrintFormat.PrintAlignedMarginsDataString(fp, value);
-    if (saveToCache) {
-        std::string s(label);
-        cacheReportLine(s, value, setIdx);
-    }
+    cacheReportLine(std::string(label), value, markForMapping, setIdx);
 }
 
 /** converts passed angle to degrees */
@@ -231,16 +221,17 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
         AsciiPrintFormat PrintFormat = getAsciiPrintFormat(DataHub.GetParameters());
         std::string buffer, work;
         unsigned int iReportedCluster = supplementInfo.getClusterReportIndex(*this);
+        const auto& parameters = DataHub.GetParameters();
 
         PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
         fprintf(fp, "%u.", iReportedCluster);
         DisplayCensusTracts(fp, DataHub, PrintFormat);
-        if (DataHub.GetParameters().getClusterMonikerPrefix().size()) {
-            printString(buffer, "%sC%u", DataHub.GetParameters().getClusterMonikerPrefix().c_str(), iReportedCluster);
+        if (parameters.getClusterMonikerPrefix().size()) {
+            printString(buffer, "%sC%u", parameters.getClusterMonikerPrefix().c_str(), iReportedCluster);
             PrintFormat.PrintSectionLabel(fp, "Moniker", false, true);
             PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
         }
-        if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
+        if (parameters.getReportGiniOptimizedClusters()) {
             if (supplementInfo.getOverlappingClusters(*this, buffer).size() == 0) buffer = "No Overlap";
             printClusterData(fp, PrintFormat, "Overlap with clusters", buffer, false);
         }
@@ -248,19 +239,20 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
 		// Display cluster coordinates but not when:
 		// - using non-euclidean neighbors
 		// - using a network file to define locations and the user didn't specify all the coordinates in coordinates file
-        if (!(DataHub.GetParameters().UseLocationNeighborsFile() || GetClusterType() == PURELYTEMPORALCLUSTER ||
-			  (DataHub.GetParameters().getUseLocationsNetworkFile() && !DataHub.networkCanReportLocationCoordinates()))) {
-            if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
+        if (!(parameters.UseLocationNeighborsFile() || GetClusterType() == PURELYTEMPORALCLUSTER ||
+			  (parameters.getUseLocationsNetworkFile() && !DataHub.networkCanReportLocationCoordinates()))) {
+            if (parameters.GetCoordinatesType() == CARTESIAN)
                 DisplayCoordinates(fp, DataHub, PrintFormat);
             else
                 DisplayLatLongCoords(fp, DataHub, PrintFormat);
             double span = getLocationsSpan(DataHub);
             buffer = "N/A";
             printClusterData(
-                fp, PrintFormat, "Span", span >= 0.0 ? printString(buffer, "%s%s", getValueAsString(span, work).c_str(), DataHub.GetParameters().GetCoordinatesType() == LATLON ? " km" : "") : buffer, false
+                fp, PrintFormat, "Span", span >= 0.0 ? printString(buffer, "%s%s", getValueAsString(span, work).c_str(), parameters.GetCoordinatesType() == LATLON ? " km" : "") : buffer, false
             );
+            cacheReportLine(std::string("Span-raw"), work, false);
         }
-        if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
+        if (parameters.getReportGiniOptimizedClusters()) {
             buffer = isGiniCluster() ? "Yes" : "No";
             printClusterData(fp, PrintFormat, "Gini Cluster", buffer, false);
         }
@@ -271,23 +263,23 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
             DisplayRatio(fp, DataHub, PrintFormat);
             DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
         };
-        if (DataHub.GetParameters().getNumFileSets() > 1) displayClusterLevelInformation();
-        if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL || DataHub.GetParameters().GetProbabilityModelType() == CATEGORICAL)
+        if (parameters.getNumFileSets() > 1) displayClusterLevelInformation();
+        if (parameters.GetProbabilityModelType() == ORDINAL || parameters.GetProbabilityModelType() == CATEGORICAL)
             DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
-        else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
+        else if (parameters.GetProbabilityModelType() == EXPONENTIAL)
             DisplayClusterDataExponential(fp, DataHub, PrintFormat);
-        else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) {
-            if (DataHub.GetParameters().getIsWeightedNormal())
+        else if (parameters.GetProbabilityModelType() == NORMAL) {
+            if (parameters.getIsWeightedNormal())
                 DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
             else
                 DisplayClusterDataNormal(fp, DataHub, PrintFormat);
-        } else if (DataHub.GetParameters().GetProbabilityModelType() == RANK) {
+        } else if (parameters.GetProbabilityModelType() == RANK) {
             DisplayClusterDataRank(fp, DataHub, PrintFormat);
-        } else if (DataHub.GetParameters().GetProbabilityModelType() == BATCHED) {
+        } else if (parameters.GetProbabilityModelType() == BATCHED) {
             DisplayClusterDataBatched(fp, DataHub, PrintFormat);
         } else
             DisplayClusterDataStandard(fp, DataHub, PrintFormat);
-        if (DataHub.GetParameters().getNumFileSets() == 1) displayClusterLevelInformation();
+        if (parameters.getNumFileSets() == 1) displayClusterLevelInformation();
     } catch (prg_exception& x) {
         x.addTrace("Display()","CCluster");
         throw;
@@ -422,12 +414,12 @@ void CCluster::DisplayClusterDataRank(FILE* fp, const CSaTScanData& DataHub, con
         Consider implementing something similar to the AbstractWeightedNormalRandomizer methods
         ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
         ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const; */
-        buffer = "";
+        /*buffer = "";
         printClusterData(fp, PrintFormat, "Average Category", buffer, true, set_number);
         printClusterData(fp, PrintFormat, "Median Rank Inside", buffer, true, set_number);
         printClusterData(fp, PrintFormat, "Median Rank Outside", buffer, true, set_number);
         printClusterData(fp, PrintFormat, "Variance", buffer, false);
-        printClusterData(fp, PrintFormat, "Standard deviation", buffer, false);
+        printClusterData(fp, PrintFormat, "Standard deviation", buffer, false);*/
     }
 }
 
@@ -657,46 +649,44 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  std::vector<double>   vCoordinates;
-  std::string           buffer, work, work2;
+    std::vector<double> vCoordinates;
+    std::string buffer, work, work2;
 
-  try {
-	 Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
-
-    //print coordinates differently when ellipses are requested
-    if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
-      for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
-         buffer += printString(work, "%s%g,", (i == 0 ? "(" : ""), vCoordinates[i]);
-      }
-      buffer += printString(work, "%g)", vCoordinates.back());
-	  if (!Data.GetParameters().getUseLocationsNetworkFile()) {
-          buffer += printString(work, " / %s", getValueAsString(m_CartesianRadius, work2).c_str());
-	  }
-	  printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
-      if (Data.GetParameters().getUseLocationsNetworkFile() && m_CartesianRadius != -1.0) {
-          printClusterData(fp, PrintFormat, "Ctr to utmost location", getValueAsString(m_CartesianRadius, work2), false);
-      }
-    } else {//print ellipse settings
-      for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
-          buffer += printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
-      }
-      buffer += printString(work, "%g)", vCoordinates.back());
-      printClusterData(fp, PrintFormat, "Coordinates", buffer, false);
-      //print ellipse particulars
-      work = getValueAsString(m_CartesianRadius, work);
-      printClusterData(fp, PrintFormat, "Semiminor axis", work, false);
-      work = getValueAsString(m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()), work);
-      printClusterData(fp, PrintFormat, "Semimajor axis", work, false);
-      work = getValueAsString(ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)), work);
-      printClusterData(fp, PrintFormat, "Angle (degrees)", work, false);
-      work = getValueAsString(Data.GetEllipseShape(m_iEllipseOffset), work);
-      printClusterData(fp, PrintFormat, "Shape", work, false);
+    try {
+	    Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
+        //print coordinates differently when ellipses are requested
+        if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
+            for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
+                buffer += printString(work, "%s%g,", (i == 0 ? "(" : ""), vCoordinates[i]);
+            }
+            buffer += printString(work, "%g)", vCoordinates.back());
+	        if (!Data.GetParameters().getUseLocationsNetworkFile()) {
+                buffer += printString(work, " / %s", getValueAsString(m_CartesianRadius, work2).c_str());
+	        }
+	        printClusterData(fp, PrintFormat, (Data.GetParameters().getUseLocationsNetworkFile() ? "Coordinates" : "Coordinates / radius"), buffer, false);
+            if (Data.GetParameters().getUseLocationsNetworkFile() && m_CartesianRadius != -1.0) {
+                printClusterData(fp, PrintFormat, "Ctr to utmost location", getValueAsString(m_CartesianRadius, work2), false);
+            }
+        } else {//print ellipse settings
+            for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
+                buffer += printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
+            }
+            buffer += printString(work, "%g)", vCoordinates.back());
+            printClusterData(fp, PrintFormat, "Coordinates", buffer, false);
+            //print ellipse particulars
+            work = getValueAsString(m_CartesianRadius, work);
+            printClusterData(fp, PrintFormat, "Semiminor axis", work, false);
+            work = getValueAsString(m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()), work);
+            printClusterData(fp, PrintFormat, "Semimajor axis", work, false);
+            work = getValueAsString(ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)), work);
+            printClusterData(fp, PrintFormat, "Angle (degrees)", work, false);
+            work = getValueAsString(Data.GetEllipseShape(m_iEllipseOffset), work);
+            printClusterData(fp, PrintFormat, "Shape", work, false);
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("DisplayCoordinates()","CCluster");
+        throw;
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("DisplayCoordinates()","CCluster");
-    throw;
-  }
 }
 
 /** Writes clusters lat/long coordinates in format required by result output file. */
@@ -727,17 +717,16 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
 }
 
 /** Writes clusters monte carlo rank and p-value in format required by result output file. */
-void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
-                                            unsigned int iReportedCluster,
-                                            const AsciiPrintFormat& PrintFormat,
-                                            const SimulationVariables& simVars) const {
-  std::string                      format, replicas, buffer;
+void CCluster::DisplayMonteCarloInformation(
+    FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, const AsciiPrintFormat& PrintFormat, const SimulationVariables& simVars
+) const {
+  std::string format, replicas, buffer;
   const CParameters & parameters = DataHub.GetParameters();
       
   if (simVars.get_sim_count() == 0)
       return;
 
-  if (DataHub.GetParameters().getReportClusterRank()) {
+  if (parameters.getReportClusterRank()) {
     //PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
     printString(buffer, "%u/%ld", m_nRank, simVars.get_sim_count() + 1);
     //fprintf(fp, buffer.c_str());
@@ -749,28 +738,29 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
     bool canRptInDefault = parameters.getCanReportGumbelInDefaultCombination() && GetRank() < MIN_RANK_RPT_GUMBEL;
     if ((parameters.GetPValueReportingType() == DEFAULT_PVALUE && canRptInDefault) || parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
-      if (p.first == 0.0) {
+      if (p.first == 0.0)
         getValueAsString(p.second, buffer, 1).insert(0, "< ");
-      } else {
+      else
         getValueAsString(p.first, buffer);
-      }
       printClusterData(fp, PrintFormat, "P-value", buffer, true);
+      cacheReportLine(std::string("P-value-raw"), printString(buffer, "%g", (p.first == 0.0 ? p.second: p.first)), false);
     } else {
       printString(replicas, "%u", simVars.get_sim_count());
       printString(format, "%%.%dlf", replicas.size());
       printString(buffer, format.c_str(), GetMonteCarloPValue(parameters,simVars, DataHub.GetParameters().GetIsIterativeScanning() || iReportedCluster == 1));
       printClusterData(fp, PrintFormat, "P-value", buffer, true);
+      cacheReportLine(std::string("P-value-raw"), buffer, false);
     }
     DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
     //conditionally report gumbel p-value as supplement to reported p-value
     if (parameters.getIsReportingGumbelAsAddon()) {
          std::pair<double,double> p = GetGumbelPValue(simVars);
-         if (p.first == 0.0) {
+         if (p.first == 0.0)
            getValueAsString(p.second, buffer, 1).insert(0, "< ");
-         } else {
+         else
            getValueAsString(p.first, buffer);
-         }
          printClusterData(fp, PrintFormat, "Gumbel P-value", buffer, true);
+         cacheReportLine(std::string("Gumbel P-value-raw"), printString(buffer, "%g", (p.first == 0.0 ? p.second : p.first)), false);
     }
   }
 }
@@ -842,6 +832,7 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
          }
          //print data to file stream
          printClusterData(fp, PrintFormat, "Recurrence interval", buffer, true);
+         cacheReportLine(std::string("Recurrence interval (days)"), printString(buffer, "%g", ri.second), false);
     }
   }
   catch (prg_exception& x) {
