@@ -29,7 +29,7 @@ AnalysisResultsWriter::AnalysisResultsWriter(const CSaTScanData& dataHub) : _dat
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/jquery/jquery-3.7.0.min.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/datatables.1.10.16/js/jquery.dataTables.min.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/popper.4.1.1.js' type='text/javascript'></script>" << std::endl;
-    _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/ bootstrap.4.1.1.js' type='text / javascript'></script>" << std::endl;
+    _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/bootstrap.4.1.1.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "html-results/satscan-results.1.0.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<body>" << std::endl;
 }
