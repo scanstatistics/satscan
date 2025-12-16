@@ -137,6 +137,7 @@ class DataDemographicsProcessor{
         boost::shared_ptr<bloom_filter> _individuals_filter;
         std::set<std::string> _new_individuals; // new individuals
         std::string _temp_individuals_cache_filename;
+        std::stringstream _new_events_timestamp;
 
         void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
         bool processCaseFileLinelist(const RealDataSet& DataSet);

@@ -97,7 +97,8 @@ bool DemographicAttributeSet::hasDescriptiveCoordinates() const {
 ///////////////////////////////////// DataDemographicsProcessor //////////////////////////////////////////
 
 DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handler) :
-    _handler(handler), _parameters(handler.gDataHub.GetParameters()) { 
+    _handler(handler), _parameters(handler.gDataHub.GetParameters()) {
+    _new_events_timestamp << boost::posix_time::second_clock::local_time();
     // Read individual ids from file cache - these signalled in significant clusters of previous analysis(es).
     if (boost::filesystem::exists(_parameters.getLinelistIndividualsCacheFileName().c_str())) {
 		std::string buffer;
@@ -109,7 +110,14 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
             );
         while (!event_stream.eof()) {
             std::getline(event_stream, buffer);
-            if (trimString(buffer).size()) _existing_individuals.emplace(buffer);
+            if (!trimString(buffer).size()) continue;
+            boost::tokenizer<boost::escaped_list_separator<char>> values(buffer, boost::escaped_list_separator<char>(std::string(""), ",", "\""));
+            for (auto itr = values.begin(); itr != values.end(); ++itr) {
+                buffer = *itr;
+                if (trimString(buffer).size()) _existing_individuals.emplace(buffer);
+                // The first token is the individual id. Earlier versions of the file didn't include a timestamp column, so just ignore any extra tokens.
+                break;
+            }
         }
         event_stream.close();
     }
@@ -293,11 +301,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 }
                 _reporting_clusters[b]._event_totals.second += nCount;
             }
-            // Maintain the individuals cache. Add if:
-            // 1) new individual that signalled in significant cluster of this analysis.
-            // 1) individual signalled in prior analysis iteration (individual in current case file and current individual cache).
-            if ((is_new_event && applicable_clusters.count()) || is_new_event == boost::logic::tribool(false))
-                individuals_stream << individual << std::endl;
+            // Maintain the individuals cache. Add if it's new individual that signalled in significant cluster of this analysis.
+            // Individuals which signalled in previous analyses are already included in primary cache file.
+            if ((is_new_event && applicable_clusters.count())) 
+                individuals_stream << individual << "," << _new_events_timestamp.str() << std::endl;
         }
         if (individuals_stream.is_open()) individuals_stream.close();
         // Create the cluster line list file and concatenate each cluster line list file.
@@ -339,8 +346,24 @@ void DataDemographicsProcessor::finalize() {
                 "This cache will be used in subsequent runs of this analysis to determine whether an individual is considered 'new' or 'ongoing'.\n",
                 BasePrint::P_WARNING, _parameters.getLinelistIndividualsCacheFileName().c_str()
             );
-            boost::filesystem::path from = _temp_individuals_cache_filename, to = _parameters.getLinelistIndividualsCacheFileName();
-            boost::filesystem::detail::copy_file(from, to, static_cast<unsigned int>(boost::filesystem::copy_options::overwrite_existing));
+            // Append new signalling individuals to the primary cache file.
+            std::ifstream temp_new_cache(_temp_individuals_cache_filename, std::ios::binary);
+            if (!temp_new_cache)
+                throw prg_error(
+                    "Error: Failed to reopen temporary individuals cache file for reading prior to writing line-list cache file:\n%s\n",
+                    _temp_individuals_cache_filename.c_str()
+                );
+            std::ofstream final_cache(
+                _parameters.getLinelistIndividualsCacheFileName().c_str(), std::ios_base::app | std::ios_base::binary
+            );
+            if (!final_cache)
+                throw resolvable_error(
+                    "Error: Could not open line-list individuals cache file for writing:\n%s\n",
+                    _parameters.getLinelistIndividualsCacheFileName().c_str()
+                );
+            final_cache << temp_new_cache.rdbuf();
+            temp_new_cache.close();
+            final_cache.close();
         }
         remove(_temp_individuals_cache_filename.c_str());
     }
