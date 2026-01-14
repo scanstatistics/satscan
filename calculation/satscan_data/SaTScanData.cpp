@@ -956,7 +956,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT_Cat();
-    else
+    else if (!gParameters.getSTPasHypergeometric())
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT();
   }

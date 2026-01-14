@@ -20,7 +20,6 @@ class CAnalysis : public AbstractAnalysis {
     virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
     virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
     virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
-    virtual double                      MonteCarlo(const AbstractDataSetGateway& DataGateway) { return 0; }
 
   public:
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);

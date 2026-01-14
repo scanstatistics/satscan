@@ -5,7 +5,8 @@
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "SaTScanData.h"
 #include "SSException.h"
-#include "DataSource.h"  
+#include "DataSource.h"
+#include "AnalysisRun.h"
 
 /** constructor */
 SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
@@ -200,6 +201,9 @@ DataSetHandler::CountFileReadStatus SpaceTimePermutationDataSetHandler::ReadCoun
     return readStatus;
 }
 
+#include "TimeIntervalRange.h"
+#include "PoissonLikelihoodCalculation.h"
+
 /** Read input data in data set handler class objects. */
 bool SpaceTimePermutationDataSetHandler::ReadData() {
     DataSetHandler::CountFileReadStatus readStaus;
@@ -215,6 +219,63 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
         }
         removeDataSetsWithNoData();
 
+        const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(
+            GetNumDataSets() == 1 && !gDataHub.GetParameters().getAdjustForWeeklyTrends()
+        );
+
+        if (gDataHub.GetParameters().getSTPasHypergeometric()) {
+            // Try allocating the case log vector, and hypergeometric probability lookup.
+            // Catch any exceptions so that we can continue if memory is low.
+            // This would be the base scenario for determining whether to use hypergeometric or not.
+            try {
+                count_t C = GetDataSet(0).getTotalCases();
+
+                std::vector<double> caseLog(C + 1, 0.0);
+                for (size_t t = 1; t < caseLog.size(); ++t)
+                    caseLog[t] = log(t);
+                gvDataSets[0]->setCaseData_PT();
+                boost::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
+                boost::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
+                    gDataHub, *llr_calc,
+                    gDataHub.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gDataHub.GetParameters().GetIncludeClustersType(), SUCCESSIVELY
+                ));
+                std::set<count_t> caseWindows;
+
+                time_intervals->getCasesInTimeWindowsCollection(caseWindows, GetDataSet(0).getCaseData_PT());
+                /*caseWindows.emplace(250);
+                caseWindows.emplace(251);
+                caseWindows.emplace(252);
+                caseWindows.emplace(253);
+                caseWindows.emplace(260);
+                caseWindows.emplace(261);
+                caseWindows.emplace(262);
+                caseWindows.emplace(263);*/
+                /*for (int i = 275; i <= 500; ++i) {
+                    caseWindows.emplace(i);
+                    GetDataSet(0).refHyperProbLkup().calculateHG(
+                        gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, C
+                    );
+                }
+                std::cout << "Hypergeometric probability lookup calculated." << std::endl;*/
+
+                GetDataSet(0).refHyperProbLkup().calculateHG(
+                    gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, GetDataSet(0).getTotalCases()
+                );
+                std::cout << "Hypergeometric probability lookup calculated." << std::endl;
+            } catch (std::bad_alloc&) {
+                const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
+                gPrint.PrintWarning(
+                    "Warning: Unable to allocate memory for hypergeometric calculations.\n"
+                    "The default Poisson approximation for the space-time permutation will be performed.\n"
+                );
+                GetDataSet(0).refHyperProbLkup().clear();
+            }
+
+            // Second check -- which is what?
+            //AnalysisRunner::getAvailablePhysicalMemory()
+        }
+
+        /*
         // If performing as hypergeometric, calculate the maximum number of cases in all data sets
         if (gDataHub.GetParameters().getSTPasHypergeometric()) {
 			unsigned int maxCases = 0;
@@ -224,6 +285,7 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
             for (size_t t = 1; t < _case_log.size(); ++t)
 				_case_log[t] = log(t);
         }
+        */
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
         throw;

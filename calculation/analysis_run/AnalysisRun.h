@@ -230,13 +230,13 @@ class AnalysisRunner {
     virtual AnalysisExecution         * getAnalysisExecution() const { 
         return new AnalysisExecution(*_data_hub, _executing_type, _start_time, _drilldowns);
     }
-    static double                       getAvailablePhysicalMemory();
-    static std::pair<double, double>    getMemoryApproxiation(const CParameters& parameters, const CSaTScanData& data_hub);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);
     virtual ~AnalysisRunner() {}
 
+    static double                       getAvailablePhysicalMemory();
+    static std::pair<double, double>    getMemoryApproxiation(const CParameters& parameters, const CSaTScanData& data_hub);
     static CSaTScanData               * getNewCSaTScanData(const CParameters& parameters, BasePrint& print);
     void                                run();
 };

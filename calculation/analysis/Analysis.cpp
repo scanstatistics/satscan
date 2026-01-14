@@ -24,8 +24,6 @@ double CAnalysis::ExecuteSimulation(const AbstractDataSetGateway& DataGateway) {
         dMaxLogLikelihoodRatio = MonteCarlo(DataGateway.GetDataSetInterface(0));
     else if (_parameters.GetIsPurelyTemporalAnalysis())
         dMaxLogLikelihoodRatio = MonteCarlo(0, DataGateway);
-    //else if (_parameters.GetIsSpaceTimeAnalysis())
-    //    dMaxLogLikelihoodRatio = MonteCarlo(DataGateway);
     else { //calculate greatest loglikelihood ratio about each centroid
         for (int i=0; i < _data_hub.m_nGridTracts /* && !_print.GetIsCanceled()*/; ++i)
             dMaxLogLikelihoodRatio = std::max(MonteCarlo(i, DataGateway), dMaxLogLikelihoodRatio);

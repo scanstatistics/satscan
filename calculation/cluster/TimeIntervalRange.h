@@ -57,7 +57,7 @@ class HypergeometricTemporalDataEvaluator : public AbstractHypergeometricTempora
         virtual void associate(const HypergeometricProbabilityLookup& lookup) { _look_up = &lookup; }
 };
 
-/** Temporal window evaluator for the hypergeometric distribution. */
+/** Temporal window evaluator for the hypergeometric distribution using multiple data sets (work-in-progress). */
 class MultisetHypergeometricTemporalDataEvaluator : public AbstractHypergeometricTemporalDataEvaluator {
     private:
         std::vector<count_t*> _pt_counts;

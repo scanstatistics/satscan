@@ -134,7 +134,6 @@ HypergeometricTemporalDataEvaluator::HypergeometricTemporalDataEvaluator(
 ) : AbstractHypergeometricTemporalDataEvaluator(DataHub, Calculator, eIncludeClustersType), _look_up(0){
     gpCalculationMethod = &AbstractLikelihoodCalculator::CalculateMaximizingValue;
     _default_maximizing_value = -std::numeric_limits<double>::max();
-    // get pointers to cumulative case and measure data, we'll need these during scanning
     _pt_counts = DataHub.GetDataSetHandler().GetDataSet().getCaseData_PT();
 }
 
@@ -142,11 +141,11 @@ HypergeometricTemporalDataEvaluator::HypergeometricTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     TemporalData& Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
-    count_t* pCases = Data.gpCases, T, S;
+    count_t* pCases = Data.gpCases, S;
     measure_t* pMeasure = Data.gpMeasure;
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
-    S = pCases[0]; // number of cases in spatial circle, over the whole study time period
 
+    S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
     // Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return;
@@ -159,13 +158,12 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
         iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->getNextWindowLength(), STARTRANGE_STARTDATE);
         iWindowStart = std::min(STARTRANGE_ENDDATE + 1, iWindowEnd - gpMaxWindowLengthIndicator->getMinWindowLength());
         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
-            T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd]; // cases in time window, over the whole geographical region
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
-                Running.m_nRatio = _look_up->getProbabilityFor(T, spatialcases, Data.gtCases);
-                //Running.m_nRatio = _look_up->getProbabilityFor(T, S, Data.gtCases);
-                //Running.m_nRatio = _look_up->_HG_array[_look_up->_T_index[T]][S][Data.gtCases];
+                Running.m_nRatio = _look_up->getProbabilityFor(
+                    _pt_counts[iWindowStart] - _pt_counts[iWindowEnd], spatialcases, Data.gtCases
+                );
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
                 clusterSet.update(Running);
@@ -189,7 +187,7 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
     double maxValue(_default_maximizing_value);
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
 
-    S = pCases[0]; // number of cases in spatial circle, over the whole study time period
+    S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
 	// Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return maxValue;
@@ -206,8 +204,6 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure))
                 maxValue = std::max(maxValue,
-                    //_look_up->getProbabilityFor(_pt_counts[iWindowStart] - _pt_counts[iWindowEnd], S, Data.gtCases)
-                    //_look_up->_HG_array[_look_up->_T_index[_pt_counts[iWindowStart] - _pt_counts[iWindowEnd]]][S][Data.gtCases]
                     _look_up->getProbabilityFor(_pt_counts[iWindowStart] - _pt_counts[iWindowEnd], spatialcases, Data.gtCases)
                 );
         }
@@ -233,7 +229,7 @@ void MultisetHypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Ru
     AbstractMultiSetTemporalData& Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
     AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
-    count_t T, S;
+    count_t S;
 
     int iWindowStart, iMinWindowStart;
     gpMaxWindowLengthIndicator->reset();
@@ -245,13 +241,15 @@ void MultisetHypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Ru
             Unifier.Reset();
             for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
                 TemporalData& Datum = *(Data.gvSetClusterData[t]);
-                T = _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd]; // cases in time window, over the whole geographical region
-                S = Datum.gpCases[0]; // number of cases in spatial circle, over the whole study time period
+                S = Datum.gpCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
                 // Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
 				if (S >= 2 && S <= gDataHub.GetDataSetHandler().GetDataSet(t).getTotalCases() - 2) { // TODO: move somewhere else, check once?
                     Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
                     Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-                    Unifier.AdjoinRatioHypergeometric(gLikelihoodCalculator, *_look_ups[t], T, S, Datum.gtCases, Datum.gtMeasure, t);
+                    Unifier.AdjoinRatioHypergeometric(
+                        gLikelihoodCalculator, *_look_ups[t], 
+                        _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd], S, Datum.gtCases, Datum.gtMeasure, t
+                    );
                 }
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false)) {
@@ -278,7 +276,7 @@ double MultisetHypergeometricTemporalDataEvaluator::ComputeMaximizingValue(Abstr
     AbstractLoglikelihoodRatioUnifier& Unifier = gLikelihoodCalculator.GetUnifier();
     double dRatio(0);
     AbstractLikelihoodCalculator::SCANRATEMULTISET_FUNCPTR pRateCheck = gLikelihoodCalculator._rate_of_interest_multiset;
-    count_t T, S;
+    count_t S;
 
     //iterate through windows
     int iWindowStart, iMaxStartWindow;
@@ -291,13 +289,15 @@ double MultisetHypergeometricTemporalDataEvaluator::ComputeMaximizingValue(Abstr
             Unifier.Reset();
             for (size_t t = 0; t < Data.gvSetClusterData.size(); ++t) {
                 TemporalData& Datum = *(Data.gvSetClusterData[t]);
-                T = _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd]; // cases in time window, over the whole geographical region
-                S = Datum.gpCases[0]; // number of cases in spatial circle, over the whole study time period
+                S = Datum.gpCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
                 // Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
                 if (S >= 2 && S <= gDataHub.GetDataSetHandler().GetDataSet(t).getTotalCases() - 2) { // TODO: move somewhere else, check once?
-                    Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
-                    Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-                    Unifier.AdjoinRatioHypergeometric(gLikelihoodCalculator, *_look_ups[t], T, S, Datum.gtCases, Datum.gtMeasure, t);
+                    Unifier.AdjoinRatioHypergeometric(
+                        gLikelihoodCalculator, *_look_ups[t], 
+                        _pt_counts[t][iWindowStart] - _pt_counts[t][iWindowEnd], S, 
+                        Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd],
+                        Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd], t
+                    );
                 }
             }
             if ((gLikelihoodCalculator.*pRateCheck)(Unifier, false))

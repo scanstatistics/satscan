@@ -794,47 +794,20 @@ void DataSet::setMeasureData_Aux2(TwoDimMeasureArray_t& other) {
 
 const double HypergeometricProbabilityLookup::PROBABILITY_UNSET = -99;
 
-/** Builds lookup table from passed attributes. */
-void HypergeometricProbabilityLookup::buildLookup(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C) {
-    std::cout << "Building Hypergeometric Probability Lookup Table with dimnesions: " << caseWindows.size() << " " << C + 1 << " " << C + 1 << std::endl;
-    time_t RunTime, CompletionTime;
+// Macro for accessing natural  log calculations from precomputed vector or standard log function
+#define STD_LOG(c) caseLog[(unsigned int)c] // STD_LOG(c) log(static_cast<double>(c))
 
-    // Original implementation using 3D array - too large for practical use
-    _HG.reset(new ThreeDimMeasureArray_t(caseWindows.size(), C + 1, C + 1, PROBABILITY_UNSET));
-    _HG_array = _HG->GetArray();
-    // Original implementation using 3D array - too large for practical use
+void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C) {
+    //std::cout << "Calculating Hypergeometric probabilities for C=" << C << ", T=" << caseWindows.size() << std::endl;
 
-    time(&RunTime);
-    calculateHG(scanrate, caseLog , caseWindows, C);
-    time(&CompletionTime);
-
-    double nTotalTime = difftime(CompletionTime, RunTime);
-    double nHours = floor(nTotalTime / (60 * 60));
-    double nMinutes = floor((nTotalTime - nHours * 60 * 60) / 60);
-    double nSeconds = nTotalTime - (nHours * 60 * 60) - (nMinutes * 60);
-    const char* szHours = "hours", * szMinutes = "minutes", * szSeconds = "seconds";
-    if (0 < nHours && nHours < 1.5) szHours = "hour";
-    if (0 < nMinutes && nMinutes < 1.5) szMinutes = "minute";
-    if (0.5 <= nSeconds && nSeconds < 1.5) szSeconds = "second";
-    printf("Total Running Time : %.0f %s %.0f %s %.0f %s\n", nHours, szHours, nMinutes, szMinutes, nSeconds, szSeconds);
-}
-
-#define STD_LOG(c) caseLog[(unsigned int)c]
-//#define STD_LOG(c) log(static_cast<double>(c))
-
-void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& vT, count_t C) {
-
-    measure_t*** nHG = _HG->GetArray();
-
-    auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) {
-        // probability of 0 cases in cylinder, based on hypergeometric distribution
+    time_t start, stop; time(&start);
+    auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) { // probability of 0 cases in cylinder, based on hypergeometric distribution
         double hg = STD_LOG(C - S) - STD_LOG(C);
         for (count_t i = 1; i <= T - 1; ++i)
             hg += STD_LOG(C - S - i) - STD_LOG(C - i);
         return hg;
     };
-    auto calc_hg_t = [&caseLog](count_t C, count_t T, count_t S) {
-        // probability of x cases in cylinder, based on hypergeometric distribution
+    auto calc_hg_t = [&caseLog](count_t C, count_t T, count_t S) { // probability of x cases in cylinder, based on hypergeometric distribution
         double hg = STD_LOG(T) - STD_LOG(C);
         for (count_t i = 1; i <= C - S - 1; ++i) {
             hg += STD_LOG(T - i) - STD_LOG(C - i);
@@ -843,16 +816,20 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
         return hg;
     };
 
-    if (vT.empty())
-        return; // What do we do here?
+    if (caseWindows.empty())
+        return; // What do we do here, which might happen with multiple data sets?
+
+    // TEMPORARY CODE - to test memory usage
+    _T_index.clear();
+    _spatial_cases.clear();
+
 
     // Find the largest case window value - so we know how large to allocate translation array.
-    count_t largest = *vT.rbegin();
-    _T_index.resize(largest + 1);
+    _T_index.resize(*caseWindows.rbegin() + 1);
     _spatial_cases.resize(C + 1); // create SpatialCases vector for all C
     std::vector<double> negativeProbabilities(C + 1, PROBABILITY_UNSET); // temporary storage for negative probabilities
     size_t i = 0;
-    for (auto T : vT) {
+    for (auto T : caseWindows) {
         if (!T) continue; // skip T=0, which shouldn't be here anyway
         //std::cout << "Calculating HG for T=" << T << " (" << i + 1 << " of " << vT.size() << ")" << std::endl;
         for (count_t S = 2; S <= C - 2; ++S) {
@@ -871,21 +848,15 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
                 hgp[x] = hgp[x - 1] + (STD_LOG(S - x + 1) - STD_LOG(x)) + (STD_LOG(T - x + 1) - STD_LOG(C - S - T + x));
             if (scanrate == HIGH || scanrate == HIGHANDLOW) {
                 // For high rates nHG(x|S,T) = negative of the cumulative probability of x or more cases, x>=2. 
-                //nHG[i][S][max] = -exp(hgp[max]);
                 negativeProbabilities[max] = -exp(hgp[max]);
-                for (count_t x = max - 1; x >= mean; --x) {
-                    //nHG[i][S][x] = nHG[i][S][x + 1] - exp(hgp[x]);
+                for (count_t x = max - 1; x >= mean; --x) 
                     negativeProbabilities[x] = negativeProbabilities[x + 1] - exp(hgp[x]);
-                }
             }
             if (scanrate == LOW || scanrate == HIGHANDLOW) {
                 // For low rates nHG(x|S,T) = negative of the cumulative probability of x or less cases, x >= 0.
-                //nHG[i][S][min] = -exp(hgp[min]);
                 negativeProbabilities[min] = -exp(hgp[min]);
-                for (count_t x = min + 1; x <= mean - 1; ++x) {
-                    //nHG[i][S][x] = nHG[i][S][x - 1] - exp(hgp[x]);
+                for (count_t x = min + 1; x <= mean - 1; ++x)
                     negativeProbabilities[x] = negativeProbabilities[x - 1] - exp(hgp[x]);
-                }
             }
             _spatial_cases[S].addNegativeProbabilitiesFor(i, negativeProbabilities);
         }
@@ -893,7 +864,32 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
         ++i;
     }
 
-    //printHG(HG, vT);
+    unsigned int memoryCost = _spatial_cases.size();
+    for (const auto& sc : _spatial_cases) {
+        memoryCost += sc.getProbabilitiesOfXAtT().size() * sizeof(double)/*vector overhead*/;
+        for (const auto& prob : sc.getProbabilitiesOfXAtT()) {
+            memoryCost+= prob.second.size();
+        }
+    }
+    //printf("Memory approximate cost: %g MB.\n", static_cast<double>(memoryCost * sizeof(double))/1000000.0);
+    std::cout << C << "," << caseWindows.size() << ",";
+    printf("%g,", static_cast<double>(memoryCost * sizeof(double)) / 1000000.0);
+    auto estimate = [](size_t C, size_t T) {
+        return (0.0166755 * C)
+            - (0.1711244 * T)
+            - (0.0012658 * T * T)
+            - (0.0000111 * C * C)
+            + (0.0008152 * C * T)
+            + (0.00000209 * C * T * T)
+            + (0.0000002121 * C * C * T)
+            - 5.71888;
+        //return 0.00065 * (C * T) + 0.04* T - 0.0005 * C;
+    };
+    std::cout << estimate(C, caseWindows.size()) << std::endl;
+    //printf("Memory approximate cost full: %g MB.\n", 
+    //    static_cast<double>(caseWindows.size() * C * C * sizeof(double)) / 1000000.0
+    //);
+    time(&stop); //printf("HG calculation took %g seconds.\n", difftime(stop, start));
 }
 
 void HypergeometricProbabilityLookup::SpatialCases::addNegativeProbabilitiesFor(size_t idx_T, const std::vector<double>& np) {
@@ -901,9 +897,7 @@ void HypergeometricProbabilityLookup::SpatialCases::addNegativeProbabilitiesFor(
     if (_probabilities_of_x_at_T.size() != idx_T)
         throw prg_error("SpatialCases::addFor: idx_T out of order.", "HypergeometricProbabilityLookup::SpatialCases");
     // Figure out what will be the zero-based index for x.
-    size_t zero_base = std::distance(np.begin(),
-        std::find_if_not(np.begin(), np.end(), [](double d) { return d == PROBABILITY_UNSET; })
-    );
+    size_t zero_base = std::distance(np.begin(), std::find_if_not(np.begin(), np.end(), [](double d){return d == PROBABILITY_UNSET;}));
     // Figure out how big the array will be after removing PROBABILITY_UNSET values.
     auto setnp_front = np.begin();
     for (; setnp_front != np.end(); ) {
@@ -921,126 +915,31 @@ void HypergeometricProbabilityLookup::SpatialCases::addNegativeProbabilitiesFor(
     _probabilities_of_x_at_T.emplace_back(zero_base, MinimalGrowthArray<double>(np.size() - in_front - in_back, PROBABILITY_UNSET));
     auto& data = _probabilities_of_x_at_T.back().second;
     int i = 0;
-    for (std::vector<double>::const_iterator it=setnp_front; it != (setnp_front + data.size()); ++it, ++i) {
+    for (std::vector<double>::const_iterator it=setnp_front; it != (setnp_front + data.size()); ++it, ++i)
         data[i] = *it;
-    }
 }
 
-//void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT, count_t C, count_t K/* remove K */) {
-//    measure_t*** nHG = HG.GetArray();
-//    auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) {
-//        // probability of 0 cases in cylinder, based on hypergeometric distribution
-//        double hg = STD_LOG(C - S) - STD_LOG(C);
-//        for (count_t i = 1; i <= T - 1; ++i)
-//            hg += STD_LOG(C - S - i) - STD_LOG(C - i);
-//        return hg;
-//    };
-//    auto calc_hg_t = [&caseLog](count_t C, count_t T, count_t S) {
-//        // probability of x cases in cylinder, based on hypergeometric distribution
-//        double hg = STD_LOG(T) - STD_LOG(C);
-//        for (count_t i = 1; i <= C - S - 1; ++i) {
-//            hg += STD_LOG(T - i) - STD_LOG(C - i);
-//            if (hg == 0) break;
-//        }
-//        return hg;
-//    };
-//
-//    if (vT.empty())
-//        return; // What do we do here?
-//
-//    // Find the largest case window value - so we know how large to allocate translation array.
-//    count_t largest = *vT.rbegin();
-//    _T_index.resize(largest + 1);
-//    size_t i = 0;
-//    for (auto T : vT) {
-//        if (!T) continue; // skip T=0, which shouldn't be here anyway
-//		for (count_t S = 2; S <= C - 2; ++S) {
-//            count_t min = std::max((count_t)0, S + T - C);
-//            count_t max = std::min(S, T);
-//            count_t mean = ceil((double)S * (double)T / (double)C);
-//            // The natural logarithm of the probability of x cases in cylinder, based on hypergeometric distribution,
-//            // to be temporarily stored in a one-dimensional array. To get the actial probability, take exp[hgp(x)].
-//            std::vector<double> hgp(max + 1, 0); 
-//            if (S + T - C <= 0)
-//                hgp.front() = calc_hg_0(C, T, S);
-//            else
-//                hgp[S + T - C] = calc_hg_t(C, T, S);
-//            for (count_t x = min + 1; x <= max; ++x)
-//                hgp[x] = hgp[x - 1] + (STD_LOG(S - x + 1) - STD_LOG(x)) + (STD_LOG(T - x + 1) - STD_LOG(C - S - T + x));
-//            if (scanrate == HIGH || scanrate == HIGHANDLOW) {
-//                // For high rates nHG(x|S,T) = negative of the cumulative probability of x or more cases, x>=2. 
-//                nHG[i][S][max] = -exp(hgp[max]);
-//                for (count_t x = max - 1; x >= mean; --x)
-//                    nHG[i][S][x] = nHG[i][S][x + 1] - exp(hgp[x]);
-//            }
-//            if (scanrate == LOW || scanrate == HIGHANDLOW) {
-//                // For low rates nHG(x|S,T) = negative of the cumulative probability of x or less cases, x >= 0.
-//                nHG[i][S][min] = -exp(hgp[min]);
-//                for (count_t x = min + 1; x <= mean - 1; ++x)
-//                    nHG[i][S][x] = nHG[i][S][x - 1] - exp(hgp[x]);
-//            }
-//        }
-//        _T_index[T] = i; // map T to index in HG table
-//        ++i;
-//    }
-//
-//    //printHG(HG, vT);
-//}
-
 /** Prints HG lookup table to screen. */
-void HypergeometricProbabilityLookup::printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT) const {
-	std::ofstream outfile("C:/Users/hostovic/projects/satscan.development/local-support/squish25173-hypergeometric/HG_lookup.txt");
-
-    outfile << std::endl << "Next" << std::endl << std::endl;
-
-    measure_t*** pHG = HG.GetArray();
-    if (vT.size() != HG.Get1stDimension())
-        throw prg_error("Dimensions do not match;", "printHG()");
-    for (auto T : vT) {
+void HypergeometricProbabilityLookup::printHG(const std::set<count_t>& caseWindows) const {
+    std::ofstream outfile("HG_lookup.txt");
+    for (auto T: caseWindows) {
         if (!T) continue;
         outfile << std::endl;
-        for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
-            for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
-                double probability = getProbabilityFor(T, S, x);
-                if (probability != PROBABILITY_UNSET) {
-                    outfile << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
-                    if (std::isnan(probability))
-                        outfile << "NAN" << std::endl;
-                    else
-                        outfile << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << probability << " : ";
-                        outfile << std::scientific << probability << std::endl;
-                } else
+        for (unsigned int S = 2; S < _spatial_cases.size(); ++S) {
+            for (unsigned int x = 0; x < _spatial_cases.size(); ++x) {
+                double probability = getProbabilityFor_Checked(T, S, x);
+                outfile << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10);
+                if (probability == PROBABILITY_UNSET) {
                     outfile << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << PROBABILITY_UNSET << " (unset)" << std::endl;
+                } else {
+                    outfile << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << probability << " : ";
+                    outfile << std::scientific << probability << std::endl;
+                }
             }
             outfile << std::endl;
         }
         outfile << std::endl << std::endl;
     }
-
-    std::ofstream outfile_spatial("C:/Users/hostovic/projects/satscan.development/local-support/squish25173-hypergeometric/HG_lookup_spatial.txt");
-    outfile_spatial << std::endl << "Next" << std::endl << std::endl;
-    for (auto T : vT) {
-        if (!T) continue;
-        outfile_spatial << std::endl;
-        for (unsigned int S = 2; S < HG.Get2ndDimension(); ++S) {
-            for (unsigned int x = 0; x < HG.Get3rdDimension(); ++x) {
-                double probability = getProbabilityForTSX_Checked(T, S, x);
-                if (probability != PROBABILITY_UNSET) {
-                    outfile_spatial << "T = " << T << ", S = " << S << ", x = " << x << ", HG = ";
-                    if (std::isnan(probability))
-                        outfile_spatial << "NAN" << std::endl;
-                    else
-                        outfile_spatial << std::fixed << std::setprecision(std::numeric_limits<double>::max_digits10) << probability << " : ";
-                    outfile_spatial << std::scientific << probability << std::endl;
-                }
-                else
-                    outfile_spatial << "T = " << T << ", S = " << S << ", x = " << x << ", HG = " << PROBABILITY_UNSET << " (unset)" << std::endl;
-            }
-            outfile_spatial << std::endl;
-        }
-        outfile_spatial << std::endl << std::endl;
-    }
-
 }
 
 //************************ RealDataSet **********************************

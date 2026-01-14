@@ -148,60 +148,51 @@ class HypergeometricProbabilityLookup {
             }
             void addNegativeProbabilitiesFor(size_t idx_T, const std::vector<double>& np);
             double getProbabilityAt(size_t idx_T, size_t x) const {
-                const auto& pair = _probabilities_of_x_at_T[idx_T];
-                return pair.second.getArray()[x - pair.first];
+                const auto& pair = _probabilities_of_x_at_T[idx_T]; // get probabilities for T
+                return pair.second.getArray()[x - pair.first]; // get probability at x, with consideration of zero base
 
             }
             double getProbabilityAtChecked(size_t idx_T, size_t x) const {
                 if (!_probabilities_of_x_at_T.size()) return PROBABILITY_UNSET;
-                const auto& pair = _probabilities_of_x_at_T[idx_T];
+                const auto& pair = _probabilities_of_x_at_T.at(idx_T);
                 if (x < pair.first || x >= pair.first + pair.second.size())
                     return PROBABILITY_UNSET;
-                return pair.second[x - pair.first];
+                return pair.second.at(x - pair.first);
             }
     };
 
     protected:
-        std::vector<SpatialCases> _spatial_cases;
-        boost::shared_ptr<ThreeDimMeasureArray_t> _HG; // TODO: remove
-
-        void calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& vT, count_t C);
+        std::vector<SpatialCases> _spatial_cases; // spatial cases dimension
+        mutable std::vector<unsigned int> _T_index; // index mapping for T values
 
     public:
-        HypergeometricProbabilityLookup(const CParameters& params): _HG_array(0) {}
+        HypergeometricProbabilityLookup(const CParameters& params) /* : _HG_array(0)*/ {}
         HypergeometricProbabilityLookup(const HypergeometricProbabilityLookup& other) {
             throw prg_error("copy constructor not implemented.", "HypergeometricProbabilityLookup");
         }
 
-        measure_t*** _HG_array; // TODO: remove
-        mutable std::vector<unsigned int> _T_index;
-
-        void buildLookup(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C);
+        void calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C);
         /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-        double HypergeometricProbabilityLookup::getProbabilityFor(count_t T, count_t S, count_t x) const {
-            return _HG_array[_T_index[T]][S][x];
-        }
-        /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-        double HypergeometricProbabilityLookup::getProbabilityFor(count_t T, const SpatialCases& S, count_t x) const {
+        double getProbabilityFor(count_t T, const SpatialCases& S, count_t x) const {
             return S.getProbabilityAt(_T_index[T], x);
         }
         /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-        double HypergeometricProbabilityLookup::getProbabilityForTSX(count_t T, count_t S, count_t x) const {
+        double getProbabilityFor(count_t T, count_t S, count_t x) const {
             return _spatial_cases[S].getProbabilityAt(_T_index[T], x);
         }
         /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-        double HypergeometricProbabilityLookup::getProbabilityForTSX_Checked(count_t T, count_t S, count_t x) const {
+        double getProbabilityFor_Checked(count_t T, count_t S, count_t x) const {
             if (!_spatial_cases.size() || S > _spatial_cases.size() - 1) return PROBABILITY_UNSET;
             return _spatial_cases[S].getProbabilityAtChecked(_T_index[T], x);
         }
         const SpatialCases& getSpatialCases(size_t S) const {
             return _spatial_cases[S];
         }
-        /** Returns the probability at cases windows count, spatial count, and cases in cluster. */
-        double HypergeometricProbabilityLookup::getProbabilityConstant(count_t T, count_t S, count_t x) const {
-            return -0.01647;
+        void printHG(const std::set<count_t>& caseWindows) const;
+        void clear() {
+            _spatial_cases.clear();
+            _T_index.clear();
         }
-        void printHG(ThreeDimMeasureArray_t& HG, const std::set<count_t>& vT) const;
 };
 
 /** Encapsulates real data of dataset. */
