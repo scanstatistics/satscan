@@ -224,13 +224,9 @@ int main(int argc, char *argv[]) {
     /* additional program options processing */
     if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
+    Parameters.setSTPAlgorithmType((SpaceTimePermutationAlgorithmType)stpAlgorithm);
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
-
-	// TODO: 
-	// - move somewhere else
-	// - what is the trigger condition to switch to hypergeometric?
-    //Parameters.setSTPasHypergeometric(true);
 
     //create analysis runner object and execute analysis
     AnalysisRunner(Parameters, RunTime, Console).run();

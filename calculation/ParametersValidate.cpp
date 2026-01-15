@@ -1776,12 +1776,6 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
         PrintDirection.Printf("%s:\nWhen specifying geographical neighbors through the non-Eucledian neighbors file, "
                               "the maximum reported spatial cluster size can not be defined as a fixed distance.", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
-
-	  // For STP and Bernoulli purely spatial and space-time analyses, we force the max spatial size to be 100% of population at risk.
-      if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
-          (gParameters.GetProbabilityModelType() == BERNOULLI && (gParameters.GetIsPurelySpatialAnalysis() || gParameters.GetIsSpaceTimeAnalysis())))
-        const_cast<CParameters&>(gParameters).SetMaxSpatialSizeForType(PERCENTOFPOPULATION, 100, false);
-
       //validate maximum as pecentage of population at risk
       double dPercentPopValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
       if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && (dPercentPopValue <= 0.0 || dPercentPopValue > 100.0/*50.0*/)) {

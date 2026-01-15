@@ -799,8 +799,8 @@ const double HypergeometricProbabilityLookup::PROBABILITY_UNSET = -99;
 
 void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const std::vector<double>& caseLog, const std::set<count_t>& caseWindows, count_t C) {
     //std::cout << "Calculating Hypergeometric probabilities for C=" << C << ", T=" << caseWindows.size() << std::endl;
+    //time_t start, stop; time(&start);
 
-    time_t start, stop; time(&start);
     auto calc_hg_0 = [&caseLog](count_t C, count_t T, count_t S) { // probability of 0 cases in cylinder, based on hypergeometric distribution
         double hg = STD_LOG(C - S) - STD_LOG(C);
         for (count_t i = 1; i <= T - 1; ++i)
@@ -815,15 +815,8 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
         }
         return hg;
     };
-
     if (caseWindows.empty())
         return; // What do we do here, which might happen with multiple data sets?
-
-    // TEMPORARY CODE - to test memory usage
-    _T_index.clear();
-    _spatial_cases.clear();
-
-
     // Find the largest case window value - so we know how large to allocate translation array.
     _T_index.resize(*caseWindows.rbegin() + 1);
     _spatial_cases.resize(C + 1); // create SpatialCases vector for all C
@@ -863,7 +856,6 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
         _T_index[T] = i; // map T to index in HG table
         ++i;
     }
-
     unsigned int memoryCost = _spatial_cases.size();
     for (const auto& sc : _spatial_cases) {
         memoryCost += sc.getProbabilitiesOfXAtT().size() * sizeof(double)/*vector overhead*/;
@@ -871,25 +863,10 @@ void HypergeometricProbabilityLookup::calculateHG(AreaRateType scanrate, const s
             memoryCost+= prob.second.size();
         }
     }
-    //printf("Memory approximate cost: %g MB.\n", static_cast<double>(memoryCost * sizeof(double))/1000000.0);
-    std::cout << C << "," << caseWindows.size() << ",";
-    printf("%g,", static_cast<double>(memoryCost * sizeof(double)) / 1000000.0);
-    auto estimate = [](size_t C, size_t T) {
-        return (0.0166755 * C)
-            - (0.1711244 * T)
-            - (0.0012658 * T * T)
-            - (0.0000111 * C * C)
-            + (0.0008152 * C * T)
-            + (0.00000209 * C * T * T)
-            + (0.0000002121 * C * C * T)
-            - 5.71888;
-        //return 0.00065 * (C * T) + 0.04* T - 0.0005 * C;
-    };
-    std::cout << estimate(C, caseWindows.size()) << std::endl;
-    //printf("Memory approximate cost full: %g MB.\n", 
-    //    static_cast<double>(caseWindows.size() * C * C * sizeof(double)) / 1000000.0
-    //);
-    time(&stop); //printf("HG calculation took %g seconds.\n", difftime(stop, start));
+
+    //std::cout << C << "," << caseWindows.size() << "," << printf("%g\n", static_cast<double>(memoryCost * sizeof(double)) / 1000000.0);
+    //time(&stop);
+    //printf("HG calculation took %g seconds.\n", difftime(stop, start));
 }
 
 void HypergeometricProbabilityLookup::SpatialCases::addNegativeProbabilitiesFor(size_t idx_T, const std::vector<double>& np) {

@@ -402,5 +402,12 @@ enum TemporalGraphReportType
     X_MCL_ONLY,                    /* generate a temporal graph for the first X likley clusters */
     SIGNIFICANT_ONLY               /* generate a temporal graph for significant clusters only */
 };
+/** space-time permutation algorithm */
+enum SpaceTimePermutationAlgorithmType
+{
+    STP_DERIVED = 0,               /* derived from original data */
+    STP_HYPERGEOMETRIC,            /* hypergeometric distribution */
+    STP_POISSON                    /* Poisson distribution */
+};
 //*****************************************************************************
 #endif

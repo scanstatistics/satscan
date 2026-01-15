@@ -219,73 +219,57 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
         }
         removeDataSetsWithNoData();
 
-        const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(
-            GetNumDataSets() == 1 && !gDataHub.GetParameters().getAdjustForWeeklyTrends()
-        );
-
-        if (gDataHub.GetParameters().getSTPasHypergeometric()) {
-            // Try allocating the case log vector, and hypergeometric probability lookup.
-            // Catch any exceptions so that we can continue if memory is low.
-            // This would be the base scenario for determining whether to use hypergeometric or not.
-            try {
-                count_t C = GetDataSet(0).getTotalCases();
-
-                std::vector<double> caseLog(C + 1, 0.0);
-                for (size_t t = 1; t < caseLog.size(); ++t)
-                    caseLog[t] = log(t);
-                gvDataSets[0]->setCaseData_PT();
-                boost::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
-                boost::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
-                    gDataHub, *llr_calc,
-                    gDataHub.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gDataHub.GetParameters().GetIncludeClustersType(), SUCCESSIVELY
-                ));
-                std::set<count_t> caseWindows;
-
-                time_intervals->getCasesInTimeWindowsCollection(caseWindows, GetDataSet(0).getCaseData_PT());
-                /*caseWindows.emplace(250);
-                caseWindows.emplace(251);
-                caseWindows.emplace(252);
-                caseWindows.emplace(253);
-                caseWindows.emplace(260);
-                caseWindows.emplace(261);
-                caseWindows.emplace(262);
-                caseWindows.emplace(263);*/
-                /*for (int i = 275; i <= 500; ++i) {
-                    caseWindows.emplace(i);
-                    GetDataSet(0).refHyperProbLkup().calculateHG(
-                        gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, C
+        /*
+            The decision whether we're using hypergeometric algorithms versus the Poisson approximation is finalized here.
+            It's not implemented for multiple data sets or when adjusting for weekly trends at this time.
+            Beyond that, the choice is based on the total number of cases. The hypergeometric lookup table can
+            be memory and execution-time intensive, so we're only using it when the total number of cases is below
+            a somewhat arbitrary threshold. See reasoning in issue https://squishlist.com/ims-ext/satscan/25173/
+        */
+        count_t HYPERGEOMETRIC_CASE_THRESHOLD = 5000;
+        switch (gDataHub.GetParameters().getSTPAlgorithmType()) {
+            case STP_POISSON :
+                const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
+                break;
+            case STP_HYPERGEOMETRIC:
+                if (GetNumDataSets() > 1 || gDataHub.GetParameters().getAdjustForWeeklyTrends() ||
+                    GetDataSet(0).getTotalCases() > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                    throw resolvable_error(
+                        "Error: The space-time permutation using the hypergeometric algorithm is not supported for:\n"
+                        "- total number of cases exceeding %ld\n- multiple data sets\n- when adjusting for weekly trends\n"
+                        "Please select derived or the Poisson approximation option instead.\n", HYPERGEOMETRIC_CASE_THRESHOLD
                     );
                 }
-                std::cout << "Hypergeometric probability lookup calculated." << std::endl;*/
-
-                GetDataSet(0).refHyperProbLkup().calculateHG(
-                    gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, GetDataSet(0).getTotalCases()
-                );
-                std::cout << "Hypergeometric probability lookup calculated." << std::endl;
-            } catch (std::bad_alloc&) {
-                const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
-                gPrint.PrintWarning(
-                    "Warning: Unable to allocate memory for hypergeometric calculations.\n"
-                    "The default Poisson approximation for the space-time permutation will be performed.\n"
-                );
-                GetDataSet(0).refHyperProbLkup().clear();
-            }
-
-            // Second check -- which is what?
-            //AnalysisRunner::getAvailablePhysicalMemory()
-        }
-
-        /*
-        // If performing as hypergeometric, calculate the maximum number of cases in all data sets
+            case STP_DERIVED:
+            default :
+                if (GetNumDataSets() > 1 || gDataHub.GetParameters().getAdjustForWeeklyTrends() ||
+                    GetDataSet(0).getTotalCases() > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPAlgorithmType(STP_POISSON);
+                } else
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(true);
+                break;
+        };
         if (gDataHub.GetParameters().getSTPasHypergeometric()) {
-			unsigned int maxCases = 0;
-            for (size_t t = 0; t < numDataSet; ++t)
-                maxCases = std::max(maxCases, (unsigned int)GetDataSet(t).getTotalCases());
-			_case_log.resize(maxCases + 1, 0.0);
-            for (size_t t = 1; t < _case_log.size(); ++t)
-				_case_log[t] = log(t);
+            // Try allocating the case log vector, and hypergeometric probability lookup.
+            gPrint.Printf(
+                "Calculating the hypergeometric probability lookup for the space-time permutation analysis...\n", BasePrint::P_STDOUT
+            );
+            std::vector<double> caseLog(GetDataSet(0).getTotalCases() + 1, 0.0);
+            for (size_t t = 1; t < caseLog.size(); ++t)
+                caseLog[t] = log(t);
+            gvDataSets[0]->setCaseData_PT();
+            boost::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
+            boost::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
+                gDataHub, *llr_calc,
+                gDataHub.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gDataHub.GetParameters().GetIncludeClustersType(), SUCCESSIVELY
+            ));
+            std::set<count_t> caseWindows;
+            time_intervals->getCasesInTimeWindowsCollection(caseWindows, GetDataSet(0).getCaseData_PT());
+            GetDataSet(0).refHyperProbLkup().calculateHG(
+                gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, GetDataSet(0).getTotalCases()
+            );
         }
-        */
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
         throw;

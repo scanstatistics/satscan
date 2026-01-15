@@ -455,6 +455,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _linelist_csv_cutoff = rhs._linelist_csv_cutoff;
   _create_email_summary_file = rhs._create_email_summary_file;
   _email_summary_cutoff = rhs._email_summary_cutoff;
+  _stp_algorithm_type = rhs._stp_algorithm_type;
   _stp_as_hypergeometric = rhs._stp_as_hypergeometric;
 }
 
@@ -789,6 +790,28 @@ void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
   gsStartRangeEndDate = sStartRangeEndDate;
 }
 
+/** Sets the Space-Time Permutation algorithm type. */
+void CParameters::setSTPAlgorithmType(SpaceTimePermutationAlgorithmType e) {
+    _stp_algorithm_type = e < STP_DERIVED || e > STP_POISSON ? STP_DERIVED : e;
+    // Check that setting agrees with other parameter settings. Later we'll do follow-up validation based on read data.
+    switch (_stp_algorithm_type) {
+        case STP_DERIVED:
+            _stp_as_hypergeometric = !getAdjustForWeeklyTrends() && getNumFileSets() == 1;
+            break;
+        case STP_HYPERGEOMETRIC:
+            if (getAdjustForWeeklyTrends() || getNumFileSets() > 1)
+                throw resolvable_error(
+                    "Error: The space-time permutation using the hypergeometric algorithm is not supported for:\n"
+                    "- multiple data sets\n- when adjusting for weekly trends\n"
+                    "Please select derived or the Poisson approximation option instead.\n"
+                );
+            break;
+        case STP_POISSON:
+            _stp_as_hypergeometric = false;
+            break;
+    }
+}
+
 /** Sets analysis type. Throws exception if out of range. */
 void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
   if (eAnalysisType < PURELYSPATIAL || eAnalysisType > SEASONALTEMPORAL)
@@ -1078,7 +1101,7 @@ void CParameters::SetAsDefaulted() {
   _linelist_csv_cutoff = 1;
   _create_email_summary_file = false;
   _email_summary_cutoff = 0.05;
-
+  _stp_algorithm_type = STP_DERIVED;
   _stp_as_hypergeometric = true;
 }
 
