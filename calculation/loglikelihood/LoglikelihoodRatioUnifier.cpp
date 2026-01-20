@@ -8,6 +8,14 @@
 #include "SaTScanData.h"
 #include "BatchedLikelihoodCalculation.h"
 
+////////////////////////////////// AbstractLoglikelihoodRatioUnifier ////////////////////////////////
+
+void AbstractLoglikelihoodRatioUnifier::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    throw prg_error("AdjoinRatioHypergeometric() not implementated for this class.", "AbstractLoglikelihoodRatioUnifier");
+}
+
 ////////////////////////////////// MultivariateUnifierHighRate //////////////////////////////////////
 
 /** Calculates loglikelihood ratio given cluster data; adding log likelihood ratio to accumulation.
@@ -18,6 +26,19 @@ void MultivariateUnifierHighRate::AdjoinRatio(AbstractLikelihoodCalculator& Calc
         _llr += Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
+        _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
+void MultivariateUnifierHighRate::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    // perform check only if expected cases.
+    if (measure > 0.0 && macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
+        _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
         _unified_sets.set(tSetIndex);
     }
@@ -96,6 +117,19 @@ void MultivariateUnifierLowRate::AdjoinRatio(AbstractLikelihoodCalculator& Calcu
     }
 }
 
+void MultivariateUnifierLowRate::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    // perform check only if expected cases.
+    if (measure > 0.0 && macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
+        _data_stream_accumulator._sum_expected += measure;
+        _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+        _unified_sets.set(tSetIndex);
+    }
+}
+
 /** Adds loglikelihood ratio to accumulation. Also maintains data stream accumulation for risk threshold restriction.
     This particular method is intended for the time stratified adjustment, where we're calculating the cluster window total cases and total measure
     verses using that of the data set. */
@@ -162,6 +196,13 @@ void MultivariateUnifierHighLowRate::AdjoinRatio(AbstractLikelihoodCalculator& C
     _low_rate.AdjoinRatio(Calculator, tCases, tMeasure, tSetIndex);
 }
 
+void MultivariateUnifierHighLowRate::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    _high_rate.AdjoinRatioHypergeometric(Calculator, lookup, T, S, cases, measure, tSetIndex);
+    _low_rate.AdjoinRatioHypergeometric(Calculator, lookup, T, S, cases, measure, tSetIndex);
+}
+
 void MultivariateUnifierHighLowRate::AdjoinRatioNonparametric(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, count_t totalCases, measure_t totalMeasure, size_t tSetIndex) {
     _high_rate.AdjoinRatioNonparametric(Calculator, tCases, tMeasure, totalCases, totalMeasure, tSetIndex);
     _low_rate.AdjoinRatioNonparametric(Calculator, tCases, tMeasure, totalCases, totalMeasure, tSetIndex);
@@ -206,6 +247,18 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, co
     } else if (Calculator.LowRateDataStream(tCases, tMeasure, tSetIndex)) {
         _llr += -1 * Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
+    }
+}
+
+void AdjustmentUnifier::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    if (macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
+    } else if (macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
     }
 }
 
@@ -361,6 +414,23 @@ void AdjustmentUnifierRiskThreshold::AdjoinRatio(AbstractLikelihoodCalculator& C
         _llr += -1 * Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tSetIndex);
         _data_stream_accumulator._sum_observed += tCases;
         _data_stream_accumulator._sum_expected += tMeasure * (_probability_model == BERNOULLI ? Calculator.gvDataSetTotals[tSetIndex].first / Calculator.gvDataSetTotals[tSetIndex].second : 1.0);
+        _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+    }
+}
+
+void AdjustmentUnifierRiskThreshold::AdjoinRatioHypergeometric(AbstractLikelihoodCalculator& Calculator,
+    const HypergeometricProbabilityLookup& lookup, count_t T, count_t S, count_t cases, measure_t measure, size_t tSetIndex
+) {
+    if (macro_less_than(measure, cases, DBL_CMP_TOLERANCE) /*Calculator.HighRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
+        _data_stream_accumulator._sum_expected += measure;
+        _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
+    }
+    else if (macro_less_than(cases, measure, DBL_CMP_TOLERANCE) /*Calculator.LowRateDataStream(cases, measure, tSetIndex)*/) {
+        _llr += -1 * -log(-lookup.getProbabilityFor(T, S, cases));
+        _data_stream_accumulator._sum_observed += cases;
+        _data_stream_accumulator._sum_expected += measure;
         _data_stream_accumulator._sum_case_totals += Calculator.gvDataSetTotals[tSetIndex].first;
     }
 }

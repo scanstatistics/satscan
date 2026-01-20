@@ -337,6 +337,8 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAnalysisParameters(Sett
         settings.clear();
         settings.push_back(std::make_pair("Type of Analysis", GetAnalysisTypeAsString()));
         settings.push_back(std::make_pair("Probability Model", GetProbabilityModelTypeAsString()));
+        if (_parameters.getSTPasHypergeometric())
+            settings.back().second += " (Hypergeometric)";
         settings.push_back(std::make_pair("Scan For Areas With", GetAreaScanRateTypeAsString()));
         if (eAnalysisType != PURELYSPATIAL) {
             buffer = "Time Aggregation Units";
@@ -878,7 +880,7 @@ std::string ParametersPrint::getCalculatedTimeTrendAsString(const DataSetHandler
          if (SetHandler.GetNumDataSets() == 1) {
              strBuffer << "adjusting for time trend with " << trend_label.c_str();
              strBuffer << (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0 ? " decrease " : " increase ");
-             strBuffer << printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
+             strBuffer << printString(work, "of %g%%", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
          } else {//multiple datasets print
             //count number of increasing and decreasing trends
             for (t=0; t < SetHandler.GetNumDataSets(); ++t) {

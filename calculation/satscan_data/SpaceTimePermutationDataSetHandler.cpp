@@ -5,7 +5,10 @@
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "SaTScanData.h"
 #include "SSException.h"
-#include "DataSource.h"  
+#include "DataSource.h"
+#include "AnalysisRun.h"
+#include "TimeIntervalRange.h"
+#include "PoissonLikelihoodCalculation.h"
 
 /** constructor */
 SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
@@ -214,6 +217,58 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
                 return false;
         }
         removeDataSetsWithNoData();
+
+        /*
+            The decision whether we're using hypergeometric algorithms versus the Poisson approximation is finalized here.
+            It's not implemented for retrospective spacetime. multiple data sets, or when adjusting for weekly trends at this time.
+            Beyond that, the choice is based on the total number of cases. The hypergeometric lookup table can
+            be memory and execution-time intensive, so we're only using it when the total number of cases is below
+            a somewhat arbitrary threshold. See reasoning in issue https://squishlist.com/ims-ext/satscan/25173/
+        */
+        count_t HYPERGEOMETRIC_CASE_THRESHOLD = 5000;
+        switch (gDataHub.GetParameters().getSTPAlgorithmType()) {
+            case STP_POISSON :
+                const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
+                break;
+            case STP_HYPERGEOMETRIC:
+                if (GetNumDataSets() > 1 || gDataHub.GetParameters().getAdjustForWeeklyTrends() ||
+                    GetDataSet(0).getTotalCases() > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                    throw resolvable_error(
+                        "Error: The space-time permutation using the hypergeometric algorithm is not supported for:\n"
+                        "- total number of cases exceeding %ld\n- retrospective space-time analysis\n- multiple data sets\n- when adjusting for weekly trends\n"
+                        "Please select derived or the Poisson approximation option instead.\n", HYPERGEOMETRIC_CASE_THRESHOLD
+                    );
+                }
+            case STP_DERIVED:
+            default :
+                if (GetNumDataSets() > 1 || gDataHub.GetParameters().getAdjustForWeeklyTrends() ||
+                    GetDataSet(0).getTotalCases() > HYPERGEOMETRIC_CASE_THRESHOLD) {
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(false);
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPAlgorithmType(STP_POISSON);
+                } else
+                    const_cast<CParameters&>(gDataHub.GetParameters()).setSTPasHypergeometric(true);
+                break;
+        };
+        if (gDataHub.GetParameters().getSTPasHypergeometric()) {
+            // Try allocating the case log vector, and hypergeometric probability lookup.
+            gPrint.Printf(
+                "Calculating the hypergeometric probability lookup for the space-time permutation analysis...\n", BasePrint::P_STDOUT
+            );
+            std::vector<double> caseLog(GetDataSet(0).getTotalCases() + 1, 0.0);
+            for (size_t t = 1; t < caseLog.size(); ++t)
+                caseLog[t] = log(t);
+            gvDataSets[0]->setCaseData_PT();
+            boost::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
+            boost::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
+                gDataHub, *llr_calc,
+                gDataHub.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gDataHub.GetParameters().GetIncludeClustersType(), SUCCESSIVELY
+            ));
+            std::set<count_t> caseWindows;
+            time_intervals->getCasesInTimeWindowsCollection(caseWindows, GetDataSet(0).getCaseData_PT());
+            GetDataSet(0).refHyperProbLkup().calculateHG(
+                gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, GetDataSet(0).getTotalCases()
+            );
+        }
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
         throw;

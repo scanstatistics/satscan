@@ -451,7 +451,7 @@ ProspectiveSpatialData::~ProspectiveSpatialData() {
     indexes; as well as 'pMeasureList' and either 'ppSorted_UShort_T' or
     'ppSorted_Tract_T' point to valid data structures. */
 void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList) {
-  assert(geEvaluationAssistDataStatus == Allocated);
+  //assert(geEvaluationAssistDataStatus == Allocated);
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   unsigned int           i, j, iWindowEnd;
   count_t             ** ppCases = Interface.GetCaseArray();
@@ -484,7 +484,7 @@ void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void ProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
-  assert(geEvaluationAssistDataStatus == Allocated);
+  //assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int           i, j;
   count_t             ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t           ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
@@ -511,7 +511,7 @@ void ProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
     Returns zero if all windows rates not of interest else returns greatest
     loglikelihood ratio as calculated by probability model. */
 double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  assert(geEvaluationAssistDataStatus == Allocated);
+  //assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int  iWindowEnd;
   double        dMaxLoglikelihoodRatio=0;
 
@@ -550,7 +550,7 @@ void ProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
 /** Calculates and returns maximizing value given accumulated data. If accumulated data
     is not significant, the negation of the maximum double is returned. */
 double ProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-  assert(geEvaluationAssistDataStatus == Allocated);
+  //assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int  iWindowEnd;
   double        dMaxValue(-std::numeric_limits<double>::max());
 
@@ -693,7 +693,7 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
-  assert(geEvaluationAssistDataStatus == Allocated);
+  //assert(geEvaluationAssistDataStatus == Allocated);
   count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
 
@@ -767,3 +767,19 @@ void SpaceTimeData::Setup(const DataSetInterface& Interface) {
     }
 }
 
+////////////////////// SpaceTimeDataHyper /////////////////////////////////////
+
+/** Adds neighbor data to accumulation - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void SpaceTimeDataHyper::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+    //assert(geEvaluationAssistDataStatus == Allocated);
+    count_t** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
+    measure_t** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
+
+    gpCases[0] += ppCases[0][tNeighborIndex];
+    gpMeasure[0] += ppMeasure[0][tNeighborIndex];
+    for (unsigned int i = std::max(1U, _start_index); i < giAllocationSize - 1; ++i) {
+        gpCases[i] += ppCases[i][tNeighborIndex];
+        gpMeasure[i] += ppMeasure[i][tNeighborIndex];
+    }
+}

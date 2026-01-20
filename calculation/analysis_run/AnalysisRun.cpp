@@ -2399,32 +2399,43 @@ void AnalysisRunner::run() {
   }
 }
 
-/** Returns available random access memory om mega-bytes. */
+/** Returns available RAM in megabytes. */
 double AnalysisRunner::getAvailablePhysicalMemory() {
-  double /*dTotalPhysicalMemory(0),*/ dAvailablePhysicalMemory(0);
-
-  //need process for handling failure from system call
+    double available_bytes(0);
 
 #ifdef _WINDOWS_
-  MEMORYSTATUS stat;
-  GlobalMemoryStatus (&stat);
-  //dTotalPhysicalMemory = stat.dwTotalPhys;
-  dAvailablePhysicalMemory = static_cast<double>(stat.dwAvailPhys);
+    MEMORYSTATUSEX status;
+    status.dwLength = sizeof(status); // Must initialize this before calling
+    GlobalMemoryStatusEx(&status);
+    available_bytes = static_cast<double>(status.ullAvailPhys);
 #elif defined(__APPLE__)
     int physmem;
     size_t len = sizeof physmem;
     static int mib[2] = { CTL_HW, HW_USERMEM };
-    if (sysctl (mib, 2, &physmem, &len, NULL, 0) == 0 && len == sizeof (physmem)) {
-        dAvailablePhysicalMemory = static_cast<double>(physmem);
-    }
+    if (sysctl (mib, 2, &physmem, &len, NULL, 0) == 0 && len == sizeof (physmem))
+        available_bytes = static_cast<double>(physmem);
 #else
-  //dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
-  //dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
-  dAvailablePhysicalMemory = sysconf(_SC_AVPHYS_PAGES);
-  dAvailablePhysicalMemory *= sysconf(_SC_PAGESIZE);
+    std::ifstream meminfo("/proc/meminfo"); // 1. Attempt /proc/meminfo for high-accuracy "MemAvailable"
+    if (meminfo.is_open()) {
+        std::string line;
+        while (std::getline(meminfo, line)) {
+            if (line.compare(0, 13, "MemAvailable:") == 0) {
+                unsigned long long available_kb;
+                // Parse the numeric value from the string "MemAvailable:    123456 kB"
+                sscanf(line.c_str(), "MemAvailable: %llu", &available_kb);
+                available_bytes = static_cast<double>(available_kb * 1024); // convert kB to Bytes
+            }
+        }
+        meminfo.close();
+    }
+    if (available_bytes == 0) { // 2. Fallback to sysinfo() if /proc was restricted or MemAvailable wasn't found
+        struct sysinfo info;
+        if (sysinfo(&info) == 0) // Available is roughly Free + Buffers
+            available_bytes = (double(info.freeram + info.bufferram)) * info.mem_unit;
+    }
 #endif
 
-  return std::ceil(dAvailablePhysicalMemory/1000000);
+    return std::ceil(available_bytes / (1024 * 1024)); // convert to MB
 }
 
 /** Approxiates the amount of memory (in MB) that will be required to run this ananlysis,

@@ -12,6 +12,7 @@
 class CMeasureList; /** forward class declaration */
 class CCluster; /** forward class declaration */
 class CSaTScanData; /** forward class declaration */
+class HypergeometricProbabilityLookup; /** forward class declaration */
 
 /** Abstract base class which defines methods of iterating through temporal
     windows, evaluating the strength of a clustering.*/
@@ -36,6 +37,8 @@ class CTimeIntervals {
         virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet) = 0;
         virtual void CompareMeasures(AbstractTemporalClusterData& StreamData, CMeasureList& MeasureList) = 0;
         virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) = 0;
+        virtual void getCasesInTimeWindowsCollection(std::set<count_t>& collection, count_t* pCases);
+        virtual void associate(const HypergeometricProbabilityLookup& lookup) {/* nop */}
         void resetIntervalRange() {_interval_range = _init_interval_range; }
         void setIntervalRange(tract_t centerpoint);
 };

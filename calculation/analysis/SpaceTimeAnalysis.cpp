@@ -6,8 +6,8 @@
 #include "MakeNeighbors.h"
 #include "ClusterData.h"
 #include "SSException.h"
-
 #include "BatchedLikelihoodCalculation.h"
+#include "SpaceTimePermutationDataSetHandler.h"
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -22,6 +22,12 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway&
         _time_intervals.reset(GetNewTemporalDataEvaluatorObject(
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALLCLUSTERS : _parameters.GetIncludeClustersType(), SUCCESSIVELY
         ));
+        // If this is a space-time permutation analysis, using hypergeometric, then we now need to associate
+        // the probabilities lookup(s) with the time interval object.
+        if (_parameters.getSTPasHypergeometric()) {
+            for (auto dataset : _data_hub.GetDataSetHandler().getDataSets())
+                _time_intervals->associate(dataset->getHyperProbLkup());
+        }
         //create simulation objects based upon which process used to perform simulations
         if (_replica_process_type == MeasureListEvaluation)
             _measure_list.reset(GetNewMeasureListObject());
@@ -39,6 +45,12 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
         _time_intervals.reset(GetNewTemporalDataEvaluatorObject(
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), SUCCESSIVELY
         ));
+        // If this is a space-time permutation analysis, using hypergeometric, then we now need to calculate
+        // the probabilities lookup(s), then associate with the time interval object.
+        if (_parameters.getSTPasHypergeometric()) {
+            for (auto dataset: _data_hub.GetDataSetHandler().getDataSets())
+                _time_intervals->associate(dataset->getHyperProbLkup());
+        }
         //create cluster object used as comparator when iterating over centroids and time intervals
         _cluster_compare.reset(new CSpaceTimeCluster(_cluster_data_factory.get(), DataGateway));
         //initialize list of top circle/ellipse clusters
@@ -67,34 +79,32 @@ const SharedClusterVector_t CSpaceTimeAnalysis::CalculateTopClusters(tract_t tCe
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
 double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
-    tract_t                       t, tNumNeighbors, * pIntegerArray;
-    unsigned short              * pUnsignedShortArray;
-    double                        dMaximizingValue;
-    std::vector<double>           vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+    tract_t t, tNumNeighbors, * pIntegerArray;
+    unsigned short * pUnsignedShortArray;
+    std::vector<double> vMaximizingValues(_parameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
     std::vector<double>::iterator itr, itr_end;
 
     _time_intervals->setIntervalRange(tCenter);
     for (int j=0; j <= _parameters.GetNumTotalEllipses(); ++j) {
         double& dShapeMaxValue = vMaximizingValues[j];
         _cluster_data->InitializeData();
-        CentroidNeighbors CentroidDef(j, _data_hub);
-        CentroidDef.Set(tCenter);
+        CentroidNeighbors CentroidDef(j, _data_hub, tCenter);
         tNumNeighbors = CentroidDef.GetNumNeighbors();
         pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
         pIntegerArray = CentroidDef.GetRawIntegerArray();
         for (t=0; t < tNumNeighbors; ++t) {
             _cluster_data->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-            dMaximizingValue = _time_intervals->ComputeMaximizingValue(*_cluster_data);
-            if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+            dShapeMaxValue = std::max(dShapeMaxValue, _time_intervals->ComputeMaximizingValue(*_cluster_data));
         }
     }
     //if maximizing value is not a ratio/test statistic, convert them now
     if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
-        for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
-            *itr = _likelihood_calculator->CalculateFullStatistic(*itr);
+        for (auto& maxVal: vMaximizingValues)
+            maxVal = _likelihood_calculator->CalculateFullStatistic(maxVal);
+
     //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
     double dPenalty = _data_hub.GetParameters().GetNonCompactnessPenaltyPower();
-    dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);
+    double dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(0), dPenalty);
     for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
         *itr *= CalculateNonCompactnessPenalty(_data_hub.GetEllipseShape(t), dPenalty);
         dMaximizingValue = std::max(*itr, dMaximizingValue);

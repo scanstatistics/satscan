@@ -232,8 +232,8 @@ class SpaceTimeData : public TemporalData {
      void                       Setup(const DataSetInterface& Interface);
 
   protected:
-     unsigned int               giAllocationSize;
-     unsigned int               _start_index;
+      unsigned int               giAllocationSize;
+      unsigned int               _start_index;
 
      SpaceTimeData();
 
@@ -257,6 +257,19 @@ class SpaceTimeData : public TemporalData {
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
     virtual void                Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void                Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+};
+
+class SpaceTimeDataHyper : public SpaceTimeData {
+public:
+    SpaceTimeDataHyper(const DataSetInterface& Interface): SpaceTimeData(Interface) {}
+    SpaceTimeDataHyper(const AbstractDataSetGateway& DataGateway): SpaceTimeData(DataGateway) {}
+    SpaceTimeDataHyper(const SpaceTimeDataHyper& rhs): SpaceTimeData((SpaceTimeData&)rhs) {}
+    virtual ~SpaceTimeDataHyper() {}
+
+    virtual void AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex = 0);
+    virtual SpaceTimeDataHyper* Clone() const {
+        return new SpaceTimeDataHyper(*this);
+    }
 };
 
 /** re-initialize data*/

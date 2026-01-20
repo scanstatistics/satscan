@@ -301,6 +301,7 @@ void AnalysisResultsWriter::writeComputationCompletion(time_t startTime, time_t 
         (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE), (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE
     );
     PairsContainer_t pairs;
+    pairs.emplace_back("Version", version);
     pairs.emplace_back("Program run on", ctime(&startTime)); pairs.back().second.pop_back();
     pairs.emplace_back("Program completed", ctime(&completedTime)); pairs.back().second.pop_back();
     pairs.emplace_back("Total running time", runningTime);
@@ -308,7 +309,6 @@ void AnalysisResultsWriter::writeComputationCompletion(time_t startTime, time_t 
         pairs.emplace_back("Processor Usage", 
             printString(buffer, "%u processors", _parameters.GetNumParallelProcessesToExecute())
         );
-    pairs.emplace_back("Version", version);
     size_t tMaxLabel = 0; //first calculate maximum label length
     for (auto s : pairs) tMaxLabel = std::max(tMaxLabel, s.first.size());
 

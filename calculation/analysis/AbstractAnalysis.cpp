@@ -57,8 +57,14 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
         } else if (_data_hub.GetNumDataSets() > 1) {
             _cluster_data_factory.reset(new MultiSetClusterDataFactory(_parameters));
             _replica_process_type = ClusterEvaluation;
+        } else if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+            _cluster_data_factory.reset(new ClusterDataFactory(_parameters));
+            if (_parameters.getSTPasHypergeometric())
+                _replica_process_type = ClusterEvaluation;
+            else
+                _replica_process_type = MeasureListEvaluation;
         } else {
-            _cluster_data_factory.reset(new ClusterDataFactory());
+            _cluster_data_factory.reset(new ClusterDataFactory(_parameters));
             if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND || (_parameters.GetAnalysisType() == PURELYSPATIAL && _parameters.GetRiskType() == MONOTONERISK))
                 _replica_process_type = ClusterEvaluation;
             else if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
@@ -78,29 +84,34 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
 AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
     //create likelihood calculator
     switch (DataHub.GetParameters().GetProbabilityModelType()) {
-	    case POISSON            : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
-		                            if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
-                                        return new PoissonQuadraticTrendLikelihoodCalculator(DataHub);
-								    else
-                                        return new PoissonLinearTrendLikelihoodCalculator(DataHub);
-								}
-        case HOMOGENEOUSPOISSON   :
-        case SPACETIMEPERMUTATION :
-        case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
-        case BATCHED              : return new BatchedLikelihoodCalculator(DataHub);
-        case UNIFORMTIME          : return new UniformTimeLikelihoodCalculator(DataHub);
-        case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
-        case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
-                                        if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
-                                            return new WeightedNormalCovariatesLikelihoodCalculator(DataHub);
-                                        else 
-                                            return new WeightedNormalLikelihoodCalculator(DataHub);
-                                    }
-                                    return new NormalLikelihoodCalculator(DataHub);
-        case CATEGORICAL          : /*** may or may not implement separate class ***/
-        case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
-        case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
-        default                   : 
+        case POISSON: 
+            if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
+                if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
+                    return new PoissonQuadraticTrendLikelihoodCalculator(DataHub);
+                else
+                    return new PoissonLinearTrendLikelihoodCalculator(DataHub);
+            }
+        case HOMOGENEOUSPOISSON:
+        case EXPONENTIAL: return new PoissonLikelihoodCalculator(DataHub);
+        case SPACETIMEPERMUTATION:
+            if (DataHub.GetParameters().getSTPasHypergeometric())
+                return new HypergeometricLikelihoodCalculator(DataHub);
+            return new PoissonLikelihoodCalculator(DataHub);
+        case BATCHED: return new BatchedLikelihoodCalculator(DataHub);
+        case UNIFORMTIME: return new UniformTimeLikelihoodCalculator(DataHub);
+        case BERNOULLI: return new BernoulliLikelihoodCalculator(DataHub);
+        case NORMAL: 
+            if (DataHub.GetParameters().getIsWeightedNormal()) { 
+                if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
+                    return new WeightedNormalCovariatesLikelihoodCalculator(DataHub);
+                else 
+                    return new WeightedNormalLikelihoodCalculator(DataHub);
+            }
+            return new NormalLikelihoodCalculator(DataHub);
+        case CATEGORICAL: /*** may or may not implement separate class ***/
+        case ORDINAL: return new OrdinalLikelihoodCalculator(DataHub);
+        case RANK: return new WilcoxonLikelihoodCalculator(DataHub);
+        default: 
             throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()", DataHub.GetParameters().GetProbabilityModelType());
     };
 }
@@ -187,6 +198,12 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
         case BERNOULLI:
             if (_parameters.GetSpatialAdjustmentType() == SPATIAL_STRATIFIED_RANDOMIZATION)
                 return new BernoulliSpatialStratifiedTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+        case SPACETIMEPERMUTATION:
+            if (_parameters.getSTPasHypergeometric()) {
+                if (_data_hub.GetNumDataSets() == 1)
+                    return new HypergeometricTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType, eExecutionType);
+                return new MultisetHypergeometricTemporalDataEvaluator(_data_hub, *_likelihood_calculator, eIncludeClustersType);
+            }
         default :
             if (_parameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
                 if (_data_hub.GetNumDataSets() == 1)

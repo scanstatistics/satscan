@@ -65,8 +65,9 @@ void usage_message(std::string program, po::options_description& desc, const Par
 }
 
 int main(int argc, char *argv[]) {
-    bool verifyParameters = false, printParameters = false, forceCentric = false, allOut = false,
-        standardPvalue = false, execMultipleAnalyses = false, execAllMultipleAnalyses = false, testSendMail = false;
+  bool verifyParameters = false, printParameters = false, forceCentric = false, allOut = false,
+      standardPvalue = false, execMultipleAnalyses = false, execAllMultipleAnalyses = false, testSendMail = false;
+  unsigned int stpAlgorithm = 0;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -94,6 +95,7 @@ int main(int argc, char *argv[]) {
         ("curl-additional,u", po::value<std::string>(), "additional arguements to curl program (ex. --user <user:password> --ssl-reqd)")
         ("mail-from,h", po::value<std::string>(), "'from' address (ex. someone@mycompany.com)")
         ("mail-reply,i", po::value<std::string>(), "'reply' address (ex. nobody@mycompany.com)")
+        ("stp-algorithm,w", po::value<unsigned int>(&stpAlgorithm)->default_value(0), "space-time permutation algorithm (0=derived, 1=hypergeometric, 2=Poisson Approximation)")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -222,6 +224,7 @@ int main(int argc, char *argv[]) {
     /* additional program options processing */
     if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
+    Parameters.setSTPAlgorithmType((SpaceTimePermutationAlgorithmType)stpAlgorithm);
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis

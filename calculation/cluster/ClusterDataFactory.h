@@ -8,8 +8,11 @@
     objects: SpatialData, TemporalData, ProspectiveSpatialData, and
     SpaceTimeData (currently).  */
 class ClusterDataFactory : public AbstractClusterDataFactory {
+ protected:
+     const CParameters& _parameters;
+
  public:
-   ClusterDataFactory();
+   ClusterDataFactory(const CParameters& parameters);
    virtual ~ClusterDataFactory();
 
    //spatial cluster data
