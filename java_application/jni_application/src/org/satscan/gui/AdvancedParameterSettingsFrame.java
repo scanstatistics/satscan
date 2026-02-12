@@ -615,7 +615,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case PURELYSPATIAL:
                 enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false, false);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
-                enableSpatialOptionsGroup(true, false);
+                enableSpatialOptionsGroup(true, !bSpaceTimePermutation, false);
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(false, false, false);
                 enableClustersReportedOptions(true);
@@ -636,7 +636,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case SEASONALTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, false, bPoisson, bPoisson);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
-                enableSpatialOptionsGroup(false, false);
+                enableSpatialOptionsGroup(false, !bSpaceTimePermutation, false);
                 enableWindowShapeGroup(false);
                 enableTemporalOptionsGroup(true, false, true);
                 enableClustersReportedOptions(false);
@@ -658,7 +658,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
-                enableSpatialOptionsGroup(true, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
+                enableSpatialOptionsGroup(true, !bSpaceTimePermutation, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
                 enableClustersReportedOptions(true);
@@ -680,7 +680,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
                 );
                 enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
-                enableSpatialOptionsGroup(true, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
+                enableSpatialOptionsGroup(true, !bSpaceTimePermutation, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);
                 enableClustersReportedOptions(true);
@@ -700,7 +700,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case PROSPECTIVEPURELYTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, false, bPoisson, bPoisson);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
-                enableSpatialOptionsGroup(false, false);
+                enableSpatialOptionsGroup(false, !bSpaceTimePermutation, false);
                 enableWindowShapeGroup(false);
                 enableTemporalOptionsGroup(true, false, false);
                 enableClustersReportedOptions(false);
@@ -720,7 +720,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case SPATIALVARTEMPTREND:
                 enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false, false);
                 enableAdjustmentForSpatialOptionsGroup(false, false);
-                enableSpatialOptionsGroup(true, false);
+                enableSpatialOptionsGroup(true, !bSpaceTimePermutation, false);
                 enableTemporalOptionsGroup(false, false, false);
                 enableClustersReportedOptions(true);
                 enableCoordinatesCheckGroup(true);
@@ -2357,12 +2357,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the spatial options group control
      */
-    private void enableSpatialOptionsGroup(boolean bEnable, boolean bEnableIncludePurelyTemporal) {
+    private void enableSpatialOptionsGroup(boolean bEnable, boolean enablePopRisk, boolean bEnableIncludePurelyTemporal) {
         _spatialOptionsGroup.setEnabled(bEnable);
-        boolean bEnablePopPercentage = true;
-        _maxSpatialClusterSizeTextField.setEnabled(bEnable && bEnablePopPercentage);
-        _percentageOfPopulationLabel.setEnabled(bEnable && bEnablePopPercentage);
-
+        _maxSpatialClusterSizeTextField.setEnabled(bEnable && enablePopRisk);
+        _maxSpatialClusterSizeTextField.setVisible(enablePopRisk);
+        _percentageOfPopulationLabel.setEnabled(bEnable);
+        if (enablePopRisk)
+            _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)");
+        else
+            _percentageOfPopulationLabel.setText("Base criterion: Approaching but not 100% of the population at risk.");
         boolean bEnablePopulationFile = bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _spatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile);
         _maxSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _spatialPopulationFileCheckBox.isSelected());
@@ -2376,7 +2379,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxRadiusLabel.setEnabled(Utils.selected(_spatialDistanceCheckBox));
 
         _inclPureTempClustCheckBox.setEnabled(bEnable && bEnableIncludePurelyTemporal);
-        enableReportedSpatialOptionsGroup(bEnable);
+        enableReportedSpatialOptionsGroup(bEnable, enablePopRisk);
     }
 
     /**
@@ -2402,13 +2405,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables or disables the spatial options group control
      */
-    private void enableReportedSpatialOptionsGroup(boolean bEnable) {
+    private void enableReportedSpatialOptionsGroup(boolean bEnable, boolean enablePopRisk) {
         _reportedSpatialOptionsGroup.setEnabled(bEnable);
         _restrictReportedClustersCheckBox.setEnabled(bEnable);
 
-        boolean bEnablePopPercentage = true;
-        _maxReportedSpatialClusterSizeTextField.setEnabled(Utils.selected(_restrictReportedClustersCheckBox) && bEnablePopPercentage);
-        _reportedPercentOfPopulationLabel.setEnabled(Utils.selected(_restrictReportedClustersCheckBox) && bEnablePopPercentage);
+        _maxReportedSpatialClusterSizeTextField.setEnabled(Utils.selected(_restrictReportedClustersCheckBox) && enablePopRisk);
+        _maxReportedSpatialClusterSizeTextField.setVisible(enablePopRisk);
+        _reportedPercentOfPopulationLabel.setEnabled(Utils.selected(_restrictReportedClustersCheckBox));
+        if (enablePopRisk)
+            _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)");
+        else
+            _reportedPercentOfPopulationLabel.setText("Base criterion: Approaching but not 100% of the population at risk.");
         boolean bEnablePopulationFile = bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _reportedSpatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile && Utils.selected(_restrictReportedClustersCheckBox));
         _maxReportedSpatialPercentFileTextField.setEnabled(Utils.selected(_reportedSpatialPopulationFileCheckBox) && Utils.selected(_restrictReportedClustersCheckBox));
@@ -4147,7 +4154,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
+                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             });
@@ -4196,7 +4203,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _spatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
+                    enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled(), _inclPureTempClustCheckBox.isEnabled());
                     enableSetDefaultsButton();
                 }
             });
@@ -4558,7 +4565,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _restrictTemporalRangeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());
                     enableDatesByTimePrecisionUnits();
                     enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                     enableSetDefaultsButton();
@@ -5599,7 +5606,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());
                     enableSetDefaultsButton();
                 }
             });
@@ -5631,7 +5638,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());
                     enableSetDefaultsButton();
                 }
             });
@@ -5663,7 +5670,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {
                 public void itemStateChanged(java.awt.event.ItemEvent e) {
-                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
+                    enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());
                     enableSetDefaultsButton();
                 }
             });
@@ -6992,7 +6999,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _notificatons_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_notificatons_tabLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
+                    .addComponent(_panel_email_notifications, javax.swing.GroupLayout.PREFERRED_SIZE, 463, Short.MAX_VALUE)
                     .addContainerGap())
             );
 

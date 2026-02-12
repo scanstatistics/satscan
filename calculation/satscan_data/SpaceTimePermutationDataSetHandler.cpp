@@ -268,6 +268,7 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
             GetDataSet(0).refHyperProbLkup().calculateHG(
                 gDataHub.GetParameters().GetAreaScanRateType(), caseLog, caseWindows, GetDataSet(0).getTotalCases()
             );
+            //GetDataSet(0).refHyperProbLkup().printHG(caseWindows);
         }
     } catch (prg_exception& x) {
         x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");

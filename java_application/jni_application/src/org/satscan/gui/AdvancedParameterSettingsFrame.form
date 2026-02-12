@@ -1185,7 +1185,7 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by max circle size file"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxSpatialPercentFileTextField">
@@ -1236,7 +1236,7 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by distance"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled(), _inclPureTempClustCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_distancePrefixLabel">
@@ -1661,7 +1661,7 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Include only windows within specified range"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableDatesByTimePrecisionUnits();&#xa;        enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());&#xa;        enableDatesByTimePrecisionUnits();&#xa;        enableTemporalOptionsGroup(_maxTemporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Container class="javax.swing.JPanel" name="_flexible_window_cards">
@@ -3137,7 +3137,7 @@
                     </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxReportedSpatialClusterSizeTextField">
@@ -3171,7 +3171,7 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by population in maximum circle size file"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialPopulationFileCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxReportedSpatialPercentFileTextField">
@@ -3205,7 +3205,7 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="selection for spatial maximum by distance"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialDistanceCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled(), _maxSpatialClusterSizeTextField.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedMaxDistanceLabel">
