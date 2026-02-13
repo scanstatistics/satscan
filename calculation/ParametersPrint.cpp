@@ -981,8 +981,14 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getSpatialOutputParameters
         settings.push_back(std::make_pair("Restrict Reporting to Smaller Clusters", (_parameters.GetRestrictingMaximumReportedGeoClusterSize() ? "Yes" : "No")));
         if (_parameters.GetRestrictingMaximumReportedGeoClusterSize()) {
             if (!(_parameters.GetAnalysisType() == PROSPECTIVESPACETIME && _parameters.GetAdjustForEarlierAnalyses())) {
-                printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
-                settings.push_back(std::make_pair("Reported Clusters", buffer));
+                if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
+                    settings.push_back(std::make_pair("Reported Clusters", "Only clusters smaller < 100% of population at risk"));
+                else
+                    settings.push_back(std::make_pair("Reported Clusters", 
+                        printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", 
+                                _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true))
+                        )
+                    );
             }
             if (_parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
                 printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", _parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
@@ -1408,8 +1414,13 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getSpatialWindowParameters
         settings.clear();
         if (_parameters.GetIsPurelyTemporalAnalysis()) return settings;
         if (!(_parameters.GetAnalysisType() == PROSPECTIVESPACETIME && _parameters.GetAdjustForEarlierAnalyses())) {
-            printString(buffer, "%g percent of population at risk", _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
-            settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
+            if (_parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
+                settings.push_back(std::make_pair("Maximum Spatial Cluster Size", "< 100% of population at risk"));
+            else {
+                settings.push_back(std::make_pair("Maximum Spatial Cluster Size", 
+                    printString(buffer, "%g percent of population at risk", _parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false)))
+                );
+            }
         }
         if (_parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
             printString(buffer, "%g percent of population defined in max circle file", _parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
