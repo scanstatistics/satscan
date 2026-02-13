@@ -261,7 +261,7 @@ class RealDataSet : public DataSet {
     void                        setBitsetDataMeta(const MetaManagerProxy& MetaProxy);
     void                        setBatchData_PT(unsigned int setSize);
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
-    void                        setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr);
+    void                        setCalculatedQuadraticTimeTrend(const std::string& functionStr);
     void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setControlData_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}

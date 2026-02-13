@@ -32,6 +32,7 @@ class AnalysisResultsWriter {
         std::vector<HtmlColumn> _html_columns;
         std::stringstream _html_sub_rows;
         std::stringstream _html_messages;
+        std::vector<boost::dynamic_bitset<>> _cluster_locations;
 
         std::string& getTotalRunningTime(time_t start, time_t end, std::string& buffer) const;
 

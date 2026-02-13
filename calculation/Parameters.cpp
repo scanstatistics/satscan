@@ -564,12 +564,11 @@ bool CParameters::isTimeStratifiedWithLargerAdjustmentLength() const {
 }
 
 /** Returns description for LLR. */
-bool CParameters::IsTestStatistic() const {
+bool CParameters::IsTestStatistic(bool includeSpatialWindow) const {
     return (
         geProbabilityModelType == SPACETIMEPERMUTATION || geProbabilityModelType == RANK || geProbabilityModelType == UNIFORMTIME || 
-        (GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && 
-         (geProbabilityModelType == POISSON || geProbabilityModelType == BERNOULLI)) ||
-        (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY)
+        (GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && (geProbabilityModelType == POISSON || geProbabilityModelType == BERNOULLI)) ||
+        (includeSpatialWindow && geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY)
     );
 }
 

@@ -90,7 +90,7 @@ class QuadraticTimeTrend : public AbstractTimeTrend {
     double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge=0.00001);
     virtual double              GetBeta2() const {return gdBeta2;}
-    void                        getRiskFunction(std::string& functionStr, std::string& definitionStr, const CSaTScanData& DataHub) const;
+    std::string               & getRiskFunction(std::string& functionStr, const CSaTScanData& DataHub) const;
     virtual TimeTrendType       getType() const {return QUADRATIC;};
     virtual void                Initialize();
 

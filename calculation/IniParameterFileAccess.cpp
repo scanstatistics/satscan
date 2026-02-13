@@ -194,7 +194,7 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
 
 /* Reads optional input source settings. */
 void IniParameterFileAccess::ReadInputSourceSettings(const IniFile& SourceFile) {
-    const char * section, * multiple_sets_section, * key;
+    const char * section = 0, * multiple_sets_section = 0, * key = 0;
     std::string buffer, buffer2;
 
     try {

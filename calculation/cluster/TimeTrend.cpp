@@ -462,27 +462,25 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
 }
 
 /** Returns temporal trend expressed as a function of date precision. */
-void QuadraticTimeTrend::getRiskFunction(std::string& functionStr, std::string& definitionStr, const CSaTScanData& DataHub) const {
-  std::string buffer, buffer2, buffer3("");
-  const CParameters& params(DataHub.GetParameters());
-
-  printString(functionStr, "e^(%g + %g t + %g t^2)", GetAlpha(), GetBeta(), GetBeta2());
-
-  switch (params.GetTimeAggregationUnitsType()) {
-    case YEAR    : buffer = "year"; break;
-    case MONTH   : buffer = "month"; break;
-    case DAY     : buffer = "day"; break;
-    case GENERIC : buffer = "unit"; break;
-    default      : buffer = "none";
-  }
-  double constant = static_cast<double>(params.GetTimeAggregationLength() - 1)/2.0;
-  if (constant != 0.0)
-      printString(buffer3, " + %g", constant);
-
-  printString(definitionStr, "where t=(%s - %s)%s",
-              buffer.c_str(),
-              JulianToString(buffer2, DataHub.GetTimeIntervalStartTimes()[0], params.GetTimeAggregationUnitsType()).c_str(),
-              buffer3.c_str());
+std::string& QuadraticTimeTrend::getRiskFunction(std::string& functionStr, const CSaTScanData& DataHub) const {
+    std::string buffer, buffer2, buffer3(""), definitionStr;
+    const CParameters& params(DataHub.GetParameters());
+    printString(functionStr, "e^(%g + %g t + %g t^2)", GetAlpha(), GetBeta(), GetBeta2());
+    switch (params.GetTimeAggregationUnitsType()) {
+        case YEAR    : buffer = "year"; break;
+        case MONTH   : buffer = "month"; break;
+        case DAY     : buffer = "day"; break;
+        case GENERIC : buffer = "unit"; break;
+        default      : buffer = "none";
+    }
+    double constant = static_cast<double>(params.GetTimeAggregationLength() - 1)/2.0;
+    if (constant != 0.0) printString(buffer3, " + %g", constant);
+    functionStr += printString(
+        definitionStr, " where t=(%s - %s)%s", buffer.c_str(),
+        JulianToString(buffer2, DataHub.GetTimeIntervalStartTimes()[0], params.GetTimeAggregationUnitsType()).c_str(),
+        buffer3.c_str()
+    );
+    return functionStr;
 }
 
 
@@ -493,9 +491,10 @@ void QuadraticTimeTrend::Initialize() {
 }
 
 void QuadraticTimeTrend::printSeries(const RealDataSet& Set, const CSaTScanData& DataHub) const {
-    std::string buffer, buffer2;
-    getRiskFunction(buffer, buffer2, DataHub);
-    fprintf(AppToolkit::getToolkit().openDebugFile(), "Log quadratic time trend series (%s %s):\ndate, t, predicted, count, measure\n", buffer.c_str(), buffer2.c_str());
+    std::string buffer;
+    fprintf(AppToolkit::getToolkit().openDebugFile(), 
+        "Log quadratic time trend series (%s):\ndate, t, predicted, count, measure\n", getRiskFunction(buffer, DataHub).c_str()
+    );
     DatePrecisionType aggUnits = DataHub.GetParameters().GetTimeAggregationUnitsType();
     const std::vector<Julian>& intervalStartTimes = DataHub.GetTimeIntervalStartTimes();
     double constant = static_cast<double>(DataHub.GetParameters().GetTimeAggregationLength() - 1) / 2.0;

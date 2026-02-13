@@ -387,7 +387,7 @@ CSaTScanData::SummaryPairs_t& CSaTScanData::getSummaryPairs(std::vector<std::pai
             //PrintFormat.PrintSectionLabel(fp, "Global Quadratic", false, false);
             //fprintf(fp, "%g\n", pQTrend->GetBeta2());
             summaryEntries.emplace_back("Global Risk Function", "");
-            pQTrend->getRiskFunction(summaryEntries.back().second, work, *this);
+            pQTrend->getRiskFunction(summaryEntries.back().second, *this);
         }
     }
     if (gParameters.GetProbabilityModelType() == RANK) {

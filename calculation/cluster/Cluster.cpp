@@ -294,7 +294,7 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex
   if (parameters.GetProbabilityModelType() == POISSON && parameters.UsePopulationFile() && parameters.GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION) {
     printString(buffer, "Annual cases / %.0f", DataHub.GetAnnualRatePop());
     buffer2 = getValueAsString(DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex), buffer2, 1);
-    printClusterData(fp, PrintFormat, buffer.c_str(), buffer2, false);
+    printClusterData(fp, PrintFormat, buffer.c_str(), buffer2, false, iDataSetIndex);
   }
 }
 
@@ -857,11 +857,7 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   std::string  buffer;
   const CParameters& params = DataHub.GetParameters();
 
-  if (params.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
-      params.GetProbabilityModelType() == RANK ||
-      params.GetProbabilityModelType() == UNIFORMTIME ||
-      (params.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && 
-       (params.GetProbabilityModelType() == POISSON || params.GetProbabilityModelType() == BERNOULLI))) {
+  if (params.IsTestStatistic(false)) {
      printClusterData(fp, PrintFormat, "Test statistic", printString(buffer, "%lf", m_nRatio), true);
   } else {
     printClusterData(fp, PrintFormat, "Log likelihood ratio", printString(buffer, "%lf", m_nRatio / m_NonCompactnessPenalty), true);

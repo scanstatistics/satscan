@@ -106,9 +106,8 @@ void CPoissonModel::AdjustForCalculatedTrend(RealDataSet& Set) {
   //store calculated time trend adjustment for reporting later
   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(TimeTrend.get());
   if (pQTrend) {
-      std::string buffer, buffer2;
-      pQTrend->getRiskFunction(buffer, buffer2, gDataHub);
-      Set.setCalculatedQuadraticTimeTrend(buffer, buffer2);
+      std::string buffer;
+      Set.setCalculatedQuadraticTimeTrend(pQTrend->getRiskFunction(buffer, gDataHub));
   } else
     Set.setCalculatedTimeTrendPercentage(
         TimeTrend->GetTimeTrendByAggregationUnits(

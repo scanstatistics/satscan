@@ -1145,10 +1145,8 @@ void RealDataSet::setBitsetDataMeta(const MetaManagerProxy& MetaLocations) {
 }
 
 /* Sets the quadratic trend used for data set during measure adjustment. */
-void RealDataSet::setCalculatedQuadraticTimeTrend(std::string& functionStr, std::string& definitionStr) { 
-    std::stringstream s;
-    s << functionStr.c_str() << " " << definitionStr.c_str();
-    _calculatedQuadraticTrend = s.str(); 
+void RealDataSet::setCalculatedQuadraticTimeTrend(const std::string& functionStr) { 
+    _calculatedQuadraticTrend = functionStr;
 }
 
 /** Sets case data at meta location indexes. */

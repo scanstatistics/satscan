@@ -53,58 +53,78 @@ AnalysisResultsWriter::~AnalysisResultsWriter() {
     if (_html_out.is_open()) _html_out.close();
 }
 
+/** Writes the cluster information to an HTML table row. 
+    There is a precise coupling with headers defined in writeHtmlTableStart() and the cluster attributes reported here. */
 void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) {
     std::string rowId, buffer, work, work2;
     printString(rowId, "tr-ID_%u", (supplementInfo.getClusterReportIndex(cluster)));
     std::vector<std::pair<std::string, std::string>> columnValues(_html_columns.size(), { "-","" }); // display value, data-order value
     size_t valueIdx = 0;
-
     // Create map to cluster cached values - easier and format will match that of other output files.
     std::map<std::string, CCluster::FieldCache> clusterAttributes;
     std::set<unsigned int> datasets;
     for (const auto& entry : cluster.getReportLinesCache()) {
+        // Store dataset attributes for later use - we want to write these at the cluster level when only 1 dataset,
+        // but at the dataset level when multiple datasets (with subrows for each dataset).
         if (entry._set_idx != std::numeric_limits<unsigned int>::max()) datasets.emplace(entry._set_idx);
         if (entry._set_idx > 0 && entry._set_idx != std::numeric_limits<unsigned int>::max()) continue;
-        if (clusterAttributes.find(entry._label) == clusterAttributes.end())
-            clusterAttributes.insert(std::make_pair(entry._label, entry));
-        else
-            throw prg_error("Duplicate cluster attribute label found in cache: '%s' -- what is this for?", "AnalysisResultsWriter", entry._label.c_str());
+        if (clusterAttributes.find(entry._label) != clusterAttributes.end())
+            throw prg_error("Duplicate cluster attribute label found in cache: '%s'", "AnalysisResultsWriter", entry._label.c_str());
+        clusterAttributes.insert(std::make_pair(entry._label, entry));
     }
+    // Write dataset level attributes for each dataset represented in cluster cache (if more than 1 dataset).
+    // With multiple data sets, we'll have subrows detailing the data set specific values.
     std::vector<std::map<std::string, CCluster::FieldCache>> datasetAttributes;
     if (_parameters.getNumFileSets() > 1) {
         for (auto setIdx : datasets) {
             datasetAttributes.emplace_back();
             for (const auto& entry : cluster.getReportLinesCache()) {
-                if (entry._set_idx != setIdx) continue;
-                if (datasetAttributes.back().find(entry._label) == datasetAttributes.back().end())
-                    datasetAttributes.back().insert(std::make_pair(entry._label, entry));
-                else
-                    throw prg_error("Duplicate cluster attribute label found in cache: '%s' -- what is this for?", "AnalysisResultsWriter", entry._label.c_str());
+                if (entry._set_idx != setIdx) continue; // only process entries for this dataset
+                if (datasetAttributes.back().find(entry._label) != datasetAttributes.back().end())
+                    throw prg_error("Duplicate cluster attribute label found in cache: '%s'", "AnalysisResultsWriter", entry._label.c_str());
+                datasetAttributes.back().insert(std::make_pair(entry._label, entry));
             }
         }
     }
-
     printString(columnValues[valueIdx].first, "%u", supplementInfo.getClusterReportIndex(cluster));
     if (_parameters.getNumFileSets() > 1)
         printString(columnValues[++valueIdx].first, "<a href='#' class='cut-node-w-children'>%s</a>", cluster.GetClusterLocation(buffer, _dataHub).c_str());
     else 
         cluster.GetClusterLocation(columnValues[++valueIdx].first, _dataHub);
-
+    // Set columnn which reports the number of locations in the cluster - potentially with popover information detailing locations and overlap.
+    _cluster_locations.emplace_back(boost::dynamic_bitset<>());
     if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
         printString(columnValues[++valueIdx].first, "%u", _dataHub.getLocationsManager().locations().size());
     else {
-        boost::dynamic_bitset<> bLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &bLocations, 0);
-        printString(columnValues[++valueIdx].first, "%u", bLocations.count());
+        std::vector<tract_t> clusterLocations;
+        CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &_cluster_locations.back(), &clusterLocations);
+        std::stringstream popoverText;
+        const auto& locationData = _dataHub.getLocationsManager().locations();
+        for (auto index : clusterLocations) {
+            if (popoverText.rdbuf()->in_avail()) popoverText << ", ";
+            popoverText << locationData[index].get()->name();
+            // check for overlap with previous cluster locations and if so, add to buffer for display in popover
+            std::stringstream overlaps;
+            for (size_t t=0; t < _cluster_locations.size() - 1; ++t) {
+                if (_cluster_locations[t].test(index))
+                    overlaps << (overlaps.rdbuf()->in_avail() ? "," : "(") << "#" << (t + 1);
+            }
+            if (overlaps.rdbuf()->in_avail()) overlaps << ")";
+            popoverText << overlaps.str();
+        }
+        printString(columnValues[++valueIdx].first, 
+            "<a class='location-popover' href='#' cluster-id='%u' cluster-locations='%s'>%u</a>", 
+            supplementInfo.getClusterReportIndex(cluster), popoverText.str().c_str(), _cluster_locations.back().count()
+        );
+        columnValues[valueIdx].second = std::to_string(_cluster_locations.back().count());
     }
-
     if (_parameters.getClusterMonikerPrefix().size())
         printString(
             columnValues[++valueIdx].first, "%sC%u", _parameters.getClusterMonikerPrefix().c_str(), supplementInfo.getClusterReportIndex(cluster)
         );
-    if (_parameters.getReportGiniOptimizedClusters()) {
+    if (_parameters.getReportGiniOptimizedClusters())
         columnValues[++valueIdx].first = (supplementInfo.getOverlappingClusters(cluster, buffer).size() == 0 ? "No Overlap": buffer);
-    }
+    // Set radius, coordinates, and related columns - when appropriate.
     if (!(_parameters.UseLocationNeighborsFile() || cluster.GetClusterType() == PURELYTEMPORALCLUSTER ||
         (_parameters.getUseLocationsNetworkFile() && !_dataHub.networkCanReportLocationCoordinates()))) {
         std::vector<double> vCoordinates;
@@ -149,14 +169,6 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         }
         columnValues[++valueIdx].first = clusterAttributes["Span"]._formatted_value;
         columnValues[valueIdx].second = clusterAttributes["Span-raw"]._formatted_value;
-        /*double span = cluster.getLocationsSpan(DataHub);
-        if (span >= 0.0) {
-            if (_parameters.GetCoordinatesType() == LATLON) {
-                printString(columnValues[++valueIdx].first, "%s km", getValueAsString(span, work).c_str());
-                columnValues[valueIdx].second = work;
-            } else
-                getValueAsString(span, columnValues[++valueIdx].first);
-        }*/
     }
     if (_parameters.getReportGiniOptimizedClusters())
         columnValues[++valueIdx].first = clusterAttributes["Gini Cluster"]._formatted_value;
@@ -166,7 +178,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
             _dataHub.GetTimeIntervalStartTimes()[cluster.m_nFirstInterval], _dataHub.GetTimeIntervalStartTimes()[cluster.m_nLastInterval] - 1
         );
     }
-    // The cluster level column order is dependent on number of data sets.
+    // This lambda is used to write the cluster level column data in the appropriate order depending on number of data sets.
     auto writeClusterLevelColumnData = [&](const CCluster& cluster) {
         if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             if (_parameters.getTimeTrendType() == LINEAR) {
@@ -177,7 +189,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
                 columnValues[++valueIdx].first = clusterAttributes["Outside Risk Function"]._formatted_value;
             }
         }
-        if (_parameters.IsTestStatistic()) {
+        if (_parameters.IsTestStatistic(false)) {
             columnValues[++valueIdx].first = clusterAttributes["Test statistic"]._formatted_value;
         } else {
             columnValues[++valueIdx].first = clusterAttributes["Log likelihood ratio"]._formatted_value;
@@ -201,7 +213,6 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
             }
         }
     };
-
     // Now write data sets level fields, but dependent on number of data sets.
     if (_parameters.getNumFileSets() > 1)
         writeClusterLevelColumnData(cluster);
@@ -211,15 +222,15 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         std::vector<std::pair<std::string, std::string>>& datarow
     ) {
         auto setValuesFromAttributes = [&](
-            const std::map<std::string, CCluster::FieldCache>& attributes,
-            std::vector<std::pair<std::string, std::string>>& datarow, size_t& valIdx) {
+            const std::map<std::string, CCluster::FieldCache>& attributes, std::vector<std::pair<std::string, std::string>>& datarow, size_t& valIdx
+        ) {
             for (size_t t = 0; t < attributeNames.size(); ++t) {
                 auto it = attributes.find(attributeNames[t]);
                 if (it != attributes.end())
                     datarow[++valIdx] = std::make_pair(it->second._formatted_value, ""); // no data-order value for now
             }
         };
-        if (_parameters.getNumFileSets() > 1) { // If multiple sets, need to do per data set
+        if (_parameters.getNumFileSets() > 1) { // If multiple sets, need special routine to do per data set.
             size_t setAttrIdx = 0;
             if (_html_sub_rows.rdbuf()->in_avail()) _html_sub_rows << "," << std::endl;
             _html_sub_rows << "'" << rowId << "' : {" << std::endl;
@@ -239,7 +250,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         } else // Otherwise just from cluster attributes
             setValuesFromAttributes(clusterAttributes, columnValues, valueIdx);
     };
-
+    // Now set the data row values depending on probability model type.
     if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
         setDataRowValues({
             "Total cases", "Category", "Number of cases", "Expected cases", "Observed / expected", "Relative risk", "Percent cases in area"
@@ -281,6 +292,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
     }
     if (_parameters.getNumFileSets() == 1)
         writeClusterLevelColumnData(cluster);
+    // Finally, write the HTML table row.
     _html_out << "<tr id='" << rowId << "'>";
     for (const auto& colValue : columnValues) {
         if (colValue.second.size())
@@ -310,7 +322,7 @@ void AnalysisResultsWriter::writeComputationCompletion(time_t startTime, time_t 
             printString(buffer, "%u processors", _parameters.GetNumParallelProcessesToExecute())
         );
     size_t tMaxLabel = 0; //first calculate maximum label length
-    for (auto s : pairs) tMaxLabel = std::max(tMaxLabel, s.first.size());
+    for (const auto& s : pairs) tMaxLabel = std::max(tMaxLabel, s.first.size());
 
     AsciiPrintFormat::PrintSectionSeparatorString(_text_out, 0, 1);
     fprintf(_text_out, "\nRUN INFORMATION\n\n");
@@ -406,11 +418,11 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
     auto defineClusterLevelColumns = [&]() { // lamdba to add cluster level columns
         if (_parameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             if (_parameters.getTimeTrendType() == LINEAR)
-                addColumns({ {"Inside time trend", true},{"Outside time trend", true} });
+                addColumns({ {"Inside time trend", true, false},{"Outside time trend", true, false} });
             else if (_parameters.getTimeTrendType() == QUADRATIC)
-                addColumns({ {"Inside Risk Function", true},{"Outside Risk Function", true} });
+                addColumns({ {"Inside Risk Function", true, false},{"Outside Risk Function", true, false} });
         }
-        if (_parameters.IsTestStatistic()) {
+        if (_parameters.IsTestStatistic(false)) {
             addColumns({ {"Test statistic", true} });
         } else {
             addColumns({ {"Log likelihood ratio", true} });
@@ -455,7 +467,8 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
             {"Number of individuals", false}, {"Positive individuals inside", false}, {"Positive individuals outside", false} 
         });
     } else {
-        if ((_parameters.GetProbabilityModelType() == POISSON && _parameters.UsePopulationFile()) || _parameters.GetProbabilityModelType() == BERNOULLI)
+        if ((_parameters.GetProbabilityModelType() == POISSON && _parameters.UsePopulationFile() && !_parameters.GetIsPurelyTemporalAnalysis()) || 
+            _parameters.GetProbabilityModelType() == BERNOULLI)
             addColumns({ { "Population", false} });
         addColumns({ { "Number of cases", false}, { "Expected cases", false} });
         if (_parameters.GetProbabilityModelType() == POISSON && _parameters.UsePopulationFile() && _parameters.GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION) {
@@ -490,6 +503,7 @@ void AnalysisResultsWriter::writeMessage(
 ) {
     AsciiPrintFormat PrintFormat;
     PrintFormat.SetMarginsAsOverviewSection();
+    PrintFormat.PrintSectionSeparatorString(_text_out, 0, 2, '_');
     PrintFormat.PrintAlignedMarginsDataString(_text_out, message);
     _html_messages << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div>" << std::endl;
     _html_messages << "<div class='" << divClass << "'>" << message << "</div>" << std::endl;
@@ -499,7 +513,7 @@ void AnalysisResultsWriter::writeMessage(const std::vector<std::string>& message
     AsciiPrintFormat PrintFormat;
     PrintFormat.SetMarginsAsOverviewSection();
     if (header.size()) {
-        fprintf(_text_out, "\n");
+        PrintFormat.PrintSectionSeparatorString(_text_out, 0, 2, '_');
         PrintFormat.PrintAlignedMarginsDataString(_text_out, header, 1);
     }
     fprintf(_text_out, "\n");

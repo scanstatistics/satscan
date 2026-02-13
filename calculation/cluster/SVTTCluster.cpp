@@ -395,10 +395,7 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&InTrend);
   if (pQTrend) {
      //printClusterData(fp, PrintFormat, "Inside Quadratic", printString(buffer, "%g", pQTrend->GetBeta2()), false);
-     PrintFormat.PrintSectionLabel(fp, "Inside Risk Function", false, true);
-     pQTrend->getRiskFunction(buffer, buffer2, DataHub);
-     PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-     PrintFormat.PrintNonRightMarginedDataString(fp, buffer2, true);
+     printClusterData(fp, PrintFormat, "Inside Risk Function", pQTrend->getRiskFunction(buffer, DataHub), false);
   }
 
   const AbstractTimeTrend& OutTrend = gClusterData->getOutsideTrend();
@@ -407,10 +404,7 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&OutTrend);
   if (pQTrend) {
      //printClusterData(fp, PrintFormat, "Outside Quadratic", printString(buffer, "%g", pQTrend->GetBeta2()), false);
-     PrintFormat.PrintSectionLabel(fp, "Outside Risk Function", false, true);
-     pQTrend->getRiskFunction(buffer, buffer2, DataHub);
-     PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-     PrintFormat.PrintNonRightMarginedDataString(fp, buffer2, true);
+     printClusterData(fp, PrintFormat, "Outside Risk Function", pQTrend->getRiskFunction(buffer, DataHub), false);
   }
 }
 
