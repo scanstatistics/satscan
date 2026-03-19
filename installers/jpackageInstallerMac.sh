@@ -14,7 +14,7 @@ SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82M
 TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/satscsvc/prj/satscan.development/jpackaged"
 BINARIES="/Users/satscsvc/prj/satscan.development/binaries/mac"
-JAVAJDK="/Users/satscsvc/prj/java/jdk-17.0.14+7_x86_64/Contents/Home"
+JAVAJDK="/Users/satscsvc/prj/java/jdk-25.0.2+10_aarch64/Contents/Home"
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 NOTARYTOOL="notarytool"
@@ -77,11 +77,11 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 
 # jna library started failing notorization, need to codesign manually
 mkdir $BUNDLEDIR/temp
-unzip $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar -d $BUNDLEDIR/temp
+unzip $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar -d $BUNDLEDIR/temp
 codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin/libjnidispatch.jnilib
-rm $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar
+rm $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar
 cd $BUNDLEDIR/temp
-zip -r -u $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar com META-INF
+zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar com META-INF
 
 # Technically we should be able to just call the following to create the app, codesign and build dmg.
 # Unfortunately the notarization fails - complaining about signatures on the launcher and dylib being invalid.
@@ -93,10 +93,10 @@ zip -r -u $BUNDLEDIR/imagesrc/libs/jna-4.5.1.jar com META-INF
 #$JAVAJDK/bin/jpackage --verbose --type dmg --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar --icon $SRCDIR/installers/izpack/mac/satscan2app/Mac-App-Template/Contents/Resources/SaTScan.icns --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR/bin --java-options "-Djava.library.path=\$APPDIR" --mac-sign --mac-package-signing-prefix VF82MCMA83 --mac-signing-key-user-name "Information Management Services, Inc." --description "Software for the spatial, temporal, and space-time scan statistics" --vendor "Information Management Services, Inc." --copyright "Copyright 2021, All rights reserved"  --resource-dir $BUNDLEDIR/dmgresources
 
 # Create SaTScan app directory
-$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar \
+$JAVAJDK/bin/jpackage --verbose --type app-image --input $BUNDLEDIR/imagesrc --main-jar SaTScan.jar --main-class org.satscan.gui.SaTScanApplication \
                       --icon $SRCDIR/installers/resources/SaTScan.icns \
-                      --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR" \
-                      --mac-sign --mac-package-signing-prefix org.satscan.SaTScan --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "SaTScan" --mac-entitlements ${ENTITLEMENTS} \
+                      --app-version ${APPVERSION} --name SaTScan --dest $BUNDLEDIR --java-options "-Djava.library.path=\$APPDIR --enable-native-access=ALL-UNNAMED" \
+                      --mac-sign --mac-package-signing-prefix org.satscan.SaTScan. --mac-signing-key-user-name "${SIGN_KEY}" --mac-package-name "SaTScan" --mac-entitlements ${ENTITLEMENTS} \
                       --add-modules java.base,java.datatransfer,java.desktop,java.logging,java.prefs,java.xml,java.xml.crypto,jdk.crypto.cryptoki,jdk.accessibility
 
 # Create zip file from SaTScan.app notarize application alone.

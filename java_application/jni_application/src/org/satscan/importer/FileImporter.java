@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 import javax.swing.JProgressBar;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.satscan.app.*;
@@ -78,7 +78,7 @@ public class FileImporter {
                 if (_importVariables.get(i).isMappedToSourceField()) {
                     meta_row.append(_importVariables.get(i).getLinelistMeta() + " ");
                     String header = _importVariables.get(i).getVariableName();
-                    header_row.append(StringUtils.contains(header, " ") ? ("\"" + header + "\"") : header).append(" ");
+                    header_row.append(header.contains(" ") ? ("\"" + header + "\"") : header).append(" ");
                 }
             }
             // Now add the line list meta and header rows.
@@ -120,13 +120,13 @@ public class FileImporter {
                         if (_dataSource.isColumnDate(iColumn))
                             value = formatDateField(value);
                     } else {
-                        value = new String( (String)ObjectUtils.defaultIfNull(mappedVariables.get(i).getDefault(), "") );
+                        value = Objects.requireNonNullElse(mappedVariables.get(i).getDefault(), "");
                     }
                     value = StringUtils.trimToEmpty(value);
                     if ((StringUtils.isEmpty(value) || StringUtils.isBlank(value)) && !_permits_blank_values) {
                         throw new ImportException(String.format("Record %d contains a 'Source File Variable' that is blank.\nSaTScan does not permit blank variables in data.", _dataSource.getCurrentRecordNum()));
                     } else {
-                        if (StringUtils.contains(value, " ")) {
+                        if (value.contains(" ")) {
                             value = "\"" + value + "\"";
                         }
                         record.set(mappedVariables.get(i).getVariableIndex(), new String(value));
@@ -151,7 +151,7 @@ public class FileImporter {
                                 _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", colIdx + 1
                             ));
                         value = (String)values[colIdx];
-                        output.append(StringUtils.contains(value, " ") ? ("\"" + value + "\"") : value).append(" ");
+                        output.append(value.contains(" ") ? ("\"" + value + "\"") : value).append(" ");
                     }
                 }
                 buffer.write(output.toString());

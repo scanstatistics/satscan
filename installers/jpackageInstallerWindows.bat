@@ -7,7 +7,7 @@ REM   1) License isn't presented to user -- not sure what I'm doing wrong.
 REM   2) I need to test update process - installing over previous installation.
 REM   3) How to properly identify beta releases vs public releases?
 
-set javabin=c:\jdk\jdk-17.0.14+7\bin
+set javabin=c:\jdk\jdk-25.0.2+10\bin
 set version=10.3
 set srcdir=C:\Users\hostovic\projects\satscan.development\satscan
 set bundledir=C:\Users\hostovic\projects\satscan.development\jpackage
@@ -16,16 +16,14 @@ if exist %bundledir%\SaTScan rmdir %bundledir%\SaTScan /s /q
 if exist %bundledir%\bin rmdir %bundledir%\bin /s /q
 
 REM Build SaTScan app bundle
-%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar SaTScan.jar --icon %srcdir%\installers\resources\SaTScan.ico --app-version %version% --name SaTScan --dest %bundledir% --java-options "'-Djava.library.path=$APPDIR'"
+%javabin%\jpackage.exe  --verbose --type app-image --input %srcdir%\java_application\jni_application\dist --main-jar SaTScan.jar --icon %srcdir%\installers\resources\SaTScan.ico --app-version %version% --name SaTScan --dest %bundledir% --java-options "-Djava.library.path=$APPDIR --enable-native-access=ALL-UNNAMED"
 
 REM Add additional files to bundle - command-line executables, dlls, sample data, user guide, etc.
 xcopy /E /I /Y %srcdir%\installers\sample_data %bundledir%\SaTScan\sample_data
 xcopy /Y %srcdir%\installers\documents\SaTScan_Users_Guide.pdf %bundledir%\SaTScan
 xcopy /Y %srcdir%\installers\documents\eula.html %bundledir%\SaTScan
 xcopy /Y %srcdir%\installers\documents\eula\License.txt %bundledir%\SaTScan
-xcopy /Y %srcdir%\batch_application\Win32\Release\SaTScanBatch.exe %bundledir%\SaTScan
 xcopy /Y %srcdir%\batch_application\x64\Release\SaTScanBatch64.exe %bundledir%\SaTScan
-xcopy /Y %srcdir%\shared_library\Release\satscan32.dll %bundledir%\SaTScan\app
 xcopy /Y %srcdir%\shared_library\x64\Release\satscan64.dll %bundledir%\SaTScan\app
 
 REM Sign launcher exe but first toggle off read-only flag.

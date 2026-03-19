@@ -7,6 +7,7 @@ build="/prj/satscan/build.area"
 installer_version="/prj/satscan/installers/v.${version}.x"
 binaries="/prj/satscan/build.area/binaries/linux"
 
+# launch4j won't run properly with jdk versions > 15
 javajdk="/prj/satscan/installers/install.applications/java/jdk-15.0.2-linux_x64"
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.50"
 
@@ -24,7 +25,6 @@ read dummy
 
 # Build Windows command-line only archive. This is an alternative download option that is command-line only (no GUI/Java).
 rm -f $installer_version/satscan.${version}_windows.zip
-zip $installer_version/satscan.${version}_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
 zip $installer_version/satscan.${version}_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 cd $build/satscan/installers
 zip $installer_version/satscan.${version}_windows.zip -j documents/*
@@ -57,8 +57,6 @@ $build/satscan/installers/jpackageInstallerLinux.sh $version $installer_version
 # Windows update archive
 rm -f $installer_version/update_data_windows.zip
 
-zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/Win32/Release/SaTScanBatch.exe
-zip $installer_version/update_data_windows.zip -j $build/satscan/shared_library/Release/satscan32.dll
 zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
 zip $installer_version/update_data_windows.zip -j $build/satscan/shared_library/x64/Release/satscan64.dll
 zip $installer_version/update_data_windows.zip -j $build/satscan/installers/documents/*
@@ -68,7 +66,6 @@ cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers/java
 zip $installer_version/update_data_windows.zip -r jre_x64
-zip $installer_version/update_data_windows.zip -r jre_x86
 cd $build/satscan/installers
 zip $installer_version/update_data_windows.zip -r sample_data
 
