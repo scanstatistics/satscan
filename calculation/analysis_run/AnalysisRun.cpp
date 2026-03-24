@@ -4,6 +4,8 @@
 //***************************************************************************
 #if defined(__APPLE__)
 #include <sys/sysctl.h>
+#elif defined(__linux__)
+#include <sys/sysinfo.h>
 #endif
 
 #include "AnalysisRun.h"
