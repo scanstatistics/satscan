@@ -29,9 +29,9 @@ echo building SaTScan for x86_64 64-bit system
 echo building SaTScan for M1 system
 ./makescript.mac.sh $binaries/satscan_arm64 $satscan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch arm64" $osx_min_version $processors
 
-# Intel JNI libraries
-echo building SaTScan shared object for x86_64 64-bit system
-./makescript.so.mac.sh $binaries/libsatscan.jnilib $satscan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch x86_64" $osx_min_version $processors
+# M1 JNI libraries
+echo building SaTScan shared object for arm64 64-bit system
+./makescript.so.mac.sh $binaries/libsatscan.jnilib $satscan_src $boost_src -m64 -O3 $cpp_compiler $c_compiler "-arch arm64" $osx_min_version $processors
 
 # codesign binaries
 security unlock-keychain $HOME/Library/Keychains/login.keychain

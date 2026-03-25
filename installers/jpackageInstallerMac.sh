@@ -78,7 +78,8 @@ codesign -vvv --strict $BUNDLEDIR/imagesrc/SaTScan.jar
 # jna library started failing notorization, need to codesign manually
 mkdir $BUNDLEDIR/temp
 unzip $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar -d $BUNDLEDIR/temp
-codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin/libjnidispatch.jnilib
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-x86-64/libjnidispatch.jnilib
+codesign --options runtime --timestamp -f -v -s "${SIGN_KEY}" $BUNDLEDIR/temp/com/sun/jna/darwin-aarch64/libjnidispatch.jnilib
 rm $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar
 cd $BUNDLEDIR/temp
 zip -r -u $BUNDLEDIR/imagesrc/libs/jna-5.18.1.jar com META-INF
