@@ -78,7 +78,7 @@ void CPoissonModel::AdjustForCalculatedTrend(RealDataSet& Set) {
         vMeasure_PT_NC[i] += ppMeasure[i][j];
 
   // Calculate time trend for whole dataset -- either log linear or log quadratic.
-  std::auto_ptr<AbstractTimeTrend> TimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+  std::unique_ptr<AbstractTimeTrend> TimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
   TimeTrend->CalculateAndSet(Set.getCaseData_PT_NC(), &vMeasure_PT_NC[0], Set.getIntervalDimension(), gTimeTrendConvergence);
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.

@@ -566,14 +566,14 @@ void CSaTScanData::PostDataRead() {
 		if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION || 
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC ||
             gParameters.GetTimeTrendAdjustmentType() == CALCULATED_QUADRATIC)
-			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+			std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_PT_NC));
 		CalculateExpectedCases();
         if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)
-            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_NC));
 
         if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION && gParameters.GetProbabilityModelType() == BATCHED) {
-            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
-            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux));
+            std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux2));
             for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i) {
                 gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
                 gDataSets->GetDataSet(i).setBatchData_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
@@ -704,14 +704,14 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
             switch (gParameters.GetProbabilityModelType()) {
                 case BATCHED    : for (unsigned int i = 0; i < gDataSets->getDataSets().size(); ++i)
                                     gDataSets->GetDataSet(i).setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataSets->GetDataSet(i).getTotalMeasure()));
-                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
-                case NORMAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux2));
+                case NORMAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux));
                 case EXPONENTIAL:
                 case BERNOULLI  :
-                case POISSON    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
-                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+                case POISSON    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_PT));
+                                  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT)); break;
                 case CATEGORICAL:
-                case ORDINAL    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+                case ORDINAL    : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_PT_Cat)); break;
                 default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
             }
         }

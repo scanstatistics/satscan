@@ -34,7 +34,7 @@ void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
-void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
+void MostLikelyClustersContainer::Add(std::unique_ptr<CCluster>& pCluster) {
   if (pCluster.get() && pCluster->ClusterDefined() && pCluster->GetRatio() > 0) {
     gvTopClusterList.push_back(boost::shared_ptr<CCluster>(pCluster.release()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
@@ -80,7 +80,7 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
         ClusterList_t::const_iterator itrOther=other.gvTopClusterList.begin(), itrEndOther=other.gvTopClusterList.end();
         for (;itrOther != itrEndOther; ++itrOther) {
             // create bit set of cluster locations
-            std::auto_ptr<boost::dynamic_bitset<> > otherSet;
+            std::unique_ptr<boost::dynamic_bitset<> > otherSet;
             // iterate through this cluster collections to see if other cluster is duplicate of cluster already in set
             ClusterList_t::iterator itrThis=gvTopClusterList.begin(), itrThisEnd=gvTopClusterList.end();
             bool isDuplicate = false;
@@ -641,7 +641,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
             return bResult;
         };
         if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
-            std::auto_ptr<stsClusterCentroidGeometry> CandidateCenter;
+            std::unique_ptr<stsClusterCentroidGeometry> CandidateCenter;
             for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
                 CCluster const& currCluster = **itrCurr;
                 if (currCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
@@ -651,7 +651,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                 bResult = checkTemporalOverlap(currCluster, CandidateCluster);
             }
         } else { // standard geographical overlap checking
-            std::auto_ptr<stsClusterCentroidGeometry> currCenter, CandidateCenter;
+            std::unique_ptr<stsClusterCentroidGeometry> currCenter, CandidateCenter;
             if (!(DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())) {
                 // retrieve coordinates of candidate cluster
                 DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);

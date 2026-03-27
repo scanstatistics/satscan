@@ -251,7 +251,7 @@ const AbstractLoglikelihoodRatioUnifier & MultiSetCategoricalProspectiveSpatialD
     }
     dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
-    std::auto_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
+    std::unique_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
     for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
         prospectiveUnifier->Reset();
         for (i=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++i) {

@@ -266,7 +266,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisExecution& analysisExecution
     std::string buffer;
     const CParameters & params(analysisExecution.getParameters());
     dBaseFile logFile(gsFilename.c_str(),  true);
-    std::auto_ptr<dBaseRecord> pRecord(logFile.GetNewRecord());
+    std::unique_ptr<dBaseRecord> pRecord(logFile.GetNewRecord());
 
     //  run number field
     SetDoubleField(*pRecord, (double)(logFile.GetNumRecords() + 1), GetFieldNumber(gvFields, RUN_NUMBER_FIELD));

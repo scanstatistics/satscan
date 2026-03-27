@@ -643,7 +643,7 @@ void NormalCovariateSpatialData::InitializeData(const AbstractDataSetGateway& Da
      if (randomizer == 0)
         throw prg_error("Unable to cast pointer to AbstractWeightedNormalRandomizer object.","InitializeData(const AbstractDataSetGateway&)");
 
-     std::auto_ptr<ColumnVector> wg, deltag;
+     std::unique_ptr<ColumnVector> wg, deltag;
      randomizer->get_wg_deltag(wg, deltag);
      _deltag = deltag.release();
 
@@ -651,7 +651,7 @@ void NormalCovariateSpatialData::InitializeData(const AbstractDataSetGateway& Da
      for (int r=0; r < _w_div_delta->Nrows(); ++r)
         _w_div_delta->element(r) = wg->element(r)/_deltag->element(r);
 
-     std::auto_ptr<Matrix> xg;
+     std::unique_ptr<Matrix> xg;
      randomizer->get_xg(xg,false);
      _xg = xg.release();
      geEvaluationAssistDataStatus = Allocated;

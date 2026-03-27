@@ -122,7 +122,7 @@ void AbstractWeightedNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet
 }
 
 /** Sets Column vectors that are the weight and rate records as read from file. */
-void AbstractWeightedNormalRandomizer::get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const {
+void AbstractWeightedNormalRandomizer::get_wg_deltag(std::unique_ptr<ColumnVector>& wg, std::unique_ptr<ColumnVector>& deltag) const {
     // weighted normal model with covarites is only implemented for purely spatial analyese, so only using first container in collection.
     wg.reset(new ColumnVector(gvPermutedAttributeCollections.begin()->size()));
     deltag.reset(new ColumnVector(gvPermutedAttributeCollections.begin()->size()));
@@ -142,7 +142,7 @@ void AbstractWeightedNormalRandomizer::get_wg_deltag(std::auto_ptr<ColumnVector>
     column 4: second covariate
     etc. 
 */
-void AbstractWeightedNormalRandomizer::get_xg(std::auto_ptr<Matrix>& xg, bool bExcludeSelectColumn) const {
+void AbstractWeightedNormalRandomizer::get_xg(std::unique_ptr<Matrix>& xg, bool bExcludeSelectColumn) const {
     // weighted normal model with covarites is only implemented for purely spatial analyese, so only using first container in collection.
     size_t numFixed = (bExcludeSelectColumn ? 1 : 2);
     xg.reset(new Matrix(gvPermutedAttributeCollections.begin()->size(), numFixed + gvPermutedAttributeCollections.begin()->front().GetPermutedVariable().getAdditional()->size()));

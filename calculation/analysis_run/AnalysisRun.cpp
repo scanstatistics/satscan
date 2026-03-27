@@ -262,10 +262,10 @@ void AnalysisExecution::calculateMostLikelyClusters() {
         //display process heading
         printFindClusterHeading();
         //allocate date gateway object
-        std::auto_ptr<AbstractDataSetGateway> pDataSetGateway(_data_hub.GetDataSetHandler().GetNewDataGatewayObject());
+        std::unique_ptr<AbstractDataSetGateway> pDataSetGateway(_data_hub.GetDataSetHandler().GetNewDataGatewayObject());
         _data_hub.GetDataSetHandler().GetDataGateway(*pDataSetGateway);
         //get analysis object
-        std::auto_ptr<CAnalysis> pAnalysis(getNewAnalysisObject(_print_direction));
+        std::unique_ptr<CAnalysis> pAnalysis(getNewAnalysisObject(_print_direction));
         //allocate objects used in 'FindTopClusters()' process
         pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
         //calculate most likely clusters
@@ -524,9 +524,9 @@ void AnalysisExecution::executeCentricEvaluation() {
             //allocate an array to contain simulation llr values
             AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
             //data gateway object for real data
-            std::auto_ptr<AbstractDataSetGateway> DataSetGateway(DataHandler.GetNewDataGatewayObject());
-            std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
-            std::auto_ptr<AbstractDataSetWriter> DataSetWriter;
+            std::unique_ptr<AbstractDataSetGateway> DataSetGateway(DataHandler.GetNewDataGatewayObject());
+            std::unique_ptr<LoglikelihoodRatioWriter> RatioWriter;
+            std::unique_ptr<AbstractDataSetWriter> DataSetWriter;
             std::string simulation_out;
             DataHandler.GetRandomizerContainer(RandomizationContainer); //get data randomizers
             DataHandler.GetDataGateway(*DataSetGateway); //set data gateway object
@@ -661,7 +661,7 @@ void AnalysisExecution::executeCentricEvaluation() {
 void AnalysisExecution::executePowerEvaluations() {
     try {
         // If performing drilldown, store current simulation variables - since the power evaluation modifies that structure.
-        std::auto_ptr<SimulationVariables> storeSimVars;
+        std::unique_ptr<SimulationVariables> storeSimVars;
         if (_parameters.getPerformBernoulliDrilldown() || _parameters.getPerformStandardDrilldown())
             storeSimVars.reset(new SimulationVariables(_sim_vars));
         FILE * fpTextFile = _results_writer.getTextFile();
@@ -764,7 +764,7 @@ void AnalysisExecution::executePowerEvaluations() {
                 randomizers->at(0) = new AlternateHypothesisRandomizer(_data_hub, riskAdjustments.at(t), _parameters.GetRandomizationSeed());
                 break;
             case FILESOURCE: {
-                std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true), _parameters.GetRandomizationSeed()));
+                std::unique_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true), _parameters.GetRandomizationSeed()));
                 // set file line offset for the current iteration of power step
                 randomizer->setLineOffset(t * _parameters.getNumPowerEvalReplicaPowerStep());
                 randomizers->at(0) = randomizer.release();
@@ -1532,8 +1532,8 @@ void AnalysisExecution::reportClusters() {
 If user requested 'location information' output file(s), they are created
 simultaneously with reported clusters. */
 void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc) {
-    std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
-    std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
+    std::unique_ptr<LocationInformationWriter> ClusterLocationWriter;
+    std::unique_ptr<ClusterInformationWriter>  ClusterWriter;
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     _clusterSupplement.reset(new ClusterSupplementInfo());
 
@@ -1759,7 +1759,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         neighbors_file.open(createTempFilename(detectedCluster, supplementInfo, ".nei", buffer).c_str());
         if (!neighbors_file) throw resolvable_error("Error: Could not create neighbors file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetLocationNeighborsFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(LOCATION_NEIGHBORS_FILE), _print_direction)
         );
@@ -1784,7 +1784,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
         if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+		std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetCoordinatesFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(COORDFILE), _print_direction)
         );
@@ -1808,7 +1808,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         network_file.open(createTempFilename(detectedCluster, supplementInfo, ".ntk", buffer).c_str());
         if (!network_file) throw resolvable_error("Error: Could not create locations network file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.getLocationsNetworkFilename(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(NETWORK_FILE), _print_direction)
         );
@@ -1837,7 +1837,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         ml_file.open(createTempFilename(detectedCluster, supplementInfo, ".ml", buffer).c_str());
         if (!ml_file) throw resolvable_error("Error: Could not create multiple locations file '%s'.\n", buffer.c_str());
         _print_direction.SetImpliedInputFileType(BasePrint::MULTIPLE_LOCATIONS);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.getMultipleLocationsFile(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(MULTIPLE_LOCATIONS_FILE), _print_direction)
         );
@@ -1868,7 +1868,7 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
         grid_file.open(createTempFilename(detectedCluster, supplementInfo, ".grd", buffer).c_str());
         if (!grid_file) throw resolvable_error("Error: Could not create grid file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(GRIDFILE), _print_direction)
         );

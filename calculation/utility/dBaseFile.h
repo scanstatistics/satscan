@@ -105,7 +105,7 @@ class dBaseRecord {
 class dBaseFile {
   private:
     xbXBase                     gXBase;//must have one of these objects
-    std::auto_ptr<xbDbf>        gpDbf;//the DBF file
+    std::unique_ptr<xbDbf>        gpDbf;//the DBF file
     bool                        gbAppendMode;        
 
     void                        AssertNotXBaseError(xbShort code) const;

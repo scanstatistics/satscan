@@ -16,10 +16,10 @@ class ProspectiveSpatialData;
     include purely spatial clusters. */
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
     protected:
-        std::auto_ptr<CPurelySpatialCluster> _ps_cluster_compare;
-        std::auto_ptr<CPurelySpatialProspectiveCluster> _psp_cluster_compare;
-        std::auto_ptr<AbstractSpatialClusterData> _ps_cluster_data; // cluster data object utilized in calculated simulation ratio
-        std::auto_ptr<AbstractTemporalClusterData> _psp_cluster_data;
+        std::unique_ptr<CPurelySpatialCluster> _ps_cluster_compare;
+        std::unique_ptr<CPurelySpatialProspectiveCluster> _psp_cluster_compare;
+        std::unique_ptr<AbstractSpatialClusterData> _ps_cluster_data; // cluster data object utilized in calculated simulation ratio
+        std::unique_ptr<AbstractTemporalClusterData> _psp_cluster_data;
         CClusterSetCollections _ps_top_clusters;
         CClusterSetCollections _psp_top_clusters;
 

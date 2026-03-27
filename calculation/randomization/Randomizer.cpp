@@ -54,7 +54,7 @@ FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer& rhs)
 
 /** returns pointer to newly cloned FileSourceRandomizer */
 FileSourceRandomizer * FileSourceRandomizer::Clone() const {
-    //std::auto_ptr<FileSourceRandomizer> clone(new FileSourceRandomizer(gParameters, _source_filename, gRandomNumberGenerator.GetSeed()));
+    //std::unique_ptr<FileSourceRandomizer> clone(new FileSourceRandomizer(gParameters, _source_filename, gRandomNumberGenerator.GetSeed()));
     //clone->setLineOffset(_line_offset);
     return new FileSourceRandomizer(*this);
 }

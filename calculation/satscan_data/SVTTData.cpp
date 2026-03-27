@@ -126,8 +126,8 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                               unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_NC));
-    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fn(&DataSet::setCaseData_NC));
+    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fn(&DataSet::setCaseData_PT_NC));
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
        //calculate time trend for entire randomized data set
        SimDataContainer[t]->getTimeTrend().CalculateAndSet(SimDataContainer[t]->getCaseData_PT_NC(),
@@ -147,10 +147,10 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 void CSVTTData::PostDataRead() {
   try {
     CSaTScanData::PostDataRead();
-    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
-    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
-    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_NC));
-    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_PT_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_NC));
     for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
       //calculate time trend for dataset data set
       (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
@@ -196,10 +196,10 @@ void CSVTTData::PostDataRead() {
     location at tTractIndex in specified interval range. */
 void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
   CSaTScanData::RemoveClusterSignificance(Cluster);
-  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
-  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
-  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_NC));
-  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setCaseData_PT_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fn(&DataSet::setMeasureData_PT_NC));
   for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
      //calculate time trend for dataset data set
     (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),

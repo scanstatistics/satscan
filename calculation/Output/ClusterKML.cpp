@@ -433,7 +433,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
         // skip data sets which don't include line list individuals at descriptive coordinates
         if (!demographics.getDataSetDemographics(idx).hasIndividualGeographically()) continue;
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(parameters.GetCaseFileName(idx + 1), parameters.getTimestamp(), true),
             parameters.getInputSource(CASEFILE, idx + 1), _dataHub.GetPrintDirection()
         ));

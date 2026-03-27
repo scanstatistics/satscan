@@ -127,7 +127,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
         //calculate simulated ratios
         if (_parameters.GetNumReplicationsRequested()) {
             ptr_vector<AbstractDataSetGateway>::const_iterator itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
-            std::auto_ptr<AbstractTemporalClusterData> PTClusterData;
+            std::unique_ptr<AbstractTemporalClusterData> PTClusterData;
             PTClusterData.reset(_cluster_data_factory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
             _time_Intervals_s->resetIntervalRange();
             if (_replica_process_type == MeasureListEvaluation) {

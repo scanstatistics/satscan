@@ -172,7 +172,7 @@ public:
 /** Extends class CMinMeasureList to include risk level check. */
 class RiskMinMeasureList : public CMinMeasureList {
 protected:
-    std::auto_ptr<RiskCalculate> _risk_calc;
+    std::unique_ptr<RiskCalculate> _risk_calc;
     const double _risk_threshold;
 
 public:
@@ -188,7 +188,7 @@ public:
 /** Extends class CMaxMeasureList to include risk level check. */
 class RiskMaxMeasureList : public CMaxMeasureList {
 protected:
-    std::auto_ptr<RiskCalculate> _risk_calc;
+    std::unique_ptr<RiskCalculate> _risk_calc;
     const double _risk_threshold;
 
 public:
@@ -204,7 +204,7 @@ public:
 /** Redefines class methods to scan for area with both less than or greater than expected cases simultaneously - while including risk level check. */
 class RiskMinMaxMeasureList : public CMinMaxMeasureList {
 protected:
-    std::auto_ptr<RiskCalculate> _risk_calc;
+    std::unique_ptr<RiskCalculate> _risk_calc;
     const double _low_risk_threshold;
     const double _high_risk_threshold;
 

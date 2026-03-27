@@ -83,7 +83,7 @@ class AsciiFileDataSource : public DataSource {
          bool                        SetString(std::string& sParseLine);
      };
 
-     std::auto_ptr<StringParser>        gStringParser;
+     std::unique_ptr<StringParser>        gStringParser;
      long                               glReadCount;
      long                               glBlankReadCount;
      std::ifstream                      gSourceFile;
@@ -112,7 +112,7 @@ class AsciiFileDataSource : public DataSource {
 /** dBase file data source. */
 class dBaseFileDataSource : public DataSource {
    private:
-     std::auto_ptr<dBaseFile>           gSourceFile;
+     std::unique_ptr<dBaseFile>           gSourceFile;
      std::string                        gsValue;
      unsigned long                      glNumRecords;
      unsigned long                      glCurrentRecord;
@@ -164,8 +164,8 @@ class CsvFileDataSource : public DataSource {
 /** dBase file data source. */
 class ShapeFileDataSource : public DataSource {
     private:
-        std::auto_ptr<dBaseFile>           _dbase_file;
-        std::auto_ptr<ShapeFile>           _shape_file;
+        std::unique_ptr<dBaseFile>           _dbase_file;
+        std::unique_ptr<ShapeFile>           _shape_file;
         std::string                        _read_buffer;
         unsigned long                      _num_records;
         unsigned long                      _current_record;

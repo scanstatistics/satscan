@@ -15,13 +15,13 @@ WeightedNormalCovariatesLikelihoodCalculator::WeightedNormalCovariatesLikelihood
      for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
        if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(t))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "constructor()");
-       std::auto_ptr<ColumnVector> wg, deltag;
+       std::unique_ptr<ColumnVector> wg, deltag;
        pRandomizer->get_wg_deltag(wg, deltag);
        _wg.push_back(wg.release());
        _deltag.push_back(deltag.release());
 
        // calculate maximizing value for entire dataset
-       std::auto_ptr<Matrix> xg;
+       std::unique_ptr<Matrix> xg;
        pRandomizer->get_xg(xg,true);
        Matrix tobeinversed(*xg);
        for (int r=0; r < tobeinversed.Nrows(); ++r)

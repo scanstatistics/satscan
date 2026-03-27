@@ -13,20 +13,20 @@
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
                                      break;
     case SEASONALTEMPORAL          :
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
                                      if (gParameters.GetIncludePurelyTemporalClusters())
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
                                      break;
-    case SPATIALVARTEMPTREND       : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_NC));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT_NC));
+    case SPATIALVARTEMPTREND       : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_NC));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT_NC));
                                      break;
     default : throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
@@ -380,7 +380,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
         gParameters.getInputSource(POPFILE, DataSet.getSetIndex()), gPrint)
     );

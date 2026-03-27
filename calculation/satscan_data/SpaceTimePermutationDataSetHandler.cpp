@@ -29,7 +29,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulatio
         throw prg_error("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
     case SPACETIME :
     case PROSPECTIVESPACETIME :
-        std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+        std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
         break;
     case SPATIALVARTEMPTREND :
         throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");

@@ -61,7 +61,7 @@ private://data members
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
   const char                              * gszReplicationFormatString;
-  std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
+  std::unique_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   AnalysisExecution                       & grExecution;
   bool                                      _frequent_estimations;
 

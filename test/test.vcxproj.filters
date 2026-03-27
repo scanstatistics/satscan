@@ -1364,5 +1364,8 @@
     <ClCompile Include="unittest_BatchedLikelihoodCalculation.cpp">
       <Filter>Source Files\unit_tests\loglikelihood</Filter>
     </ClCompile>
+    <ClCompile Include="..\calculation\Output\AnalysisResultsWriter.cpp">
+      <Filter>Source Files\source\calculation\Output</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

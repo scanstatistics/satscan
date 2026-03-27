@@ -52,9 +52,9 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    std::auto_ptr<DataSetHandler>               gDataSets;
+    std::unique_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
-    std::auto_ptr<GInfo>                        gCentroidsHandler;
+    std::unique_ptr<GInfo>                        gCentroidsHandler;
 	boost::shared_ptr<IdentifiersManager>       _identifiers_manager;	
 	Network                                     _locations_network;
     tract_t                                  ** gppActiveNeighborArray;
@@ -204,12 +204,12 @@ class CSaTScanData {
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
     bool                                        isSortArrayAllocoated() const {return gpSortedIntHandler != 0 || gpSortedUShortHandler != 0;}
 
-    inline void                                 addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo);
+    inline void                                 addStore(std::unique_ptr<CentroidNeighbors>& NeighborInfo);
 
     //virtual void                                setLocationNotEvaluated(tract_t tTractIndex);
 };
 
-inline void CSaTScanData::addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo) {
+inline void CSaTScanData::addStore(std::unique_ptr<CentroidNeighbors>& NeighborInfo) {
     tract_t tCentroidIndex = NeighborInfo->GetCentroidIndex();
     if (gvCentroidNeighborStore.size() < (size_t)tCentroidIndex + 1)
         gvCentroidNeighborStore.resize(tCentroidIndex + 1, 0);

@@ -109,7 +109,7 @@ class CClusterSet;
 /** cluster class for spatial variation and temporal trends analysis */
 class CSVTTCluster : public CCluster  {
   public:
-    std::auto_ptr<AbtractSVTTClusterData> gClusterData;
+    std::unique_ptr<AbtractSVTTClusterData> gClusterData;
 
   public:
     CSVTTCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);

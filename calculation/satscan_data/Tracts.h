@@ -224,7 +224,7 @@ class IdentifiersManager {
 		size_t                              _num_location_coordinates;
 		MetaIdentifierManager               _meta_identifiers_manager;
 		MetaNeighborManager                 _meta_neighbor_manager;
-		std::auto_ptr<MetaManagerProxy>     _meta_manager_proxy;
+		std::unique_ptr<MetaManagerProxy>     _meta_manager_proxy;
 		LocationOverrides_t                 _location_distance_overrides;
 
 	public:

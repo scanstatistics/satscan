@@ -100,6 +100,7 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Debug\xbase32.lib;$(SolutionDir)newmat\Win32\Debug\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Debug\shapelib32.lib;$(SolutionDir)zlib\zlib-1.3.1\Win32\Debug\zlib32.lib</AdditionalDependencies>
@@ -130,6 +131,7 @@
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Debug\xbase64.lib;$(SolutionDir)newmat\x64\Debug\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Debug\shapelib64.lib;$(SolutionDir)zlib\zlib-1.3.1\x64\Debug\zlib64.lib</AdditionalDependencies>
@@ -158,6 +160,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\Win32\Release\xbase32.lib;$(SolutionDir)newmat\Win32\Release\newmat32.lib;$(SolutionDir)shapelib\shapelib_1.2.10\Win32\Release\shapelib32.lib;$(SolutionDir)zlib\zlib-1.3.1\win32\Release\zlib32.lib</AdditionalDependencies>
@@ -190,6 +193,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>shell32.lib;$(SolutionDir)xbase\xbase_2.0.0\xbase\x64\Release\xbase64.lib;$(SolutionDir)newmat\x64\Release\newmat64.lib;$(SolutionDir)shapelib\shapelib_1.2.10\x64\Release\shapelib64.lib;$(SolutionDir)zlib\zlib-1.3.1\x64\Release\zlib64.lib</AdditionalDependencies>

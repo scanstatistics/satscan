@@ -177,7 +177,7 @@ class MostLikelyClustersContainer {
     MostLikelyClustersContainer(double maximum_window_size);
 
     void                        Add(const CCluster& Cluster);
-    void                        Add(std::auto_ptr<CCluster>& pCluster);
+    void                        Add(std::unique_ptr<CCluster>& pCluster);
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
     void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, const SimulationVariables& simVars, bool markAsGini);
     void                        Empty();

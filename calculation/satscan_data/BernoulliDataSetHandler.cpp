@@ -11,16 +11,16 @@
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
                                      break;
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL :
-    case SEASONALTEMPORAL          : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+    case SEASONALTEMPORAL          : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
                                      if (gParameters.GetIncludePurelyTemporalClusters())
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
                                      break;
     case SPATIALVARTEMPTREND       :
        throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -154,7 +154,7 @@ void BernoulliDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Si
 /** Attempts to read control file data into RealDataSet object. Returns enumeration indication of read success. */
 DataSetHandler::CountFileReadStatus BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
     try {
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(gParameters.GetControlFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
             gParameters.getInputSource(CONTROLFILE, DataSet.getSetIndex()
         ), gPrint));

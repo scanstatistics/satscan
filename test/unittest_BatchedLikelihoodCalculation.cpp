@@ -25,7 +25,7 @@ struct batched_loglikelihood_fixture : prm_testset_fixture {
         _data_hub->ReadDataFromFiles();
     }
 
-    std::auto_ptr<CSaTScanData> _data_hub;
+    std::unique_ptr<CSaTScanData> _data_hub;
 };
 
 size_t getBatchIndex(CSaTScanData * hub, BatchedRandomizer* randomizer, const std::string& id, const std::string& date) {

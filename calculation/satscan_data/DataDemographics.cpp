@@ -220,7 +220,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
         std::string buffer;
         /* Open case file data source - input source should now have ncessary line-list mappings since they were assigned during initial case file read. */
         _handler.gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_handler.gParameters.GetCaseFileName(DataSet.getSetIndex()), _handler.gParameters.getTimestamp(), true),
             _handler.gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), _handler.gPrint)
         );

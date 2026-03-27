@@ -16,8 +16,8 @@ class HomogeneousPoissonRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
     const CParameters                   & gParameters;
     const ObserverableRegionContainer_t & gPolygons;
-    std::auto_ptr<GInfo>                  gCentroidsHandler;
-    std::auto_ptr<IdentifiersManager> _identifiers;
+    std::unique_ptr<GInfo>                  gCentroidsHandler;
+    std::unique_ptr<IdentifiersManager> _identifiers;
 
   public:
     HomogeneousPoissonRandomizer(const CParameters& Parameters, const ObserverableRegionContainer_t& Regions, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);

@@ -89,7 +89,7 @@ AreaRateType CCluster::getAreaRateForCluster(const CSaTScanData& DataHub) const 
         // When we do the adjustments with multiple data sets, some data sets in a cluster could have O/E>1
         // and other data sets O/E<1. The cluster is still either high or low but we need to determine 
         // whether the intermediate ratio is positive (high) or negative (low) in the unifier object.
-        std::auto_ptr<AbstractLikelihoodCalculator> Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
+        std::unique_ptr<AbstractLikelihoodCalculator> Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
         GetClusterData()->getRatioUnified(*Calculator);
         const AdjustmentUnifier * pUnifier = 0;
         if ((pUnifier = dynamic_cast<const AdjustmentUnifier*>(&Calculator->GetUnifier())) == 0)

@@ -107,13 +107,13 @@ class AnalysisExecution {
 		AnalysisEmailHelper                 _email_helper;
         ClusterRankHelper                   _clusterRanker;
         SimulationVariables                 _sim_vars;
-        std::auto_ptr<LocationRelevance>    _relevance_tracker;
-        std::auto_ptr<ClusterKML>           _cluster_kml;
-        std::auto_ptr<CartesianGraph>       _cluster_graph;
-        std::auto_ptr<ClusterMap>           _cluster_map;
+        std::unique_ptr<LocationRelevance>    _relevance_tracker;
+        std::unique_ptr<ClusterKML>           _cluster_kml;
+        std::unique_ptr<CartesianGraph>       _cluster_graph;
+        std::unique_ptr<ClusterMap>           _cluster_map;
         std::unique_ptr<TemporalChartGenerator> _temporal_graph;
-        std::auto_ptr<SignificantRatios>    _significant_ratios;
-        std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
+        std::unique_ptr<SignificantRatios>    _significant_ratios;
+        std::unique_ptr<ClusterSupplementInfo> _clusterSupplement;
         boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
 
 		AnalysisResultsWriter               _results_writer;
@@ -179,7 +179,7 @@ class AbstractAnalysisDrilldown {
         BasePrint                         & _print_direction;
         time_t                              _start_time;
         ExecutionType                       _executing_type;
-        std::auto_ptr<CSaTScanData>         _data_hub;
+        std::unique_ptr<CSaTScanData>         _data_hub;
         unsigned int                        _downlevel;
         std::vector<std::string>            _temp_files;
         const std::string                 & _base_output;
@@ -245,7 +245,7 @@ class AnalysisRunner {
   protected:
     const CParameters                 & _parameters;
     BasePrint                         & _print_direction;
-    std::auto_ptr<CSaTScanData>         _data_hub;
+    std::unique_ptr<CSaTScanData>         _data_hub;
     time_t                              _start_time;
     ExecutionType                       _executing_type;
     mutable unsigned int                _drilldowns; // number of drilldowns, acting as a unique run id

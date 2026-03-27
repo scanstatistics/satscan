@@ -103,7 +103,7 @@ bool MetaIdentifierManager::MetaIdentifierPool::addMetaIdentifier(const std::str
   assert(_addition_status == Accepting);
 
   if (sMetaIdentifier.size() == 0) return false;
-  std::auto_ptr<MetaIdentifier> pMetaIdentifier(new MetaIdentifier(sMetaIdentifier.c_str()));
+  std::unique_ptr<MetaIdentifier> pMetaIdentifier(new MetaIdentifier(sMetaIdentifier.c_str()));
   tract_t tIndex;
   if ((tIndex = getAtomicidentifierIndex(sMetaIdentifier)) != -1) {
     AtomicMetaIdentifier * object = _atomic_identifiers[tIndex];
@@ -124,7 +124,7 @@ bool MetaIdentifierManager::MetaIdentifierPool::addMetaIdentifier(const std::str
          pMetaIdentifier->addMetaIdentifier(_meta_identifiers[tIndex]);
      else {
        //assume for now that token is referencing an atomic identifier
-       std::auto_ptr<AtomicMetaIdentifier> atomic(new AtomicMetaIdentifier(token.c_str()));
+       std::unique_ptr<AtomicMetaIdentifier> atomic(new AtomicMetaIdentifier(token.c_str()));
        AtomicIdentifiersContainer_t::iterator itr=std::lower_bound(_atomic_identifiers.begin(), _atomic_identifiers.end(), atomic.get(), compareIdentifiers());
        if (itr == _atomic_identifiers.end() || strcmp((*itr)->getIndentifier(), token.c_str()))
          itr = _atomic_identifiers.insert(itr, atomic.release());
@@ -162,7 +162,7 @@ void MetaIdentifierManager::MetaIdentifierPool::assignAtomicIndexes(IdentifiersM
 
 /** Returns index of identifier in internal collection atomic identifiers. Returns negative one if not found. */
 tract_t MetaIdentifierManager::MetaIdentifierPool::getAtomicidentifierIndex(const std::string& sIdentifier) const {
-  std::auto_ptr<AtomicMetaIdentifier> search(new AtomicMetaIdentifier(sIdentifier.c_str()));
+  std::unique_ptr<AtomicMetaIdentifier> search(new AtomicMetaIdentifier(sIdentifier.c_str()));
   AtomicIdentifiersContainer_t::const_iterator itr=std::lower_bound(_atomic_identifiers.begin(), _atomic_identifiers.end(), search.get(), compareIdentifiers());
   if (itr != _atomic_identifiers.end() && !strcmp((*itr)->getIndentifier(), sIdentifier.c_str()))
     return std::distance(_atomic_identifiers.begin(), itr);
@@ -172,7 +172,7 @@ tract_t MetaIdentifierManager::MetaIdentifierPool::getAtomicidentifierIndex(cons
 
 /** Returns index of identifier in internal collection meta identifiers. Returns negative one if not found. */
 tract_t MetaIdentifierManager::MetaIdentifierPool::getMetaIndex(const std::string& sMetaIdentifier) const {
-  std::auto_ptr<MetaIdentifier> search(new MetaIdentifier(sMetaIdentifier.c_str()));
+  std::unique_ptr<MetaIdentifier> search(new MetaIdentifier(sMetaIdentifier.c_str()));
   MetaIdentifierContainer_t::const_iterator itr=std::lower_bound(_meta_identifiers.begin(), _meta_identifiers.end(), search.get(), compareIdentifiers());
   if (itr != _meta_identifiers.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
     return std::distance(_meta_identifiers.begin(), itr);
@@ -231,7 +231,7 @@ std::vector<tract_t> & MetaIdentifierManager::getAtomicIndexes(unsigned int meta
 
 /** Returns index of identifier in internal collection meta identifiers. Returns negative one if not found. */
 tract_t MetaIdentifierManager::getMetaIndex(const std::string& sMetaIdentifier) const {
-  std::auto_ptr<MetaIdentifier> search(new MetaIdentifier(sMetaIdentifier.c_str()));
+  std::unique_ptr<MetaIdentifier> search(new MetaIdentifier(sMetaIdentifier.c_str()));
   MetaIdentifierRefContainer_t::const_iterator itr=std::lower_bound(_meta_identifiers.begin(), _meta_identifiers.begin() + _referenced_meta_identifiers, search.get(), compareIdentifiers());
   if (itr != _meta_identifiers.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
     return std::distance(_meta_identifiers.begin(), itr);

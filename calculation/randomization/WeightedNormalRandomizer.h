@@ -148,8 +148,8 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
     virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
     virtual void               AddCase(count_t tCount, Julian date, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
-    void                       get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const;
-    void                       get_xg(std::auto_ptr<Matrix>& xp, bool bExcludeSelectColumn=false) const;
+    void                       get_wg_deltag(std::unique_ptr<ColumnVector>& wg, std::unique_ptr<ColumnVector>& deltag) const;
+    void                       get_xg(std::unique_ptr<Matrix>& xp, bool bExcludeSelectColumn=false) const;
     ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
     ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
     bool                       getHasCovariates() const;

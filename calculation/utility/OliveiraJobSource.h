@@ -60,7 +60,7 @@ private://data members
   overflow_jobs_container_type              gmapOverflowResults;//contains unprocesed results for jobs, sorted by jobid.
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
-  std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
+  std::unique_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   AnalysisExecution                       & grExecution;
   boost::posix_time::ptime StartTime;
   bool _frequent_estimations;

@@ -12,7 +12,7 @@ struct poisson_loglikelihood_fixture : new_mexico_fixture {
     }
     virtual ~poisson_loglikelihood_fixture() { }
 
-    std::auto_ptr<CSaTScanData> _data_hub;
+    std::unique_ptr<CSaTScanData> _data_hub;
 };
 
 /* Test Suite for the Poisson loglikelihood calculation. */

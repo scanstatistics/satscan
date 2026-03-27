@@ -13,21 +13,21 @@
     of simulated data. */
 SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux));
                                      break;
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL :
     case SEASONALTEMPORAL          :
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux));
                                      if (gParameters.GetIncludePurelyTemporalClusters()) {
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux));
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
@@ -317,7 +317,7 @@ bool NormalDataSetHandler::setIsWeighted() {
   try {
     for (size_t t=0; t < GetNumDataSets(); ++t) {
         const RealDataSet& DataSet = GetDataSet(t);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint));
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint));
         if (Source->ReadRecord()) {
             setColumns.at(t) = Source->GetNumValues();
         }
@@ -487,8 +487,8 @@ void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
 
 /** sets purely temporal structures used in simulations */
 void NormalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux));
 }
 
 /** Allocates randomizers for each dataset. There are currently 3 randomization types
