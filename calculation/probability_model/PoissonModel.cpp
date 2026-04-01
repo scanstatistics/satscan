@@ -183,9 +183,9 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
 }
 
 /** Calculates the measure from data set's population data and applies any adjustments. */
-boost::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData) {
+std::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData) {
     try {
-        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
+        std::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = Calcm(Set, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
         CalcMeasure(Set, *pPopMeasure, gDataHub.CSaTScanData::GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate(), pAltPopulationData);
         measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
         for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
@@ -206,7 +206,7 @@ boost::shared_ptr<TwoDimMeasureArray_t> CPoissonModel::calculateMeasure(RealData
 /** Calculates the expected number of cases for dataset. */
 void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataHub) {
     try {
-        boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = calculateMeasure(Set);
+        std::shared_ptr<TwoDimMeasureArray_t> pPopMeasure = calculateMeasure(Set);
         // apply any adjustments -- other than the weekly adjustment
         AdjustMeasure(Set, *pPopMeasure);
 
@@ -219,7 +219,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
             //TwoDimMeasureArray_t dailyMeasure(Set.getMeasureData());
 
             // Define a new PopulationData that will be grouped day of week covariate.
-            boost::shared_ptr<PopulationData> populationData(new PopulationData());
+            std::shared_ptr<PopulationData> populationData(new PopulationData());
             populationData->SetNumTracts(gDataHub.GetNumIdentifiers());
             // The weekly adjustment will have the population defined on every day in the study period.
             // Since this adjustment requires the time aggregation to be set to 1 day, just iterate through defined time interval dates.
@@ -264,7 +264,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataH
                 }
             }
             // now re-calculate the measure with alternative population data.
-            boost::shared_ptr<TwoDimMeasureArray_t> popMeasure = calculateMeasure(Set, populationData.get());
+            std::shared_ptr<TwoDimMeasureArray_t> popMeasure = calculateMeasure(Set, populationData.get());
             if (cachePopulationMeasureData) {
                 Set.setPopulationMeasureData(*popMeasure, &populationData);
                 Set.setMeasureData_Aux(Set.getMeasureData());

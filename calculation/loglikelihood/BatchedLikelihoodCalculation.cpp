@@ -69,7 +69,7 @@ BatchedLikelihoodCalculator::BatchedLikelihoodCalculator(const CSaTScanData& Dat
 
 /** Associates collection of data set randomizers with this log-likelihood object. 
     The simulations alter which batches are positive so we need to access data through the randomizer objects. */
-void BatchedLikelihoodCalculator::associateRandomizers(boost::shared_ptr<RandomizerContainer_t> rc) { 
+void BatchedLikelihoodCalculator::associateRandomizers(std::shared_ptr<RandomizerContainer_t> rc) { 
     _randomizer_container = rc;
 }
 
@@ -358,7 +358,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
     if (windowRange == *endRange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
         probabilities.push_back(cachedProbability->second);
     } else {
-        probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
+        probabilities.push_back(std::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
         // Calculate the values for the inside probability in the current adjustment range.
         C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
         N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
@@ -412,7 +412,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindow(
                 probabilities.push_back(cachedProbability->second);
             } else {
                 pos = std::distance(adjustment_ranges.rbegin(), irange);
-                probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(adjustment_ranges.size() - pos - 1)));
+                probabilities.push_back(std::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(adjustment_ranges.size() - pos - 1)));
                 // Calculate the values for the inside probability in the current adjustment range.
                 C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
                 N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
@@ -481,7 +481,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
     if (windowRange == *endRange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
         probabilities.push_back(cachedProbability->second);
     } else {
-        probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
+        probabilities.push_back(std::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(std::distance(adjustment_ranges.begin(), endRange))));
         // Calculate the values for the inside probability in the current adjustment range.
         C = Data.gpCases[windowRange.first] - Data.gpCases[windowRange.second + 1]; // number of positive batches
         N = Data.gpMeasure[windowRange.first] - Data.gpMeasure[windowRange.second + 1]; // number of batches
@@ -533,7 +533,7 @@ void BatchedLikelihoodCalculator::CalculateProbabilitiesForWindowForSimulation(
             if (windowRange == *irange && (cachedProbability = probabilitiesCache.find(windowRange)) != probabilitiesCache.end()) {
                 probabilities.push_back(cachedProbability->second);
             } else {
-                probabilities.push_back(boost::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(
+                probabilities.push_back(std::shared_ptr<ProbabilitiesRange>(new ProbabilitiesRange(
                     adjustment_ranges.size() - std::distance(adjustment_ranges.rbegin(), irange) - 1
                 )));
                 // Calculate the values for the inside probability in the current adjustment range.

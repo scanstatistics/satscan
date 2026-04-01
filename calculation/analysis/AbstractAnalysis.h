@@ -20,8 +20,8 @@ class AbstractAnalysis {
         const CParameters & _parameters;
         const CSaTScanData & _data_hub;
         BasePrint & _print;
-        boost::shared_ptr<AbstractClusterDataFactory> _cluster_data_factory;
-        boost::shared_ptr<AbstractLikelihoodCalculator> _likelihood_calculator;
+        std::shared_ptr<AbstractClusterDataFactory> _cluster_data_factory;
+        std::shared_ptr<AbstractLikelihoodCalculator> _likelihood_calculator;
         ReplicationsProcessType _replica_process_type;
 
         CMeasureList   * GetNewMeasureListObject() const;

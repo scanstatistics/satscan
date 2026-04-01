@@ -12,6 +12,8 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <random>
+#include <algorithm>
 #include "SimulationVariables.h"
 #include <boost/archive/iterators/base64_from_binary.hpp>
 #include <boost/archive/iterators/insert_linebreaks.hpp>
@@ -497,15 +499,34 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
 
 /* Returns user temporary directory. */
 std::string & GetUserTemporaryDirectory(std::string& s) {
-    s = boost::filesystem::temp_directory_path().string();
+    s = std::filesystem::temp_directory_path().string();
     return s;
+}
+
+std::string generate_unique_filename(const std::string& prefix = "tf_", const std::string& ext = ".tmp") {
+    // 1. Define the character set (same as Boost's default)
+    const std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    // 2. Setup the Engine (Static so it's only seeded once)
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+
+    // 3. Setup the Distribution (0 to 35 for our 36 characters)
+    std::uniform_int_distribution<> dis(0, chars.size() - 1);
+
+    // 4. Generate a random suffix (e.g., 8 characters)
+    std::string suffix;
+    for (int i = 0; i < 8; ++i) {
+        suffix += chars[dis(gen)];
+    }
+    return prefix + suffix + ext;
 }
 
 /* Returns a unique filename in user temporary directory. */
 std::string & GetUserTemporaryFilename(std::string& s) {
     GetUserTemporaryDirectory(s);
-    s += boost::filesystem::path::separator;
-    s += boost::filesystem::unique_path().string();
+    s += std::filesystem::path::preferred_separator;
+    s += generate_unique_filename();
     return s;
 }
 
@@ -723,11 +744,11 @@ bool sendMail(const std::string& from, const std::vector<std::string>& to, const
     upload << "--MULTIPART-ALTERNATIVE-BOUNDARY--" << std::endl << std::endl;
     // lambda functions which add files to upload file.
     auto add_file = [&upload](const std::string& contenttype, const std::string& filepath) {
-        boost::filesystem::path p(filepath);
+        std::filesystem::path p(filepath);
         upload << "--MULTIPART-MIXED-BOUNDARY" << std::endl;
         upload << "Content-Type: " << contenttype << "; name=\"" << p.filename().string() << "\"" << std::endl;
         upload << "Content-Description: " << p.filename().string() << std::endl;
-        upload << "Content-Disposition: attachment; filename=\"" << p.filename().string() << "\";" << " size=" << boost::filesystem::file_size(p) << std::endl;
+        upload << "Content-Disposition: attachment; filename=\"" << p.filename().string() << "\";" << " size=" << std::filesystem::file_size(p) << std::endl;
         upload << "Content-Transfer-Encoding: base64" << std::endl << std::endl;
         std::stringstream source, base64;
         std::ifstream file(filepath, std::ios::binary);
@@ -735,7 +756,7 @@ bool sendMail(const std::string& from, const std::vector<std::string>& to, const
         upload << base64Encode(source, base64).str() << std::endl << std::endl;
     };
     auto add_content = [&upload](const std::string& contenttype, const std::string& filepath) {
-        boost::filesystem::path p(filepath);
+        std::filesystem::path p(filepath);
         upload << "--MULTIPART-MIXED-BOUNDARY" << std::endl;
         upload << "Content-Type: " << contenttype << "; name=\"" << p.filename().string() << "\"" << std::endl;
         upload << "Content-Disposition: inline" << std::endl << "Content-Id: <" << p.filename().string() << ">" << std::endl;
@@ -786,14 +807,14 @@ bool validEmailAdrress(const std::string& emailaddress) {
 }
 
 /* Returns new Bloom Filter object. */
-boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count) {
+std::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count) {
     bloom_parameters parameters;
     parameters.projected_element_count = element_count + 1000; // How many elements roughly do we expect to insert?
     parameters.false_positive_probability = 0.000001; // Maximum tolerable false positive probability? (0,1) -- 1 in 1000000
     parameters.random_seed = 0xA5A5A5A5;
     if (!parameters) throw prg_error("Error - Invalid set of bloom filter parameters!", "DemographicAttributeSet()");
     parameters.compute_optimal_parameters();
-    return boost::shared_ptr<bloom_filter>(new bloom_filter(parameters));
+    return std::shared_ptr<bloom_filter>(new bloom_filter(parameters));
 }
 
 /** Replaces 'replaceStub' text in passed stringstream 'templateText' with text of 'replaceWith'. */

@@ -95,7 +95,7 @@ std::vector<double>& Coordinates::retrieve(std::vector<double>& Repository) cons
 //////////////// LocationsManager class ///////////////////////////////
 
 LocationsManager::AddStatus LocationsManager::addLocation(const std::string& locationame) {
-    boost::shared_ptr<Location> location(new Location(locationame));
+    std::shared_ptr<Location> location(new Location(locationame));
     auto itr = std::lower_bound(_locations.begin(), _locations.end(), location, CompareLocationByName());
     if (itr != _locations.end() && itr->get()->name() == locationame)
         return LocationsManager::NameExists;
@@ -108,7 +108,7 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& loc
 LocationsManager::AddStatus LocationsManager::addLocation(const std::string& name, const std::vector<double>& coordinates) {
     // Verify that coordinate dimensions match expected.
     if (coordinates.size() != _expected_dimensions) return LocationsManager::WrongDimensions;
-    boost::shared_ptr<Location> location(new Location(name, coordinates, _locations.size()));
+    std::shared_ptr<Location> location(new Location(name, coordinates, _locations.size()));
     // Check whether this location already exists by name.
     auto itrByName = std::lower_bound(_locations.begin(), _locations.end(), location, CompareLocationByName());
     if (itrByName != _locations.end() && itrByName->get()->name() == name)
@@ -134,25 +134,25 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& nam
 }
 
 /* Returns the location object with specified coordinates. */
-boost::optional<boost::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
-    boost::shared_ptr<Location> location(new Location("", coordinates, 0));
+boost::optional<std::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
+    std::shared_ptr<Location> location(new Location("", coordinates, 0));
     auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
     if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates)
-        return boost::optional<boost::shared_ptr<Location> >(*itrByCoordinates);
-    return boost::optional<boost::shared_ptr<Location> >(boost::none);
+        return boost::optional<std::shared_ptr<Location> >(*itrByCoordinates);
+    return boost::optional<std::shared_ptr<Location> >(boost::none);
 }
 
 /** Returns indication of whether coordinates are currently defined. */
 bool LocationsManager::getCoordinatesExist(const std::vector<double>& coordinates) const {
     return getLocationForCoordinates(coordinates) != boost::none;
 
-    //boost::shared_ptr<Location> location(new Location("", coordinates));
+    //std::shared_ptr<Location> location(new Location("", coordinates));
     //auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
     //return (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates);
 }
 
 LocationsManager::LocationIdx_t LocationsManager::getLocation(const std::string& locationame) const {
-    auto itr = std::lower_bound(_locations.begin(), _locations.end(), boost::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
+    auto itr = std::lower_bound(_locations.begin(), _locations.end(), std::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
     boost::optional<unsigned int> idx(boost::none);
     if (itr != _locations.end() && itr->get()->name() == locationame)
         return LocationIdx_t(boost::optional<unsigned int>(static_cast<unsigned int>(std::distance(_locations.begin(), itr))), itr->get());
@@ -175,7 +175,7 @@ IdentifiersManager::IdentifiersManager(bool aggregating, MultipleCoordinatesType
     _aggregating_identifiers(aggregating), _multiple_coordinates_type(multiple_coordinates_type), _locations_manager(0), _write_status(Accepting), _num_location_coordinates(0) {
     if (_aggregating_identifiers) {
         _locations_manager.addLocation("All");
-        _identifiers.push_back(boost::shared_ptr<Identifier>(new Identifier("All", *_locations_manager.locations().front())));
+        _identifiers.push_back(std::shared_ptr<Identifier>(new Identifier("All", *_locations_manager.locations().front())));
     }
     _meta_manager_proxy.reset(new MetaManagerProxy(_meta_identifiers_manager, _meta_neighbor_manager));
 }
@@ -239,7 +239,7 @@ IdentifiersManager::AddStatus IdentifiersManager::addIdentifier(const std::strin
     if (_aggregating_identifiers) return IdentifiersManager::Accepted;
     LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationame);
     if (location.first == boost::none) return IdentifiersManager::UnknownLocation;
-    boost::shared_ptr<Identifier> identifierObj(new Identifier(identifierName, *location.second));
+    std::shared_ptr<Identifier> identifierObj(new Identifier(identifierName, *location.second));
     auto itr = std::lower_bound(_identifiers.begin(), _identifiers.end(), identifierObj, CompareIdenitifers());
     if (itr != _identifiers.end() && identifierName == itr->get()->name()) {
         if (_multiple_coordinates_type == ONEPERLOCATION && itr->get()->getLocations().size())
@@ -265,7 +265,7 @@ boost::optional<size_t> IdentifiersManager::getIdentifierIndex(const std::string
 
     auto itr = std::lower_bound(
         _identifiers.begin(), _identifiers.end(),
-        boost::shared_ptr<Identifier>(new Identifier(iname)), CompareIdenitifers()
+        std::shared_ptr<Identifier>(new Identifier(iname)), CompareIdenitifers()
     );
     if (itr != _identifiers.end() && iname == itr->get()->name())
         return boost::make_optional(static_cast<size_t>(std::distance(_identifiers.begin(), itr)));
@@ -443,10 +443,10 @@ void IdentifiersManager::assignExplicitCoordinates(CoordinatesContainer_t& coord
                 if (coordinates[t]->getSize() != _locations_manager.expectedDimensions())
                     throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates.size(), _locations_manager.expectedDimensions());
                 //Create new copy of coordinates object.
-                boost::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo), coordinates[t]->getInsertionOrdinal()));
+                std::shared_ptr<Location> location(new Location("_location_", coordinates[t]->retrieve(repo), coordinates[t]->getInsertionOrdinal()));
                 _locations_manager._locations[t] = location;
                 //Create dummy location identifier and associate coordinate object.
-                _identifiers[t] = boost::shared_ptr<Identifier>(new Identifier("_location_", *location.get()));
+                _identifiers[t] = std::shared_ptr<Identifier>(new Identifier("_location_", *location.get()));
             }
             _num_location_coordinates = coordinates.size();
         }

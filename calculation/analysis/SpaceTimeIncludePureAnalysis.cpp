@@ -36,7 +36,7 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbstractDataSetGateway& DataGate
         _cluster_data_factory.get(), DataGateway,
         _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), _data_hub
     );
-    boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
+    std::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
     CClusterObject clusterObject(ClusterComparator);
     clusterSet->add(clusterObject);
     //iterate through time intervals - looking for top purely temporal cluster

@@ -768,7 +768,7 @@ std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTS
         // If user have specified that multiple coordinates are one-per-location or this tract has only only coordinate, just retrieve the coordinates.
         return DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[0]->coordinates()->retrieve(tractCoordinates);
     } else if (DataHub.GetParameters().getUseLocationsNetworkFile() && Cluster.getNumIdentifiers() > 1) {
-        boost::shared_ptr<NetworkLocationContainer_t> localClusterNetwork;
+        std::shared_ptr<NetworkLocationContainer_t> localClusterNetwork;
         if (!clusterNetwork) {
             // NetworkLocationContainer_t wasn't passed as function argument, so calculate this information now.
             localClusterNetwork.reset(new NetworkLocationContainer_t());

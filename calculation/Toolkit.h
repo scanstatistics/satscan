@@ -5,7 +5,7 @@
 #include <list>
 #include "RunTimeComponents.h"
 #include "Ini.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
                
 /** Class for managing structure of IniFile object in the context of the toolkit. */               
 class IniSession {
@@ -44,9 +44,9 @@ class AppToolkit {
     static const char         * _substantive_support_email;
     static const char         * _technical_support_email;
 
-    boost::filesystem::path     _ini_filepath;
-    boost::filesystem::path     _satscan_appdata_folder;
-    boost::filesystem::path     _multi_analysis_filepath;
+    std::filesystem::path     _ini_filepath;
+    std::filesystem::path     _satscan_appdata_folder;
+    std::filesystem::path     _multi_analysis_filepath;
     std::string                 _application_fullpath;
     std::string                 _version;
     RunTimeComponentManager     _runtime_component_manager;
@@ -59,7 +59,7 @@ class AppToolkit {
     AppToolkit(const char * sApplicationFullPath);
     virtual ~AppToolkit();
 
-    boost::filesystem::path     run_history_filename;
+    std::filesystem::path     run_history_filename;
     std::string                 mail_servername;
     std::string                 mail_additional;
     std::string                 mail_from;

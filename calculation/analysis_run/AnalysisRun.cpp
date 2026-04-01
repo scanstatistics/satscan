@@ -176,7 +176,7 @@ void AnalysisEmailHelper::recordClusters(MostLikelyClustersContainer& clusters, 
 }
 
 /** Finalize the object for reporting. */
-void AnalysisEmailHelper::finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor) {
+void AnalysisEmailHelper::finalize(std::shared_ptr<DataDemographicsProcessor> data_demographic_processor) {
     const auto& params = _data_hub.GetParameters();
 	// Finish the summary paragraph - if applicable.
     if (params.getCutoffEmailSummary() && _meetsEmailCutoff > 1) {
@@ -333,7 +333,7 @@ void AnalysisExecution::calculateOliveirasF() {
         unsigned long ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), _parameters.getNumRequestedOliveiraSets());
         for (unsigned u = 0; u < ulParallelProcessCount; ++u) {
             try {
-                OliveiraFunctor oliveiraf(oliveira_datasets, *this, boost::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)));
+                OliveiraFunctor oliveiraf(oliveira_datasets, *this, std::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)));
                 tg.create_thread(subcontractor<contractor_type, OliveiraFunctor>(theContractor, oliveiraf));
             }
             catch (std::bad_alloc &b) {
@@ -559,8 +559,8 @@ void AnalysisExecution::executeCentricEvaluation() {
             }
             if (_print_direction.GetIsCanceled()) return; // detect user cancellation
             //construct centric-analyses and centroid calculators for each thread:
-            std::deque<boost::shared_ptr<AbstractCentricAnalysis>> seqCentricAnalyses(ulParallelProcessCount);
-            std::deque<boost::shared_ptr<CentroidNeighborCalculator>> seqCentroidCalculators(ulParallelProcessCount);
+            std::deque<std::shared_ptr<AbstractCentricAnalysis>> seqCentricAnalyses(ulParallelProcessCount);
+            std::deque<std::shared_ptr<CentroidNeighborCalculator>> seqCentroidCalculators(ulParallelProcessCount);
             for (unsigned u = 0; u<ulParallelProcessCount; ++u) {
                 seqCentricAnalyses[u].reset(getNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
                 seqCentroidCalculators[u].reset(new CentroidNeighborCalculator(_data_hub, _print_direction));
@@ -668,7 +668,7 @@ void AnalysisExecution::executePowerEvaluations() {
         std::string buffer;
         //openReportFile(fp, true);
         _clusterRanker.sort(_data_hub); // need to sort otherwise simulation process of ranking clusters will fail
-        boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+        std::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
         // if simulations not already done is analysis stage, perform them now
         if (!_sim_vars.get_sim_count()) {
             // Do standard replications
@@ -863,7 +863,7 @@ void AnalysisExecution::executeSuccessiveSimulations() {
                 simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
                 remove(simulation_out.c_str());
             }
-            boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+            std::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
             runSuccessiveSimulations(randomizers, _parameters.GetNumReplicationsRequested(), simulation_out, false, _analysis_count);
         }
     }
@@ -1289,7 +1289,7 @@ void AnalysisExecution::printTopClusterLogLikelihood(const MostLikelyClustersCon
 - additional output file(s)
 *****************************************************
 */
-void AnalysisExecution::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration) {
+void AnalysisExecution::runSuccessiveSimulations(std::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration) {
     try {
         {
             PrintQueue lclPrintDirection(_print_direction, _parameters.GetSuppressingWarnings());
@@ -1304,7 +1304,7 @@ void AnalysisExecution::runSuccessiveSimulations(boost::shared_ptr<RandomizerCon
             unsigned long ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), num_relica);
             for (unsigned u = 0; u < ulParallelProcessCount; ++u) {
                 try {
-                    stsMCSimSuccessiveFunctor mcsf(thread_mutex, _data_hub, boost::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u == 0);
+                    stsMCSimSuccessiveFunctor mcsf(thread_mutex, _data_hub, std::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)), std::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u == 0);
                     tg.create_thread(subcontractor<contractor_type, stsMCSimSuccessiveFunctor>(theContractor, mcsf));
                 }
                 catch (std::bad_alloc &b) {
@@ -1717,7 +1717,7 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
     std::stringstream temp_coordinates_filename;
     std::string temp_directory, buffer;
     temp_coordinates_filename << GetUserTemporaryDirectory(temp_directory).c_str();
-    buffer = boost::filesystem::path::preferred_separator;
+    buffer = std::filesystem::path::preferred_separator;
     temp_coordinates_filename << buffer << "drilldown-" << getTypeIdentifier() << "-" << _cluster_path;
     temp_coordinates_filename << "-" << RandomNumberGenerator(reinterpret_cast<long>(&detectedCluster)).GetRandomInteger() << extension;
     filename = temp_coordinates_filename.str();
@@ -2319,7 +2319,7 @@ void AnalysisRunner::run() {
         }
         if (_print_direction.GetIsCanceled()) return;
 
-        boost::shared_ptr<AnalysisExecution> execution(getAnalysisExecution());
+        std::shared_ptr<AnalysisExecution> execution(getAnalysisExecution());
         execution->execute();
         if (_print_direction.GetIsCanceled()) return;
 

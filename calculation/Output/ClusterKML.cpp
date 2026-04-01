@@ -426,9 +426,9 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     if (!kml_out) throw resolvable_error("Error: Could not create file '%s'.\n", _kml_files.back().getFullPath(buffer).c_str());
     kml_out << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     kml_out << "<kml xmlns=\"http://www.opengis.net/kml/2.2\" xmlns:gx=\"http://www.google.com/kml/ext/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
-    std::map<std::string, boost::shared_ptr<std::stringstream>> category_placemarks; // store placemarks of same category together
+    std::map<std::string, std::shared_ptr<std::stringstream>> category_placemarks; // store placemarks of same category together
     std::map<std::string, unsigned int> category_frequency; // category frequency tracker
-    std::map<size_t, boost::shared_ptr<std::stringstream>> dataset_ballonstyle;
+    std::map<size_t, std::shared_ptr<std::stringstream>> dataset_ballonstyle;
     // Iterate over data sets
     for (size_t idx=0; idx < _dataHub.GetNumDataSets(); ++idx) {
         // skip data sets which don't include line list individuals at descriptive coordinates
@@ -440,7 +440,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
         if (Source->getLinelistFieldsMap().size() == 0) continue; // skip data sources w/o line list mappings
         // Define the ballonstyle based on the line-list field maps of current data set - also test that this data source includes group by attribute.
         bool groupInSet = false;
-        dataset_ballonstyle[idx] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+        dataset_ballonstyle[idx] = std::shared_ptr<std::stringstream>(new std::stringstream());
         *(dataset_ballonstyle[idx]) << "<BalloonStyle><text><![CDATA[<b style=\"white-space:nowrap;\">$[snippet]</b><br/><table border=\"0\">";
         if (parameters.GetIsSpaceTimeAnalysis())
             *(dataset_ballonstyle[idx]) << "<tr><th style=\"text-align:left;white-space:nowrap;padding-right:5px;\">Date</th><td style=\"white-space:nowrap;\">$[eventcasedate]</td></tr>";
@@ -517,7 +517,7 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "-stylemap</styleUrl>" << std::endl << "</Placemark>" << std::endl;
             auto pgroup = category_placemarks.find(category); // add placemark to correct placemark collection and update frequency
             if (pgroup == category_placemarks.end()) {
-                category_placemarks[category] = boost::shared_ptr<std::stringstream>(new std::stringstream());
+                category_placemarks[category] = std::shared_ptr<std::stringstream>(new std::stringstream());
                 category_frequency[category] = 0;
             }
             *(category_placemarks[category]) << placemark.str();

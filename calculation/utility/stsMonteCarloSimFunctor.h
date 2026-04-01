@@ -20,20 +20,20 @@ public:
 private:
   boost::mutex                               & gMutex;
   CSaTScanData const                         & gDataHub;
-  boost::shared_ptr<AbstractDataSetGateway>    gpDataGateway;
-  boost::shared_ptr<CAnalysis>                 gpAnalysis;
-  boost::shared_ptr<SimulationDataContainer_t> gpSimulationDataContainer;
-  boost::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
-  boost::shared_ptr<AbstractDataSetWriter>     gDataWriter;
+  std::shared_ptr<AbstractDataSetGateway>    gpDataGateway;
+  std::shared_ptr<CAnalysis>                 gpAnalysis;
+  std::shared_ptr<SimulationDataContainer_t> gpSimulationDataContainer;
+  std::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
+  std::shared_ptr<AbstractDataSetWriter>     gDataWriter;
   std::string                                  _simulation_output_filename;
 
 public:
   stsMCSimSuccessiveFunctor(
     boost::mutex& Mutex
    ,CSaTScanData const & theDataHub
-   ,boost::shared_ptr<CAnalysis> pAnalysis
-   ,boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer
-   ,boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer
+   ,std::shared_ptr<CAnalysis> pAnalysis
+   ,std::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer
+   ,std::shared_ptr<RandomizerContainer_t> pRandomizationContainer
    ,const std::string& simulation_output_filename
    ,bool sharableRandomizers=false
   )
@@ -53,7 +53,7 @@ public:
             gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
     } else {
         // clone passed randomizers
-        gpRandomizationContainer = boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t());
+        gpRandomizationContainer = std::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t());
         for (size_t t=0; t < pRandomizationContainer->size(); ++t)
             gpRandomizationContainer->push_back(pRandomizationContainer->at(t)->Clone());
     }

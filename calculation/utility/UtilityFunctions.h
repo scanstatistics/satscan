@@ -6,7 +6,7 @@
 #include "bloom_filter.hpp"
 #include <boost/shared_ptr.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
@@ -99,7 +99,7 @@ bool                            sendMail(
                                     const std::string& additionalpass, std::stringstream * output=0
 );
 bool                            validEmailAdrress(const std::string& emailaddress);
-boost::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
+std::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
 std::stringstream             & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 std::string                   & htmlencode(const std::string& text, std::string& encoded, bool includeWS=true);
 std::string                   & getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped);

@@ -61,7 +61,7 @@ class CentroidNeighborCalculator;
 /** Container class for maintaining the collection of most likely clusters. */
 class MostLikelyClustersContainer {
  public:
-    typedef boost::shared_ptr<CCluster> Cluster_t;
+    typedef std::shared_ptr<CCluster> Cluster_t;
     typedef std::vector<Cluster_t> ClusterList_t;
 
     /* CCluster comparison functor used to order CClusters in descending order by evaluating clusters calculated

@@ -10,7 +10,7 @@
 class BernoulliLikelihoodCalculator : public AbstractLikelihoodCalculator {
 private:
     typedef TwoDimensionArrayHandler<double> TwoDimDoubleArray_t;
-    boost::shared_ptr<TwoDimDoubleArray_t>   _datasetLogLikelihoodUnderNull;
+    std::shared_ptr<TwoDimDoubleArray_t>   _datasetLogLikelihoodUnderNull;
     std::vector<count_t**>   _pp_counts;
     std::vector<measure_t**> _pp_measure;
     bool _time_stratified;

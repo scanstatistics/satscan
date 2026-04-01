@@ -28,7 +28,7 @@ MostLikelyClustersContainer::MostLikelyClustersContainer(double maximum_window_s
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   if (Cluster.ClusterDefined() && Cluster.GetRatio() > 0) {
-    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(Cluster.Clone()));
+    gvTopClusterList.push_back(std::shared_ptr<CCluster>(Cluster.Clone()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
@@ -36,7 +36,7 @@ void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
 /** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::unique_ptr<CCluster>& pCluster) {
   if (pCluster.get() && pCluster->ClusterDefined() && pCluster->GetRatio() > 0) {
-    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(pCluster.release()));
+    gvTopClusterList.push_back(std::shared_ptr<CCluster>(pCluster.release()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
@@ -237,7 +237,7 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
             remainderMeasure[s] += cluster.GetClusterData()->GetMeasure(s);
         }
     }
-    boost::shared_ptr<CCluster> remainderCluster((*sortClusters.begin())->Clone());
+    std::shared_ptr<CCluster> remainderCluster((*sortClusters.begin())->Clone());
     for (unsigned int s=0; s < numDataSets; ++s) {
         remainderCluster->GetClusterData()->setCaseCount(DataHub.GetDataSetHandler().GetDataSet(s).getTotalCases() - remainderCases[s], s);
         remainderCluster->GetClusterData()->setMeasure(DataHub.GetDataSetHandler().GetDataSet(s).getTotalMeasure() - remainderMeasure[s], s);

@@ -50,13 +50,13 @@ class LocationInformationWriter : public AbstractDataFileWriter {
   protected:
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics _weighted_nornal_statistics;
       ShapeDataFileWriter * gpShapeDataFileWriter;
-      boost::shared_ptr<NetworkLocationContainer_t> _clusterNetwork;
+      std::shared_ptr<NetworkLocationContainer_t> _clusterNetwork;
       LocationToIdentifiers_t _location_to_identifiers;
 
       void DefineFields(const CSaTScanData& DataHub);
       std::pair<double, double> getWeightedNormalMeanForIdentifiers(const MinimalGrowthArray<size_t>& identifiers) const;
       double getRelativeRiskForIdentifiers(const CSaTScanData& DataHub, const CCluster& cluster, const MinimalGrowthArray<size_t>& identifiers) const;
-      boost::shared_ptr<AbstractTimeTrend> getTimeTrendForIdentifiers(const CSaTScanData& DataHub, const MinimalGrowthArray<size_t>& identifiers) const;
+      std::shared_ptr<AbstractTimeTrend> getTimeTrendForIdentifiers(const CSaTScanData& DataHub, const MinimalGrowthArray<size_t>& identifiers) const;
 
   public:
     LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);

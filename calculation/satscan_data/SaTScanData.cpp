@@ -461,7 +461,7 @@ double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
     return 1.0;
 }
 
-boost::shared_ptr<LocationsReportHelper> CSaTScanData::getLocationReportHelper() const {
+std::shared_ptr<LocationsReportHelper> CSaTScanData::getLocationReportHelper() const {
     if (!_report_helper.get()) _report_helper.reset(new LocationsReportHelper(*this));
     return _report_helper;
 }

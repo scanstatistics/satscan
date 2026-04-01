@@ -199,7 +199,7 @@ class RealDataSet : public DataSet {
   friend class DataSetHandler;
 
   public:
-    typedef std::pair<boost::shared_ptr<TwoDimMeasureArray_t>, boost::shared_ptr<PopulationData> > PopulationDataPair_t;
+    typedef std::pair<std::shared_ptr<TwoDimMeasureArray_t>, std::shared_ptr<PopulationData> > PopulationDataPair_t;
     typedef std::map<boost::gregorian::greg_weekday,count_t> CountsByWeekDay_t;
     typedef std::map<unsigned int, count_t> CategoryCaseCount_t;
     typedef std::map<boost::gregorian::greg_weekday,CategoryCaseCount_t> CategoryCountsByWeekDay_t;
@@ -208,7 +208,7 @@ class RealDataSet : public DataSet {
     RealDataSet(const RealDataSet& thisSet);
 
   protected:
-    boost::shared_ptr<PopulationData> _population;
+    std::shared_ptr<PopulationData> _population;
     measure_t                   gtTotalMeasure; // sum measure data
     count_t                     gtTotalCases; // sum case data
     CountsByWeekDay_t           _totalCasesByWeekDay;
@@ -277,7 +277,7 @@ class RealDataSet : public DataSet {
     void                        setTotalMeasure(measure_t tTotalMeasure) {gtTotalMeasure = tTotalMeasure;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
-    void                        setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation=0);
+    void                        setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, std::shared_ptr<PopulationData> * otherPopulation=0);
     PopulationDataPair_t        getPopulationMeasureData() const;
 };
 //*****************************************************************************

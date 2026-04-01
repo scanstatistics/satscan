@@ -79,7 +79,7 @@ class AnalysisEmailHelper {
         AnalysisEmailHelper(const CSaTScanData& data_hub):_data_hub(data_hub), _meetsSummaryCutoff(0), _meetsEmailCutoff(0){}
 
         void recordClusters(MostLikelyClustersContainer& clusters, SimulationVariables& simVars, unsigned int iteration);
-        void finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor);
+        void finalize(std::shared_ptr<DataDemographicsProcessor> data_demographic_processor);
 		unsigned int getNumClustersMeetingSummaryCutoff() const { return _meetsSummaryCutoff; }
 		unsigned int getNumClustersMeetingEmailCutoff() const { return _meetsEmailCutoff; }
         const std::stringstream& getSignalText() const { return _signaltext; }
@@ -114,7 +114,7 @@ class AnalysisExecution {
         std::unique_ptr<TemporalChartGenerator> _temporal_graph;
         std::unique_ptr<SignificantRatios>    _significant_ratios;
         std::unique_ptr<ClusterSupplementInfo> _clusterSupplement;
-        boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
+        std::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
 
 		AnalysisResultsWriter               _results_writer;
         std::string                         _base_output;
@@ -145,7 +145,7 @@ class AnalysisExecution {
         void                                printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
         virtual bool                        repeatAnalysis();
         void                                reportClusters();
-        void                                runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
+        void                                runSuccessiveSimulations(std::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
         void                                updateSignificantRatiosList(double dRatio);
 
     public:

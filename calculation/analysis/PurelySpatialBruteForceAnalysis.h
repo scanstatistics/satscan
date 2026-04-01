@@ -12,9 +12,9 @@ class SpatialData;
 /** Derives from base class to re-define methods for a purely spatial analysis. */
 class CPurelySpatialBruteForceAnalysis : public AbstractBruteForceAnalysis {
     private:
-        boost::shared_ptr<PurelySpatialHomogeneousPoissonCluster> _cluster_compare; /** cluster object utilized to find top cluster */
-        boost::shared_ptr<SpatialHomogeneousData> _cluster_data; /** cluster data object utilized in calculated simulation ratio */
-        boost::shared_ptr<CMeasureList> _measure_list; /** measure list object utilized in calculated simulation ratio */
+        std::shared_ptr<PurelySpatialHomogeneousPoissonCluster> _cluster_compare; /** cluster object utilized to find top cluster */
+        std::shared_ptr<SpatialHomogeneousData> _cluster_data; /** cluster data object utilized in calculated simulation ratio */
+        std::shared_ptr<CMeasureList> _measure_list; /** measure list object utilized in calculated simulation ratio */
         CClusterSetCollections _top_clusters; /** collection of clusters representing top cluster for each shape */
 
     protected:

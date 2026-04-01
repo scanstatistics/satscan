@@ -51,20 +51,20 @@ DemographicAttributeSet::DemographicAttributeSet(const LineListFieldMapContainer
     for (auto itr = llmap.begin(); itr != llmap.end(); ++itr) {
         auto mapKey = std::make_pair(itr->get<1>(), itr->get<2>());
         switch (itr->get<1>()) {
-            case INDIVIDUAL_ID: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), INDIVIDUAL_ID)); break;
-            case DESCRIPTIVE_COORD_X: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_X)); break;
-            case DESCRIPTIVE_COORD_Y: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_Y)); break;
-            //case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>())); break;
-            case GENERAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
-            case CATEGORICAL_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
-            case CONTINUOUS_DATA: _attributes_set[mapKey] = boost::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->get<2>())); break;
+            case INDIVIDUAL_ID: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), INDIVIDUAL_ID)); break;
+            case DESCRIPTIVE_COORD_X: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_X)); break;
+            case DESCRIPTIVE_COORD_Y: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>(), DESCRIPTIVE_COORD_Y)); break;
+            //case GENERAL_DATA: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new GeneralDemographicAttribute(itr->get<2>())); break;
+            case GENERAL_DATA: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
+            case CATEGORICAL_DATA: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new CategoricalDemographicAttribute(itr->get<2>())); break;
+            case CONTINUOUS_DATA: _attributes_set[mapKey] = std::shared_ptr<DemographicAttribute>(new ContinuousDemographicAttribute(itr->get<2>())); break;
             default: throw prg_error("Unsupported line list type '%d'.", "DemographicAttributeSet()", itr->get<1>());
         }
     }
 }
 
 /* Attempts to retrieve DemographicAttribute for LinelistTuple_t. */
-boost::shared_ptr<DemographicAttribute> DemographicAttributeSet::get(LinelistTuple_t llt) {
+std::shared_ptr<DemographicAttribute> DemographicAttributeSet::get(LinelistTuple_t llt) {
     auto itr = _attributes_set.find(std::make_pair(llt.get<1>(), llt.get<2>()));
     if (itr == _attributes_set.end())
         throw prg_error("Line-list tuple not defined (%d, %s).", "DemographicAttributeSet()", llt.get<1>(), llt.get<2>().c_str());
@@ -100,7 +100,7 @@ DataDemographicsProcessor::DataDemographicsProcessor(const DataSetHandler& handl
     _handler(handler), _parameters(handler.gDataHub.GetParameters()) {
     _new_events_timestamp << boost::posix_time::second_clock::local_time();
     // Read individual ids from file cache - these signalled in significant clusters of previous analysis(es).
-    if (boost::filesystem::exists(_parameters.getLinelistIndividualsCacheFileName().c_str())) {
+    if (std::filesystem::exists(_parameters.getLinelistIndividualsCacheFileName().c_str())) {
 		std::string buffer;
         std::ifstream event_stream;
         event_stream.open(_parameters.getLinelistIndividualsCacheFileName().c_str());

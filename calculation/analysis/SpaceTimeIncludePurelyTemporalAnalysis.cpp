@@ -41,7 +41,7 @@ void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGatewa
             _cluster_data_factory.get(), DataGateway,
             _parameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : _parameters.GetIncludeClustersType(), _data_hub
         );
-        boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
+        std::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
         CClusterObject clusterObject(ClusterComparator);
         clusterSet->add(clusterObject);
         _time_intervals->resetIntervalRange();

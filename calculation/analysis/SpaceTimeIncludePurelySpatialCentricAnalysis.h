@@ -10,10 +10,10 @@
 class  SpaceTimeIncludePurelySpatialCentricAnalysis : public SpaceTimeCentricAnalysis {
   protected:
     CClusterSetCollections _top_ps_Clusters; // collection of clusters representing top cluster - used to evaluate real data
-    boost::shared_ptr<CPurelySpatialCluster> _ps_cluster_compare; // instance of spatial cluster - used to evaluate real data
-    boost::shared_ptr<SpatialData> _ps_cluster_data;
-    boost::shared_ptr<ProspectiveSpatialData> _psp_cluster_data;
-    boost::shared_ptr<AbstractClusterData> _ps_cluster_data_cl_eval;
+    std::shared_ptr<CPurelySpatialCluster> _ps_cluster_compare; // instance of spatial cluster - used to evaluate real data
+    std::shared_ptr<SpatialData> _ps_cluster_data;
+    std::shared_ptr<ProspectiveSpatialData> _psp_cluster_data;
+    std::shared_ptr<AbstractClusterData> _ps_cluster_data_cl_eval;
 
     virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
     virtual void                        CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);

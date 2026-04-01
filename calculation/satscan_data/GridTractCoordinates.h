@@ -34,8 +34,8 @@ class CentroidHandler : public GInfo {
 
         class GridPoint {        
             public:
-                boost::shared_ptr<Coordinates>          _point;
-                boost::shared_ptr<IntervalRange_t>  _interval_range;
+                std::shared_ptr<Coordinates>          _point;
+                std::shared_ptr<IntervalRange_t>  _interval_range;
 
                 GridPoint(const std::vector<double>& coordinates, unsigned int ordinal) {_point.reset(new Coordinates(coordinates, ordinal));}
                 bool operator<(const GridPoint& rhs) const {

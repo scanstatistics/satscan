@@ -82,13 +82,13 @@ class ContinuousDemographicAttribute : public DemographicAttribute {
 /* A class to collect demographic attributes of a data set. */
 class DemographicAttributeSet {
     public:
-        typedef std::map<std::pair<LinelistType, std::string>, boost::shared_ptr<DemographicAttribute> > AttributesSet_t;
+        typedef std::map<std::pair<LinelistType, std::string>, std::shared_ptr<DemographicAttribute> > AttributesSet_t;
         AttributesSet_t _attributes_set;
 
     public:
         DemographicAttributeSet(const LineListFieldMapContainer_t& llmap);
 
-        boost::shared_ptr<DemographicAttribute> get(LinelistTuple_t llt);
+        std::shared_ptr<DemographicAttribute> get(LinelistTuple_t llt);
         const AttributesSet_t& getAttributes() const { return _attributes_set; }
 
         bool hasIndividual() const;
@@ -134,7 +134,7 @@ class DataDemographicsProcessor{
 		ReportedClusters_t _reporting_clusters;
         std::vector<DemographicAttributeSet> _demographics_by_dataset; // accumulates demographics by data
         std::set<std::string> _existing_individuals; // individuals from previous analyses
-        boost::shared_ptr<bloom_filter> _individuals_filter;
+        std::shared_ptr<bloom_filter> _individuals_filter;
         std::set<std::string> _new_individuals; // new individuals
         std::string _temp_individuals_cache_filename;
         std::stringstream _new_events_timestamp;

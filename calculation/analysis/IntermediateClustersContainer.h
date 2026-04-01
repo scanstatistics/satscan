@@ -7,11 +7,11 @@
 
 class CSaTScanData; /** forward class declaration */
 
-typedef std::vector<boost::shared_ptr<CCluster>> SharedClusterVector_t;
+typedef std::vector<std::shared_ptr<CCluster>> SharedClusterVector_t;
 
 class CClusterObject {
     private:
-        boost::shared_ptr<CCluster> _cluster;
+        std::shared_ptr<CCluster> _cluster;
         int _max_neighbors;
 
     public:
@@ -20,7 +20,7 @@ class CClusterObject {
         CCluster & getCluster() {
             return *_cluster;
         }
-        boost::shared_ptr<CCluster> & getClusterPtr() {
+        std::shared_ptr<CCluster> & getClusterPtr() {
             return _cluster;
         }
         int getMaxNeighbors() {
@@ -45,7 +45,7 @@ class CClusterSet {
         CClusterSet(bool isSpecializedHypergeometric):_isSpecializedHypergeometric(isSpecializedHypergeometric){}
         virtual ~CClusterSet() {}
 
-        static boost::shared_ptr<CClusterSet> getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub);
+        static std::shared_ptr<CClusterSet> getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub);
 
         void add(CClusterObject & clusterObj) {
             _cluster_set.push_back(clusterObj);
@@ -107,7 +107,7 @@ class CClusterSetTemporalOverlap : public CClusterSet {
     public:
         CClusterSetTemporalOverlap(const CCluster& cluster, int intervals, bool isSpecializedHypergeometric):
             CClusterSet(isSpecializedHypergeometric) {
-            boost::shared_ptr<CCluster> _copy_cluster(cluster.Clone());
+            std::shared_ptr<CCluster> _copy_cluster(cluster.Clone());
             _copy_cluster->DeallocateEvaluationAssistClassMembers();
             for (int idxe=1; idxe <= intervals + 1; ++idxe) {
                 std::vector<CClusterObject> intervalClusters;
@@ -173,7 +173,7 @@ class CClusterSetCollections {
         const CSaTScanData & _data_hub;
         const CParameters & _parameters;
         ClusterType _cluster_type;
-        std::vector<boost::shared_ptr<CClusterSet>> _cluster_sets;
+        std::vector<std::shared_ptr<CClusterSet>> _cluster_sets;
         bool _isSpecializedHypergeometric;
 
         void setClusterCollections(const CCluster& cluster, size_t count);

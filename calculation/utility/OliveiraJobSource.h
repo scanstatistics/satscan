@@ -26,7 +26,7 @@
 class OliveiraJobSource
 {
 public://types/enums
-  typedef std::pair< boost::shared_ptr<MostLikelyClustersContainer>, boost::shared_ptr<MLC_Collections_t> > successful_result_type;
+  typedef std::pair< std::shared_ptr<MostLikelyClustersContainer>, std::shared_ptr<MLC_Collections_t> > successful_result_type;
 
   struct job_result {
     enum                        exception_type {unknown=0, std, prg, memory};

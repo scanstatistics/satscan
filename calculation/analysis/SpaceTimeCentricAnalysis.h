@@ -12,11 +12,11 @@
 class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
   protected:
     CClusterSetCollections _top_clusters; // collection of clusters representing top cluster - used to evaluate real data
-    boost::shared_ptr<CSpaceTimeCluster> _cluster_compare; // instance of space-time cluster - used to evaluate real data
-    boost::shared_ptr<SpaceTimeData> _cluster_data; // concrete instance of space-time cluster data object - used by simulation process
-    boost::shared_ptr<AbstractTemporalClusterData> _cluster_data_pt; // abstract instance of temporal data object - used by simulation process
-    boost::shared_ptr<CTimeIntervals> _time_intervals_r; // iterates through temporal windows of cluster data
-    boost::shared_ptr<CTimeIntervals> _time_Intervals_s; // iterates through temporal windows of cluster data
+    std::shared_ptr<CSpaceTimeCluster> _cluster_compare; // instance of space-time cluster - used to evaluate real data
+    std::shared_ptr<SpaceTimeData> _cluster_data; // concrete instance of space-time cluster data object - used by simulation process
+    std::shared_ptr<AbstractTemporalClusterData> _cluster_data_pt; // abstract instance of temporal data object - used by simulation process
+    std::shared_ptr<CTimeIntervals> _time_intervals_r; // iterates through temporal windows of cluster data
+    std::shared_ptr<CTimeIntervals> _time_Intervals_s; // iterates through temporal windows of cluster data
 
     virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
     virtual void                        CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);

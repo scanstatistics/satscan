@@ -12,9 +12,9 @@
 class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
     private:
         CClusterSetCollections _top_clusters; // collection of clusters representing top cluster - used to evaluate real data
-        boost::shared_ptr<CPurelySpatialCluster> _cluster_compare; // instance of purely spatial cluster - used to evaluate real data
-        boost::shared_ptr<SpatialData> _cluster_data; // concrete instance of spatial cluster data object - used by simulation process
-        boost::shared_ptr<AbstractSpatialClusterData> _cluster_data_sim; // abstract instance of spatial cluster data object - used by simulation process
+        std::shared_ptr<CPurelySpatialCluster> _cluster_compare; // instance of purely spatial cluster - used to evaluate real data
+        std::shared_ptr<SpatialData> _cluster_data; // concrete instance of spatial cluster data object - used by simulation process
+        std::shared_ptr<AbstractSpatialClusterData> _cluster_data_sim; // abstract instance of spatial cluster data object - used by simulation process
 
     protected:
         virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);

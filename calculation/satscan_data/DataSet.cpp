@@ -1185,7 +1185,7 @@ void RealDataSet::setControlData_MetaLocations(const MetaManagerProxy& MetaProxy
   }
 }
 
-void RealDataSet::setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, boost::shared_ptr<PopulationData> * otherPopulation) {
+void RealDataSet::setPopulationMeasureData(TwoDimMeasureArray_t& otherMeasure, std::shared_ptr<PopulationData> * otherPopulation) {
     if (!_populationData.first.get())
         _populationData.first.reset(new TwoDimensionArrayHandler<measure_t>(otherMeasure));
     else
