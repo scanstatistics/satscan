@@ -38,7 +38,7 @@ size_t getBatchIndex(CSaTScanData * hub, BatchedRandomizer* randomizer, const st
     int intervalIdx = hub->GetTimeIntervalOfDate(jdate);
     for (size_t t = 0; t < randomizer->getBatches().size(); ++t) {
         auto& be = randomizer->getBatches()[t];
-        if (be.get<2>() == intervalIdx && be.get<3>() == loc_idx.get())
+        if (be.get<2>() == intervalIdx && be.get<3>() == loc_idx.value())
             return t;
     }
     throw std::exception("Not found");

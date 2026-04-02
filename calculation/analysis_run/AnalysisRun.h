@@ -13,7 +13,8 @@
 #include "ClusterSupplement.h"
 #include "ClusterLocationsWriter.h"
 #include "LocationRelevance.h"
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 #include "ClusterKML.h"
 #include "ClusterScatterChart.h"
 #include "ClusterMap.h"
@@ -192,7 +193,7 @@ class AbstractAnalysisDrilldown {
             const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type,
             BasePrint& print, unsigned int downlevel, unsigned int parent_runid,
             unsigned int& drilldowns,
-            boost::optional<const std::string&> cluster_path
+            std::optional<std::reference_wrapper<const std::string>> cluster_path
         );
         virtual ~AbstractAnalysisDrilldown();
 
@@ -216,7 +217,7 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
         AnalysisDrilldown(
             const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
             const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns,
-            boost::optional<const std::string&> cluster_path = boost::none
+            std::optional<std::reference_wrapper<const std::string>> cluster_path = std::nullopt
         );
         virtual ~AnalysisDrilldown() {}
 
@@ -230,7 +231,7 @@ public:
     BernoulliAnalysisDrilldown(
         const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
         const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns,
-        boost::optional<const std::string&> cluster_path = boost::none
+        std::optional<std::reference_wrapper<const std::string>> cluster_path = std::nullopt
     );
     virtual ~BernoulliAnalysisDrilldown() {}
 

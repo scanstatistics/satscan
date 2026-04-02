@@ -7,7 +7,7 @@
 #include "SSException.h"
 #include "boost/shared_ptr.hpp"
 #include <boost/dynamic_bitset.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 
 class stsClusterCentroidGeometry
 {
@@ -187,7 +187,7 @@ class MostLikelyClustersContainer {
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
     Cluster_t                 & GetClusterRef(tract_t tClusterIndex);
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
-    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff = boost::optional<double>(), boost::optional<unsigned int> atmost = boost::optional<unsigned int>()) const;
+    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, std::optional<double> p_value_cutoff = std::optional<double>(), std::optional<unsigned int> atmost = std::optional<unsigned int>()) const;
     ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff, ClusterList_t & clusters) const;
     ClusterList_t             & getSignificantClusters(const CSaTScanData& DataHub, const SimulationVariables& simVars, ClusterList_t & clusters, ClusterSupplementInfo& supplement) const;
     const CCluster            & GetTopRankedCluster() const;

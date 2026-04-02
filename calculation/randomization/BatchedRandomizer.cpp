@@ -322,7 +322,7 @@ void BatchedRandomizer::randomizeStratified(const RealDataSet& RealSet, DataSet&
 /** Randomly assigns which batches are positive. */
 boost::dynamic_bitset<>& BatchedRandomizer::randomizePositiveBatches(
     const BatchEntryContainer_t& batches, boost::dynamic_bitset<>& positiveBatches, 
-    unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<std::pair<int, int>> intervalRange
+    unsigned int totalPositive, unsigned int sumBatchSizes, std::optional<std::pair<int, int>> intervalRange
 ) {
     positiveBatches.reset();
     positiveBatches.resize(batches.size());
@@ -344,7 +344,7 @@ boost::dynamic_bitset<>& BatchedRandomizer::randomizePositiveBatches(
         for (auto idx = negativeBatches.find_first(); idx != boost::dynamic_bitset<>::npos; idx = negativeBatches.find_next(idx)) {
             auto& be = batches[idx];
             // If calling this process for a specific time interval and current batch isn't for that interval, skip record.
-            if (intervalRange && (be.get<2>() < intervalRange.get().first || intervalRange.get().second < be.get<2>()))
+            if (intervalRange && (be.get<2>() < intervalRange.value().first || intervalRange.value().second < be.get<2>()))
                 continue;
             CUMSIZE += be.get<1>();
             if (*itrRand >= CUMSIZE) continue; // skip to the next until random number is less than cumulation

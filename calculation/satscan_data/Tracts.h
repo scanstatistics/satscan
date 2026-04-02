@@ -8,7 +8,7 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "MetaTractManager.h"
 #include "ptr_vector.h"
-#include <boost/optional.hpp>
+#include <optional>
 
  /** Class representing coordinates in any number of dimensions. */
 class Coordinates {
@@ -106,7 +106,7 @@ class LocationsManager {
 
 	public:
 		typedef std::vector<std::shared_ptr<Location> > LocationContainer_t;
-		typedef std::pair<boost::optional<unsigned int>, const Location*> LocationIdx_t;
+		typedef std::pair<std::optional<unsigned int>, const Location*> LocationIdx_t;
 		enum AddStatus { Accepted = 0, NameExists, CoordinateExists, WrongDimensions, Duplicate, CoordinateRedefinition };
 
 	protected:
@@ -126,7 +126,7 @@ class LocationsManager {
             for (auto itr = _locations.begin(); itr != _locations.end(); ++itr)
                 itr->get()->setindex(std::distance(_locations.begin(), itr));
         }
-        boost::optional<std::shared_ptr<Location> > getLocationForCoordinates(const std::vector<double>& coordinates) const;
+        std::optional<std::shared_ptr<Location> > getLocationForCoordinates(const std::vector<double>& coordinates) const;
         bool getCoordinatesExist(const std::vector<double>& coordinates) const;
 		unsigned int expectedDimensions() const { return _expected_dimensions; }
 		void setExpectedDimensions(unsigned int i) {
@@ -242,7 +242,7 @@ class IdentifiersManager {
         std::string                       & getIdentifierNameAtIndex(tract_t tIndex, std::string& name) const;
         bool                                getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
 		std::pair<bool, double>             getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
-		boost::optional<size_t>             getIdentifierIndex(const std::string& identifiername) const;
+		std::optional<size_t>             getIdentifierIndex(const std::string& identifiername) const;
         const Identifiers_t               & getIdentifiers() const { return _identifiers; }
         const LocationsManager            & getLocationsManager() const { return _locations_manager; }
 		size_t                              getNumLocationCoordinates() const { return _num_location_coordinates; }

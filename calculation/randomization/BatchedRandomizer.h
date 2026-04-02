@@ -4,7 +4,7 @@
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
 #include "boost/tuple/tuple.hpp"
-#include <boost/optional.hpp>
+#include <optional>
 
 class CSaTScanData; // forward class declarations
 class CCluster;
@@ -32,7 +32,7 @@ class BatchedRandomizer : public AbstractDenominatorDataRandomizer {
         void randomizeStratified(const RealDataSet& RealSet, DataSet& SimSet, unsigned int adjustmentLength);
         boost::dynamic_bitset<>& randomizePositiveBatches(
             const BatchEntryContainer_t& batches, boost::dynamic_bitset<>& positiveBatches, 
-            unsigned int totalPositive, unsigned int sumBatchSizes, boost::optional<std::pair<int,int>> intervalRange=boost::none
+            unsigned int totalPositive, unsigned int sumBatchSizes, std::optional<std::pair<int,int>> intervalRange=std::nullopt
         );
 
     public:

@@ -6,7 +6,7 @@
 #include <list>
 #include <map>
 #include <set>
-#include <boost/optional.hpp>
+#include <optional>
 #include "boost/tuple/tuple.hpp"
 //*****************************************************************************
 
@@ -20,7 +20,7 @@ class NetworkNode {
 		typedef boost::tuple<const NetworkNode*, double, bool, bool>  NodeDistance_t; // connection node, distance, averaged, record source
 		typedef std::list<NodeDistance_t>                             ConnectionsContainer_t;
 		typedef std::list<NodeDistance_t>                             CandidatesContainer_t;
-		typedef boost::optional<NetworkNode::NodeDistance_t>          ClosestNode_t;
+		typedef std::optional<NetworkNode::NodeDistance_t>          ClosestNode_t;
 
 	protected:
 		const Location & _location;
@@ -78,7 +78,7 @@ class CCluster;
 class Network {
 	public:
 		typedef std::map<unsigned int, NetworkNode>    NetworkContainer_t;
-		typedef boost::optional<unsigned int>          LimitTo_t;
+		typedef std::optional<unsigned int>          LimitTo_t;
         typedef boost::tuple<const Location*, const Location*> Connection_Detail_t;
 
         class ConnectionDetailCompare {
@@ -97,7 +97,7 @@ class Network {
 	public:
         NetworkNode::AddStatusType   addConnection(unsigned int t1, const Location& location1, unsigned int t2, const Location& location2, double distance, bool recordDef);
 		void				         addNode(unsigned int t1, const Location& location);
-        NetworkLocationContainer_t & buildNeighborsAboutNode(const NetworkNode& node, NetworkLocationContainer_t& networkLocations, unsigned int num_locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = boost::none) const;
+        NetworkLocationContainer_t & buildNeighborsAboutNode(const NetworkNode& node, NetworkLocationContainer_t& networkLocations, unsigned int num_locations, NetworkPathTree * pathTree = 0, LimitTo_t limitTo = std::nullopt) const;
         Connection_Details_t         getClusterConnections(const CCluster& cluster, const CSaTScanData& DataHub) const;
         double                       getDistanceBetween(const Location& location1, const Location& location2, const IdentifiersManager& identifierMgr) const;
         const NetworkContainer_t   & getNodes() const { return _nodes; }

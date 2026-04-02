@@ -989,12 +989,12 @@ AnalysisExecution::OptimalGiniByLimit_t AnalysisExecution::getOptimalGiniContain
     assert(atmost.size() == mlc_collections.size());
     OptimalGiniByLimit_t maximized(&(mlc_collections.front()), atmost.front());
     //MostLikelyClustersContainer* maximizedCollection =  &(mlc_collections.front());
-    double maximizedGINI = mlc_collections.front().getGiniCoefficient(_data_hub, _sim_vars, boost::optional<double>(), atmost.front());
+    double maximizedGINI = mlc_collections.front().getGiniCoefficient(_data_hub, _sim_vars, std::optional<double>(), atmost.front());
     MLC_Collections_t::const_iterator itrMLC = mlc_collections.begin() + 1;
     std::vector<unsigned int>::const_iterator itrMost = atmost.begin() + 1;
     // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
     for (; itrMLC != mlc_collections.end(); ++itrMLC, ++itrMost) {
-        double thisGini = itrMLC->getGiniCoefficient(_data_hub, _sim_vars, boost::optional<double>(), *itrMost);
+        double thisGini = itrMLC->getGiniCoefficient(_data_hub, _sim_vars, std::optional<double>(), *itrMost);
         if (maximizedGINI < thisGini) {
             maximized.first = &(*itrMLC);
             maximized.second = *itrMost;
@@ -1691,12 +1691,12 @@ AbstractAnalysisDrilldown::AbstractAnalysisDrilldown(
     const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type,
     BasePrint& print, unsigned int downlevel, unsigned int parent_runid,
     unsigned int& drilldowns,
-    boost::optional<const std::string&> cluster_path
+    std::optional<std::reference_wrapper<const std::string>> cluster_path
 ): _parameters(source_parameters), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), 
     _base_output(base_output), _significant_clusters(0), _drilldowns(drilldowns) {
     // Record start time of drilldown start -- of course this excludes time reading data.
     time(&_start_time);
-    _cluster_path = (cluster_path ? cluster_path.get() : "");
+    _cluster_path = (cluster_path ? cluster_path->get() : "");
     ++drilldowns;
     // Never email from drill down analyses.
     _parameters.setAlwaysEmailSummary(false);
@@ -1924,7 +1924,7 @@ void AbstractAnalysisDrilldown::drilldownCluster(const AnalysisExecution& execut
                 );
                 AnalysisDrilldown drilldown(
                     cluster, suppleInfo, datahub, execution.getDrilldownBaseOutput(), execution.getExecutioningType(),
-                    datahub.getDrilldownLevel() + 1, drilldowns, boost::optional<const std::string&>(execution.getDrilldownClusterPath())
+                    datahub.getDrilldownLevel() + 1, drilldowns, std::optional<std::reference_wrapper<const std::string>>(execution.getDrilldownClusterPath())
                 );
                 drilldown.execute(parameters.GetOutputFileName());
                 const_cast<CParameters&>(parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
@@ -1954,7 +1954,7 @@ void AbstractAnalysisDrilldown::drilldownCluster(const AnalysisExecution& execut
                 );
                 BernoulliAnalysisDrilldown drilldown(
                     cluster, suppleInfo, datahub, execution.getDrilldownBaseOutput(), execution.getExecutioningType(),
-                    datahub.getDrilldownLevel() + 1, drilldowns, boost::optional<const std::string&>(execution.getDrilldownClusterPath())
+                    datahub.getDrilldownLevel() + 1, drilldowns, std::optional<std::reference_wrapper<const std::string>>(execution.getDrilldownClusterPath())
                 );
                 drilldown.execute(parameters.GetOutputFileName());
                 const_cast<CParameters&>(parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
@@ -2019,7 +2019,7 @@ std::string AnalysisDrilldown::TYPE_IDENTIFIER = "std";
 
 AnalysisDrilldown::AnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub, const std::string& base_output,
-    ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, boost::optional<const std::string&> cluster_path
+    ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, std::optional<std::reference_wrapper<const std::string>> cluster_path
 ): AbstractAnalysisDrilldown(
     source_data_hub.GetParameters(), base_output, executing_type, source_data_hub.GetPrintDirection(),
     downlevel, source_data_hub.getDrilldownRunId(), drilldowns, cluster_path
@@ -2056,7 +2056,7 @@ std::string BernoulliAnalysisDrilldown::TYPE_IDENTIFIER = "bin";
 
 BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
-    const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, boost::optional<const std::string&> cluster_path
+    const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, std::optional<std::reference_wrapper<const std::string>> cluster_path
 ) : AbstractAnalysisDrilldown(
     source_data_hub.GetParameters(), base_output, executing_type, source_data_hub.GetPrintDirection(), 
     downlevel, source_data_hub.getDrilldownRunId(), drilldowns, cluster_path
@@ -2093,7 +2093,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                 ** ppSourceControls = source_data_hub.GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
             for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                 tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                 ppCases[0][drilldown_tract] = ppSourceCases[0][tTract];
                 ppControls[0][drilldown_tract] = ppSourceControls[0][tTract];
             }
@@ -2206,7 +2206,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                     ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
                 for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                     tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                     ppCases[0][drilldown_tract] = detectedCluster.GetObservedCountForTract(tTract, source_data_hub, d);
                     ppControls[0][drilldown_tract] = detectedCluster.GetCountForTractOutside(tTract, source_data_hub, d);
                 }
@@ -2237,7 +2237,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                 count_t** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(d).getCaseData().GetArray();
                 for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                     tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                     // record number of cases by interval for current tract - stratifying by day of week and data set
                     for (int interval = detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
                         setCases[offset + (interval % daysInAdjustment)][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);

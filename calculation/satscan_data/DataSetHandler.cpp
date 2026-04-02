@@ -504,7 +504,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveIdentifierIndex(DataSou
         }
         return DataSetHandler::Ignored;
     }
-	tLocationIndex = static_cast<tract_t>(identifierIdx.get());
+	tLocationIndex = static_cast<tract_t>(identifierIdx.value());
     return DataSetHandler::Accepted;
 }
 

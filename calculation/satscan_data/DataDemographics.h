@@ -6,7 +6,7 @@
 #include "UtilityFunctions.h"
 #include "DataSource.h"
 #include <boost/dynamic_bitset.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 #include <numeric> 
 #include "MostLikelyClustersContainer.h"
 
@@ -139,7 +139,7 @@ class DataDemographicsProcessor{
         std::string _temp_individuals_cache_filename;
         std::stringstream _new_events_timestamp;
 
-        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times);
+        void appendLinelistData(int clusterIdx, std::vector<std::string>& data, std::optional<int> first, unsigned int times);
         bool processCaseFileLinelist(const RealDataSet& DataSet);
         void removeTempClusterFiles();
         void writeClusterLineListFile(const DataSource::OrderedLineListField_t& llmap, unsigned int idxDataSet);

@@ -207,7 +207,7 @@ MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSig
 }
 
 /* Calculates the GINI coefficient for the current collection of clusters. */
-double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff, boost::optional<unsigned int> atmost) const {
+double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, std::optional<double> p_value_cutoff, std::optional<unsigned int> atmost) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
     unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();

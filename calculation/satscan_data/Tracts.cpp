@@ -134,17 +134,17 @@ LocationsManager::AddStatus LocationsManager::addLocation(const std::string& nam
 }
 
 /* Returns the location object with specified coordinates. */
-boost::optional<std::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
+std::optional<std::shared_ptr<Location> > LocationsManager::getLocationForCoordinates(const std::vector<double>& coordinates) const {
     std::shared_ptr<Location> location(new Location("", coordinates, 0));
     auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
     if (itrByCoordinates != _locations_by_coordinates.end() && *(itrByCoordinates->get()->coordinates()) == coordinates)
-        return boost::optional<std::shared_ptr<Location> >(*itrByCoordinates);
-    return boost::optional<std::shared_ptr<Location> >(boost::none);
+        return std::optional<std::shared_ptr<Location> >(*itrByCoordinates);
+    return std::optional<std::shared_ptr<Location> >(std::nullopt);
 }
 
 /** Returns indication of whether coordinates are currently defined. */
 bool LocationsManager::getCoordinatesExist(const std::vector<double>& coordinates) const {
-    return getLocationForCoordinates(coordinates) != boost::none;
+    return getLocationForCoordinates(coordinates) != std::nullopt;
 
     //std::shared_ptr<Location> location(new Location("", coordinates));
     //auto itrByCoordinates = std::lower_bound(_locations_by_coordinates.begin(), _locations_by_coordinates.end(), location, CompareLocationByCoordinates());
@@ -153,10 +153,10 @@ bool LocationsManager::getCoordinatesExist(const std::vector<double>& coordinate
 
 LocationsManager::LocationIdx_t LocationsManager::getLocation(const std::string& locationame) const {
     auto itr = std::lower_bound(_locations.begin(), _locations.end(), std::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
-    boost::optional<unsigned int> idx(boost::none);
+    std::optional<unsigned int> idx(std::nullopt);
     if (itr != _locations.end() && itr->get()->name() == locationame)
-        return LocationIdx_t(boost::optional<unsigned int>(static_cast<unsigned int>(std::distance(_locations.begin(), itr))), itr->get());
-    return LocationIdx_t(boost::optional<unsigned int>(boost::none), 0);
+        return LocationIdx_t(std::optional<unsigned int>(static_cast<unsigned int>(std::distance(_locations.begin(), itr))), itr->get());
+    return LocationIdx_t(std::optional<unsigned int>(std::nullopt), 0);
 }
 
 //////////////// Identifier //////////////////////////////////
@@ -206,7 +206,7 @@ LocationsManager::AddStatus IdentifiersManager::addLocation(const std::string& l
         addIdentifier(locationname, locationname);
     else if (status == LocationsManager::CoordinateExists && _multiple_coordinates_type == ONEPERLOCATION) {
         // This should get picked up in the step which combines identifiers at the same coordinates.
-        AddStatus gStatus = addIdentifier(locationname, _locations_manager.getLocationForCoordinates(coordinates).get()->name());
+        AddStatus gStatus = addIdentifier(locationname, _locations_manager.getLocationForCoordinates(coordinates).value()->name());
         return gStatus == MultipleLocations ? LocationsManager::CoordinateRedefinition : LocationsManager::Accepted;
         //_locations_manager.getLocationForCoordinates(coordinates).
     }    //combinedWith(const std::string& other)
@@ -219,7 +219,7 @@ LocationsManager::AddStatus IdentifiersManager::setLocationCoordinates(const std
     if (coordinates.size() != _locations_manager.expectedDimensions()) return LocationsManager::WrongDimensions;
     LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationname);
     // First check to see if this location is currently defined - skip record if it isn't (i.e. it's not in the network).
-    if (location.first == boost::none) return LocationsManager::Accepted;
+    if (location.first == std::nullopt) return LocationsManager::Accepted;
     auto locationWithCoordinates = _locations_manager.getLocationForCoordinates(coordinates);
     /* I'm not really sure what the correct behavior is here. This function is used in the context of settings the coordinates
        of locations within a user defined network. If locations within the network are unique positions, then how could two or
@@ -238,7 +238,7 @@ LocationsManager::AddStatus IdentifiersManager::setLocationCoordinates(const std
 IdentifiersManager::AddStatus IdentifiersManager::addIdentifier(const std::string& identifierName, const std::string& locationame) {
     if (_aggregating_identifiers) return IdentifiersManager::Accepted;
     LocationsManager::LocationIdx_t location = _locations_manager.getLocation(locationame);
-    if (location.first == boost::none) return IdentifiersManager::UnknownLocation;
+    if (location.first == std::nullopt) return IdentifiersManager::UnknownLocation;
     std::shared_ptr<Identifier> identifierObj(new Identifier(identifierName, *location.second));
     auto itr = std::lower_bound(_identifiers.begin(), _identifiers.end(), identifierObj, CompareIdenitifers());
     if (itr != _identifiers.end() && identifierName == itr->get()->name()) {
@@ -252,8 +252,8 @@ IdentifiersManager::AddStatus IdentifiersManager::addIdentifier(const std::strin
 }
 
 /* Returns the internal index of named identifier. */
-boost::optional<size_t> IdentifiersManager::getIdentifierIndex(const std::string& identifiername) const {
-    if (_aggregating_identifiers) return boost::make_optional(static_cast<size_t>(0));
+std::optional<size_t> IdentifiersManager::getIdentifierIndex(const std::string& identifiername) const {
+    if (_aggregating_identifiers) return std::make_optional(static_cast<size_t>(0));
 
     std::string iname;
     // first search collection of known aggregated identifiers names
@@ -268,8 +268,8 @@ boost::optional<size_t> IdentifiersManager::getIdentifierIndex(const std::string
         std::shared_ptr<Identifier>(new Identifier(iname)), CompareIdenitifers()
     );
     if (itr != _identifiers.end() && iname == itr->get()->name())
-        return boost::make_optional(static_cast<size_t>(std::distance(_identifiers.begin(), itr)));
-    return boost::none;
+        return std::make_optional(static_cast<size_t>(std::distance(_identifiers.begin(), itr)));
+    return std::nullopt;
 }
 
 /** Combines Identifier objects which have the same locations. This ensures that identifiers that are at the same location(s) will

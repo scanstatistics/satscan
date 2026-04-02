@@ -13,7 +13,7 @@
 #include "TimeStamp.h"
 #include "DateStringParser.h"
 #include "Toolkit.h"
-#include <boost/optional.hpp>
+#include <optional>
 
 const char * ParametersValidate::MSG_INVALID_PARAM = "Invalid Parameter Setting";
 
@@ -991,13 +991,13 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
             if (inputsource && inputsource->getLinelistFieldsMap().size()) {
                 std::vector<std::string> labels;
                 std::set<std::string> s;
-                boost::optional<unsigned int> individualId, descriptiveLat, descriptiveLong;
+                std::optional<unsigned int> individualId, descriptiveLat, descriptiveLong;
                 for (const auto& ll : inputsource->getLinelistFieldsMap()) {
                     labels.push_back(ll.get<2>());
                     s.emplace(ll.get<2>());
                     switch (ll.get<1>()) {
                     case INDIVIDUAL_ID:
-                        if (individualId && individualId.get() != ll.get<0>()) {
+                        if (individualId && individualId.value() != ll.get<0>()) {
                             PrintDirection.Printf(
                                 "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define Individual data is defined to more than one column.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
@@ -1007,7 +1007,7 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
                         else individualId = ll.get<0>();
                         break;
                     case DESCRIPTIVE_COORD_Y:
-                        if (descriptiveLat && descriptiveLat.get() != ll.get<0>()) {
+                        if (descriptiveLat && descriptiveLat.value() != ll.get<0>()) {
                             PrintDirection.Printf(
                                 "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define the descriptive latitude is defined to more than one column.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx
@@ -1017,7 +1017,7 @@ bool ParametersValidate::ValidateLinelistParameters(BasePrint& PrintDirection) c
                         else descriptiveLat = ll.get<0>();
                         break;
                     case DESCRIPTIVE_COORD_X:
-                        if (descriptiveLong && descriptiveLong.get() != ll.get<0>()) {
+                        if (descriptiveLong && descriptiveLong.value() != ll.get<0>()) {
                             PrintDirection.Printf(
                                 "%s:\nLine list mappings are defined for the case file of data set %u and\nthe column to define the descriptive longitude is defined to more than one column.\n",
                                 BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, idx

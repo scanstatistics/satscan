@@ -396,7 +396,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                     case IdentifiersManager::Accepted:
                     default: 
                         // If we're using the multiple locations file with the network file, warn user if location is not in network.
-                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_identifier_mgr.getLocationsManager().getLocation(locationname).first.get())) {
+                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_identifier_mgr.getLocationsManager().getLocation(locationname).first.value())) {
                             gPrint.Printf(
                                 "Warning: Record %ld of the multiple coordinates file references location '%s', which is not defined in the network file.\n",
                                 BasePrint::P_WARNING, MLSource->GetCurrentRecordIndex(), locationname
@@ -1048,7 +1048,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 		// Now re-read the network file.
         if (bValid) {
 			gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
-			LocationsManager::LocationIdx_t firstlocation, secondlocation(boost::none, 0);
+			LocationsManager::LocationIdx_t firstlocation, secondlocation(std::nullopt, 0);
 			const LocationsManager & locations(_identifier_mgr.getLocationsManager());
 			std::vector<double> coordinatesA, coordinatesB;
 			networkSource->GotoFirstRecord();
@@ -1070,7 +1070,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
                 const char * secondvalue = networkSource->GetValueAt(1);
                 if (!secondvalue) {
                     locationNetwork.addNode(*firstlocation.first, *firstlocation.second);
-					secondlocation = LocationsManager::LocationIdx_t(boost::none, 0);
+					secondlocation = LocationsManager::LocationIdx_t(std::nullopt, 0);
                 } else {
 					secondlocation = locations.getLocation(secondvalue);
 					if (!secondlocation.first) {
@@ -1511,7 +1511,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
               vRecordNeighborList.push_back(*locationIdx);
             }
           } else {
-			locationIdx = boost::make_optional(_identifier_mgr.getMetaIdentifiersManager().getMetaIndex(identifier));
+			locationIdx = std::make_optional(_identifier_mgr.getMetaIdentifiersManager().getMetaIndex(identifier));
 			_identifier_mgr.getMetaIdentifiersManager().getAtomicIndexes(*locationIdx, AtomicIndexes);
             for (size_t t=0; t < AtomicIndexes.size(); ++t) {
               if (NeighborsSet.test(AtomicIndexes[t])) {
@@ -1581,7 +1581,7 @@ SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveIdentifierIndex(D
         return SaTScanDataReader::Ignored;
 	}
 	else
-		tLocationIndex = identifierIdx.get();
+		tLocationIndex = identifierIdx.value();
     return SaTScanDataReader::Accepted;
 }
 

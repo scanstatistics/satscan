@@ -154,7 +154,7 @@ void DataDemographicsProcessor::addClusters(MostLikelyClustersContainer& cluster
 }
 
 /* Appends data record to temporary cluster file. */
-void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, boost::optional<int> first, unsigned int times) {
+void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<std::string>& data, std::optional<int> first, unsigned int times) {
     auto& cluster = _reporting_clusters[clusterIdx];
     std::ofstream temp_file(
         cluster._temporary_filename.c_str(),
@@ -167,7 +167,7 @@ void DataDemographicsProcessor::appendLinelistData(int clusterIdx, std::vector<s
         if (cluster._iteration > 1)
             line << "Iterative";
         else
-            line << (first.get() == clusterIdx ? "Primary" : "Secondary");
+            line << (first.value() == clusterIdx ? "Primary" : "Secondary");
         line << ",";
     }
     line << typelist_to_csv_string<std::string>(data, buffer) << std::endl;
@@ -292,7 +292,7 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                 }
             }
             // Write values to temporary cluster file - depending on geographical overlap -- this could be more than one cluster.
-            boost::optional<int> first(_demographics_by_dataset.back().hasIndividual() ? boost::make_optional(applicable_clusters.find_first()) : boost::none);
+            std::optional<int> first(_demographics_by_dataset.back().hasIndividual() ? std::make_optional(applicable_clusters.find_first()) : std::nullopt);
             for (boost::dynamic_bitset<>::size_type b= applicable_clusters.find_first(); b != boost::dynamic_bitset<>::npos; b=applicable_clusters.find_next(b)) {
                 appendLinelistData(static_cast<int>(b), values, first, nCount);
                 if (is_new_event) {
