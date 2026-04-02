@@ -642,20 +642,20 @@ void IniParameterFileAccess::WriteInputSource(IniFile& WriteFile, IniSection& se
                 std::stringstream s;
                 for (FieldMapContainer_t::const_iterator itr=source->getFieldsMap().begin(); itr != source->getFieldsMap().end(); ++itr) {
                     if (itr->type() == typeid(long)) {
-                        s << boost::any_cast<long>(*itr);
+                        s << std::any_cast<long>(*itr);
                     } else if (itr->type() == typeid(DataSource::FieldType)) {
-                        switch (boost::any_cast<DataSource::FieldType>(*itr)) {
+                        switch (std::any_cast<DataSource::FieldType>(*itr)) {
                             case DataSource::ONECOUNT : s << IniParameterSpecification::SourceFieldMapOneCount; break;
                             case DataSource::GENERATEDID : s << IniParameterSpecification::SourceFieldMapGeneratedId; break;
                             case DataSource::DEFAULT_DATE : s << IniParameterSpecification::SourceFieldMapUnspecifiedPopulationDate; break;
                             case DataSource::BLANK : break;
-                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
+                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", std::any_cast<DataSource::FieldType>(*itr));
                         }
                     } else if (itr->type() == typeid(DataSource::ShapeFieldType)) {
-                        switch (boost::any_cast<DataSource::ShapeFieldType>(*itr)) {
+                        switch (std::any_cast<DataSource::ShapeFieldType>(*itr)) {
                             case DataSource::POINTX   : s << IniParameterSpecification::SourceFieldMapShapeX; break;
                             case DataSource::POINTY   : s << IniParameterSpecification::SourceFieldMapShapeY; break;
-                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::ShapeFieldType>(*itr));
+                            default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", std::any_cast<DataSource::ShapeFieldType>(*itr));
                         }
                     } else {
                         throw prg_error("Unknown type '%s'.", "WriteInputSource()", itr->type().name());

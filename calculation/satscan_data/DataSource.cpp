@@ -93,7 +93,7 @@ bool DataSource::isLinelistOnlyColumn(long iFieldIndex) const {
     if (!inLineListFields) return false;
     // It is a line list column, but is it also an input data column?
     for (const auto& fm: _fields_map) {
-        if (fm.type() == typeid(long) && boost::any_cast<long>(fm) == iFieldIndex)
+        if (fm.type() == typeid(long) && std::any_cast<long>(fm) == iFieldIndex)
             return false;
     } return true;
 }
@@ -104,7 +104,7 @@ void DataSource::setFieldsMap(const FieldMapContainer_t& map) {
     // The data set handler classes adjust column indexes when calling GetValueAt(idx) when such fields
     // are not expected (e.g. date precision of none).
     for (FieldMapContainer_t::iterator itr=_fields_map.begin(); itr != _fields_map.end();) {
-        if (itr->type() == typeid(FieldType) && boost::any_cast<FieldType>(*itr) == BLANK) {
+        if (itr->type() == typeid(FieldType) && std::any_cast<FieldType>(*itr) == BLANK) {
             _fields_map.erase(itr);
             itr = _fields_map.begin();
         } else ++itr;
@@ -128,7 +128,7 @@ const char * AsciiFileDataSource::GetValueAt(long iFieldIndex) {
         if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
             // This field is one of the FieldType values, which are not actually fields in the data source.
             _read_buffer.clear();
-            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            FieldType type = std::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
             switch (type) {
                 case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: _read_buffer = "1"; break;
@@ -318,7 +318,7 @@ const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
         if (iFieldIndex < static_cast<long>(_fields_map.size())) {
             if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
                 // This field is one of the FieldType values, which are not actually fields in the data source.
-                FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+                FieldType type = std::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
                 switch (type) {
                     case GENERATEDID: printString(gsValue, "location%u", getNonBlankRecordsRead()); break;
                     case ONECOUNT: gsValue = "1"; break;
@@ -482,7 +482,7 @@ const char * CsvFileDataSource::GetValueAt(long iFieldIndex) {
         if (iFieldIndex >= static_cast<long>(_fields_map.size())) return 0; // index beyond defined mappings
         if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
             _read_buffer.clear();
-            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            FieldType type = std::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
             switch (type) {
                 case GENERATEDID: printString(_read_buffer, "location%u", getNonBlankRecordsRead()); break;
                 case ONECOUNT: _read_buffer = "1"; break;
@@ -583,7 +583,7 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
 
     if (iFieldIndex < static_cast<long>(_fields_map.size())) {
         if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(FieldType)) {
-            FieldType type = boost::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            FieldType type = std::any_cast<FieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
             switch (type) {
                 case GENERATEDID: _read_buffer = printString(_read_buffer, "location%u", _current_record); break;
                 case ONECOUNT: _read_buffer = "1"; break;
@@ -593,7 +593,7 @@ const char * ShapeFileDataSource::GetValueAt(long iFieldIndex) {
             }
             return _read_buffer.size() ? _read_buffer.c_str() : 0;
         } else if (_fields_map.at(static_cast<size_t>(iFieldIndex)).type() == typeid(ShapeFieldType)) {
-            ShapeFieldType type = boost::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
+            ShapeFieldType type = std::any_cast<ShapeFieldType>(_fields_map.at(static_cast<size_t>(iFieldIndex)));
             switch (type) {
                 case POINTX: iFieldIndex = 1; break;
                 case POINTY: iFieldIndex = 0; break;
