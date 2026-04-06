@@ -3,7 +3,6 @@
 #define __AbstractCentricAnalysis_H
 //******************************************************************************
 #include "AbstractAnalysis.h"
-#include "boost/shared_ptr.hpp"
 #include "ptr_vector.h"
 #include "MeasureList.h"
 #include "IntermediateClustersContainer.h"

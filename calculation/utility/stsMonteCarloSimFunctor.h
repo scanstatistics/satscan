@@ -2,7 +2,6 @@
 #ifndef stsMonteCarloSimFunctorH
 #define stsMonteCarloSimFunctorH
 //******************************************************************************
-#include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 #include "AnalysisRun.h"
 #include "stsMCSimJobSource.h"

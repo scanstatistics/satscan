@@ -4,7 +4,6 @@
 //******************************************************************************
 #include "LikelihoodCalculation.h"
 #include "MultipleDimensionArrayHandler.h"
-#include "boost/shared_ptr.hpp"
 
 /** Bernoulli log likelihood calculator. */
 class BernoulliLikelihoodCalculator : public AbstractLikelihoodCalculator {

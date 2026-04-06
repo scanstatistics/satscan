@@ -5,7 +5,6 @@
 #include "cluster.h"
 #include "ptr_vector.h"
 #include "SSException.h"
-#include "boost/shared_ptr.hpp"
 #include <boost/dynamic_bitset.hpp>
 #include <optional>
 

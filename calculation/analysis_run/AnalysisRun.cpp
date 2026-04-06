@@ -47,9 +47,9 @@
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
 #include "MultipleAnalyses.h"
-#include <boost/assign/std/vector.hpp>
+
 #include <algorithm>
-using namespace boost::assign;
+
 using boost::algorithm::ireplace_all;
 
 const double AbstractAnalysisDrilldown::DEFAULT_CUTOFF_PVALUE = 0.05;

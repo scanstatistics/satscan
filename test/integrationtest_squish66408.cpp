@@ -4,7 +4,7 @@
 #include "AnalysisRun.h"
 #include "Toolkit.h"
 #include "LoglikelihoodRatioWriter.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 /* report power evaluation LLR values to separate file https://www.squishlist.com/ims/satscan/66408/ */
 

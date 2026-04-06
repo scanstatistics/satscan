@@ -3,7 +3,6 @@
 #define __BernoulliRandomizer_H
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
-#include <boost/cast.hpp>
 
 /** Bernoulli randomizer for null hypothesis. */
 class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataRandomizer {

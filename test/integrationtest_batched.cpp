@@ -5,7 +5,7 @@
 #include "Toolkit.h"
 #include "ParametersValidate.h"
 #include "ClusterInformationWriter.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/test/unit_test.hpp>
 
 /* batched model integration tests */

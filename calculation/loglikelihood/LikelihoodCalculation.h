@@ -3,7 +3,6 @@
 #define __LikelihoodCalculation_H
 //******************************************************************************
 #include "SaTScan.h"
-#include "boost/shared_ptr.hpp"
 
 class SpatialMonotoneData; /** forward class declaration */
 class CSaTScanData;       /** forward class declaration */

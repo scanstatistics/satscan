@@ -4,7 +4,6 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include "Tracts.h"
-#include "boost/shared_ptr.hpp"
 
 /** Abstract base class which manages centroid grid points. */
 class GInfo {

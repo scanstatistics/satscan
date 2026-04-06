@@ -6,8 +6,6 @@
 #include "Randomizer.h"
 #include "SSException.h"
 #include "Toolkit.h"
-#include <boost/assign/std/vector.hpp>
-using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS = 10;
@@ -976,10 +974,8 @@ void CParameters::SetAsDefaulted() {
   gbIterativeCutOffPValue                  = 0.05;
   gbOutputRelativeRisksAscii               = false;
   geSpatialWindowType                      = CIRCULAR;
-  gvEllipseShapes.clear();
-  gvEllipseShapes += 1.5,2,3,4,5;
-  gvEllipseRotations.clear();
-  gvEllipseRotations += 4,6,9,12,15;
+  gvEllipseShapes                          = { 1.5,2,3,4,5 };
+  gvEllipseRotations                       = { 4,6,9,12,15 };
   glTotalNumEllipses = 0;
   for (size_t t=0; t < gvEllipseRotations.size(); ++t)
      glTotalNumEllipses += gvEllipseRotations[t];
@@ -1039,8 +1035,7 @@ void CParameters::SetAsDefaulted() {
   geTimeTrendType = LINEAR;
   gbReportRank = false;
   gbPrintAsciiHeaders = false;
-  gvSpatialWindowStops.clear();
-  gvSpatialWindowStops += 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
+  gvSpatialWindowStops = { 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50 };
   gsTitleName = "";
   _giniIndexPValueCutoff = 0.05;
   _reportHierarchicalClusters = true;

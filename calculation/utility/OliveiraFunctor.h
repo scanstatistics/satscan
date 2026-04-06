@@ -2,7 +2,6 @@
 #ifndef __OliveiraFunctor_H
 #define __OliveiraFunctor_H
 //******************************************************************************
-#include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 #include "AnalysisRun.h"
 #include "OliveiraJobSource.h"
