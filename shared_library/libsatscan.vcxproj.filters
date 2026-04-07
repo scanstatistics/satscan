@@ -8,9 +8,6 @@
     <Filter Include="Source Files\boost">
       <UniqueIdentifier>{68d6c17e-4938-46b9-b6ed-cfb727955040}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\boost\regex">
-      <UniqueIdentifier>{1f3f3b10-6b69-4532-9981-75a9c82ce29b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\boost\threads">
       <UniqueIdentifier>{66b8576c-6889-4d69-b987-21b821e7d3d4}</UniqueIdentifier>
     </Filter>
@@ -100,20 +97,8 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Source Files\boost\chrono">
-      <UniqueIdentifier>{8229468e-3921-465a-af76-ea3032544ed0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\boost\filesystem">
-      <UniqueIdentifier>{88d09b98-7500-4b4b-8d43-2bb06d48c926}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\regex\src\posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\regex\src\wide_posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
     <ClCompile Include="..\boost\boost_1_90_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
@@ -633,15 +618,6 @@
     <ClCompile Include="PrintCallback.cpp">
       <Filter>Source Files\library</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\chrono\src\chrono.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\chrono\src\process_cpu_clocks.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\chrono\src\thread_clock.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
     <ClCompile Include="..\calculation\Output\ChartGenerator.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
@@ -662,36 +638,6 @@
     </ClCompile>
     <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\codecvt_error_category.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\directory.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\exception.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\operations.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\path.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\path_traits.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\portability.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\unique_path.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_90_0\libs\filesystem\src\windows_file_codecvt.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
     </ClCompile>
     <ClCompile Include="..\boost\boost_1_90_0\libs\timer\src\cpu_timer.cpp">
       <Filter>Source Files\boost</Filter>

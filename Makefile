@@ -234,11 +234,6 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/timer/src/cpu_timer.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
-               $(BOOSTDIR)/libs/regex/src/posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex.cpp \
-               $(BOOSTDIR)/libs/regex/src/regex_debug.cpp \
-               $(BOOSTDIR)/libs/regex/src/static_mutex.cpp \
-               $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
                $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
                $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
                $(BOOSTDIR)/libs/program_options/src/convert.cpp \
@@ -247,20 +242,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/program_options/src/split.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
-               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
-               $(BOOSTDIR)/libs/chrono/src/chrono.cpp \
-               $(BOOSTDIR)/libs/chrono/src/process_cpu_clocks.cpp \
-               $(BOOSTDIR)/libs/chrono/src/thread_clock.cpp \
-               $(BOOSTDIR)/libs/system/src/error_code.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/codecvt_error_category.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/directory.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/exception.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/operations.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/path.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/path_traits.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/portability.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/unique_path.cpp \
-               $(BOOSTDIR)/libs/filesystem/src/utf8_codecvt_facet.cpp
+               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
 
 APP_SRC     := $(SATSCAN)/batch_application/Main.cpp \
                $(SATSCAN)/batch_application/ParameterProgramOptions.cpp
