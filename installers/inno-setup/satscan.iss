@@ -20,24 +20,20 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=Q:\licence\SaTScanLicenseAgreement.rtf
-InfoBeforeFile=Q:\build.area\satscan\installers\inno-setup\before-install.rtf
+LicenseFile=P:\satscan\licence\SaTScanLicenseAgreement.rtf
+InfoBeforeFile=P:\satscan\build.area\satscan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=Q:\installers\v.10.3.x
+OutputDir=P:\satscan\installers\v.10.3.x
 OutputBaseFilename=install-10_3_windows
-;SetupIconFile=Q:\build.area\satscan\installers\resources\SaTScan.ico
+;SetupIconFile=P:\satscan\build.area\satscan\installers\resources\SaTScan.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-; "ArchitecturesInstallIn64BitMode=x64" requests that the install be
-; done in "64-bit mode" on x64, meaning it should use the native
-; 64-bit Program Files directory and the 64-bit view of the registry.
-; On all other architectures it will install in "32-bit mode".
-ArchitecturesInstallIn64BitMode=x64
-; Note: We don't set ProcessorsAllowed because we want this
-; installation to run on all architectures (including Itanium,
-; since it's capable of running 32-bit code too).
+; Only allow the installer to run on x64-compatible systems,
+; and enable 64-bit install mode.
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -46,19 +42,16 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Q:\build.area\satscan\java_application\jni_application\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "Q:\build.area\satscan\installers\sample_data\*"; DestDir: "{app}\sample_data"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "Q:\build.area\satscan\installers\java\jre_x86\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstallMode
-Source: "Q:\build.area\satscan\installers\java\jre_x64\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: Is64BitInstallMode
-Source: "Q:\build.area\satscan\installers\documents\eula.html"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Q:\build.area\satscan\installers\documents\SaTScan_Users_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Q:\build.area\satscan\batch_application\Win32\Release\SaTScanBatch.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "Q:\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "Q:\build.area\satscan\shared_library\Release\satscan32.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: not Is64BitInstallMode
-Source: "Q:\build.area\satscan\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion; Check: Is64BitInstallMode
-Source: "Q:\build.area\satscan\java_application\jni_application\dist\SaTScan.jar"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Q:\build.area\satscan\installers\inno-setup\curl.exe"; DestDir: "{app}"; OnlyBelowVersion: 10.0
+Source: "P:\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\java_application\jni_application\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "P:\satscan\build.area\satscan\installers\sample_data\*"; DestDir: "{app}\sample_data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "P:\satscan\build.area\satscan\installers\java\jre_x64\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "P:\satscan\build.area\satscan\installers\documents\eula.html"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\installers\documents\SaTScan_Users_Guide.pdf"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\shared_library\x64\Release\satscan64.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\java_application\jni_application\dist\SaTScan.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "P:\satscan\build.area\satscan\installers\inno-setup\curl.exe"; DestDir: "{app}"; OnlyBelowVersion: 10.0
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

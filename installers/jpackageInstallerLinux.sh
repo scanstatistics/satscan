@@ -9,7 +9,7 @@
 # - icon still wrong
 # - probably other things when looking closer
 
-javajdk="/prj/satscan/installers/install.applications/java/jdk-17.0.14+7_linux_x64"
+javajdk="/prj/satscan/installers/install.applications/java/jdk-25.0.2+10_linux_x64"
 version=$1
 srcdir="/prj/satscan/build.area/satscan"
 bundleinputdir="/prj/satscan/build.area/jpackage/satscanbundlesrc"
@@ -38,7 +38,7 @@ cp -f $binaries/libsatscan64.so $bundleinputdir
 $javajdk/bin/jpackage --verbose --type app-image --input $bundleinputdir \
             --main-jar SaTScan.jar --icon $srcdir/installers/resources/SaTScan.png \
             --app-version $version --name SaTScan --dest $bundledir \
-            --java-options "-Djava.library.path=\$APPDIR"
+            --java-options "-Djava.library.path=\$APPDIR --enable-native-access=ALL-UNNAMED"
 
 #  Create application rpm
 $javajdk/bin/jpackage --verbose --type rpm --app-image $bundledir/SaTScan --app-version $version \
