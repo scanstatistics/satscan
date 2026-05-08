@@ -2358,14 +2358,20 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * enables or disables the spatial options group control
      */
     private void enableSpatialOptionsGroup(boolean bEnable, boolean enablePopRisk, boolean bEnableIncludePurelyTemporal) {
+        
+        enablePopRisk = true; // hack to back-off #66704 update
+        
         _spatialOptionsGroup.setEnabled(bEnable);
         _maxSpatialClusterSizeTextField.setEnabled(bEnable && enablePopRisk);
         _maxSpatialClusterSizeTextField.setVisible(enablePopRisk);
         _percentageOfPopulationLabel.setEnabled(bEnable);
-        if (enablePopRisk)
+        if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION)
+            _percentageOfPopulationLabel.setText("percent of the population at risk (<= 99.9%)");
+        else if (enablePopRisk)
             _percentageOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)");
         else
-            _percentageOfPopulationLabel.setText("Base criterion: Approaching but not 100% of the population at risk.");
+            _percentageOfPopulationLabel.setText("Base criterion: Approaching but not 100% of the population at risk.");       
+        
         boolean bEnablePopulationFile = bEnable && _settings_window.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _spatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile);
         _maxSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _spatialPopulationFileCheckBox.isSelected());
@@ -4133,10 +4139,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             });
             _maxSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {
                 public void focusLost(java.awt.event.FocusEvent e) {
+                    double maximum = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 99.9 : 50.0;
                     while (_maxSpatialClusterSizeTextField.getText().length() == 0 ||
                         Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) == 0 ||
-                        Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) > 50.0) {
-                        if (undo.canUndo()) undo.undo(); else _maxSpatialClusterSizeTextField.setText("50");
+                        Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) > maximum) {
+                        if (undo.canUndo()) undo.undo(); else _maxSpatialClusterSizeTextField.setText(Double.toString(maximum));
                     }
                     enableSetDefaultsButton();
                 }

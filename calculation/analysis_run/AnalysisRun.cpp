@@ -1726,11 +1726,8 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
 
 void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub, unsigned int downlevel) {
     std::string buffer;
-    // Drilldown analysis is always 50% of population at risk - unless analysis is STP (should be just shy of 100%).
-    if (_parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION) {
-        _parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, 50.0, false);
-        _parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, 50.0, true);
-    }
+    _parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, 50.0, false);
+    _parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, 50.0, true);
     // Relax coordinates data checking to exclude data outside new retricted geographical area.
     _parameters.SetCoordinatesDataCheckingType(RELAXEDCOORDINATES);
 
