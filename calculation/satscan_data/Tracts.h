@@ -8,7 +8,7 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "MetaTractManager.h"
 #include "ptr_vector.h"
-#include <boost/optional.hpp>
+#include <optional>
 
  /** Class representing coordinates in any number of dimensions. */
 class Coordinates {
@@ -61,7 +61,7 @@ class Coordinates {
 class Location {
 	protected:
 		std::string _location_name;
-        boost::shared_ptr<const Coordinates> _coordinates;
+        std::shared_ptr<const Coordinates> _coordinates;
         unsigned int _index; // index in container structure when alphabetically ordered.
 
 	public:
@@ -75,7 +75,7 @@ class Location {
         unsigned int index() const { return _index; }
         void setindex(unsigned int i) { _index = i; }
         virtual bool hascoordinates() const { return _coordinates.get() != 0; }
-		virtual const boost::shared_ptr<const Coordinates>& coordinates() const { return _coordinates; }
+		virtual const std::shared_ptr<const Coordinates>& coordinates() const { return _coordinates; }
         void setCoordinates(const std::vector<double>& coordinates) { 
             if (hascoordinates()) throw prg_error("Attempting to redefine location coordinates.", "setCoordinates()");
             _coordinates.reset(new Coordinates(coordinates));
@@ -85,7 +85,7 @@ class Location {
 /* Defines operator() to compare by Location names. */
 class CompareLocationByName {
 	public:
-		bool operator() (const boost::shared_ptr<Location>& lhs, const boost::shared_ptr<Location>& rhs) {
+		bool operator() (const std::shared_ptr<Location>& lhs, const std::shared_ptr<Location>& rhs) {
 			return lhs->name() < rhs->name();
 		}
 };
@@ -93,7 +93,7 @@ class CompareLocationByName {
 /* Defines operator() to compare by Location coordinates. */
 class CompareLocationByCoordinates {
     public:
-	    bool operator() (const boost::shared_ptr<Location>& lhs, const boost::shared_ptr<Location>& rhs) {
+	    bool operator() (const std::shared_ptr<Location>& lhs, const std::shared_ptr<Location>& rhs) {
 		    return *(lhs->coordinates()) < *(rhs->coordinates());
 	    }
 };
@@ -105,8 +105,8 @@ class LocationsManager {
 	friend class IdentifiersManager;
 
 	public:
-		typedef std::vector<boost::shared_ptr<Location> > LocationContainer_t;
-		typedef std::pair<boost::optional<unsigned int>, const Location*> LocationIdx_t;
+		typedef std::vector<std::shared_ptr<Location> > LocationContainer_t;
+		typedef std::pair<std::optional<unsigned int>, const Location*> LocationIdx_t;
 		enum AddStatus { Accepted = 0, NameExists, CoordinateExists, WrongDimensions, Duplicate, CoordinateRedefinition };
 
 	protected:
@@ -126,7 +126,7 @@ class LocationsManager {
             for (auto itr = _locations.begin(); itr != _locations.end(); ++itr)
                 itr->get()->setindex(std::distance(_locations.begin(), itr));
         }
-        boost::optional<boost::shared_ptr<Location> > getLocationForCoordinates(const std::vector<double>& coordinates) const;
+        std::optional<std::shared_ptr<Location> > getLocationForCoordinates(const std::vector<double>& coordinates) const;
         bool getCoordinatesExist(const std::vector<double>& coordinates) const;
 		unsigned int expectedDimensions() const { return _expected_dimensions; }
 		void setExpectedDimensions(unsigned int i) {
@@ -136,7 +136,7 @@ class LocationsManager {
 		const LocationContainer_t& locations() const { return _locations; }
         const LocationContainer_t& locationsByCoordinates() const { return _locations_by_coordinates; }
         bool locationExists(const std::string& locationame) const {
-			auto itr = std::lower_bound(_locations.begin(), _locations.end(), boost::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
+			auto itr = std::lower_bound(_locations.begin(), _locations.end(), std::shared_ptr<Location>(new Location(locationame)), CompareLocationByName());
 			return itr != _locations.end() && itr->get()->name() == locationame;
 		}
 		LocationIdx_t getLocation(const std::string& locationame) const;
@@ -185,7 +185,7 @@ class Identifier {
 /* Defines operator() to compare by Identifier names. */
 class CompareIdenitifers {
 	public:
-		bool operator() (const boost::shared_ptr<Identifier>& lhs, const boost::shared_ptr<Identifier>& rhs) {
+		bool operator() (const std::shared_ptr<Identifier>& lhs, const std::shared_ptr<Identifier>& rhs) {
 			return lhs->name() < rhs->name();
 		}
 };
@@ -193,7 +193,7 @@ class CompareIdenitifers {
 /* Defines operator() to compare by Identifier Location names. */
 class CompareIdenitifersByLocation {
 	public:
-		bool operator() (const boost::shared_ptr<Identifier> lhs, const boost::shared_ptr<Identifier> rhs) {
+		bool operator() (const std::shared_ptr<Identifier> lhs, const std::shared_ptr<Identifier> rhs) {
 			if (lhs->getLocations().size() != rhs->getLocations().size())
 				return lhs->getLocations().size() < rhs->getLocations().size();
 			for (unsigned int i=0; i < lhs->getLocations().size(); ++i) {
@@ -207,7 +207,7 @@ class CompareIdenitifersByLocation {
 /* Manages Identifier objects and their coordinates. */
 class IdentifiersManager {
 	public:
-		typedef std::vector<boost::shared_ptr<Identifier>> Identifiers_t;
+		typedef std::vector<std::shared_ptr<Identifier>> Identifiers_t;
 		typedef ptr_vector<Coordinates> CoordinatesContainer_t;
         typedef std::map<tract_t, std::map<tract_t, double> > LocationOverrides_t;
         enum AddStatus { Accepted = 0, UnknownLocation, MultipleLocations };
@@ -224,7 +224,7 @@ class IdentifiersManager {
 		size_t                              _num_location_coordinates;
 		MetaIdentifierManager               _meta_identifiers_manager;
 		MetaNeighborManager                 _meta_neighbor_manager;
-		std::auto_ptr<MetaManagerProxy>     _meta_manager_proxy;
+		std::unique_ptr<MetaManagerProxy>     _meta_manager_proxy;
 		LocationOverrides_t                 _location_distance_overrides;
 
 	public:
@@ -242,7 +242,7 @@ class IdentifiersManager {
         std::string                       & getIdentifierNameAtIndex(tract_t tIndex, std::string& name) const;
         bool                                getLocationsDistanceOverridesExist() const { return _location_distance_overrides.size() != 0; }
 		std::pair<bool, double>             getLocationsDistanceOverride(tract_t t1, tract_t t2) const;
-		boost::optional<size_t>             getIdentifierIndex(const std::string& identifiername) const;
+		std::optional<size_t>             getIdentifierIndex(const std::string& identifiername) const;
         const Identifiers_t               & getIdentifiers() const { return _identifiers; }
         const LocationsManager            & getLocationsManager() const { return _locations_manager; }
 		size_t                              getNumLocationCoordinates() const { return _num_location_coordinates; }

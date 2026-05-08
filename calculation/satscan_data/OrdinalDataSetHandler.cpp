@@ -295,7 +295,7 @@ bool OrdinalDataSetHandler::ReadData() {
 
 /** sets purely temporal structures used in simulations */
 void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setCaseData_PT_Cat));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setCaseData_PT_Cat));
 }
 
 /** Instanciates randomizer object for each data set. Currently there are two

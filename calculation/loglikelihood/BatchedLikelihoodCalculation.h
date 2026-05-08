@@ -30,7 +30,7 @@ struct ProbabilitiesRange {
     ProbabilitiesRange(size_t ridx = 0) : _range_idx(ridx), _llr(std::numeric_limits<double>::infinity()) {}
     bool llrIsSet() const { return _llr != std::numeric_limits<double>::infinity(); }
 };
-typedef boost::shared_ptr<ProbabilitiesRange> ProbabilitiesRange_t;
+typedef std::shared_ptr<ProbabilitiesRange> ProbabilitiesRange_t;
 
 class BatchedSpaceTimeData;
 
@@ -49,7 +49,7 @@ class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
       // log-likelihood of being positive for each data set, by time interval range (probability, log-likelihood)
       mutable std::unique_ptr<TwoDimensionArrayHandler<std::pair<double, double>>> _log_likelihoods_by_range;
       mutable DataSetsProbabilitiesCache_t _probabilities_cache; // probabilities cache used in interval ranges
-      boost::shared_ptr<RandomizerContainer_t> _randomizer_container; // associated randomizers when running simulations
+      std::shared_ptr<RandomizerContainer_t> _randomizer_container; // associated randomizers when running simulations
       bool _always_full_statistic; // indicator that we're always calculating full log-likelihood
 
       double LL(double q, double Sn, const BatchedRandomizer::BatchEntryContainer_t& positiveBatches) const;
@@ -62,7 +62,7 @@ class BatchedLikelihoodCalculator : public AbstractLikelihoodCalculator {
 
     void                      clearCache() { std::for_each(_probabilities_cache.begin(), _probabilities_cache.end(), [](ProbabilitiesCache_t& m) { m.clear(); }); }
 
-    void                      associateRandomizers(boost::shared_ptr<RandomizerContainer_t> rc);
+    void                      associateRandomizers(std::shared_ptr<RandomizerContainer_t> rc);
     void                      calculateLoglikelihoodsForAll() const;
 
     ProbabilitiesAOI        & CalculateProbabilities(ProbabilitiesAOI& probabilities, count_t n, measure_t u, measure_t Sc, measure_t Sn, const boost::dynamic_bitset<>& positiveBatchIndexes, size_t tSetIndex = 0) const;

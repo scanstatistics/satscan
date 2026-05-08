@@ -13,20 +13,20 @@ const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
     as needed by data set handler (probability model) and analysis type. */
 SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
                                      break;
     case SEASONALTEMPORAL          :
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
                                      if (gParameters.GetIncludePurelyTemporalClusters()) {
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
@@ -290,8 +290,8 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
 
 /** sets purely temporal structures used in simulations */
 void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setCaseData_PT));
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setCaseData_PT));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT));
 }
 
 /** Allocates randomizers for each dataset. There are currently 2 randomization types

@@ -8,7 +8,7 @@
     which includes purely spatial and purely temporal clusters. */
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
     private:
-        boost::shared_ptr<AbstractTemporalClusterData> _pt_cluster_data;
+        std::shared_ptr<AbstractTemporalClusterData> _pt_cluster_data;
 
     protected:
         virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);

@@ -26,7 +26,7 @@ class DataSource {
 
         virtual long tranlateFieldIndex(long idx) const {
             if (idx < static_cast<long>(_fields_map.size())) {
-                return boost::any_cast<long>(_fields_map.at(static_cast<size_t>(idx))) - 1;
+                return std::any_cast<long>(_fields_map.at(static_cast<size_t>(idx))) - 1;
             }
             return idx;
         }
@@ -50,7 +50,7 @@ class DataSource {
         bool                               isLinelistOnlyColumn(long iFieldIndex) const;
         virtual bool                       ReadRecord() = 0;
         void                               tripBlankRecordFlag() {_blank_record_flag=true;}
-        //void                               setFieldsMap(const std::vector<boost::any>& map) {_fields_map = map;}
+        //void                               setFieldsMap(const std::vector<st::any>& map) {_fields_map = map;}
         const FieldMapContainer_t        & getFieldsMap() const { return _fields_map;  }
         void                               setFieldsMap(const FieldMapContainer_t& map);
         const LineListFieldMapContainer_t& getLinelistFieldsMap() const { return _linelist_fields_map; }
@@ -83,7 +83,7 @@ class AsciiFileDataSource : public DataSource {
          bool                        SetString(std::string& sParseLine);
      };
 
-     std::auto_ptr<StringParser>        gStringParser;
+     std::unique_ptr<StringParser>        gStringParser;
      long                               glReadCount;
      long                               glBlankReadCount;
      std::ifstream                      gSourceFile;
@@ -112,7 +112,7 @@ class AsciiFileDataSource : public DataSource {
 /** dBase file data source. */
 class dBaseFileDataSource : public DataSource {
    private:
-     std::auto_ptr<dBaseFile>           gSourceFile;
+     std::unique_ptr<dBaseFile>           gSourceFile;
      std::string                        gsValue;
      unsigned long                      glNumRecords;
      unsigned long                      glCurrentRecord;
@@ -164,8 +164,8 @@ class CsvFileDataSource : public DataSource {
 /** dBase file data source. */
 class ShapeFileDataSource : public DataSource {
     private:
-        std::auto_ptr<dBaseFile>           _dbase_file;
-        std::auto_ptr<ShapeFile>           _shape_file;
+        std::unique_ptr<dBaseFile>           _dbase_file;
+        std::unique_ptr<ShapeFile>           _shape_file;
         std::string                        _read_buffer;
         unsigned long                      _num_records;
         unsigned long                      _current_record;

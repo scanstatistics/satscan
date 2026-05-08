@@ -13,7 +13,7 @@ class CPSMonotoneCluster : public CCluster {
     friend class BernoulliLikelihoodCalculator;
 
   private:
-    std::auto_ptr<SpatialMonotoneData>        gpClusterData;
+    std::unique_ptr<SpatialMonotoneData>        gpClusterData;
 
   public:
     CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, AreaRateType eRate);

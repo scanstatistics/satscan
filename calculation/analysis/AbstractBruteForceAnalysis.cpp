@@ -26,7 +26,7 @@ void AbstractBruteForceAnalysis::FindTopClusters(const AbstractDataSetGateway& D
             const CCluster& TopCluster = *topClusters[t];
             if (TopCluster.ClusterDefined()) {
                 if (_neighbor_info[TopCluster.GetEllipseOffset()]) { // if neighbor info still set in class variable, add to store and clear
-                    std::auto_ptr<CentroidNeighbors> pNeighbors(_neighbor_info[TopCluster.GetEllipseOffset()]); _neighbor_info[TopCluster.GetEllipseOffset()] = 0;
+                    std::unique_ptr<CentroidNeighbors> pNeighbors(_neighbor_info[TopCluster.GetEllipseOffset()]); _neighbor_info[TopCluster.GetEllipseOffset()] = 0;
                     const_cast<CSaTScanData&>(_data_hub).addStore(pNeighbors);
                 }
                 const_cast<CCluster&>(TopCluster).SetCartesianRadius(_data_hub);

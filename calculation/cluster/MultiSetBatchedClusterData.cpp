@@ -272,7 +272,7 @@ const AbstractLoglikelihoodRatioUnifier& MultiSetBatchedProspectiveSpatialData::
     }
     dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
-    std::auto_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
+    std::unique_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
     for (unsigned int iWindowEnd = 1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
         prospectiveUnifier->Reset();
         t = 0;
@@ -334,7 +334,7 @@ double MultiSetBatchedProspectiveSpatialData::GetMaximizingValue(AbstractLikelih
     }
     dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
-    std::auto_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
+    std::unique_ptr<AbstractLoglikelihoodRatioUnifier> prospectiveUnifier(Unifier.Clone());
     for (unsigned int iWindowEnd = 1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
         prospectiveUnifier->Reset();
         t = 0;

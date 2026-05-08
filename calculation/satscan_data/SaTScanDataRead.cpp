@@ -156,7 +156,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& fi
   try {
     gPrint.SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
     gPrint.Printf("Reading the adjustments file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(filename, gParameters.getTimestamp(), true), gParameters.getInputSource(ADJ_BY_RR_FILE), gPrint)
     );
     // start with one collection of adjustments
@@ -348,7 +348,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
 		    _identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
 		    gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
 		    gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
-		    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+		    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
                 getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
                 gParameters.getInputSource(COORDFILE), gPrint)
             );
@@ -363,7 +363,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
             /* If the user have selected for multiple coordinates per identifier, then read the multiple locations file. */
             gPrint.SetImpliedInputFileType(BasePrint::MULTIPLE_LOCATIONS);
             gPrint.Printf("Reading the multiple locations per observation file\n", BasePrint::P_STDOUT);
-            std::auto_ptr<DataSource> MLSource(DataSource::GetNewDataSourceObject(
+            std::unique_ptr<DataSource> MLSource(DataSource::GetNewDataSourceObject(
                 getFilenameFormatTime(gParameters.getMultipleLocationsFile(), gParameters.getTimestamp(), true),
                 gParameters.getInputSource(MULTIPLE_LOCATIONS_FILE), gPrint)
             );
@@ -396,7 +396,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                     case IdentifiersManager::Accepted:
                     default: 
                         // If we're using the multiple locations file with the network file, warn user if location is not in network.
-                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_identifier_mgr.getLocationsManager().getLocation(locationname).first.get())) {
+                        if (gParameters.getUseLocationsNetworkFile() && !gDataHub.getLocationNetwork().locationIndexInNetwork(_identifier_mgr.getLocationsManager().getLocation(locationname).first.value())) {
                             gPrint.Printf(
                                 "Warning: Record %ld of the multiple coordinates file references location '%s', which is not defined in the network file.\n",
                                 BasePrint::P_WARNING, MLSource->GetCurrentRecordIndex(), locationname
@@ -697,7 +697,7 @@ bool SaTScanDataReader::ReadGridFile() {
   try {
     gPrint.Printf("Reading the grid file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::GRIDFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetSpecialGridFileName(), gParameters.getTimestamp(), true),
         gParameters.getInputSource(GRIDFILE), gPrint)
     );
@@ -994,7 +994,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
     try {
         gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
         gPrint.Printf("Reading the locations network file\n", BasePrint::P_STDOUT);
-        std::auto_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> networkSource(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(gParameters.getLocationsNetworkFilename(), gParameters.getTimestamp(), true),
             gParameters.getInputSource(NETWORK_FILE), gPrint)
         );
@@ -1029,7 +1029,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 			//_identifier_mgr.getMetaIdentifiersManager().getMetaPool().additionsCompleted(_identifier_mgr);
             gPrint.Printf("Reading the coordinates file to obtain network distances and coordinates.\n", BasePrint::P_STDOUT);
 			gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
-			std::auto_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
+			std::unique_ptr<DataSource> coordinatesSource(DataSource::GetNewDataSourceObject(
                 getFilenameFormatTime(gParameters.GetCoordinatesFileName(), gParameters.getTimestamp(), true),
                 gParameters.getInputSource(COORDFILE), gPrint)
             );
@@ -1048,7 +1048,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
 		// Now re-read the network file.
         if (bValid) {
 			gPrint.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
-			LocationsManager::LocationIdx_t firstlocation, secondlocation(boost::none, 0);
+			LocationsManager::LocationIdx_t firstlocation, secondlocation(std::nullopt, 0);
 			const LocationsManager & locations(_identifier_mgr.getLocationsManager());
 			std::vector<double> coordinatesA, coordinatesB;
 			networkSource->GotoFirstRecord();
@@ -1070,7 +1070,7 @@ bool SaTScanDataReader::ReadLocationNetworkFileAsDefinition() {
                 const char * secondvalue = networkSource->GetValueAt(1);
                 if (!secondvalue) {
                     locationNetwork.addNode(*firstlocation.first, *firstlocation.second);
-					secondlocation = LocationsManager::LocationIdx_t(boost::none, 0);
+					secondlocation = LocationsManager::LocationIdx_t(std::nullopt, 0);
                 } else {
 					secondlocation = locations.getLocation(secondvalue);
 					if (!secondlocation.first) {
@@ -1184,7 +1184,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetMaxCirclePopulationFileName(), gParameters.getTimestamp(), true),
         gParameters.getInputSource(MAXCIRCLEPOPFILE), gPrint)
     );
@@ -1464,7 +1464,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
 	_identifier_mgr.setExpectedCoordinateDimensions(0);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+    std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
         getFilenameFormatTime(gParameters.GetLocationNeighborsFileName(), gParameters.getTimestamp(), true),
         gParameters.getInputSource(LOCATION_NEIGHBORS_FILE), gPrint)
     );
@@ -1511,7 +1511,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
               vRecordNeighborList.push_back(*locationIdx);
             }
           } else {
-			locationIdx = boost::make_optional(_identifier_mgr.getMetaIdentifiersManager().getMetaIndex(identifier));
+			locationIdx = std::make_optional(_identifier_mgr.getMetaIdentifiersManager().getMetaIndex(identifier));
 			_identifier_mgr.getMetaIdentifiersManager().getAtomicIndexes(*locationIdx, AtomicIndexes);
             for (size_t t=0; t < AtomicIndexes.size(); ++t) {
               if (NeighborsSet.test(AtomicIndexes[t])) {
@@ -1581,7 +1581,7 @@ SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveIdentifierIndex(D
         return SaTScanDataReader::Ignored;
 	}
 	else
-		tLocationIndex = identifierIdx.get();
+		tLocationIndex = identifierIdx.value();
     return SaTScanDataReader::Accepted;
 }
 

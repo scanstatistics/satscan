@@ -22,7 +22,7 @@ class AbstractBruteForceAnalysis : public CAnalysis {
     typedef ptr_vector<CentroidNeighbors> NeighborContainer_t;
 
     NeighborContainer_t _neighbor_info;
-    boost::shared_ptr<CentroidNeighborCalculator> _centroid_calculator; //centroid neighbors calculator
+    std::shared_ptr<CentroidNeighborCalculator> _centroid_calculator; //centroid neighbors calculator
 
     virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
     virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;

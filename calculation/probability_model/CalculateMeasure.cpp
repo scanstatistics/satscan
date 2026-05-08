@@ -68,12 +68,12 @@ std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, con
     for all categories represented by modifying the data sets population
     measure array such that m[n][t] = expected number of cases at population date
     index n and tract index t, for all categories of that tract. */
-boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, PopulationData * pAltPopulationData) {
+std::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, PopulationData * pAltPopulationData) {
   std::vector<double>                     vRisk;
   PopulationData                        & population = pAltPopulationData ? *pAltPopulationData : Set.getPopulationData();
   int                                     nPops = population.GetNumPopulationDates();
   tract_t                                 nTracts = Set.getLocationDimension();
-  boost::shared_ptr<TwoDimMeasureArray_t> pPopMeasure(new TwoDimMeasureArray_t(population.GetNumPopulationDates(), Set.getLocationDimension()));
+  std::shared_ptr<TwoDimMeasureArray_t> pPopMeasure(new TwoDimMeasureArray_t(population.GetNumPopulationDates(), Set.getLocationDimension()));
 
   try {
     //calculate risk for each population category

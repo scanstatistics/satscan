@@ -312,7 +312,7 @@ void LocationInformationWriter::WriteClusterLocations(const CCluster& theCluster
                     Record.GetFieldValue(LOC_WEIGHTED_MEAN_FIELD).AsDouble() = mean.second;
                 }
                 if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == LINEAR) {
-                    boost::shared_ptr<AbstractTimeTrend> timetrend(getTimeTrendForIdentifiers(DataHub, locationToIdentifiers.second));
+                    std::shared_ptr<AbstractTimeTrend> timetrend(getTimeTrendForIdentifiers(DataHub, locationToIdentifiers.second));
                     switch (timetrend->GetStatus()) {
                         case AbstractTimeTrend::UNDEFINED: break;
                         case AbstractTimeTrend::NEGATIVE_INFINITY:
@@ -368,12 +368,12 @@ std::pair<double, double> LocationInformationWriter::getWeightedNormalMeanForIde
 }
 
 /* Returns the time trend for all identifiers - taken as one. */
-boost::shared_ptr<AbstractTimeTrend> LocationInformationWriter::getTimeTrendForIdentifiers(const CSaTScanData& DataHub, const MinimalGrowthArray<size_t>& identifiers) const {
+std::shared_ptr<AbstractTimeTrend> LocationInformationWriter::getTimeTrendForIdentifiers(const CSaTScanData& DataHub, const MinimalGrowthArray<size_t>& identifiers) const {
     std::vector<count_t> cases(DataHub.GetNumTimeIntervals());
     std::vector<measure_t> measure(DataHub.GetNumTimeIntervals());
     count_t ** ppCasesNC = DataHub.GetDataSetHandler().GetDataSet().getCaseData_NC().GetArray();
     measure_t ** ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet().getMeasureData_NC().GetArray();
-    boost::shared_ptr<AbstractTimeTrend> timeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+    std::shared_ptr<AbstractTimeTrend> timeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
     // Accumulate the total cases and total measure across all identifiers.
     for (unsigned int i = 0; i < identifiers.size(); ++i) {
         size_t idx = identifiers[i];

@@ -127,7 +127,7 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
 DataSetHandler::CountFileReadStatus DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
     try {
         gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(gParameters.GetCaseFileName(DataSet.getSetIndex()), gParameters.getTimestamp(), true),
             gParameters.getInputSource(CASEFILE, DataSet.getSetIndex()), gPrint)
         );
@@ -504,7 +504,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveIdentifierIndex(DataSou
         }
         return DataSetHandler::Ignored;
     }
-	tLocationIndex = static_cast<tract_t>(identifierIdx.get());
+	tLocationIndex = static_cast<tract_t>(identifierIdx.value());
     return DataSetHandler::Accepted;
 }
 
@@ -515,7 +515,7 @@ void DataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
 
 /** Sets purely temporal case array of each DataSet object. */
 void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
-  std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_PT));
+  std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fn(&DataSet::setCaseData_PT));
 }
 
 /** internal initialization - allocates RealDataSet object for each data set. */

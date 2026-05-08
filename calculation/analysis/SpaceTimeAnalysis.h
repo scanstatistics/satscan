@@ -14,10 +14,10 @@ class SpaceTimeData;
 /** Derives from base class to re-define methods for a space-time analysis. */
 class CSpaceTimeAnalysis : public CAnalysis {
     protected:
-        boost::shared_ptr<CSpaceTimeCluster> _cluster_compare; // cluster object utilized to find top cluster
-        boost::shared_ptr<AbstractTemporalClusterData> _cluster_data;
-        boost::shared_ptr<CMeasureList> _measure_list; // measure list object utilized in calculated simulation ratio
-        boost::shared_ptr<CTimeIntervals> _time_intervals; // iterates through temporal windows of cluster data
+        std::shared_ptr<CSpaceTimeCluster> _cluster_compare; // cluster object utilized to find top cluster
+        std::shared_ptr<AbstractTemporalClusterData> _cluster_data;
+        std::shared_ptr<CMeasureList> _measure_list; // measure list object utilized in calculated simulation ratio
+        std::shared_ptr<CTimeIntervals> _time_intervals; // iterates through temporal windows of cluster data
         CClusterSetCollections _top_clusters; // collection of clusters representing top cluster for each shape
 
         virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);

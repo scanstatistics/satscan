@@ -3,7 +3,6 @@
 #define __LikelihoodCalculation_H
 //******************************************************************************
 #include "SaTScan.h"
-#include "boost/shared_ptr.hpp"
 
 class SpatialMonotoneData; /** forward class declaration */
 class CSaTScanData;       /** forward class declaration */
@@ -26,7 +25,7 @@ class AbstractLikelihoodCalculator {
 
   protected:
     const CSaTScanData                & gDataHub; /** const reference to data hub */
-    boost::shared_ptr<AbstractLoglikelihoodRatioUnifier> _unifier; /** log likelihood ratio unifier for multiple data sets */
+    std::shared_ptr<AbstractLoglikelihoodRatioUnifier> _unifier; /** log likelihood ratio unifier for multiple data sets */
     count_t                             _min_low_rate_cases;
     count_t                             _min_high_rate_cases;
 

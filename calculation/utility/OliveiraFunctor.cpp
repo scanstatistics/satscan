@@ -22,12 +22,12 @@ OliveiraFunctor::result_type OliveiraFunctor::operator() (OliveiraFunctor::param
     macroRunTimeStopSerial();
 
     //calculate most likely clusters
-    boost::shared_ptr<MLC_Collections_t> topClustersContainer(new MLC_Collections_t());
+    std::shared_ptr<MLC_Collections_t> topClustersContainer(new MLC_Collections_t());
     for (std::vector<double>::const_iterator itr= _execution.getParameters().getExecuteSpatialWindowStops().begin(); itr != _execution.getParameters().getExecuteSpatialWindowStops().end(); ++itr)
         topClustersContainer->push_back(MostLikelyClustersContainer(*itr));
 
     _analysis->FindTopClusters(*_data_gateway, *topClustersContainer);
-    boost::shared_ptr<MostLikelyClustersContainer> reportClusters(new MostLikelyClustersContainer(0));
+    std::shared_ptr<MostLikelyClustersContainer> reportClusters(new MostLikelyClustersContainer(0));
     PrintNull nullPrint;
 	_execution.rankClusterCollections(*topClustersContainer, *reportClusters, 0, nullPrint);
 

@@ -109,7 +109,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
         CPurelyTemporalCluster TopCluster(_cluster_data_factory.get(), DataGateway, includeType, _data_hub);
         //create comparator cluster
         CPurelyTemporalCluster ClusterComparator(_cluster_data_factory.get(), DataGateway, includeType, _data_hub);
-        boost::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
+        std::shared_ptr<CClusterSet> clusterSet(CClusterSet::getNewCClusterSetObject(ClusterComparator, _data_hub));
         CClusterObject clusterObject(ClusterComparator);
         clusterSet->add(clusterObject);
         _time_intervals_r->resetIntervalRange();
@@ -127,7 +127,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
         //calculate simulated ratios
         if (_parameters.GetNumReplicationsRequested()) {
             ptr_vector<AbstractDataSetGateway>::const_iterator itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
-            std::auto_ptr<AbstractTemporalClusterData> PTClusterData;
+            std::unique_ptr<AbstractTemporalClusterData> PTClusterData;
             PTClusterData.reset(_cluster_data_factory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
             _time_Intervals_s->resetIntervalRange();
             if (_replica_process_type == MeasureListEvaluation) {

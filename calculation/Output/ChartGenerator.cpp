@@ -399,9 +399,9 @@ void TemporalChartGenerator::add(
                 chart_js << TEMPLATE_CHARTHEADER;
                 bool is_pt(cluster.GetClusterType() == PURELYTEMPORALCLUSTER); // not if cluster is purely temporal
                 // define seach series that we'll graph - next three are always printed.
-                std::auto_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed outside cluster area"), "8BB8EB", "square", 0, "observed"));
+                std::unique_ptr<ChartSeries> observedSeries(new ChartSeries("obs", 1, "column", (is_pt ? "Observed" : "Observed outside cluster area"), "8BB8EB", "square", 0, "observed"));
                 // the remaining series are conditionally present in the chart
-                std::auto_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
+                std::unique_ptr<ChartSeries> observedClusterSeries, expectedClusterSeries, odeSeries, cluster_odeSeries, clusterSeries, expectedSeries;
 				// expectedSeries.reset(new ChartSeries("exp", is_pt ? 3 : 2, "line", (is_pt ? "Expected" : "Expected (Outside Cluster Area)"), "89A54E", "triangle", 0, ""));
 				// clusterSeries.reset(new ChartSeries("cluster", is_pt ? 2 : 5, "column", "Cluster", "AA4643", "circle", 0, ""));
                 // space-time clusters also graph series which allow comparison between inside and outside the cluster

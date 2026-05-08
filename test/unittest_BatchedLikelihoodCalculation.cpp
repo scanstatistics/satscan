@@ -25,7 +25,7 @@ struct batched_loglikelihood_fixture : prm_testset_fixture {
         _data_hub->ReadDataFromFiles();
     }
 
-    std::auto_ptr<CSaTScanData> _data_hub;
+    std::unique_ptr<CSaTScanData> _data_hub;
 };
 
 size_t getBatchIndex(CSaTScanData * hub, BatchedRandomizer* randomizer, const std::string& id, const std::string& date) {
@@ -38,7 +38,7 @@ size_t getBatchIndex(CSaTScanData * hub, BatchedRandomizer* randomizer, const st
     int intervalIdx = hub->GetTimeIntervalOfDate(jdate);
     for (size_t t = 0; t < randomizer->getBatches().size(); ++t) {
         auto& be = randomizer->getBatches()[t];
-        if (be.get<2>() == intervalIdx && be.get<3>() == loc_idx.get())
+        if (be.get<2>() == intervalIdx && be.get<3>() == loc_idx.value())
             return t;
     }
     throw std::exception("Not found");

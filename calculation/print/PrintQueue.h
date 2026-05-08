@@ -32,7 +32,7 @@ public:
 
 private:
    BasePrint & gTarget;
-   std::auto_ptr<threshold_policy_i> gpThresholdPolicy;
+   std::unique_ptr<threshold_policy_i> gpThresholdPolicy;
    std::deque< std::pair<BasePrint::PrintType, std::string> > gOutputLines;//holds lines, along with an indicator that tells whether or not the line is a "warning" line (true==is).
    long glThreshold;
 

@@ -13,7 +13,8 @@
 #include "ClusterSupplement.h"
 #include "ClusterLocationsWriter.h"
 #include "LocationRelevance.h"
-#include <boost/optional.hpp>
+#include <optional>
+#include <functional>
 #include "ClusterKML.h"
 #include "ClusterScatterChart.h"
 #include "ClusterMap.h"
@@ -79,7 +80,7 @@ class AnalysisEmailHelper {
         AnalysisEmailHelper(const CSaTScanData& data_hub):_data_hub(data_hub), _meetsSummaryCutoff(0), _meetsEmailCutoff(0){}
 
         void recordClusters(MostLikelyClustersContainer& clusters, SimulationVariables& simVars, unsigned int iteration);
-        void finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor);
+        void finalize(std::shared_ptr<DataDemographicsProcessor> data_demographic_processor);
 		unsigned int getNumClustersMeetingSummaryCutoff() const { return _meetsSummaryCutoff; }
 		unsigned int getNumClustersMeetingEmailCutoff() const { return _meetsEmailCutoff; }
         const std::stringstream& getSignalText() const { return _signaltext; }
@@ -107,14 +108,14 @@ class AnalysisExecution {
 		AnalysisEmailHelper                 _email_helper;
         ClusterRankHelper                   _clusterRanker;
         SimulationVariables                 _sim_vars;
-        std::auto_ptr<LocationRelevance>    _relevance_tracker;
-        std::auto_ptr<ClusterKML>           _cluster_kml;
-        std::auto_ptr<CartesianGraph>       _cluster_graph;
-        std::auto_ptr<ClusterMap>           _cluster_map;
+        std::unique_ptr<LocationRelevance>    _relevance_tracker;
+        std::unique_ptr<ClusterKML>           _cluster_kml;
+        std::unique_ptr<CartesianGraph>       _cluster_graph;
+        std::unique_ptr<ClusterMap>           _cluster_map;
         std::unique_ptr<TemporalChartGenerator> _temporal_graph;
-        std::auto_ptr<SignificantRatios>    _significant_ratios;
-        std::auto_ptr<ClusterSupplementInfo> _clusterSupplement;
-        boost::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
+        std::unique_ptr<SignificantRatios>    _significant_ratios;
+        std::unique_ptr<ClusterSupplementInfo> _clusterSupplement;
+        std::shared_ptr<DataDemographicsProcessor> _data_demographic_processor;
 
 		AnalysisResultsWriter               _results_writer;
         std::string                         _base_output;
@@ -145,7 +146,7 @@ class AnalysisExecution {
         void                                printTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
         virtual bool                        repeatAnalysis();
         void                                reportClusters();
-        void                                runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
+        void                                runSuccessiveSimulations(std::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration);
         void                                updateSignificantRatiosList(double dRatio);
 
     public:
@@ -179,7 +180,7 @@ class AbstractAnalysisDrilldown {
         BasePrint                         & _print_direction;
         time_t                              _start_time;
         ExecutionType                       _executing_type;
-        std::auto_ptr<CSaTScanData>         _data_hub;
+        std::unique_ptr<CSaTScanData>         _data_hub;
         unsigned int                        _downlevel;
         std::vector<std::string>            _temp_files;
         const std::string                 & _base_output;
@@ -192,7 +193,7 @@ class AbstractAnalysisDrilldown {
             const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type,
             BasePrint& print, unsigned int downlevel, unsigned int parent_runid,
             unsigned int& drilldowns,
-            boost::optional<const std::string&> cluster_path
+            std::optional<std::reference_wrapper<const std::string>> cluster_path
         );
         virtual ~AbstractAnalysisDrilldown();
 
@@ -216,7 +217,7 @@ class AnalysisDrilldown : public AbstractAnalysisDrilldown {
         AnalysisDrilldown(
             const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
             const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns,
-            boost::optional<const std::string&> cluster_path = boost::none
+            std::optional<std::reference_wrapper<const std::string>> cluster_path = std::nullopt
         );
         virtual ~AnalysisDrilldown() {}
 
@@ -230,7 +231,7 @@ public:
     BernoulliAnalysisDrilldown(
         const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
         const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns,
-        boost::optional<const std::string&> cluster_path = boost::none
+        std::optional<std::reference_wrapper<const std::string>> cluster_path = std::nullopt
     );
     virtual ~BernoulliAnalysisDrilldown() {}
 
@@ -245,7 +246,7 @@ class AnalysisRunner {
   protected:
     const CParameters                 & _parameters;
     BasePrint                         & _print_direction;
-    std::auto_ptr<CSaTScanData>         _data_hub;
+    std::unique_ptr<CSaTScanData>         _data_hub;
     time_t                              _start_time;
     ExecutionType                       _executing_type;
     mutable unsigned int                _drilldowns; // number of drilldowns, acting as a unique run id

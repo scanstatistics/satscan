@@ -5,7 +5,7 @@
 #include "Toolkit.h"
 #include "ClusterInformationWriter.h"
 #include "ClusterLocationsWriter.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 /* restricted clusters by risk level: https://www.squishlist.com/ims/satscan/66425/ */
 

@@ -26,7 +26,7 @@ class CTimeIntervals {
         const CSaTScanData & gDataHub; /** data hub */
         const GInfo & _gInfo;
         AbstractLikelihoodCalculator & gLikelihoodCalculator; /** log likelihood calculator */
-        std::auto_ptr<AbstractMaxWindowLengthIndicator> gpMaxWindowLengthIndicator; /** indicates maximum temporal window length */
+        std::unique_ptr<AbstractMaxWindowLengthIndicator> gpMaxWindowLengthIndicator; /** indicates maximum temporal window length */
         int giNumIntervals; /* number of total time intervals */
         int giMaxWindowLength; /* maximum window length */
 
@@ -56,7 +56,7 @@ class AbstractWindowIterator {
         AbstractMaxWindowLengthIndicator& _max_indicator;
         const IntervalRange_t& _interval_range;
         const int _window_length_max;
-        std::auto_ptr<WindowInterval_t> _current_interval;
+        std::unique_ptr<WindowInterval_t> _current_interval;
 
     public:
         AbstractWindowIterator(AbstractMaxWindowLengthIndicator& max_indicator, const IntervalRange_t& interval_range, int max_window_length)

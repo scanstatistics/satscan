@@ -31,13 +31,13 @@
 
 #include <utility>
 #include <deque>
+#include <any>
 #include "boost/dynamic_bitset.hpp"
 #define DATE_TIME_INLINE
 #include "boost/date_time/posix_time/ptime.hpp"
 #undef DATE_TIME_INLINE
 
 #include "boost/tuple/tuple.hpp"
-#include <boost/any.hpp>
 #include <boost/dynamic_bitset.hpp>
 #include "BasePrint.h"
 
@@ -113,7 +113,7 @@ typedef std::pair<int, int> WindowRange_t;
 /* DateSource types */
 enum SourceType {CSV=0, DBASE, SHAPE, EXCEL}; // TODO -- add EXCEL
 /* data source fields map container typedef */
-typedef std::vector<boost::any> FieldMapContainer_t;
+typedef std::vector<std::any> FieldMapContainer_t;
 /* line-list types */
 enum LinelistType { INDIVIDUAL_ID=0, DESCRIPTIVE_COORD_Y, DESCRIPTIVE_COORD_X, GENERAL_DATA, CATEGORICAL_DATA, CONTINUOUS_DATA, DISCRETE_DATA };
 /* data source fields map container typedef for linelist */

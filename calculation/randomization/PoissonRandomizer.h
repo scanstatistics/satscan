@@ -104,14 +104,14 @@ class RelativeRiskAdjustmentHandler;
 class AlternateHypothesisRandomizer : public PoissonRandomizer {
   protected:
     const CSaTScanData & gDataHub;
-    boost::shared_ptr<RelativeRiskAdjustmentHandler> _riskAdjustments;
-    boost::shared_ptr<PoissonRandomizer> _randomizer;
+    std::shared_ptr<RelativeRiskAdjustmentHandler> _riskAdjustments;
+    std::shared_ptr<PoissonRandomizer> _randomizer;
 
   public:
     AlternateHypothesisRandomizer(const CSaTScanData& gDataHub, 
                                   long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     AlternateHypothesisRandomizer(const CSaTScanData& gDataHub, 
-                                  boost::shared_ptr<RelativeRiskAdjustmentHandler> & riskAdjustments, 
+                                  std::shared_ptr<RelativeRiskAdjustmentHandler> & riskAdjustments, 
                                   long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer& rhs);
     virtual ~AlternateHypothesisRandomizer() {}

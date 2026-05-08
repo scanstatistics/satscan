@@ -4,7 +4,7 @@
 #include "AnalysisRun.h"
 #include "Toolkit.h"
 #include "LoglikelihoodRatioWriter.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 /* report power evaluation LLR values to separate file https://www.squishlist.com/ims/satscan/66408/ */
 
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE( test_power_estimation_llr_files ) {
     std::string buffer;
     // check for the existance of standard and power evaluation llr files.
     filename.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
-    BOOST_CHECK_MESSAGE( boost::filesystem::exists( filename.getFullPath(buffer)) == true, "expecting existance of standard LLR file " << filename.getFullPath(buffer) );
+    BOOST_CHECK_MESSAGE( std::filesystem::exists( filename.getFullPath(buffer)) == true, "expecting existance of standard LLR file " << filename.getFullPath(buffer) );
     // confirm the number of expected records
     buffer = filename.getFileName() + filename.getExtension();
     std::ifstream stream;
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE( test_power_estimation_llr_files ) {
     BOOST_CHECK_MESSAGE(filelines == expected, "expecting " << expected << " rows, got " << filelines);
 
     filename.setExtension(printString(buffer, "%s%s", LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_HA_EXT, ASCIIDataFileWriter::ASCII_FILE_EXT).c_str());
-    BOOST_CHECK_MESSAGE( boost::filesystem::exists( filename.getFullPath(buffer)) == true, "expecting existance of HA LLR file " << filename.getFullPath(buffer) );
+    BOOST_CHECK_MESSAGE( std::filesystem::exists( filename.getFullPath(buffer)) == true, "expecting existance of HA LLR file " << filename.getFullPath(buffer) );
     // confirm the number of expected records
     buffer = filename.getFileName() + filename.getExtension();
     stream.close();

@@ -11,15 +11,15 @@
     as needed by data set handler (probability model). */
 SimulationDataContainer_t & RankDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
                                      if (gParameters.GetIncludePurelyTemporalClusters())
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
                                      break;
     case SPATIALVARTEMPTREND       :
       throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -250,7 +250,7 @@ bool RankDataSetHandler::ReadData() {
 
 /** sets purely temporal structures used in simulations */
 void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
+  std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT));
 }
 
 /** Allocates randomizers for each dataset. There are currently 2 randomization types

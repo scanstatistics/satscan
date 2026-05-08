@@ -8,13 +8,13 @@
 #include "SVTTCluster.h"
 
 /** Returns a new cluster set object. */
-boost::shared_ptr<CClusterSet> CClusterSet::getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub) {
+std::shared_ptr<CClusterSet> CClusterSet::getNewCClusterSetObject(const CCluster& cluster, const CSaTScanData& dataHub) {
     bool maximizing = !(dataHub.GetParameters().getSTPasHypergeometric() && dataHub.GetNumDataSets() == 1);
     if (!dataHub.GetParameters().GetIsIterativeScanning() &&
         (dataHub.GetParameters().GetAnalysisType() == SPACETIME || dataHub.GetParameters().GetAnalysisType() == PURELYTEMPORAL))
-        return boost::shared_ptr<CClusterSet>(new CClusterSetTemporalOverlap(cluster, dataHub.GetNumTimeIntervals(), maximizing));
+        return std::shared_ptr<CClusterSet>(new CClusterSetTemporalOverlap(cluster, dataHub.GetNumTimeIntervals(), maximizing));
     else
-        return boost::shared_ptr<CClusterSet>(new CClusterSet(maximizing));
+        return std::shared_ptr<CClusterSet>(new CClusterSet(maximizing));
 }
 
 double CClusterSetTemporalOverlap::MIN_CLUSTER_LLR_RETAINED = 1.0;
@@ -136,7 +136,7 @@ SharedClusterVector_t& CClusterSetCollections::getTopClusters(SharedClusterVecto
     }
     // now calculate the top cluster of each shape at each spatial window stop
     for (auto& stopClusters: stopCollections) {
-        boost::shared_ptr<CCluster> topCluster(stopClusters[0]->getClusterPtr());
+        std::shared_ptr<CCluster> topCluster(stopClusters[0]->getClusterPtr());
         //apply compactness correction
         topCluster->m_nRatio *= topCluster->GetNonCompactnessPenalty();
         //if the there are ellipses, compare current top cluster against them
@@ -177,7 +177,7 @@ void CClusterSetCollections::setClusterCollections(const CCluster& cluster, size
     _cluster_sets.clear();
     _cluster_type = cluster.GetClusterType();
     for (size_t t = 0; t < count; ++t) { // one cluster set for each ellipse/circle
-        boost::shared_ptr<CClusterSet> cluster_set;
+        std::shared_ptr<CClusterSet> cluster_set;
         if (!_parameters.GetIsIterativeScanning() && _parameters.GetAnalysisType() == SPACETIME && _cluster_type == SPACETIMECLUSTER)
             cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals(), _isSpecializedHypergeometric));
         else

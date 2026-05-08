@@ -236,7 +236,7 @@ AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData&
 
 /** constructor */
 AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const CSaTScanData& DataHub, 
-                                                             boost::shared_ptr<RelativeRiskAdjustmentHandler> & riskAdjustments,
+                                                             std::shared_ptr<RelativeRiskAdjustmentHandler> & riskAdjustments,
                                                              long lInitialSeed)
                               :PoissonRandomizer(DataHub.GetParameters(), lInitialSeed), gDataHub(DataHub), _riskAdjustments(riskAdjustments) {
     // define the underlying randomization object

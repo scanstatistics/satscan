@@ -10,8 +10,8 @@
 /** spatial variation and temporal tends analysis class */
 class CSpatialVarTempTrendAnalysis : public CAnalysis {
   private:
-    boost::shared_ptr<CSVTTCluster> _cluster_compare; // cluster object utilized to find top cluster
-    boost::shared_ptr<SVTTClusterData> _cluster_data;
+    std::shared_ptr<CSVTTCluster> _cluster_compare; // cluster object utilized to find top cluster
+    std::shared_ptr<SVTTClusterData> _cluster_data;
     CClusterSetCollections _top_clusters;
 
   protected:

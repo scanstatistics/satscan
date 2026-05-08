@@ -78,7 +78,7 @@ class ShapeFile {
     private:
         std::string     _filename;
         std::string     _mode;
-        std::auto_ptr<Projection> _projection;
+        std::unique_ptr<Projection> _projection;
 
         void            _createDefaultProjectionFile();
 

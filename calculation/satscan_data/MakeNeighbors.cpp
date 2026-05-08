@@ -768,13 +768,13 @@ std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTS
         // If user have specified that multiple coordinates are one-per-location or this tract has only only coordinate, just retrieve the coordinates.
         return DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[0]->coordinates()->retrieve(tractCoordinates);
     } else if (DataHub.GetParameters().getUseLocationsNetworkFile() && Cluster.getNumIdentifiers() > 1) {
-        boost::shared_ptr<NetworkLocationContainer_t> localClusterNetwork;
+        std::shared_ptr<NetworkLocationContainer_t> localClusterNetwork;
         if (!clusterNetwork) {
             // NetworkLocationContainer_t wasn't passed as function argument, so calculate this information now.
             localClusterNetwork.reset(new NetworkLocationContainer_t());
             clusterNetwork = localClusterNetwork.get();
             const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(DataHub.GetGInfo())->getCentroidLocation(Cluster.GetCentroidIndex());
-            const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+            const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.value())->second;
             DataHub.refLocationNetwork().buildNeighborsAboutNode(centroidNode, *clusterNetwork, DataHub.getLocationsManager().locations().size());
         }
         const Coordinates *pTarget = 0;
@@ -782,7 +782,7 @@ std::vector<double>& CentroidNeighborCalculator::getTractCoordinates(const CSaTS
         for (unsigned int i = 0; i < DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations().size(); ++i) {
             const Location * tractLocation = DataHub.getIdentifierInfo().getIdentifiers()[tTract]->getLocations()[i];
             // tractLocation->index()
-            const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(tractLocation->name()).first.get())->second);
+            const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(tractLocation->name()).first.value())->second);
             double dDistance = -1;
             for (auto itr = clusterNetwork->begin(); itr != clusterNetwork->end(); ++itr) {
                 if (itr->first == tractNode) {

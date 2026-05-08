@@ -3,7 +3,6 @@
 #define __AbstractCentricAnalysis_H
 //******************************************************************************
 #include "AbstractAnalysis.h"
-#include "boost/shared_ptr.hpp"
 #include "ptr_vector.h"
 #include "MeasureList.h"
 #include "IntermediateClustersContainer.h"
@@ -19,7 +18,7 @@ class CCluster;
 class AbstractCentricAnalysis : public AbstractAnalysis {
   public:
     typedef ptr_vector<CMeasureList>                    MeasureListContainer_t;
-    typedef boost::shared_ptr<std::vector<double> >     CalculatedRatioContainer_t;
+    typedef std::shared_ptr<std::vector<double> >     CalculatedRatioContainer_t;
     typedef ptr_vector<AbstractDataSetGateway>          DataSetGatewayContainer_t;
     typedef std::deque<ptr_vector<CCluster> >           ClustersContainer_t;
 

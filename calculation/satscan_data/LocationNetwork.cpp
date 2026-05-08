@@ -40,7 +40,7 @@ NetworkNode::AddStatusType NetworkNode::add_connection(NetworkNode* pNetworkNode
 }
 
 NetworkNode::ClosestNode_t NetworkNode::getClosestVisitedConnection(const boost::dynamic_bitset<>& visited) const {
-    NetworkNode::ClosestNode_t closetVisited = boost::none;
+    NetworkNode::ClosestNode_t closetVisited = std::nullopt;
     NetworkNode::ConnectionsContainer_t::const_iterator end = getConnections().end(), itr = getConnections().begin();
     for (; itr != end; ++itr) {
         if (visited.test(itr->get<0>()->getLocationIndex())) {
@@ -87,7 +87,7 @@ NetworkLocationContainer_t& Network::buildNeighborsAboutNode(const NetworkNode& 
     if (node.getConnections().size() == 0)
         return networkLocations; // This node is isolated from rest of network.
 
-    if (limitTo && limitTo.get() == networkLocations.size())
+    if (limitTo && limitTo.value() == networkLocations.size())
         return networkLocations;
 
     NetworkNode::CandidatesContainer_t candidateNodes; // collection of nodes that are candidates as network expands
@@ -113,7 +113,7 @@ NetworkLocationContainer_t& Network::buildNeighborsAboutNode(const NetworkNode& 
     networkLocations.push_back(std::make_pair(itrBestR->get<0>(), itrBestR->get<1>()));
     visited.set(itrBestR->get<0>()->getLocationIndex());
     if (pathTree) pathTree->add_connection(*itrBestR->get<0>(), itrBestR->get<1>(), visited);
-    if (limitTo && limitTo.get() == networkLocations.size())
+    if (limitTo && limitTo.value() == networkLocations.size())
         return networkLocations;
     itrR = itrBestR->get<0>()->getConnections().begin(), endR = itrBestR->get<0>()->getConnections().end();
     for (; itrR != endR; ++itrR) {
@@ -143,7 +143,7 @@ NetworkLocationContainer_t& Network::buildNeighborsAboutNode(const NetworkNode& 
         // But first set this node as visited and unset/remove from helper structures.
         visited.set(itrBestC->get<0>()->getLocationIndex());
         if (pathTree) pathTree->add_connection(*itrBestC->get<0>(), itrBestC->get<1>(), visited);
-        if (limitTo && limitTo.get() == networkLocations.size())
+        if (limitTo && limitTo.value() == networkLocations.size())
             return networkLocations;
         candidates.reset(itrBestC->get<0>()->getLocationIndex());
         candidate_length.erase(itrBestC->get<0>()->getLocationIndex());
@@ -170,7 +170,7 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
     NetworkLocationContainer_t networkLocations;
     if (DataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
         const Location& centroidLocation = dynamic_cast<const NetworkCentroidHandlerPassThrough*>(DataHub.GetGInfo())->getCentroidLocation(cluster.GetCentroidIndex());
-        const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.get())->second;
+        const NetworkNode& centroidNode = DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(centroidLocation.name()).first.value())->second;
         buildNeighborsAboutNode(centroidNode, networkLocations, DataHub.getLocationsManager().locations().size());
     }
 
@@ -179,13 +179,13 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
     // Create a collection of locations that are within this cluster per the identifiers of this cluster.
     for (auto tTract: clusterTracts) {
         const auto& identifier = DataHub.getIdentifierInfo().getIdentifiers()[tTract];
-        LocationsManager::LocationIdx_t locationBest(boost::optional<unsigned int>(boost::none), 0);
+        LocationsManager::LocationIdx_t locationBest(std::optional<unsigned int>(std::nullopt), 0);
         double dCurrent = -1;
         for (unsigned int i = 0; i < identifier->getLocations().size(); ++i) {
             double dDistance = -1;
             const auto& location = DataHub.getLocationsManager().getLocation(identifier->getLocations()[i]->name());
             if (networkLocations.size()) {
-                const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(location.second->name()).first.get())->second);
+                const auto& tractNode = &(DataHub.refLocationNetwork().getNodes().find(DataHub.getLocationsManager().getLocation(location.second->name()).first.value())->second);
                 double dDistance = -1;
                 for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {
                     if (itr->first == tractNode) {
@@ -196,15 +196,15 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
                 if (dDistance == -1) throw prg_error("Unable to determine distance between cluster centroid and '%s'.", "getClusterConnections()", location.second->name().c_str());
                 //dDistance = DataHub.refLocationNetwork().getDistanceBetween(centroidLocation, *tractLocation, DataHub.getIdentifierInfo());
                 switch (DataHub.GetParameters().GetMultipleCoordinatesType()) {
-                    case ATLEASTONELOCATION: if (locationBest.first == boost::none || dCurrent > dDistance) { locationBest = location; dCurrent = dDistance; } break; // Searching for the closest coordinate.
-                    case ALLLOCATIONS: if (locationBest.first == boost::none || dCurrent < dDistance) { locationBest = location; dCurrent = dDistance; } break; //Searching for the farthest coordinate.
+                    case ATLEASTONELOCATION: if (locationBest.first == std::nullopt || dCurrent > dDistance) { locationBest = location; dCurrent = dDistance; } break; // Searching for the closest coordinate.
+                    case ALLLOCATIONS: if (locationBest.first == std::nullopt || dCurrent < dDistance) { locationBest = location; dCurrent = dDistance; } break; //Searching for the farthest coordinate.
                     default: throw prg_error("Unknown multiple coordinates type '%d'.", "getClusterConnections()", DataHub.GetParameters().GetMultipleCoordinatesType());
                 }
             } else
-                _locations[location.second] = location.first.get();
+                _locations[location.second] = location.first.value();
         }
-        if (locationBest.first != boost::none) {
-            _locations[locationBest.second] = locationBest.first.get();
+        if (locationBest.first != std::nullopt) {
+            _locations[locationBest.second] = locationBest.first.value();
         }
     }
 
@@ -227,8 +227,8 @@ Network::Connection_Details_t Network::getClusterConnections(const CCluster& clu
 double Network::getDistanceBetween(const Location& location1, const Location& location2, const IdentifiersManager& identifierMgr) const {
     if (location1.name() == location2.name()) return 0.0;
 
-    auto location1Node = _nodes.find(identifierMgr.getLocationsManager().getLocation(location1.name()).first.get())->second;
-    auto location2Node = &(_nodes.find(identifierMgr.getLocationsManager().getLocation(location2.name()).first.get())->second);
+    auto location1Node = _nodes.find(identifierMgr.getLocationsManager().getLocation(location1.name()).first.value())->second;
+    auto location2Node = &(_nodes.find(identifierMgr.getLocationsManager().getLocation(location2.name()).first.value())->second);
     NetworkLocationContainer_t networkLocations;
     buildNeighborsAboutNode(location1Node, networkLocations, identifierMgr.getLocationsManager().locations().size());
     for (auto itr = networkLocations.begin(); itr != networkLocations.end(); ++itr) {

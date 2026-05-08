@@ -13,7 +13,7 @@ class ShapeDataFileWriter {
 
     protected:
         static const char         * SHAPE_FILE_EXT;
-        std::auto_ptr<ShapeFile>    _file;
+        std::unique_ptr<ShapeFile>    _file;
 
 public:
         FileName                    _fileName;

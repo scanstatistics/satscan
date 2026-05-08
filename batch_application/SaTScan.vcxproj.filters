@@ -8,9 +8,6 @@
     <Filter Include="Source Files\boost">
       <UniqueIdentifier>{b5382ac5-7249-4531-889a-bac50e75ecfc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\boost\regex">
-      <UniqueIdentifier>{72f5ba47-a2fb-4b63-82ab-5d56438c3635}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\boost\threads">
       <UniqueIdentifier>{7ab5f6af-3665-4f81-9603-61cda5b9d560}</UniqueIdentifier>
     </Filter>
@@ -96,15 +93,6 @@
     </Filter>
     <Filter Include="Header Files\batch_application">
       <UniqueIdentifier>{7d99923d-f99d-4331-a981-2e874b38e6e0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\boost\chrono">
-      <UniqueIdentifier>{022c7fbb-278d-482c-8ce6-4ce79cf73cb0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\boost\system">
-      <UniqueIdentifier>{314c6365-edbe-4407-b39c-3274e4587ffa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\boost\filesystem">
-      <UniqueIdentifier>{5b6e6acb-dc98-4c7a-97ff-f5bbfd4b9bf2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -609,71 +597,44 @@
     <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\regex_debug.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\static_mutex.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\regex\src\wide_posix_api.cpp">
-      <Filter>Source Files\boost\regex</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\thread\src\win32\thread.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\thread\src\win32\thread.cpp">
       <Filter>Source Files\boost\threads</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\cmdline.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\cmdline.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\config_file.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\config_file.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\convert.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\convert.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\options_description.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\options_description.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\parsers.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\parsers.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\positional_options.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\positional_options.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\split.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\split.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\utf8_codecvt_facet.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\utf8_codecvt_facet.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\value_semantic.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\value_semantic.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\variables_map.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\variables_map.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\program_options\src\winmain.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
     <ClCompile Include="ParameterProgramOptions.cpp">
       <Filter>Source Files\batch_application</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\chrono\src\chrono.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\chrono\src\process_cpu_clocks.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\chrono\src\thread_clock.cpp">
-      <Filter>Source Files\boost\chrono</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\system\src\error_code.cpp">
-      <Filter>Source Files\boost\system</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\utility\DateStringParser.cpp">
       <Filter>Source Files\calculation\utility</Filter>
@@ -699,40 +660,10 @@
     <ClCompile Include="..\calculation\satscan_data\ClosedLoopData.cpp">
       <Filter>Source Files\calculation\satscan_data</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\codecvt_error_category.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\directory.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\exception.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\operations.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\path_traits.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\portability.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\unique_path.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\utf8_codecvt_facet.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\filesystem\src\windows_file_codecvt.cpp">
-      <Filter>Source Files\boost\filesystem</Filter>
-    </ClCompile>
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp">
       <Filter>Source Files\calculation\Output</Filter>
     </ClCompile>
-    <ClCompile Include="..\boost\boost_1_81_0\libs\timer\src\cpu_timer.cpp">
+    <ClCompile Include="..\boost\boost_1_90_0\libs\timer\src\cpu_timer.cpp">
       <Filter>Source Files\boost</Filter>
     </ClCompile>
     <ClCompile Include="..\calculation\Output\AnalysisResultsWriter.cpp">

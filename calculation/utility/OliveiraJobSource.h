@@ -26,7 +26,7 @@
 class OliveiraJobSource
 {
 public://types/enums
-  typedef std::pair< boost::shared_ptr<MostLikelyClustersContainer>, boost::shared_ptr<MLC_Collections_t> > successful_result_type;
+  typedef std::pair< std::shared_ptr<MostLikelyClustersContainer>, std::shared_ptr<MLC_Collections_t> > successful_result_type;
 
   struct job_result {
     enum                        exception_type {unknown=0, std, prg, memory};
@@ -60,7 +60,7 @@ private://data members
   overflow_jobs_container_type              gmapOverflowResults;//contains unprocesed results for jobs, sorted by jobid.
   const boost::posix_time::ptime            gConstructionTime;
   PrintQueue                              & grPrintDirection;
-  std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
+  std::unique_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
   AnalysisExecution                       & grExecution;
   boost::posix_time::ptime StartTime;
   bool _frequent_estimations;

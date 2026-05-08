@@ -380,8 +380,8 @@ void LocationRiskEstimateWriter::writeWeightedNormal(const CSaTScanData& DataHub
 void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
     count_t * pCases, ** ppCasesNC, * pPTCasesNC;
     measure_t * pMeasure, ** ppMeasureNC, * pPTMeasureNC;
-    std::auto_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
-    std::auto_ptr<AbstractTimeTrend> GlobalTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+    std::unique_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+    std::unique_ptr<AbstractTimeTrend> GlobalTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
 
     try {
         for (unsigned int i=0; i < DataHub.GetNumDataSets(); ++i) {

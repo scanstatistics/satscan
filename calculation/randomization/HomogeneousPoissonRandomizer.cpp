@@ -50,7 +50,7 @@ void HomogeneousPoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet
      for (count_t t=0; t < distribution;) {
          itr->retrieveRandomPointInRegion(rX, rY, gRandomNumberGenerator);         
          //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
-         std::auto_ptr<Coordinates> pCoordinates(new Coordinates(rX, rY));
+         std::unique_ptr<Coordinates> pCoordinates(new Coordinates(rX, rY));
          ptr_vector<Coordinates>::iterator itrCoordinates;
          itrCoordinates = std::lower_bound(vCoordiantes.begin(), vCoordiantes.end(), pCoordinates.get()/*, CompareCoordinates()*/);
          if (itrCoordinates != vCoordiantes.end() && *(pCoordinates.get()) == *(*itrCoordinates))

@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( shapefile_data_source_case ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_shapefile.shp";
      ShapeFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(DataSource::GENERATEDID);
      map.push_back(DataSource::ONECOUNT);
      source.setFieldsMap(map);
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE( shapefile_data_source_population ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_shapefile.shp";
      ShapeFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(DataSource::GENERATEDID);
      map.push_back(DataSource::DEFAULT_DATE);
      map.push_back(static_cast<long>(1));
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE( shapefile_data_source_coordinates ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_shapefile.shp";
      ShapeFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(DataSource::GENERATEDID);
      map.push_back(DataSource::POINTX);
      map.push_back(DataSource::POINTY);
@@ -249,7 +249,7 @@ BOOST_AUTO_TEST_CASE( shapefile_data_source_grid ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_shapefile.shp";
      ShapeFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(DataSource::POINTX);
      map.push_back(DataSource::POINTY);
      source.setFieldsMap(map);
@@ -314,7 +314,7 @@ BOOST_FIXTURE_TEST_CASE( csv_data_source_ordinal, ordinal_datasource_fixture ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_case_ordinal.csv";
      CsvFileDataSource source(filename.str(), print, ",", "\"", 2, true);
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(static_cast<long>(1));
      map.push_back(static_cast<long>(2));
      map.push_back(DataSource::BLANK);
@@ -371,7 +371,7 @@ BOOST_FIXTURE_TEST_CASE( data_source_extra_cas, plain_datasource_fixture ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_many_columns.cas";
      CsvFileDataSource source(filename.str(), print, " ", "\"", 0, false);
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(static_cast<long>(5)); // location id
      map.push_back(static_cast<long>(1)); // number of case
      map.push_back(static_cast<long>(7)); // date
@@ -398,7 +398,7 @@ BOOST_FIXTURE_TEST_CASE( data_source_extra_csv, plain_datasource_fixture ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_many_columns.csv";
      CsvFileDataSource source(filename.str(), print, ",", "\"", 0, false);
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(static_cast<long>(5));
      map.push_back(static_cast<long>(1));
      map.push_back(static_cast<long>(7));
@@ -425,7 +425,7 @@ BOOST_FIXTURE_TEST_CASE( data_source_extra_dbf, plain_datasource_fixture ) {
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_many_columns.dbf";
      dBaseFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(static_cast<long>(5));
      map.push_back(static_cast<long>(1));
      map.push_back(static_cast<long>(7));
@@ -452,7 +452,7 @@ BOOST_FIXTURE_TEST_CASE( data_source_extra_shapefile, shapefile_datasource_many_
      std::stringstream filename;
      filename << getTestSetFilesPath().c_str() << "\\datasources\\test_shapefile_many_columns.shp";
      ShapeFileDataSource source(filename.str());
-     std::vector<boost::any> map;
+     std::vector<std::any> map;
      map.push_back(DataSource::POINTX);
      map.push_back(static_cast<long>(5));
      map.push_back(static_cast<long>(4));

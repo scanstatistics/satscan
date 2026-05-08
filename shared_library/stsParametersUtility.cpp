@@ -599,22 +599,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
       for (;itrMap != iss.getFieldsMap().end(); ++itrMap) {
           std::stringstream s;
           if (itrMap->type() == typeid(long)) {
-              long c = boost::any_cast<long>(*itrMap);
+              long c = std::any_cast<long>(*itrMap);
               if (c == 0) s << c;
-              else s << (boost::any_cast<long>(*itrMap) + (iss.getSourceType() == SHAPE ? 4 : 2));
+              else s << (std::any_cast<long>(*itrMap) + (iss.getSourceType() == SHAPE ? 4 : 2));
           } else if (itrMap->type() == typeid(DataSource::FieldType)) {
-              switch (boost::any_cast<DataSource::FieldType>(*itrMap)) {
+              switch (std::any_cast<DataSource::FieldType>(*itrMap)) {
                 case DataSource::GENERATEDID : s << 1; break;
                 case DataSource::ONECOUNT : s << 2; break;
                 case DataSource::DEFAULT_DATE : s << 0; break;
                 case DataSource::BLANK : s << ""; break;
-                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<DataSource::FieldType>(*itr));
+                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", std::any_cast<DataSource::FieldType>(*itr));
               }
           } else if (itrMap->type() == typeid(DataSource::ShapeFieldType)) {
-              switch (boost::any_cast<DataSource::ShapeFieldType>(*itrMap)) {
+              switch (std::any_cast<DataSource::ShapeFieldType>(*itrMap)) {
                 case DataSource::POINTX   : s << 3; break;
                 case DataSource::POINTY   : s << 4; break;
-                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", boost::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
+                default : throw prg_error("Unknown type '%s'.", "WriteInputSource()", std::any_cast<ShapeFileDataSource::ShapeFieldType>(*itr));
               }
           } else {
             throw prg_error("Unknown type '%s'.", "WriteInputSource()", itrMap->type().name());
@@ -1332,7 +1332,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       jni_error::_detectError(Env);
       jclass vclazz_mappings = Env.GetObjectClass(vectorobject_mappings);
       mid = _getMethodId_Checked(Env, vclazz_mappings, "size", "()I");
-      std::vector<boost::any> map;
+      std::vector<std::any> map;
       jint vsize_mappings = Env.CallIntMethod(vectorobject_mappings, mid);
       for (jint j=0; j < vsize_mappings; ++j) {
         mid = _getMethodId_Checked(Env, vclazz_mappings, "get", "(I)Ljava/lang/Object;");

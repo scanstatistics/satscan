@@ -47,9 +47,9 @@
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
 #include "MultipleAnalyses.h"
-#include <boost/assign/std/vector.hpp>
+
 #include <algorithm>
-using namespace boost::assign;
+
 using boost::algorithm::ireplace_all;
 
 const double AbstractAnalysisDrilldown::DEFAULT_CUTOFF_PVALUE = 0.05;
@@ -176,7 +176,7 @@ void AnalysisEmailHelper::recordClusters(MostLikelyClustersContainer& clusters, 
 }
 
 /** Finalize the object for reporting. */
-void AnalysisEmailHelper::finalize(boost::shared_ptr<DataDemographicsProcessor> data_demographic_processor) {
+void AnalysisEmailHelper::finalize(std::shared_ptr<DataDemographicsProcessor> data_demographic_processor) {
     const auto& params = _data_hub.GetParameters();
 	// Finish the summary paragraph - if applicable.
     if (params.getCutoffEmailSummary() && _meetsEmailCutoff > 1) {
@@ -262,10 +262,10 @@ void AnalysisExecution::calculateMostLikelyClusters() {
         //display process heading
         printFindClusterHeading();
         //allocate date gateway object
-        std::auto_ptr<AbstractDataSetGateway> pDataSetGateway(_data_hub.GetDataSetHandler().GetNewDataGatewayObject());
+        std::unique_ptr<AbstractDataSetGateway> pDataSetGateway(_data_hub.GetDataSetHandler().GetNewDataGatewayObject());
         _data_hub.GetDataSetHandler().GetDataGateway(*pDataSetGateway);
         //get analysis object
-        std::auto_ptr<CAnalysis> pAnalysis(getNewAnalysisObject(_print_direction));
+        std::unique_ptr<CAnalysis> pAnalysis(getNewAnalysisObject(_print_direction));
         //allocate objects used in 'FindTopClusters()' process
         pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
         //calculate most likely clusters
@@ -333,7 +333,7 @@ void AnalysisExecution::calculateOliveirasF() {
         unsigned long ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), _parameters.getNumRequestedOliveiraSets());
         for (unsigned u = 0; u < ulParallelProcessCount; ++u) {
             try {
-                OliveiraFunctor oliveiraf(oliveira_datasets, *this, boost::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)));
+                OliveiraFunctor oliveiraf(oliveira_datasets, *this, std::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)));
                 tg.create_thread(subcontractor<contractor_type, OliveiraFunctor>(theContractor, oliveiraf));
             }
             catch (std::bad_alloc &b) {
@@ -524,9 +524,9 @@ void AnalysisExecution::executeCentricEvaluation() {
             //allocate an array to contain simulation llr values
             AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
             //data gateway object for real data
-            std::auto_ptr<AbstractDataSetGateway> DataSetGateway(DataHandler.GetNewDataGatewayObject());
-            std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
-            std::auto_ptr<AbstractDataSetWriter> DataSetWriter;
+            std::unique_ptr<AbstractDataSetGateway> DataSetGateway(DataHandler.GetNewDataGatewayObject());
+            std::unique_ptr<LoglikelihoodRatioWriter> RatioWriter;
+            std::unique_ptr<AbstractDataSetWriter> DataSetWriter;
             std::string simulation_out;
             DataHandler.GetRandomizerContainer(RandomizationContainer); //get data randomizers
             DataHandler.GetDataGateway(*DataSetGateway); //set data gateway object
@@ -559,8 +559,8 @@ void AnalysisExecution::executeCentricEvaluation() {
             }
             if (_print_direction.GetIsCanceled()) return; // detect user cancellation
             //construct centric-analyses and centroid calculators for each thread:
-            std::deque<boost::shared_ptr<AbstractCentricAnalysis>> seqCentricAnalyses(ulParallelProcessCount);
-            std::deque<boost::shared_ptr<CentroidNeighborCalculator>> seqCentroidCalculators(ulParallelProcessCount);
+            std::deque<std::shared_ptr<AbstractCentricAnalysis>> seqCentricAnalyses(ulParallelProcessCount);
+            std::deque<std::shared_ptr<CentroidNeighborCalculator>> seqCentroidCalculators(ulParallelProcessCount);
             for (unsigned u = 0; u<ulParallelProcessCount; ++u) {
                 seqCentricAnalyses[u].reset(getNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
                 seqCentroidCalculators[u].reset(new CentroidNeighborCalculator(_data_hub, _print_direction));
@@ -661,14 +661,14 @@ void AnalysisExecution::executeCentricEvaluation() {
 void AnalysisExecution::executePowerEvaluations() {
     try {
         // If performing drilldown, store current simulation variables - since the power evaluation modifies that structure.
-        std::auto_ptr<SimulationVariables> storeSimVars;
+        std::unique_ptr<SimulationVariables> storeSimVars;
         if (_parameters.getPerformBernoulliDrilldown() || _parameters.getPerformStandardDrilldown())
             storeSimVars.reset(new SimulationVariables(_sim_vars));
         FILE * fpTextFile = _results_writer.getTextFile();
         std::string buffer;
         //openReportFile(fp, true);
         _clusterRanker.sort(_data_hub); // need to sort otherwise simulation process of ranking clusters will fail
-        boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+        std::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
         // if simulations not already done is analysis stage, perform them now
         if (!_sim_vars.get_sim_count()) {
             // Do standard replications
@@ -764,7 +764,7 @@ void AnalysisExecution::executePowerEvaluations() {
                 randomizers->at(0) = new AlternateHypothesisRandomizer(_data_hub, riskAdjustments.at(t), _parameters.GetRandomizationSeed());
                 break;
             case FILESOURCE: {
-                std::auto_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true), _parameters.GetRandomizationSeed()));
+                std::unique_ptr<FileSourceRandomizer> randomizer(new FileSourceRandomizer(_parameters, getFilenameFormatTime(_parameters.getPowerEvaluationSimulationDataSourceFilename(), _parameters.getTimestamp(), true), _parameters.GetRandomizationSeed()));
                 // set file line offset for the current iteration of power step
                 randomizer->setLineOffset(t * _parameters.getNumPowerEvalReplicaPowerStep());
                 randomizers->at(0) = randomizer.release();
@@ -863,7 +863,7 @@ void AnalysisExecution::executeSuccessiveSimulations() {
                 simulation_out = getFilenameFormatTime(_parameters.GetSimulationDataOutputFilename(), _parameters.getTimestamp(), true);
                 remove(simulation_out.c_str());
             }
-            boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+            std::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
             runSuccessiveSimulations(randomizers, _parameters.GetNumReplicationsRequested(), simulation_out, false, _analysis_count);
         }
     }
@@ -989,12 +989,12 @@ AnalysisExecution::OptimalGiniByLimit_t AnalysisExecution::getOptimalGiniContain
     assert(atmost.size() == mlc_collections.size());
     OptimalGiniByLimit_t maximized(&(mlc_collections.front()), atmost.front());
     //MostLikelyClustersContainer* maximizedCollection =  &(mlc_collections.front());
-    double maximizedGINI = mlc_collections.front().getGiniCoefficient(_data_hub, _sim_vars, boost::optional<double>(), atmost.front());
+    double maximizedGINI = mlc_collections.front().getGiniCoefficient(_data_hub, _sim_vars, std::optional<double>(), atmost.front());
     MLC_Collections_t::const_iterator itrMLC = mlc_collections.begin() + 1;
     std::vector<unsigned int>::const_iterator itrMost = atmost.begin() + 1;
     // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
     for (; itrMLC != mlc_collections.end(); ++itrMLC, ++itrMost) {
-        double thisGini = itrMLC->getGiniCoefficient(_data_hub, _sim_vars, boost::optional<double>(), *itrMost);
+        double thisGini = itrMLC->getGiniCoefficient(_data_hub, _sim_vars, std::optional<double>(), *itrMost);
         if (maximizedGINI < thisGini) {
             maximized.first = &(*itrMLC);
             maximized.second = *itrMost;
@@ -1289,7 +1289,7 @@ void AnalysisExecution::printTopClusterLogLikelihood(const MostLikelyClustersCon
 - additional output file(s)
 *****************************************************
 */
-void AnalysisExecution::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration) {
+void AnalysisExecution::runSuccessiveSimulations(std::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica, const std::string& writefile, bool isPowerStep, unsigned int iteration) {
     try {
         {
             PrintQueue lclPrintDirection(_print_direction, _parameters.GetSuppressingWarnings());
@@ -1304,7 +1304,7 @@ void AnalysisExecution::runSuccessiveSimulations(boost::shared_ptr<RandomizerCon
             unsigned long ulParallelProcessCount = std::min(_parameters.GetNumParallelProcessesToExecute(), num_relica);
             for (unsigned u = 0; u < ulParallelProcessCount; ++u) {
                 try {
-                    stsMCSimSuccessiveFunctor mcsf(thread_mutex, _data_hub, boost::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u == 0);
+                    stsMCSimSuccessiveFunctor mcsf(thread_mutex, _data_hub, std::shared_ptr<CAnalysis>(getNewAnalysisObject(nullPrint)), std::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, writefile, u == 0);
                     tg.create_thread(subcontractor<contractor_type, stsMCSimSuccessiveFunctor>(theContractor, mcsf));
                 }
                 catch (std::bad_alloc &b) {
@@ -1532,8 +1532,8 @@ void AnalysisExecution::reportClusters() {
 If user requested 'location information' output file(s), they are created
 simultaneously with reported clusters. */
 void AnalysisExecution::printTopClusters(const MostLikelyClustersContainer& mlc) {
-    std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
-    std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
+    std::unique_ptr<LocationInformationWriter> ClusterLocationWriter;
+    std::unique_ptr<ClusterInformationWriter>  ClusterWriter;
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     _clusterSupplement.reset(new ClusterSupplementInfo());
 
@@ -1691,12 +1691,12 @@ AbstractAnalysisDrilldown::AbstractAnalysisDrilldown(
     const CParameters& source_parameters, const std::string& base_output, ExecutionType executing_type,
     BasePrint& print, unsigned int downlevel, unsigned int parent_runid,
     unsigned int& drilldowns,
-    boost::optional<const std::string&> cluster_path
+    std::optional<std::reference_wrapper<const std::string>> cluster_path
 ): _parameters(source_parameters), _print_direction(print), _executing_type(executing_type), _downlevel(downlevel), 
     _base_output(base_output), _significant_clusters(0), _drilldowns(drilldowns) {
     // Record start time of drilldown start -- of course this excludes time reading data.
     time(&_start_time);
-    _cluster_path = (cluster_path ? cluster_path.get() : "");
+    _cluster_path = (cluster_path ? cluster_path->get() : "");
     ++drilldowns;
     // Never email from drill down analyses.
     _parameters.setAlwaysEmailSummary(false);
@@ -1717,7 +1717,7 @@ std::string& AbstractAnalysisDrilldown::createTempFilename(const CCluster& detec
     std::stringstream temp_coordinates_filename;
     std::string temp_directory, buffer;
     temp_coordinates_filename << GetUserTemporaryDirectory(temp_directory).c_str();
-    buffer = boost::filesystem::path::preferred_separator;
+    buffer = std::filesystem::path::preferred_separator;
     temp_coordinates_filename << buffer << "drilldown-" << getTypeIdentifier() << "-" << _cluster_path;
     temp_coordinates_filename << "-" << RandomNumberGenerator(reinterpret_cast<long>(&detectedCluster)).GetRandomInteger() << extension;
     filename = temp_coordinates_filename.str();
@@ -1759,7 +1759,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         neighbors_file.open(createTempFilename(detectedCluster, supplementInfo, ".nei", buffer).c_str());
         if (!neighbors_file) throw resolvable_error("Error: Could not create neighbors file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetLocationNeighborsFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(LOCATION_NEIGHBORS_FILE), _print_direction)
         );
@@ -1784,7 +1784,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         coordinates_file.open(createTempFilename(detectedCluster, supplementInfo, ".geo", buffer).c_str());
         if (!coordinates_file) throw resolvable_error("Error: Could not create coordinates file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::COORDFILE);
-		std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+		std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetCoordinatesFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(COORDFILE), _print_direction)
         );
@@ -1808,7 +1808,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         network_file.open(createTempFilename(detectedCluster, supplementInfo, ".ntk", buffer).c_str());
         if (!network_file) throw resolvable_error("Error: Could not create locations network file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::NETWORK_FILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.getLocationsNetworkFilename(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(NETWORK_FILE), _print_direction)
         );
@@ -1837,7 +1837,7 @@ void AbstractAnalysisDrilldown::createReducedCoodinatesFile(const CCluster& dete
         ml_file.open(createTempFilename(detectedCluster, supplementInfo, ".ml", buffer).c_str());
         if (!ml_file) throw resolvable_error("Error: Could not create multiple locations file '%s'.\n", buffer.c_str());
         _print_direction.SetImpliedInputFileType(BasePrint::MULTIPLE_LOCATIONS);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.getMultipleLocationsFile(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(MULTIPLE_LOCATIONS_FILE), _print_direction)
         );
@@ -1868,7 +1868,7 @@ void AbstractAnalysisDrilldown::createReducedGridFile(const CCluster& detectedCl
         grid_file.open(createTempFilename(detectedCluster, supplementInfo, ".grd", buffer).c_str());
         if (!grid_file) throw resolvable_error("Error: Could not create grid file '%s'.\n", buffer.c_str());
 		_print_direction.SetImpliedInputFileType(BasePrint::GRIDFILE);
-        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
+        std::unique_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(
             getFilenameFormatTime(_parameters.GetSpecialGridFileName(), _parameters.getTimestamp(), true),
             _parameters.getInputSource(GRIDFILE), _print_direction)
         );
@@ -1924,7 +1924,7 @@ void AbstractAnalysisDrilldown::drilldownCluster(const AnalysisExecution& execut
                 );
                 AnalysisDrilldown drilldown(
                     cluster, suppleInfo, datahub, execution.getDrilldownBaseOutput(), execution.getExecutioningType(),
-                    datahub.getDrilldownLevel() + 1, drilldowns, boost::optional<const std::string&>(execution.getDrilldownClusterPath())
+                    datahub.getDrilldownLevel() + 1, drilldowns, std::optional<std::reference_wrapper<const std::string>>(execution.getDrilldownClusterPath())
                 );
                 drilldown.execute(parameters.GetOutputFileName());
                 const_cast<CParameters&>(parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
@@ -1954,7 +1954,7 @@ void AbstractAnalysisDrilldown::drilldownCluster(const AnalysisExecution& execut
                 );
                 BernoulliAnalysisDrilldown drilldown(
                     cluster, suppleInfo, datahub, execution.getDrilldownBaseOutput(), execution.getExecutioningType(),
-                    datahub.getDrilldownLevel() + 1, drilldowns, boost::optional<const std::string&>(execution.getDrilldownClusterPath())
+                    datahub.getDrilldownLevel() + 1, drilldowns, std::optional<std::reference_wrapper<const std::string>>(execution.getDrilldownClusterPath())
                 );
                 drilldown.execute(parameters.GetOutputFileName());
                 const_cast<CParameters&>(parameters).addDrilldownResultFilename(drilldown.getParameters().GetOutputFileName());
@@ -2019,7 +2019,7 @@ std::string AnalysisDrilldown::TYPE_IDENTIFIER = "std";
 
 AnalysisDrilldown::AnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub, const std::string& base_output,
-    ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, boost::optional<const std::string&> cluster_path
+    ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, std::optional<std::reference_wrapper<const std::string>> cluster_path
 ): AbstractAnalysisDrilldown(
     source_data_hub.GetParameters(), base_output, executing_type, source_data_hub.GetPrintDirection(),
     downlevel, source_data_hub.getDrilldownRunId(), drilldowns, cluster_path
@@ -2056,7 +2056,7 @@ std::string BernoulliAnalysisDrilldown::TYPE_IDENTIFIER = "bin";
 
 BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,
-    const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, boost::optional<const std::string&> cluster_path
+    const std::string& base_output, ExecutionType executing_type, unsigned int downlevel, unsigned int& drilldowns, std::optional<std::reference_wrapper<const std::string>> cluster_path
 ) : AbstractAnalysisDrilldown(
     source_data_hub.GetParameters(), base_output, executing_type, source_data_hub.GetPrintDirection(), 
     downlevel, source_data_hub.getDrilldownRunId(), drilldowns, cluster_path
@@ -2093,7 +2093,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                 ** ppSourceControls = source_data_hub.GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
             for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                 tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                 ppCases[0][drilldown_tract] = ppSourceCases[0][tTract];
                 ppControls[0][drilldown_tract] = ppSourceControls[0][tTract];
             }
@@ -2206,7 +2206,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                     ** ppControls = _data_hub->GetDataSetHandler().GetDataSet(d).getControlData().GetArray();
                 for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                     tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                     ppCases[0][drilldown_tract] = detectedCluster.GetObservedCountForTract(tTract, source_data_hub, d);
                     ppControls[0][drilldown_tract] = detectedCluster.GetCountForTractOutside(tTract, source_data_hub, d);
                 }
@@ -2237,7 +2237,7 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
                 count_t** ppClusterCases = source_data_hub.GetDataSetHandler().GetDataSet(d).getCaseData().GetArray();
                 for (tract_t i = 1; i <= detectedCluster.getNumIdentifiers(); ++i) {
                     tract_t tTract = source_data_hub.GetNeighbor(detectedCluster.GetEllipseOffset(), detectedCluster.GetCentroidIndex(), i, detectedCluster.GetCartesianRadius());
-                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).get();
+                    tract_t drilldown_tract = _data_hub->getIdentifierInfo().getIdentifierIndex(source_data_hub.getIdentifierInfo().getIdentifierNameAtIndex(tTract, buffer)).value();
                     // record number of cases by interval for current tract - stratifying by day of week and data set
                     for (int interval = detectedCluster.m_nFirstInterval; interval < detectedCluster.m_nLastInterval; ++interval)
                         setCases[offset + (interval % daysInAdjustment)][0][drilldown_tract] += ppClusterCases[interval][tTract] - (interval + 1 == source_data_hub.GetNumTimeIntervals() ? 0 : ppClusterCases[interval + 1][tTract]);
@@ -2319,7 +2319,7 @@ void AnalysisRunner::run() {
         }
         if (_print_direction.GetIsCanceled()) return;
 
-        boost::shared_ptr<AnalysisExecution> execution(getAnalysisExecution());
+        std::shared_ptr<AnalysisExecution> execution(getAnalysisExecution());
         execution->execute();
         if (_print_direction.GetIsCanceled()) return;
 

@@ -124,7 +124,7 @@ void MultipleAnalyses::emailSummary(BasePrint& print, bool includeUnSelected) {
             CParameters parameters;
             getParameters(*itr, parameters, print);
             if (parameters.GetIsProspectiveAnalysis()) ++prospectiveCount; else ++retrospectiveCount;
-            if (boost::filesystem::exists(printString(filename, "%s%s", itr->getLastResultsFilename().c_str(), _EMAIL_TEMP_EXTENSION.c_str()).c_str())) {
+            if (std::filesystem::exists(printString(filename, "%s%s", itr->getLastResultsFilename().c_str(), _EMAIL_TEMP_EXTENSION.c_str()).c_str())) {
                 std::ifstream summary_tmp(filename.c_str());
                 summary_tmp >> clustersMeetingCutoff;
                 summary_tmp.close();

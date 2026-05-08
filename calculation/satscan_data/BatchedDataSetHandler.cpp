@@ -12,36 +12,36 @@
 SimulationDataContainer_t & BatchedDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
     switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL: 
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux2));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux2));
             for (unsigned int i=0; i < Container.size(); ++i)
                 Container[i]->allocatePositiveBatchData(static_cast<unsigned int>(gDataHub.GetDataSetHandler().GetDataSet(i).getTotalMeasure()));
             break;
         case SEASONALTEMPORAL:
         case PURELYTEMPORAL:
         case PROSPECTIVEPURELYTEMPORAL: 
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux2)); 
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux2)); 
             for (unsigned int i = 0; i < Container.size(); ++i)
                 Container[i]->allocatePositiveBatchData_PT(static_cast<unsigned int>(gDataHub.GetDataSetHandler().GetDataSet(i).getTotalMeasure()));
             break;
         case SPACETIME:
         case PROSPECTIVESPACETIME: 
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
-            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux2));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux));
+            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_Aux2));
             for (unsigned int i = 0; i < Container.size(); ++i)
                 Container[i]->allocatePositiveBatchData(static_cast<unsigned int>(gDataHub.GetDataSetHandler().GetDataSet(i).getTotalMeasure()));
             if (gParameters.GetIncludePurelyTemporalClusters()) {
-                std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
-                std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-                std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
-                std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux2)); 
+                std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
+                std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT));
+                std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux));
+                std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateMeasureData_PT_Aux2)); 
                 for (unsigned int i = 0; i < Container.size(); ++i)
                     Container[i]->allocatePositiveBatchData_PT(static_cast<unsigned int>(gDataHub.GetDataSetHandler().GetDataSet(i).getTotalMeasure()));
             }
@@ -342,10 +342,10 @@ DataSetHandler::RecordStatusType BatchedDataSetHandler::RetrieveCaseRecordData(D
 
 /** sets purely temporal structures used in simulations */
 void BatchedDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-    std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setCaseData_PT));
-    std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
-    std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
-    std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux2));
+    std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setCaseData_PT));
+    std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT));
+    std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux));
+    std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::setMeasureData_PT_Aux2));
     for (unsigned int i = 0; i < Container.size(); ++i)
         Container[i]->setPositiveBatchIndexes_PT(static_cast<unsigned int>(gDataHub.GetDataSetHandler().GetDataSet(i).getTotalMeasure()));
 }

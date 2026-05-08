@@ -56,8 +56,8 @@ bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
 }
 
 /** Returns field index as optional - does not throw exception if field is not defined. */
-boost::optional<unsigned int> RecordBuffer::_getFieldIndex(const std::string& sFieldName) const {
-    boost::optional<unsigned int> idx = boost::none;
+std::optional<unsigned int> RecordBuffer::_getFieldIndex(const std::string& sFieldName) const {
+    std::optional<unsigned int> idx = std::nullopt;
     bool bFound = false;
     for (unsigned int i=0; i < vFieldDefinitions.size() && !bFound; ++i) {
         bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));

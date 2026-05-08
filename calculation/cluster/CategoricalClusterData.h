@@ -91,7 +91,7 @@ class CategoricalProspectiveSpatialData : public CategoricalTemporalData, public
     unsigned int                        giProspectiveStart;       /** index of prospective start date in DataInterface case array */
 
     EvaluationAssistDataStatus          geEvaluationAssistDataStatus;
-    std::auto_ptr<TwoDimensionArrayHandler<count_t> > gCategoryCasesHandler;
+    std::unique_ptr<TwoDimensionArrayHandler<count_t> > gCategoryCasesHandler;
 
   public:
     CategoricalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
@@ -122,7 +122,7 @@ class CategoricalSpaceTimeData : public CategoricalTemporalData {
   protected:
       unsigned int                       _start_index;
       EvaluationAssistDataStatus         geEvaluationAssistDataStatus;
-     std::auto_ptr<TwoDimensionArrayHandler<count_t> > gCategoryCasesHandler;
+     std::unique_ptr<TwoDimensionArrayHandler<count_t> > gCategoryCasesHandler;
 
   public:
     CategoricalSpaceTimeData(const DataSetInterface& Interface);

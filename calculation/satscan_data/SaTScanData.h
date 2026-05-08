@@ -30,7 +30,7 @@ class CSaTScanData {
   friend class BernoulliAnalysisDrilldown;
 
   public:
-    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
+    typedef std::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
     enum ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
     typedef std::pair<boost::dynamic_bitset<>, std::vector<tract_t>> ClusterLocationCacheData_t;
     typedef std::map<std::string, ClusterLocationCacheData_t> ClusterLocationCache_t;
@@ -52,10 +52,10 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    std::auto_ptr<DataSetHandler>               gDataSets;
+    std::unique_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
-    std::auto_ptr<GInfo>                        gCentroidsHandler;
-	boost::shared_ptr<IdentifiersManager>       _identifiers_manager;	
+    std::unique_ptr<GInfo>                        gCentroidsHandler;
+	std::shared_ptr<IdentifiersManager>       _identifiers_manager;	
 	Network                                     _locations_network;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
@@ -95,7 +95,7 @@ class CSaTScanData {
     mutable ClusterLocationCache_t              _cluster_locations_cache;
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
-    mutable boost::shared_ptr<LocationsReportHelper> _report_helper;
+    mutable std::shared_ptr<LocationsReportHelper> _report_helper;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -117,7 +117,7 @@ class CSaTScanData {
     tract_t                                     m_nGridTracts;
 
     std::string                               & getDatasetLabel(size_t set_number, std::string& label, bool prefixed=true) const;
-    boost::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
+    std::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }
     Network                                   & getLocationNetwork() { return  _locations_network; }
     const Network                             & refLocationNetwork() const { return  _locations_network; }
@@ -204,12 +204,12 @@ class CSaTScanData {
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
     bool                                        isSortArrayAllocoated() const {return gpSortedIntHandler != 0 || gpSortedUShortHandler != 0;}
 
-    inline void                                 addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo);
+    inline void                                 addStore(std::unique_ptr<CentroidNeighbors>& NeighborInfo);
 
     //virtual void                                setLocationNotEvaluated(tract_t tTractIndex);
 };
 
-inline void CSaTScanData::addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo) {
+inline void CSaTScanData::addStore(std::unique_ptr<CentroidNeighbors>& NeighborInfo) {
     tract_t tCentroidIndex = NeighborInfo->GetCentroidIndex();
     if (gvCentroidNeighborStore.size() < (size_t)tCentroidIndex + 1)
         gvCentroidNeighborStore.resize(tCentroidIndex + 1, 0);

@@ -17,7 +17,7 @@ class RelativeRiskAdjustmentHandler;
           it might be better to simplfy those classes and move reading here. */
 class SaTScanDataReader {
   public:
-    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
+    typedef std::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
     typedef std::vector<RiskAdjustments_t> RiskAdjustmentsContainer_t;
     enum RecordStatusType       {Rejected=0, Ignored, Accepted};
 

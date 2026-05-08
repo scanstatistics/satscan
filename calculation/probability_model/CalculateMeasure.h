@@ -17,7 +17,7 @@ std::vector<double>& CalcRisk(RealDataSet& Set,
                               std::vector<double>& vRisk, 
                               PopulationData * pAltPopulationData=0);
 
-boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, 
+std::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, 
                                               const Julian StudyStartDate, 
                                               const Julian StudyEndDate, 
                                               PopulationData * pAltPopulationData=0);

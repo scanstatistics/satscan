@@ -29,7 +29,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulatio
         throw prg_error("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
     case SPACETIME :
     case PROSPECTIVESPACETIME :
-        std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+        std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
         break;
     case SPATIALVARTEMPTREND :
         throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -258,8 +258,8 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
             for (size_t t = 1; t < caseLog.size(); ++t)
                 caseLog[t] = log(t);
             gvDataSets[0]->setCaseData_PT();
-            boost::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
-            boost::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
+            std::shared_ptr<AbstractLikelihoodCalculator> llr_calc(new HypergeometricLikelihoodCalculator(gDataHub));
+            std::shared_ptr<CTimeIntervals> time_intervals(new HypergeometricTemporalDataEvaluator(
                 gDataHub, *llr_calc,
                 gDataHub.GetParameters().GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gDataHub.GetParameters().GetIncludeClustersType(), SUCCESSIVELY
             ));

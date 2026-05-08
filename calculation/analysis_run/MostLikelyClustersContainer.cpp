@@ -28,15 +28,15 @@ MostLikelyClustersContainer::MostLikelyClustersContainer(double maximum_window_s
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   if (Cluster.ClusterDefined() && Cluster.GetRatio() > 0) {
-    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(Cluster.Clone()));
+    gvTopClusterList.push_back(std::shared_ptr<CCluster>(Cluster.Clone()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
-void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
+void MostLikelyClustersContainer::Add(std::unique_ptr<CCluster>& pCluster) {
   if (pCluster.get() && pCluster->ClusterDefined() && pCluster->GetRatio() > 0) {
-    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(pCluster.release()));
+    gvTopClusterList.push_back(std::shared_ptr<CCluster>(pCluster.release()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
@@ -80,7 +80,7 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
         ClusterList_t::const_iterator itrOther=other.gvTopClusterList.begin(), itrEndOther=other.gvTopClusterList.end();
         for (;itrOther != itrEndOther; ++itrOther) {
             // create bit set of cluster locations
-            std::auto_ptr<boost::dynamic_bitset<> > otherSet;
+            std::unique_ptr<boost::dynamic_bitset<> > otherSet;
             // iterate through this cluster collections to see if other cluster is duplicate of cluster already in set
             ClusterList_t::iterator itrThis=gvTopClusterList.begin(), itrThisEnd=gvTopClusterList.end();
             bool isDuplicate = false;
@@ -207,7 +207,7 @@ MostLikelyClustersContainer::ClusterList_t & MostLikelyClustersContainer::getSig
 }
 
 /* Calculates the GINI coefficient for the current collection of clusters. */
-double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, boost::optional<double> p_value_cutoff, boost::optional<unsigned int> atmost) const {
+double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, std::optional<double> p_value_cutoff, std::optional<unsigned int> atmost) const {
     double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
     unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();
@@ -237,7 +237,7 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
             remainderMeasure[s] += cluster.GetClusterData()->GetMeasure(s);
         }
     }
-    boost::shared_ptr<CCluster> remainderCluster((*sortClusters.begin())->Clone());
+    std::shared_ptr<CCluster> remainderCluster((*sortClusters.begin())->Clone());
     for (unsigned int s=0; s < numDataSets; ++s) {
         remainderCluster->GetClusterData()->setCaseCount(DataHub.GetDataSetHandler().GetDataSet(s).getTotalCases() - remainderCases[s], s);
         remainderCluster->GetClusterData()->setMeasure(DataHub.GetDataSetHandler().GetDataSet(s).getTotalMeasure() - remainderMeasure[s], s);
@@ -641,7 +641,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
             return bResult;
         };
         if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
-            std::auto_ptr<stsClusterCentroidGeometry> CandidateCenter;
+            std::unique_ptr<stsClusterCentroidGeometry> CandidateCenter;
             for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
                 CCluster const& currCluster = **itrCurr;
                 if (currCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
@@ -651,7 +651,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t con
                 bResult = checkTemporalOverlap(currCluster, CandidateCluster);
             }
         } else { // standard geographical overlap checking
-            std::auto_ptr<stsClusterCentroidGeometry> currCenter, CandidateCenter;
+            std::unique_ptr<stsClusterCentroidGeometry> currCenter, CandidateCenter;
             if (!(DataHub.GetParameters().getUseLocationsNetworkFile() || DataHub.GetParameters().UseLocationNeighborsFile())) {
                 // retrieve coordinates of candidate cluster
                 DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);

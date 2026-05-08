@@ -15,11 +15,11 @@
 SimulationDataContainer_t& UniformTimeDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
     switch (gParameters.GetAnalysisType()) {
         case PURELYTEMPORAL            :
-        case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT)); break;
+        case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT)); break;
         case SPACETIME                 :
-        case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+        case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData));
                                          if (gParameters.GetIncludePurelyTemporalClusters())
-                                            std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
+                                            std::for_each(Container.begin(), Container.end(), std::mem_fn(&DataSet::allocateCaseData_PT));
                                          break;
         default : throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
     };

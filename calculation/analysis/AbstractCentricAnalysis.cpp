@@ -74,7 +74,7 @@ void AbstractCentricAnalysis::ExecuteSimulationsAboutCentroidDefinition(const Ce
     ownership of cluster objects in gRetainedClusters class member will have been
     given to MostLikelyClustersContainer object and gRetainedClusters will be empty. */
 void AbstractCentricAnalysis::RetrieveClusters(MLC_Collections_t& topClustersContainers) {
-    std::auto_ptr<CCluster> Cluster;
+    std::unique_ptr<CCluster> Cluster;
     for (size_t s=0; s < gRetainedClusters.size(); ++s) {
         ptr_vector<CCluster>& clusters = gRetainedClusters[s];
         for (size_t t=0; t < clusters.size(); ++t) {

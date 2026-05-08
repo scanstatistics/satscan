@@ -30,7 +30,7 @@ typedef ptr_vector<AbstractRandomizer> RandomizerContainer_t;
 class FileSourceRandomizer : public AbstractRandomizer {
     protected:
         const CParameters & gParameters;
-        std::auto_ptr<AbstractDataSetReader> gReader;
+        std::unique_ptr<AbstractDataSetReader> gReader;
         const std::string _source_filename;
         unsigned int _line_offset;
 
