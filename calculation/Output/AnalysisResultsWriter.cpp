@@ -98,7 +98,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
     else {
         std::vector<tract_t> clusterLocations;
         CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &_cluster_locations.back(), &clusterLocations);
-        std::stringstream popoverText;
+        std::stringstream printStringBuffer, popoverText;
         const auto& locationData = _dataHub.getLocationsManager().locations();
         for (auto index : clusterLocations) {
             if (popoverText.rdbuf()->in_avail()) popoverText << ", ";
@@ -112,10 +112,9 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
             if (overlaps.rdbuf()->in_avail()) overlaps << ")";
             popoverText << overlaps.str();
         }
-        printString(columnValues[++valueIdx].first, 
-            "<a class='location-popover' href='#' cluster-id='%u' cluster-locations='%s'>%u</a>", 
-            supplementInfo.getClusterReportIndex(cluster), popoverText.str().c_str(), _cluster_locations.back().count()
-        );
+        printStringBuffer << "<a class='location-popover' href='#' cluster-id='" << supplementInfo.getClusterReportIndex(cluster)
+			<< "' cluster-locations='" << htmlencode(popoverText.str(), buffer) << "'>" << _cluster_locations.back().count() << "</a>";
+		columnValues[++valueIdx].first = printStringBuffer.str();
         columnValues[valueIdx].second = std::to_string(_cluster_locations.back().count());
     }
     if (_parameters.getClusterMonikerPrefix().size())
