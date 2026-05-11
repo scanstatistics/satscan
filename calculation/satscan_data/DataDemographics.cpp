@@ -277,8 +277,10 @@ bool DataDemographicsProcessor::processCaseFileLinelist(const RealDataSet& DataS
                         );
                     } else
                         _individuals_filter->insert(values.back());
-                    is_new_event = _existing_individuals.find(value) == _existing_individuals.end();
-                    values.insert(values.end() - 1, (is_new_event ? "New" : ""));
+                    if (!_parameters.getLinelistIndividualsCacheFileName().empty()) { // add 'New Individual' value, only if maintaining cache
+                        is_new_event = _existing_individuals.find(value) == _existing_individuals.end();
+                        values.insert(values.end() - 1, (is_new_event ? "New" : ""));
+                    }
                     individual = value;
                 }
                 // Add attribute to cluster data set demographics.
@@ -403,7 +405,9 @@ void DataDemographicsProcessor::writeClusterLineListFile(const DataSource::Order
     for (auto const& itr : llmap) {
         if (itr.get<1>() == INDIVIDUAL_ID) {
             v.push_back("Hierarchy");
-            v.push_back("New Individual");
+			// Add 'New Individual' column only if maintaining cache of individuals.
+			if (!_parameters.getLinelistIndividualsCacheFileName().empty())
+                v.push_back("New Individual");
         }
         v.push_back(itr.get<2>());
     }
