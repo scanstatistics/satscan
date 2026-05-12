@@ -1104,8 +1104,8 @@ void CParameters::SetAsDefaulted() {
   _linelist_csv_cutoff = 1;
   _create_email_summary_file = false;
   _email_summary_cutoff = 0.05;
-  _stp_algorithm_type = STP_DERIVED;
-  _stp_as_hypergeometric = true;
+  _stp_algorithm_type = STP_POISSON;
+  _stp_as_hypergeometric = false;
 }
 
 /** Sets start range start date. Throws exception. */
