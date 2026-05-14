@@ -250,7 +250,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
             setValuesFromAttributes(clusterAttributes, columnValues, valueIdx);
     };
     // Now set the data row values depending on probability model type.
-    if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
+    if (isEnumOneOf(_parameters.GetProbabilityModelType(), ORDINAL, CATEGORICAL)) {
         setDataRowValues({
             "Total cases", "Category", "Number of cases", "Expected cases", "Observed / expected", "Relative risk", "Percent cases in area"
             }, clusterAttributes, columnValues
@@ -270,8 +270,8 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         setDataRowValues({ "Number of cases", "Average Rank Inside", "Average Rank Outside" }, clusterAttributes, columnValues);
     } else if (_parameters.GetProbabilityModelType() == BATCHED) {
         setDataRowValues({
-            "Number of batches", "Obs. positive batches", "Exp. positive batches",
-            "Number of individuals", "Positive individuals inside", "Positive individuals outside"
+            "Number of batches", "Obs. positive batches", "Exp. positive batches","Number of individuals", 
+            "Positive individuals inside", "Positive individuals outside", "Relative risk"
         }, clusterAttributes, columnValues);
     } else {
         std::vector<std::string> attributeNames;
@@ -283,7 +283,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         if (_parameters.GetProbabilityModelType() == POISSON && _parameters.UsePopulationFile() && _parameters.GetTimeTrendAdjustmentType() != TEMPORAL_STRATIFIED_RANDOMIZATION)
             attributeNames.emplace_back(printString(buffer, "Annual cases / %.0f", _dataHub.GetAnnualRatePop()));
         attributeNames.emplace_back("Observed / expected");
-        if (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI)
+        if (isEnumOneOf(_parameters.GetProbabilityModelType(), POISSON, BERNOULLI))
             attributeNames.emplace_back("Relative risk");
         if (_parameters.GetProbabilityModelType() == BERNOULLI)
             attributeNames.emplace_back("Percent cases in area");
@@ -439,7 +439,7 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
         }
     };
     if (_parameters.getNumFileSets() > 1) defineClusterLevelColumns();
-    if (_parameters.GetProbabilityModelType() == ORDINAL || _parameters.GetProbabilityModelType() == CATEGORICAL) {
+    if (isEnumOneOf(_parameters.GetProbabilityModelType(), ORDINAL, CATEGORICAL)) {
         addColumns({
             {"Total cases", false}, {"Category", false}, {"Number of cases", false}, {"Expected cases", false},
             {"Observed/expected", false}, {"Relative risk", false}, {"Percent cases in area", false} 
@@ -462,8 +462,8 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
         addColumns({ {"Number of cases", false}, {"Average Rank Inside", false}, {"Average Rank Outside", false} });
     } else if (_parameters.GetProbabilityModelType() == BATCHED) {
         addColumns({ 
-            {"Number of batches", false}, {"Obs. positive batches", false}, {"Exp. positive batches", false},
-            {"Number of individuals", false}, {"Positive individuals inside", false}, {"Positive individuals outside", false} 
+            {"Number of batches", false}, {"Obs. positive batches", false}, {"Exp. positive batches", false}, {"Number of individuals", false},
+            {"Positive individuals inside", false}, {"Positive individuals outside", false}, { "Relative risk", false}
         });
     } else {
         if ((_parameters.GetProbabilityModelType() == POISSON && _parameters.UsePopulationFile() && !_parameters.GetIsPurelyTemporalAnalysis()) || 
@@ -475,7 +475,7 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
             addColumns({ { printString(buffer, "Annual cases / %.0f", _dataHub.GetAnnualRatePop()), false} });
         }
         addColumns({ { "Observed/expected", false} });
-        if (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI)
+        if (isEnumOneOf(_parameters.GetProbabilityModelType(), POISSON, BERNOULLI))
             addColumns({ { "Relative risk", false} });
         if (_parameters.GetProbabilityModelType() == BERNOULLI)
             addColumns({ { "Percent cases in area", false} });

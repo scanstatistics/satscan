@@ -123,5 +123,9 @@ class EmailText {
         static std::string getPathLink(std::string& path, const std::string& label, bool asHTML);
 };
 std::string& humanize(double n, std::string& humanized, int decimals = 1);
+template<typename EnumType, typename... Args>
+inline bool isEnumOneOf(EnumType value, Args... args) {
+    return ((value == args) || ...);
+}
 //******************************************************************************
 #endif

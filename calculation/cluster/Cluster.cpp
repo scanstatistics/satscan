@@ -334,7 +334,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
 /** Prints observed cases, expected cases and observed/expected, for batched model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-    std::string buffer;
+    std::string buffer, buffer2;
     const CParameters& params = DataHub.GetParameters();
 
     for (auto set_number : getDataSetIndexesComprisedInRatio(DataHub)) {
@@ -347,7 +347,7 @@ void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, 
         printClusterData(fp, PrintFormat, "Number of batches", getValueAsString(GetClusterData()->GetMeasure(set_number), buffer, 0), true, set_number);
         printClusterData(fp, PrintFormat, "Obs. positive batches", printString(buffer, "%ld", GetObservedCount(set_number)), true, set_number);
         printClusterData(fp, PrintFormat, "Exp. positive batches", getValueAsString(llrCalc.getClusterExpected(*this, set_number), buffer), true, set_number);
-        DisplayObservedDivExpected(fp, set_number, DataHub, PrintFormat);
+        //DisplayObservedDivExpected(fp, set_number, DataHub, PrintFormat);
         printClusterData(fp, PrintFormat, "Number of individuals", 
             getValueAsString(pClusterData->GetMeasureAux2(set_number) + pClusterData->GetMeasureAux(set_number), buffer, 0),
             true, set_number
@@ -355,9 +355,9 @@ void CCluster::DisplayClusterDataBatched(FILE* fp, const CSaTScanData& DataHub, 
         //printClusterData(fp, PrintFormat, "Sum positive", getValueAsString(pClusterData->GetMeasureAux2(set_number), buffer, 0), true, set_number);
         //printClusterData(fp, PrintFormat, "Sum negative", getValueAsString(pClusterData->GetMeasureAux(set_number), buffer, 0), true, set_number);
         auto probabilities = llrCalc.getProbabilityPositive(*this, set_number);
-        printClusterData(fp, PrintFormat, "Positive individuals inside", getValueAsString(probabilities.first, buffer, 3), false, set_number);
-        printClusterData(fp, PrintFormat, "Positive individuals outside", getValueAsString(probabilities.second, buffer, 3), false, set_number);
-        //DisplayRelativeRisk(fp, set_number, DataHub, PrintFormat);
+        printClusterData(fp, PrintFormat, "Positive individuals inside", printString(buffer, "%s%%", getValueAsString(probabilities.first * 100.0, buffer2, 2).c_str()), false, set_number);
+        printClusterData(fp, PrintFormat, "Positive individuals outside", printString(buffer, "%s%%", getValueAsString(probabilities.second * 100.0, buffer2, 2).c_str()), false, set_number);
+        DisplayRelativeRisk(fp, set_number, DataHub, PrintFormat);
     }
 }
 
