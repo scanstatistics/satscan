@@ -975,6 +975,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.integerIs(_nonparametric_length, 1);
         bReturn &= Utils.doubleIs(_logLinearTextField, 0.0);
         bReturn &= Utils.selected(_spatialAdjustmentsNone, true);
+        bReturn &= Utils.selectionIs(_log_linear_prec_type, 0);
 
         // Power Evaluations tab
         bReturn &= Utils.selected(_performPowerEvalautions, false);
@@ -1267,6 +1268,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetTimeTrendAdjustmentType(getAdjustmentTimeTrendControlType().ordinal());
         parameters.SetTimeTrendAdjustmentPercentage(Double.parseDouble(_logLinearTextField.getText()));
         parameters.SetNonparametricAdjustmentSize(Integer.parseInt(_nonparametric_length.getText()));
+        switch (_settings_window.getPrecisionOfTimesControlType()) {
+            case Parameters.DatePrecisionType.DAY,
+                 Parameters.DatePrecisionType.MONTH,
+                 Parameters.DatePrecisionType.YEAR -> {
+                parameters.setLogLinearTimeTrendAdjUnits(Parameters.DatePrecisionType.values()[_log_linear_prec_type.getSelectedIndex() + 1].ordinal());
+            }
+            case Parameters.DatePrecisionType.GENERIC -> {
+                parameters.setLogLinearTimeTrendAdjUnits(Parameters.DatePrecisionType.GENERIC.ordinal());
+            }
+        }
+        
         parameters.setAdjustForWeeklyTrends(_adjustDayOfWeek.isEnabled() && _adjustDayOfWeek.isSelected());
         parameters.SetSpatialAdjustmentType(getSpatialAdjustmentType().ordinal());
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
@@ -2265,6 +2277,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _logLinearTextField.setText("0");
         _nonparametric_length.setText("1");
         _adjustDayOfWeek.setSelected(false);
+        _log_linear_prec_type.select(0);
 
         // Power Evaluations tab
         _performPowerEvalautions.setSelected(false);
@@ -2507,6 +2520,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     private void enableAdjustmentForTimeTrendOptionsGroup(boolean bEnable, boolean bNonparametric, boolean bNonparametricSize, boolean bLogYearPercentage, boolean bCalculatedLog) {
         Parameters.TimeTrendAdjustmentType eTimeTrendAdjustmentType = getAdjustmentTimeTrendControlType();
+        Parameters.DatePrecisionType precisionType = _settings_window.getPrecisionOfTimesControlType();
 
         // trump control enables
         bNonparametric &= bEnable && !Utils.selected(_adjustDayOfWeek);
@@ -2522,8 +2536,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _nonparametric_label.setEnabled(bNonparametric);
 
         _temporalTrendAdjLogLinear.setEnabled(bLogYearPercentage);
-        _logLinearLabel.setEnabled(bLogYearPercentage);
         _logLinearTextField.setEnabled(bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC);
+        _log_linear_prec_type.setEnabled(
+                bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC &&
+                (precisionType == Parameters.DatePrecisionType.DAY || 
+                 precisionType == Parameters.DatePrecisionType.MONTH || 
+                 precisionType == Parameters.DatePrecisionType.YEAR)
+        );
+        _logLinearLabel.setEnabled(_log_linear_prec_type.isEnabled());
         if (!bLogYearPercentage && eTimeTrendAdjustmentType == Parameters.TimeTrendAdjustmentType.LOGLINEAR_PERC) {
             setTemporalTrendAdjustmentControl(Parameters.TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED);
         }
@@ -2775,6 +2795,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         setSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
         _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
         _adjustmentsByRelativeRisksFileTextField.setText(parameters.GetAdjustmentsByRelativeRisksFilename());
+        switch (parameters.getLogLinearTimeTrendAdjUnits()) {
+            case Parameters.DatePrecisionType.DAY, 
+                 Parameters.DatePrecisionType.MONTH, 
+                 Parameters.DatePrecisionType.YEAR -> {
+                _log_linear_prec_type.select(parameters.getLogLinearTimeTrendAdjUnits().ordinal() - 1);
+            }
+            default -> {_log_linear_prec_type.select(0);}
+        }
 
         // Inference tab
         setPValueReportingControlType(parameters.GetPValueReportingType());
@@ -3193,6 +3221,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjQuadCalc = new javax.swing.JRadioButton();
         _nonparametric_length = new javax.swing.JTextField();
         _nonparametric_label = new javax.swing.JLabel();
+        _log_linear_prec_type = new java.awt.Choice();
         _spatialAdjustmentsGroup = new javax.swing.JPanel();
         _spatialAdjustmentsNone = new javax.swing.JRadioButton();
         _spatialAdjustmentsNonparametric = new javax.swing.JRadioButton();
@@ -4912,7 +4941,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _temporalTrendAdjLogLinear.setText("Log linear trend with"); // NOI18N
+            _temporalTrendAdjLogLinear.setText("Log linear trend of"); // NOI18N
             _temporalTrendAdjLogLinear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
             _temporalTrendAdjLogLinear.setMargin(new java.awt.Insets(0, 0, 0, 0));
             _temporalTrendAdjLogLinear.addItemListener(new java.awt.event.ItemListener() {
@@ -4943,7 +4972,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             });
             _logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
                 public void keyTyped(java.awt.event.KeyEvent e) {
-                    Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);
+                    Utils.validateFloatKeyTyped(_logLinearTextField, e, 10);
                 }
             });
             _logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -4955,7 +4984,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
-            _logLinearLabel.setText("%  per year"); // NOI18N
+            _logLinearLabel.setText("%  per"); // NOI18N
 
             _temporalTrendAdjQuadCalc.setText("Log quadratic with automatically calculated trend"); // NOI18N
             _temporalTrendAdjQuadCalc.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4988,6 +5017,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _nonparametric_label.setText("adjustment length (in time aggregation units)");
 
+            _log_linear_prec_type.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    enableSetDefaultsButton();
+                }
+            });
+            _log_linear_prec_type.add("Year");
+            _log_linear_prec_type.add("Month");
+            _log_linear_prec_type.add("Day");
+
             javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
             _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
             _temporalTrendAdjGroupLayout.setHorizontalGroup(
@@ -5009,8 +5047,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                         .addComponent(_logLinearTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE))
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(_logLinearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(_nonparametric_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .addComponent(_nonparametric_label, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
+                                            .addComponent(_logLinearLabel)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(_log_linear_prec_type, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGap(0, 0, Short.MAX_VALUE)))))
                             .addGap(2, 2, 2))
                         .addGroup(_temporalTrendAdjGroupLayout.createSequentialGroup()
                             .addComponent(_temporalTrendAdjQuadCalc, javax.swing.GroupLayout.DEFAULT_SIZE, 673, Short.MAX_VALUE)
@@ -5027,10 +5069,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_nonparametric_length, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(_nonparametric_label))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(_temporalTrendAdjLogLinear)
-                        .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_logLinearLabel))
+                    .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(_temporalTrendAdjGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_temporalTrendAdjLogLinear)
+                            .addComponent(_logLinearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_logLinearLabel))
+                        .addComponent(_log_linear_prec_type, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(_temporalTrendAdjLogLinearCalc)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -5188,7 +5232,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _spaceTimeAjustmentsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_spaceTimeAjustmentsTabLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_temporalTrendAdjGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(_adjustDayOfWeek)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -7169,6 +7213,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JCheckBox _locations_network;
     private javax.swing.JLabel _logLinearLabel;
     private javax.swing.JTextField _logLinearTextField;
+    private java.awt.Choice _log_linear_prec_type;
     private javax.swing.JCheckBox _mainAnalysisDrilldown;
     private javax.swing.JPanel _mapsOutputGroup;
     private javax.swing.JButton _maxCirclePopFileBrowseButton;

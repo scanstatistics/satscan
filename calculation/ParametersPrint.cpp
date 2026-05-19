@@ -870,10 +870,10 @@ std::string ParametersPrint::getCalculatedTimeTrendAsString(const DataSetHandler
         }
     } else {
         switch (_parameters.GetTimeAggregationUnitsType()) {
-            case GENERIC:
             case YEAR: trend_label = "an annual"; break;
             case MONTH: trend_label = "a monthly"; break;
             case DAY: trend_label = "a daily"; break;
+            case GENERIC: trend_label = "a unit"; break;
             case NONE:
             default: throw prg_error("Unknown time aggregation type '%d'.\n", "getCalculatedTimeTrendAsString()", _parameters.GetTimeAggregationUnitsType());
          }
@@ -1356,12 +1356,22 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getSpaceAndTimeAdjustments
                 case TEMPORAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
                 case LOGLINEAR_PERC            :
-                    printString(buffer, "Log Linear with %g Percent per Year", _parameters.GetTimeTrendAdjustmentPercentage());
+                    printString(buffer, "Log linear trend Of %g%%", _parameters.GetTimeTrendAdjustmentPercentage());
+                    switch (_parameters.getLogLinearTimeTrendAdjUnits()) {
+                    case YEAR: buffer += " per year"; break;
+                    case MONTH: buffer += " per month"; break;
+                    case DAY: buffer += " per day"; break;
+                    case GENERIC: buffer += " per unit"; break;
+                    default: 
+                        throw prg_error("Unknown date precision type '%d'.\n", 
+                            "getSpaceAndTimeAdjustmentsParameters()", _parameters.getLogLinearTimeTrendAdjUnits()
+                        );
+                    }
                     settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
                 case CALCULATED_LOGLINEAR_PERC :
-                    settings.push_back(std::make_pair("Temporal Adjustment","Log Linear with Automatically Calculated Trend"));break;
+                    settings.push_back(std::make_pair("Temporal Adjustment","Log Linear with automatically calculated trend"));break;
                 case TEMPORAL_STRATIFIED_RANDOMIZATION:
-                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with Time Stratified Randomization"));
+                    settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));
                     if (_parameters.GetProbabilityModelType() == BATCHED) {
                         settings.push_back(std::make_pair("Adjustment Length",
                             printString(buffer, "%u %s",
@@ -1372,7 +1382,7 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getSpaceAndTimeAdjustments
                     }
                     break;
                 case CALCULATED_QUADRATIC:
-                    settings.push_back(std::make_pair("Temporal Adjustment", "Log Quadratic with Automatically Calculated Trend")); break;
+                    settings.push_back(std::make_pair("Temporal Adjustment", "Log quadratic with automatically calculated trend")); break;
                 default : throw prg_error(
                     "Unknown time trend adjustment type '%d'.\n", "getSpaceAndTimeAdjustmentsParameters()", _parameters.GetTimeTrendAdjustmentType()
                 );
@@ -1386,14 +1396,14 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getSpaceAndTimeAdjustments
                 case SPATIAL_NOTADJUSTED               :
                     settings.push_back(std::make_pair("Spatial Adjustment","None")); break;
                 case SPATIAL_STRATIFIED_RANDOMIZATION:
-                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with Spatial Stratified Randomization")); break;
+                    settings.push_back(std::make_pair("Spatial Adjustment","Nonparametric, with spatial stratified randomization")); break;
                 case SPATIAL_NONPARAMETRIC:
                     settings.push_back(std::make_pair("Spatial Adjustment", "Nonparametric")); break;
                 default : throw prg_error("Unknown spatial adjustment type '%d'.\n", "getSpaceAndTimeAdjustmentsParameters()", _parameters.GetSpatialAdjustmentType());
             }
         }
         if (_parameters.GetProbabilityModelType() == POISSON) {
-            settings.push_back(std::make_pair("Adjust for Known Relative Risks",(_parameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
+            settings.push_back(std::make_pair("Adjust for known relative risks",(_parameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
             if (_parameters.UseAdjustmentForRelativeRisksFile())
                 settings.push_back(std::make_pair("Adjustments File", getFilenameFormatTime(_parameters.GetAdjustmentsByRelativeRisksFilename(), _parameters.getTimestamp())));
             //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set

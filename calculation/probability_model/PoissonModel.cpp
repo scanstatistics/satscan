@@ -129,18 +129,49 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
             switch (gParameters.GetTimeTrendAdjustmentType()) {
                 case TEMPORAL_NOTADJUSTED              : break;
                 case LOGLINEAR_PERC                    : {
-                    // Derive beta from user specified percentage and time aggregation. (ln(exp(x)) = x)
-                    double x = log(static_cast<double>(gParameters.GetTimeTrendAdjustmentPercentage()) / 100.0 + 1.0);
+                    // Derive beta from user specified percentage and time aggregation. (ln(exp(lograte)) = lograte)
+                    double lograte = log(static_cast<double>(gParameters.GetTimeTrendAdjustmentPercentage()) / 100.0 + 1.0);
                     double beta = 0.0;
                     switch (gParameters.GetTimeAggregationUnitsType()) {
                         case GENERIC:
-                        case YEAR  : beta = x * static_cast<double>(gParameters.GetTimeAggregationLength()); break;
-                        case MONTH : beta = x / (12.0 / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
-                        case DAY   : beta = x / (AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
-                        default: throw prg_error("AdjustMeasure() unknown aggregation '%d'.", "AdjustMeasure()", gParameters.GetTimeAggregationUnitsType());
+                        case YEAR: {
+                            switch (gParameters.getLogLinearTimeTrendAdjUnits()) {
+                                case GENERIC:
+                                case YEAR: // Log-linear trend is in years - calculate beta in terms of aggregation length.
+                                    beta = lograte * static_cast<double>(gParameters.GetTimeAggregationLength()); break;
+                                case MONTH: // Log-linear trend is in months - calculate beta in terms of years and aggregation length.
+                                    beta = lograte * (12.0 * static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                case DAY: // Log-linear trend is in days -  calculate beta in terms of years and aggregation length.
+                                    beta = lograte * (AVERAGE_DAYS_IN_YEAR * static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                default: throw prg_error("Unknown enum '%d'.", "AdjustMeasure()", gParameters.getLogLinearTimeTrendAdjUnits());
+                            }
+                        } break;
+                        case MONTH: {
+                            switch (gParameters.getLogLinearTimeTrendAdjUnits()) {
+                                case YEAR: // Log-linear trend is in years - calculate beta in terms of months and aggregation length.
+                                    beta = lograte / (12.0 / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                case GENERIC:
+                                case MONTH: // Log-linear trend is in months - calculate beta in terms of aggregation length.
+                                    beta = lograte * static_cast<double>(gParameters.GetTimeAggregationLength()); break;
+                                case DAY: // Log-linear trend is in days - calculate beta in terms of months and aggregation length.
+                                    beta = lograte * (AVERAGE_DAYS_IN_MONTH * static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                default: throw prg_error("Unknown enum '%d'.", "AdjustMeasure()", gParameters.getLogLinearTimeTrendAdjUnits());
+                            }
+                        } break;
+                        case DAY: { 
+                            switch (gParameters.getLogLinearTimeTrendAdjUnits()) {
+                                case YEAR: // Log-linear trend is in years - calculate beta in terms of days and aggregation length.
+                                    beta = lograte / (AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                case MONTH: // Log-linear trend is in months - calculate beta in terms of days and aggregation length.
+                                    beta = lograte / (AVERAGE_DAYS_IN_MONTH / static_cast<double>(gParameters.GetTimeAggregationLength())); break;
+                                case GENERIC:
+                                case DAY: // Log-linear trend is in days - calculate beta in terms of aggregation length.
+                                    beta = lograte * static_cast<double>(gParameters.GetTimeAggregationLength()); break;
+                                default: throw prg_error("Unknown enum '%d'.", "AdjustMeasure()", gParameters.getLogLinearTimeTrendAdjUnits());
+                            }
+                        } break;
+                        default: throw prg_error("Unknown enum '%d'.", "AdjustMeasure()", gParameters.GetTimeAggregationUnitsType());
                     }
-                    fprintf(AppToolkit::getToolkit().openDebugFile(), "Loglinear beta %g \n", beta);
-                    fflush(AppToolkit::getToolkit().openDebugFile());
                     AdjustForTrend(DataSet, beta, 0.0);
                     //store calculated time trend adjustment for reporting later
                     DataSet.setCalculatedTimeTrendPercentage(AbstractTimeTrend::GetTimeTrendByAggregationUnits(beta, AbstractTimeTrend::CONVERGED, gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength()));

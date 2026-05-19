@@ -9,7 +9,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS = 10;
-const int CParameters::giNumParameters = 180;
+const int CParameters::giNumParameters = 181;
 const unsigned int CParameters::DEFAULT_EARLY_TERM_THRESHOLD = 5;
 const unsigned int CParameters::MIN_EARLY_TERM_THRESHOLD = 50;
 
@@ -53,6 +53,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (glTimeAggregationLength != rhs.glTimeAggregationLength) return false;
   if (geTimeTrendAdjustType != rhs.geTimeTrendAdjustType) return false;
   if (gdTimeTrendAdjustPercentage != rhs.gdTimeTrendAdjustPercentage) return false;
+  if (_log_linear_time_trend_adj_units != rhs._log_linear_time_trend_adj_units) return false;
   if (_nonparametric_adjustment_size != rhs._nonparametric_adjustment_size) return false;
   if (gbIncludePurelySpatialClusters != rhs.gbIncludePurelySpatialClusters) return false;
   if (gbIncludePurelyTemporalClusters != rhs.gbIncludePurelyTemporalClusters) return false;
@@ -306,8 +307,9 @@ void CParameters::Copy(const CParameters &rhs) {
   geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
   glTimeAggregationLength                = rhs.glTimeAggregationLength;
   geTimeTrendAdjustType                  = rhs.geTimeTrendAdjustType;
+  _log_linear_time_trend_adj_units       = rhs._log_linear_time_trend_adj_units;
   gdTimeTrendAdjustPercentage            = rhs.gdTimeTrendAdjustPercentage;
-  _nonparametric_adjustment_size = rhs._nonparametric_adjustment_size;
+  _nonparametric_adjustment_size         = rhs._nonparametric_adjustment_size;
   gbIncludePurelySpatialClusters         = rhs.gbIncludePurelySpatialClusters;
   gbIncludePurelyTemporalClusters        = rhs.gbIncludePurelyTemporalClusters;
   gvCaseFilenames                        = rhs.gvCaseFilenames;
@@ -964,6 +966,7 @@ void CParameters::SetAsDefaulted() {
   _critical_value_001                      = 0.0;
   geTimeTrendAdjustType                    = TEMPORAL_NOTADJUSTED;
   gdTimeTrendAdjustPercentage              = 0;
+  _log_linear_time_trend_adj_units         = YEAR;
   _nonparametric_adjustment_size           = 1;
   gbIncludePurelyTemporalClusters          = false;
   gvControlFilenames.resize(1);
@@ -1444,6 +1447,13 @@ void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregation
 /** Sets time trend adjustment percentage. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
    gdTimeTrendAdjustPercentage = dPercentage;
+}
+
+/** Sets units type for log linear time trend adjustment. Throws exception if out of range. */
+void CParameters::setLogLinearTimeTrendAdjUnits(DatePrecisionType e) {
+    if (e < NONE || e > GENERIC)
+        throw prg_error("Enumeration %d out of range [%d,%d].", "setLogLinearTimeTrendAdjUnits()", e, NONE, GENERIC);
+    _log_linear_time_trend_adj_units = e;
 }
 
 /** Sets time rend adjustment type. Throws exception if out of range. */

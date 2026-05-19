@@ -134,6 +134,7 @@ public class Parameters implements Cloneable {
     private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
     private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
     private int                             _nonparametric_adjustment_size=1;
+    private DatePrecisionType               _log_linear_time_trend_adj_units=DatePrecisionType.YEAR;
     /* Input precision variables */
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
@@ -332,6 +333,7 @@ public class Parameters implements Cloneable {
         if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
         if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
         if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
+        if (_log_linear_time_trend_adj_units != rhs._log_linear_time_trend_adj_units) return false;
         if (_nonparametric_adjustment_size         != rhs._nonparametric_adjustment_size) return false;
         if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
         if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
@@ -497,6 +499,12 @@ public class Parameters implements Cloneable {
     public void setLinelistIndividualsCacheFileName(final String s) { _linelist_individuals_cache_name = s; }
     public String getMultipleLocationsFile() { return _multiple_locations_file; }
     public void setMultipleLocationsFile(final String s) { _multiple_locations_file = s; }
+    
+    public DatePrecisionType getLogLinearTimeTrendAdjUnits() { return _log_linear_time_trend_adj_units; }
+    public void setLogLinearTimeTrendAdjUnits(int iOrdinal) {
+        try { _log_linear_time_trend_adj_units = DatePrecisionType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
+    }
     
     public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
     public void setProspectiveFrequencyType(int iOrdinal) {

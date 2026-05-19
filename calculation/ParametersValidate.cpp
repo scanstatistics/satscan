@@ -2200,10 +2200,17 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
           PrintDirection.Printf("%s:\nThe non-parametric temporal adjustment by stratified randomization is not valid "
                                  "for purely temporal analyses.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC && -100.0 >= gParameters.GetTimeTrendAdjustmentPercentage()) {
-          bValid = false;
-          PrintDirection.Printf("%s:\nThe time adjustment percentage is '%2g', but must greater than -100.\n",
-                                BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendAdjustmentPercentage());
+        if (gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC) {
+            if (gParameters.GetTimeTrendAdjustmentPercentage() <= -100) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe time adjustment percentage is '%2g', but must greater than -100.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.GetTimeTrendAdjustmentPercentage());
+            }
+            if (gParameters.GetTimeAggregationUnitsType() == GENERIC && gParameters.getLogLinearTimeTrendAdjUnits() != GENERIC) {
+                bValid = false;
+                PrintDirection.Printf("%s:\nThe time units for the log-linear time trend adjustment must be set to generic\nwhen the time aggregation units are generic.\n",
+					BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+            }
         }
         if (gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED) {
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);

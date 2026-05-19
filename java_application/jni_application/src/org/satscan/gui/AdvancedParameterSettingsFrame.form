@@ -2086,7 +2086,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_temporalTrendAdjGroup" min="-2" max="-2" attributes="0"/>
+                      <Component id="_temporalTrendAdjGroup" min="-2" pref="170" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_adjustDayOfWeek" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -2134,8 +2134,13 @@
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_logLinearLabel" alignment="0" max="32767" attributes="0"/>
                                               <Component id="_nonparametric_label" max="32767" attributes="0"/>
+                                              <Group type="102" attributes="0">
+                                                  <Component id="_logLinearLabel" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="_log_linear_prec_type" min="-2" pref="92" max="-2" attributes="0"/>
+                                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                              </Group>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -2161,10 +2166,13 @@
                               <Component id="_nonparametric_label" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_logLinearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_logLinearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_logLinearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_logLinearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_log_linear_prec_type" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_temporalTrendAdjLogLinearCalc" min="-2" max="-2" attributes="0"/>
@@ -2218,7 +2226,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinear">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear trend with" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log linear trend of" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2259,12 +2267,12 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="log linear trend adjustment percentage"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_logLinearTextField, e, 10);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_logLinearLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="%  per" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalc">
@@ -2298,6 +2306,11 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="adjustment length (in time aggregation units)"/>
                   </Properties>
+                </Component>
+                <Component class="java.awt.Choice" name="_log_linear_prec_type">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_log_linear_prec_type.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_log_linear_prec_type.add(&quot;Year&quot;);&#xd;&#xa;_log_linear_prec_type.add(&quot;Month&quot;);&#xd;&#xa;_log_linear_prec_type.add(&quot;Day&quot;);&#xd;&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>

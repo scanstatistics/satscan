@@ -185,7 +185,8 @@ enum ParameterType
     EMAIL_SUBJECT_NO_SIGNIFICANT,   /* no longer used */
     EMAIL_BODY_NO_SIGNIFICANT,      /* no longer used */
     MULTIPLE_LOCATIONS_FILE,        /* file which defines the locations of each group */
-    TIMETRENDLENGTH                 /* nonparametric time trend adjustment length (integer) */
+    TIMETRENDLENGTH,                /* nonparametric time trend adjustment length (integer) */
+    TIMETRENDPERC_TYPE              /* time trend adjustment percentage type (enumeration) */
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {
