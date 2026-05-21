@@ -9,7 +9,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS = 10;
-const int CParameters::giNumParameters = 181;
+const int CParameters::giNumParameters = 182;
 const unsigned int CParameters::DEFAULT_EARLY_TERM_THRESHOLD = 5;
 const unsigned int CParameters::MIN_EARLY_TERM_THRESHOLD = 50;
 
@@ -185,6 +185,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_is_bernoulli_dow_drilldown != rhs._is_bernoulli_dow_drilldown) return false;
   if (_locations_network_filename != rhs._locations_network_filename) return false;
   if (_use_locations_network_file != rhs._use_locations_network_file) return false;
+  if (_prospective_frequency_selection != rhs._prospective_frequency_selection) return false;
   if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
   if (_prospective_frequency != rhs._prospective_frequency) return false;
   if (_always_email_summary != rhs._always_email_summary) return false;
@@ -443,6 +444,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _use_locations_network_file = rhs._use_locations_network_file;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
   _local_timestamp = rhs._local_timestamp;
+  _prospective_frequency_selection = rhs._prospective_frequency_selection;
   _prospective_frequency_type = rhs._prospective_frequency_type;
   _prospective_frequency = rhs._prospective_frequency;
   _always_email_summary = rhs._always_email_summary;
@@ -913,6 +915,13 @@ void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
   geCoordinatesType = eCoordinatesType;
 }
 
+/** Sets prospective frequency selection. Throws exception if out of range. */
+void CParameters::setProspectiveFrequencySelection(ProspectiveFrequencySelection e) {
+    if (e < SAMEAS_TIMEAGG || e > X_TIMES_PER)
+        throw prg_error("Enumeration %d out of range [%d,%d].", "setProspectiveFrequencySelection()", e, SAMEAS_TIMEAGG, X_TIMES_PER);
+    _prospective_frequency_selection = e;
+}
+
 /** Sets prospective frequency type. Throws exception if out of range. */
 void CParameters::setProspectiveFrequencyType(ProspectiveFrequency e) {
     if (e < SAME_TIMEAGGREGATION || e > YEARLY)
@@ -1088,7 +1097,8 @@ void CParameters::SetAsDefaulted() {
   _use_locations_network_file = false;
   _cluster_moniker_prefix = "";
   _local_timestamp = boost::posix_time::second_clock::local_time();
-  _prospective_frequency_type = SAME_TIMEAGGREGATION;
+  _prospective_frequency_selection = SAMEAS_TIMEAGG;
+  _prospective_frequency_type = DAILY;
   _prospective_frequency = 1;
   _always_email_summary = false;
   _cutoff_email_summary = false;

@@ -787,20 +787,23 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
         dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength()) / dAdjustedP_Value;
         return std::make_pair(std::max(dUnitsInOccurrence, 1.0), std::max(dUnitsInOccurrence, 1.0));
     }
-    // Determine the number of units in occurrence - either per time aggregation or user selection.
-    ProspectiveFrequency frequency = parameters.getProspectiveFrequencyType();
-    dUnitsInOccurrence = static_cast<double>(parameters.getProspectiveFrequency()) / dAdjustedP_Value;
-    if (frequency == SAME_TIMEAGGREGATION) {
-        dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength()) / dAdjustedP_Value;
-        switch (parameters.GetTimeAggregationUnitsType()) { //translate time aggregation units to prospective frequency
-            case YEAR: frequency = YEARLY; break;
-            case MONTH: frequency = MONTHLY; break;
-            case DAY: frequency = DAILY; break;
-            default: throw prg_error("Invalid enum for time aggregation type '%d'.", "GetRecurrenceInterval()", parameters.GetTimeAggregationUnitsType());
-        }
+	// Translate prospective frequency selection to number of units in occurrence and prospective frequency type.
+    ProspectiveFrequency frequencyType = parameters.getProspectiveFrequencyType();
+    switch (parameters.getProspectiveFrequencySelection()) {
+        case SAMEAS_TIMEAGG:
+            dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength()) / dAdjustedP_Value;
+            switch (parameters.GetTimeAggregationUnitsType()) { //translate time aggregation units to prospective frequency type
+                case YEAR: frequencyType = YEARLY; break;
+                case MONTH: frequencyType = MONTHLY; break;
+                case DAY: frequencyType = DAILY; break;
+                default: throw prg_error("Invalid enum for time aggregation type '%d'.", "GetRecurrenceInterval()", parameters.GetTimeAggregationUnitsType());
+            } break;
+        case EVERY_X: dUnitsInOccurrence = static_cast<double>(parameters.getProspectiveFrequency()) / dAdjustedP_Value; break;
+		case X_TIMES_PER: dUnitsInOccurrence = (1.0 / static_cast<double>(parameters.getProspectiveFrequency())) / dAdjustedP_Value; break;
+        default: throw prg_error("Invalid ProspectiveFrequencySelection enum '%d'.", "GetRecurrenceInterval()", parameters.getProspectiveFrequencySelection());
     }
     // Now calculate recurrence interval as years and days based on frequency.
-    switch (frequency) {
+    switch (frequencyType) {
         case YEARLY: return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR, 1.0));
         case QUARTERLY: return std::make_pair(dUnitsInOccurrence / 4.0, std::max((dUnitsInOccurrence / 4.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
         case MONTHLY: return std::make_pair(dUnitsInOccurrence / 12.0, std::max((dUnitsInOccurrence / 12.0) * AVERAGE_DAYS_IN_YEAR, 1.0));
@@ -1236,21 +1239,22 @@ boost::logic::tribool CCluster::isSignificant(const CSaTScanData& Data, unsigned
         if (params.GetTimeAggregationUnitsType() == GENERIC)
             significant = (ri.first > SIGNIFICANCE_MULTIPLIER);
         else {
-            double frequency_length = static_cast<double>(params.getProspectiveFrequency()); // defaulted to one.
+            double frequency_length;
             ProspectiveFrequency frequency = params.getProspectiveFrequencyType();
-            // Potientially translate time aggregation type to prospective frequency type.
-            if (frequency == SAME_TIMEAGGREGATION) {
-                /* When frequency is that of time aggregation, the assumed frequency is the time aggregation.
-                   (e.g. 1 day aggregation assumes daily frequency, 20 day aggregation assmes a frequency of every 20 days, etc.) */
-                frequency_length = static_cast<double>(params.GetTimeAggregationLength());
-                switch (params.GetTimeAggregationUnitsType()) {
-                    case YEAR: frequency = YEARLY; break;
-                    case MONTH: frequency = MONTHLY; break;
-                    case DAY: frequency = DAILY; break;
-                    default: throw prg_error("Invalid enum for time aggregation type '%d'.", "significant()", params.GetTimeAggregationUnitsType());
-                }
+            switch (params.getProspectiveFrequencySelection()) {
+                case SAMEAS_TIMEAGG: 
+                    frequency_length = static_cast<double>(params.GetTimeAggregationLength());
+                    switch (params.GetTimeAggregationUnitsType()) {
+                        case YEAR: frequency = YEARLY; break;
+                        case MONTH: frequency = MONTHLY; break;
+                        case DAY: frequency = DAILY; break;
+                        default: throw prg_error("Invalid enum for time aggregation type '%d'.", "significant()", params.GetTimeAggregationUnitsType());
+                    } break;
+                case EVERY_X: frequency_length = static_cast<double>(params.getProspectiveFrequency()); break;
+                case X_TIMES_PER: frequency_length = (1.0 / static_cast<double>(params.getProspectiveFrequency())); break;
+				default: throw prg_error("Invalid ProspectiveFrequencySelection enum '%d'.", "isSignificant()", params.getProspectiveFrequencySelection());
             }
-            /* Now calculate significance per frequency unit and frequency length (typically one or that of time agregation length).
+            /* Now calculate significance per frequency unit and frequency length.
                For instance with prospective frequency as weekly, a significant cluster would be greater than 100 weeks. */
             switch (frequency) {
                 case YEARLY   : significant = (ri.first > SIGNIFICANCE_MULTIPLIER * frequency_length); break;

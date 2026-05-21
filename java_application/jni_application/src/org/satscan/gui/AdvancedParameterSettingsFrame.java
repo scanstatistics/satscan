@@ -80,7 +80,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // create opaque glass pane
         _glass = new JPanel();
         _glass.setOpaque(false);
-        
+
         // Attach mouse listeners
         MouseInputAdapter adapter = new MouseInputAdapter() {
         };
@@ -165,12 +165,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_glass != null) {
             _rootPane.setGlassPane(_glass);
             _glass.setVisible(true); // Change glass pane to our panel
-            
+
             Dimension windowSize = getSize();
             //_settings_window.getGraphicsConfiguration().get
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             Point centerPoint = ge.getCenterPoint();
-            setLocation(centerPoint.x - windowSize.width, 100);            
+            setLocation(centerPoint.x - windowSize.width, 100);
         }
         setFocusedTabSet(focusedTabSet);
     }
@@ -226,7 +226,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** Returns the file path at data set index for file type. */
     private String getFileTypeFullpath(InputSourceSettings.InputFileType ftype, int setIdx) {
         switch (ftype) {
-            case Case -> { 
+            case Case -> {
                 if (setIdx == 0)
                     return _settings_window._caseFileTextField.getText();
                 return _caseFilenames.get(setIdx - 1);
@@ -244,7 +244,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             default -> throw new UnknownEnumException(ftype);
         }
     }
-    
+
     /** Sets the file path at data set index for file type. */
     private void setFileTypeFullpath(String fullpath, InputSourceSettings.InputFileType ftype, int setIdx) {
         // File paths for data set at index zero aren't maintained here.
@@ -264,8 +264,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
             default -> throw new UnknownEnumException(ftype);
         }
-    }    
-    
+    }
+
     /*
      * enables options in the maps output group
      */
@@ -306,10 +306,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /**
-     * Enables dates of flexible temporal window group. Enabling is determined 
-     * through: - querying the 'precision of time' control contained in the 
-     * analysis window - the Enabled property of the TGroupBox of which dates 
-     * are contained - the Enabled and Checked properties of the TCheckBox that 
+     * Enables dates of flexible temporal window group. Enabling is determined
+     * through: - querying the 'precision of time' control contained in the
+     * analysis window - the Enabled property of the TGroupBox of which dates
+     * are contained - the Enabled and Checked properties of the TCheckBox that
      * indicates whether user wishes to adjust for earlier analyses.
      */
     public void enableDates() {
@@ -357,7 +357,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!_startRangeEndDayTextField.isEnabled() && enableGroup) {
             _flexStartRangeEndDateComponentsGroup.setDay(31);
         }
-        // to be cautious, validate the groups 
+        // to be cautious, validate the groups
         _flexStartRangeStartDateComponentsGroup.validateGroup();
         _flexStartRangeEndDateComponentsGroup.validateGroup();
 
@@ -380,7 +380,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (!_endRangeEndDayTextField.isEnabled() && enableGroup) {
             _flexEndRangeEndDateComponentsGroup.setDay(31);
         }
-        // to be cautious, validate the groups 
+        // to be cautious, validate the groups
         _flexEndRangeStartDateComponentsGroup.validateGroup();
         _flexEndRangeEndDateComponentsGroup.validateGroup();
     }
@@ -396,7 +396,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         enableInputFileEdits();
         enableDataSetPurposeControls();
         enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
-        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());        
+        enableLimitClustersByRiskLevelGroup(_settings_window.getAreaScanRateControlType());
     }
 
     private void enableEmailAlerts() {
@@ -411,7 +411,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (val > 1) _cutoff_value_email.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
             _cutoff_email_label.setText("send email with summary results to (csv list):");
         }
-        
+
         boolean emailingSomeone = Utils.selected(_always_sendmail) || Utils.selected(_cutoff_email);
         _always_email_recipients.setEnabled(Utils.selected(_always_sendmail));
         _cutoff_value_email.setEnabled(Utils.selected(_cutoff_email));
@@ -425,12 +425,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _custom_email_tags.setEnabled(Utils.selected(_create_custom_email_message));
         _custom_email_message_label.setEnabled(Utils.selected(_create_custom_email_message));
         _custom_email_message.setEnabled(Utils.selected(_create_custom_email_message));
-        
+
         if (!Utils.selected(_create_custom_email_message)) {
             _custom_email_subject.setText(Parameters.DEFAULT_EMAIL_SUBJECT);
             _custom_email_message.setText(substituteNewlines(Parameters.DEFAULT_EMAIL_MESSAGE));
         }
-    }   
+    }
 
     /* Enables controls of the other output group. */
     public void enableOtherOutputGroup() {
@@ -460,10 +460,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _cluster_lineline_prelabel.setText("Include clusters with p-value less than or equal to");
                 if (val > 1) _cluster_lineline_value.setText(AppConstants.DEFAULT_PVALUE_CUTOFF_CSV_LINELIST);
                 _cluster_lineline_label.setText("in line list CSV file.");
-            }        
+            }
         }
-    }    
-    
+    }
+
     /**
      * Enables neighbors file group.
      */
@@ -492,12 +492,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void enableMultipleLocationsGroup(boolean bEnable) {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
-        
+
         _multipleSetsSpatialCoordinatesGroup.setEnabled(bEnable);
         _onePerLocationIdRadioButton.setEnabled(bEnable);
         _atLeastOneRadioButton.setEnabled(bEnable);
         _allLocationsRadioButton.setEnabled(bEnable);
-        
+
         _multiple_locations_file_label.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
         _multiple_locations_file.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
         _multiple_locations_file_browse.setEnabled(bEnable && (Utils.selected(_atLeastOneRadioButton) || Utils.selected(_allLocationsRadioButton)));
@@ -519,7 +519,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numIterativeScansTextField.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
         _iterativeCutoffLabel.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
         _iterative_scan_cutoff.setEnabled(_perform_iterative_scan.isSelected() && bEnable);
-        
+
         double val = Double.parseDouble(_iterative_scan_cutoff.getText());
         if (_settings_window.isProspectiveScan()) {
             if (val <= 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
@@ -527,7 +527,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else {
             _iterativeCutoffLabel.setText("Stop when the p-value is greater than:");
             if (val > 1) _iterative_scan_cutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
-        }              
+        }
     }
 
     public void enableLimitClustersMinimumCasesGroup(Parameters.AreaRateType scanrate) {
@@ -539,21 +539,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _min_cases_label.setEnabled(_minimum_clusters_group.isEnabled());
         _minimum_number_cases_cluster.setEnabled(_minimum_clusters_group.isEnabled());
         _min_cases_label2.setEnabled(_minimum_clusters_group.isEnabled());
-    }    
-    
+    }
+
     public void enableLimitClustersByRiskLevelGroup(Parameters.AreaRateType scanrate) {
         Parameters.ProbabilityModelType modeltype = _settings_window.getModelControlType();
         boolean enableGroup = !(
             modeltype == Parameters.ProbabilityModelType.ORDINAL ||
             modeltype == Parameters.ProbabilityModelType.CATEGORICAL ||
             modeltype == Parameters.ProbabilityModelType.NORMAL || (
-               modeltype == Parameters.ProbabilityModelType.BATCHED && 
+               modeltype == Parameters.ProbabilityModelType.BATCHED &&
                _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 1
             )
         );
         _limit_clusters_risk_group.setEnabled(enableGroup);
         switch (_settings_window.getModelControlType()) {
-            case EXPONENTIAL: 
+            case EXPONENTIAL:
                 _limit_high_clusters.setText("Restrict short survival clusters to observed/expected greater than or equal to:");
                 _limit_low_clusters.setText("Restrict long survival clusters to observed/expected less than or equal to:");
                 break;
@@ -569,16 +569,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _limit_high_clusters.setText("Restrict high rate clusters to relative risk greater than or equal to:");
                 _limit_low_clusters.setText("Restrict low rate clusters to relative risk less than or equal to:");
         }
-        
+
         _limit_high_clusters.setEnabled(_limit_clusters_risk_group.isEnabled() &&
                                         (scanrate == Parameters.AreaRateType.HIGH || scanrate == Parameters.AreaRateType.HIGHANDLOW));
         _limit_high_clusters_value.setEnabled(_limit_high_clusters.isEnabled() && _limit_high_clusters.isSelected());
-        
+
         _limit_low_clusters.setEnabled(_limit_clusters_risk_group.isEnabled() &&
                                        (scanrate == Parameters.AreaRateType.LOW || scanrate == Parameters.AreaRateType.HIGHANDLOW));
-        _limit_low_clusters_value.setEnabled(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());            
+        _limit_low_clusters_value.setEnabled(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());
     }
-    
+
     private void enablePValueOptionsGroup() {
         boolean bPoisson = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bBernoulli = _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
@@ -590,7 +590,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 || _settings_window.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
         boolean gumbelEnabled = _settings_window.getAreaScanRateControlType() == Parameters.AreaRateType.HIGH && (
             ((bPoisson || bBernoulli || bCategorical || bOrdinal) && bPurelySpatial) ||
-            ((bPoisson || bBernoulli || bSTP) && bSpaceTime) 
+            ((bPoisson || bBernoulli || bSTP) && bSpaceTime)
         );
         _radioGumbelPValues.setEnabled(gumbelEnabled);
         if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected())
@@ -630,7 +630,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(false);
                 enableTemporalGraphsGroup(false);
-                enableMiscellaneousAnalysisGroup(bPoisson, false);
+                enableMiscellaneousAnalysisGroup(bPoisson, false, _settings_window.getPrecisionOfTimesControlType());
                 break;
             case PURELYTEMPORAL:
             case SEASONALTEMPORAL:
@@ -651,7 +651,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
-                enableMiscellaneousAnalysisGroup(false, false);
+                enableMiscellaneousAnalysisGroup(false, false, _settings_window.getPrecisionOfTimesControlType());
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
@@ -673,7 +673,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
-                enableMiscellaneousAnalysisGroup(false, false);
+                enableMiscellaneousAnalysisGroup(false, false, _settings_window.getPrecisionOfTimesControlType());
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
@@ -695,7 +695,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
-                enableMiscellaneousAnalysisGroup(false, true);
+                enableMiscellaneousAnalysisGroup(false, true, _settings_window.getPrecisionOfTimesControlType());
                 break;
             case PROSPECTIVEPURELYTEMPORAL:
                 enableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, false, bPoisson, bPoisson);
@@ -715,7 +715,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
                 enableTemporalGraphsGroup(bPoisson || bSpaceTimePermutation || bBernoulli || bExponential || bUniformTime || bBatched);
-                enableMiscellaneousAnalysisGroup(false, true);
+                enableMiscellaneousAnalysisGroup(false, true, _settings_window.getPrecisionOfTimesControlType());
                 break;
             case SPATIALVARTEMPTREND:
                 enableAdjustmentForTimeTrendOptionsGroup(false, false, false, false, false);
@@ -734,8 +734,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableWindowShapeGroup(true);
                 enablePValueOptionsGroup();
                 enableAdjustDayOfWeek(bPoisson || bSpaceTimePermutation);
-                enableTemporalGraphsGroup(false);                
-                enableMiscellaneousAnalysisGroup(false, false);
+                enableTemporalGraphsGroup(false);
+                enableMiscellaneousAnalysisGroup(false, false, _settings_window.getPrecisionOfTimesControlType());
                 break;
         }
         enableLimitClustersMinimumCasesGroup(_settings_window.getAreaScanRateControlType());
@@ -753,16 +753,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /* Enables controls on the 'Miscellaneous' tab. */
-    public void enableMiscellaneousAnalysisGroup(boolean enableOliveira, boolean enableProspectiveFreq) {
+    public void enableMiscellaneousAnalysisGroup(boolean enableOliveira, boolean enableProspectiveFreq, Parameters.DatePrecisionType precisionOfTimes) {
         _oliveiras_f_group.setEnabled(enableOliveira);
         _calculate_oliveiras_f.setEnabled(enableOliveira);
         _number_oliveira_data_sets_label.setEnabled(enableOliveira);
         _number_oliveira_data_sets.setEnabled(enableOliveira);
+
+
         _prospective_frequency_group.setEnabled(enableProspectiveFreq);
+
         _label_prospective_frequency.setEnabled(enableProspectiveFreq);
-        _prospective_frequency.setEnabled(enableProspectiveFreq);
+        _freqSameTimeAgg.setEnabled(enableProspectiveFreq);
+        _freqEvery.setEnabled(enableProspectiveFreq);
+        _freqEveryX.setEnabled(enableProspectiveFreq);
+        _prospective_frequency_every.setEnabled(enableProspectiveFreq && precisionOfTimes != Parameters.DatePrecisionType.GENERIC);
+        _freqTimesPer.setEnabled(enableProspectiveFreq && precisionOfTimes != Parameters.DatePrecisionType.GENERIC);
+        _freqXTimesPer.setEnabled(enableProspectiveFreq && precisionOfTimes != Parameters.DatePrecisionType.GENERIC);
+        _freqXTimesPerLbl.setEnabled(enableProspectiveFreq && precisionOfTimes != Parameters.DatePrecisionType.GENERIC);
+        _prospective_frequency_timesper.setEnabled(enableProspectiveFreq && precisionOfTimes != Parameters.DatePrecisionType.GENERIC);
+        if (_freqSameTimeAgg.isEnabled() && _freqTimesPer.isSelected() && !_freqTimesPer.isEnabled())
+            _freqSameTimeAgg.setSelected(true);
     }
-        
+
     public boolean isAdjustingForDayOfWeek() {
         return Utils.selected(_adjustDayOfWeek);
     }
@@ -816,7 +828,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             analysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
             analysisType == Parameters.AnalysisType.SEASONALTEMPORAL
         );
-        
+
         String unitsLabel = "";
         switch (_settings_window.getTimeAggregationControlType()) {
             case YEAR:
@@ -837,9 +849,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // When using the nonparametric temporal adjustment, and no spatial adjustment, the maxium temporal cluster size can be 100%.
         if (Utils.selected(_temporalTrendAdjNonparametric) && !Utils.selected(_spatialAdjustmentsNonparametric))
             percentage = 100;
-        else if (ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric) || 
+        else if (ptAnalysis || Utils.selected(_spatialAdjustmentsNonparametric) ||
                 _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION)
-            percentage = 50; 
+            percentage = 50;
         _percentageOfStudyPeriodLabel.setText("percent of the study period (<= " + percentage + "%, default = 50%)");
         _maxTemporalTimeUnitsLabel.setText(unitsLabel + " (<= " + percentage + "% of the study period)");
     }
@@ -878,7 +890,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _network_filename.setEnabled(enable && _locations_network.isSelected());
         _browse_network_filename.setEnabled(enable && _locations_network.isSelected());
     }
-    
+
     /**
      * enables or disables the New button on the Input tab
      */
@@ -992,22 +1004,26 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.doubleIs(_limit_high_clusters_value, 1.0);
         bReturn &= Utils.selected(_limit_low_clusters, false);
         bReturn &= Utils.doubleIs(_limit_low_clusters_value, 1.0);
-        
+
         // Drilldown
         bReturn &= Utils.selected(_mainAnalysisDrilldown, false);
         bReturn &= Utils.selected(_purelySpatialDrilldown, false);
         bReturn &= Utils.doubleIs(_drilldown_restriction_cutoff, 0.05);
         bReturn &= Utils.integerIs(_drilldown_restriction_locations, 2);
         bReturn &= Utils.integerIs(_drilldown_restriction_cases, 10);
-        
+
         // Miscellaneous
         bReturn &= Utils.selected(_calculate_oliveiras_f, false);
         bReturn &= Utils.integerIs(_number_oliveira_data_sets, 1000);
-        bReturn &= Utils.selectionIs(_prospective_frequency, 0);
-        
+        bReturn &= Utils.selected(_freqSameTimeAgg, true);
+        bReturn &= Utils.integerIs(_freqEveryX, 1);
+        bReturn &= Utils.selectionIs(_prospective_frequency_every, 0);
+        bReturn &= Utils.integerIs(_freqXTimesPer, 2);
+        bReturn &= Utils.selectionIs(_prospective_frequency_timesper, 0);
+
         return bReturn;
     }
-    
+
     /* Checks to determine if only default values are set in the dialog
        Returns true if only default values are set
        Returns false if user specified a value other than a default
@@ -1017,7 +1033,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Output tab
         bReturn &= Utils.selected(_mostLikelyClustersHierarchically, true);
-        bReturn &= Utils.selected(_giniOptimizedClusters, true);
+        bReturn &= Utils.selected(_giniOptimizedClusters, false);
         bReturn &= Utils.selectionIs(_hierarchicalSecondaryClusters, 0);
         bReturn &= Utils.selected(_checkboxReportIndexCoefficients, false);
         bReturn &= Utils.doubleIs(_maxReportedSpatialClusterSizeTextField, 50.0);
@@ -1032,16 +1048,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= Utils.selected(_reportTemporalGraph, false);
         bReturn &= Utils.selected(_temporalGraphMostLikely, true);
         bReturn &= Utils.integerIs(_numMostLikelyClustersGraph, 1);
-        bReturn &= Utils.doubleIs(_temporalGraphPvalueCutoff, 0.05);                
+        bReturn &= Utils.doubleIs(_temporalGraphPvalueCutoff, 0.05);
         bReturn &= Utils.selected(_includeClusterLocationsInKML, true);
         bReturn &= Utils.selected(_createCompressedKMZ, false);
         bReturn &= Utils.selected(_launch_map_viewer, true);
-        bReturn &= Utils.doubleIs(_cluster_lineline_value, 0.05); 
+        bReturn &= Utils.doubleIs(_cluster_lineline_value, 0.05);
         bReturn &= Utils.selected(_always_sendmail, false);
         bReturn &= Utils.textIs(_always_email_recipients, "");
         bReturn &= Utils.selected(_cutoff_email, false);
         bReturn &= Utils.textIs(_cutoff_email_recipients, "");
-        bReturn &= Utils.doubleIs(_cutoff_value_email, 0.05); 
+        bReturn &= Utils.doubleIs(_cutoff_value_email, 0.05);
         bReturn &= Utils.selected(_attach_main_results_email, false);
         bReturn &= Utils.selected(_report_main_results_email, false);
         bReturn &= Utils.selected(_create_custom_email_message, false);
@@ -1063,7 +1079,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             else
                 eReturn = Parameters.SpatialAdjustmentType.SPATIAL_STRATIFIED_RANDOMIZATION;
         }
-        return eReturn;        
+        return eReturn;
     }
 
     private Parameters.CriteriaSecondaryClustersType getCriteriaSecondaryClustersType() {
@@ -1104,50 +1120,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         return eReturn;
     }
-
-    private Parameters.ProspectiveFrequency getProspectiveFrequencyControlType() {
-        Parameters.ProspectiveFrequency eReturn = null;
-
-        if (_prospective_frequency.getSelectedIndex() == 0) {
-            eReturn = Parameters.ProspectiveFrequency.SAME_TIMEAGGREGATION;
-        } else if (_prospective_frequency.getSelectedIndex() == 1) {
-            eReturn = Parameters.ProspectiveFrequency.DAILY;
-        } else if (_prospective_frequency.getSelectedIndex() == 2) {
-            eReturn = Parameters.ProspectiveFrequency.WEEKLY;
-        } else if (_prospective_frequency.getSelectedIndex() == 3) {
-            eReturn = Parameters.ProspectiveFrequency.MONTHLY;
-        } else if (_prospective_frequency.getSelectedIndex() == 4) {
-            eReturn = Parameters.ProspectiveFrequency.QUARTERLY;
-        } else if (_prospective_frequency.getSelectedIndex() == 5) {
-            eReturn = Parameters.ProspectiveFrequency.YEARLY;
-        } else {
-            throw new IllegalArgumentException("No prospective frequency option selected.");
-        }
-        return eReturn;
-    }    
-
-    /*
-    private Parameters.DatePrecisionType getClusterSignificantRecurrenceControlType() {
-        if (!_cluster_significant_ri_type.isEnabled())
-            return Parameters.DatePrecisionType.GENERIC;
-        Parameters.DatePrecisionType eReturn;
-        if (_cluster_significant_ri_type.getSelectedIndex() == 0) {
-            eReturn = Parameters.DatePrecisionType.DAY;
-        } else if (_cluster_significant_ri_type.getSelectedIndex() == 1) {
-            eReturn = Parameters.DatePrecisionType.YEAR;
-        } else {
-            throw new IllegalArgumentException("No cluster siognificance option selected.");            
-        }
-        return eReturn;
-    }     
-
-    private void setClusterSignificantRecurrenceControlType(Parameters.DatePrecisionType etype) {
-        switch (etype) {
-            case YEAR: _cluster_significant_ri_type.select(1); break;
-            case DAY:
-            default: _cluster_significant_ri_type.select(0);
-        }
-    }*/   
 
     private Parameters.PowerEvaluationMethodType getPowerEvaluationMethodType() {
         Parameters.PowerEvaluationMethodType eReturn = null;
@@ -1230,9 +1202,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private String substituteNewlines(final String source) {
         String substituted = source.replace("<linebreak>", "\n");
-        return substituted;        
+        return substituted;
     }
-    
+
     /**
      * sets CParameters class with settings in form
      */
@@ -1260,7 +1232,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (parameters.GetIsProspectiveAnalysis())
             parameters.SetIterativeCutOffPValue(Double.valueOf(_iterative_scan_cutoff.getText()).intValue());
         else
-            parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterative_scan_cutoff.getText()));        
+            parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterative_scan_cutoff.getText()));
         parameters.SetIterativeScanning(Utils.selected(_perform_iterative_scan));
         parameters.SetNumIterativeScans(Integer.parseInt(_numIterativeScansTextField.getText()));
         parameters.SetUseAdjustmentForRelativeRisksFile(Utils.selected(_adjustForKnownRelativeRisksCheckBox));
@@ -1284,7 +1256,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetPValueReportingType(getPValueReportingControlType().ordinal());
         parameters.SetReportGumbelPValue(_checkReportGumbel.isSelected());
         parameters.SetEarlyTermThreshold(Integer.parseInt(_earlyTerminationThreshold.getText()));
-        
+
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             parameters.SetIncludeClustersType(Parameters.IncludeClustersType.CLUSTERSINRANGE.ordinal());
         } else {
@@ -1345,8 +1317,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Miscellaneous analysis tab
         parameters.setCalculateOliveirasF(Utils.selected(_calculate_oliveiras_f));
         parameters.setNumRequestedOliveiraSets(Integer.parseInt(_number_oliveira_data_sets.getText()));
-        parameters.setProspectiveFrequencyType(getProspectiveFrequencyControlType().ordinal());
-        
+        if (Utils.selected(_freqSameTimeAgg)) {
+            parameters.setProspectiveFrequencySelection(Parameters.ProspectiveFrequencySelection.SAMEAS_TIMEAGG.ordinal());
+        } else if (Utils.selected(_freqEvery)) {
+            parameters.setProspectiveFrequencySelection(Parameters.ProspectiveFrequencySelection.EVERY_X.ordinal());
+            parameters.setProspectiveFrequencyType(_prospective_frequency_every.getSelectedIndex() + 1);
+            parameters.setProspectiveFrequency(Integer.parseInt(_freqEveryX.getText()));
+        } else if (Utils.selected(_freqTimesPer)) {
+            parameters.setProspectiveFrequencySelection(Parameters.ProspectiveFrequencySelection.X_TIMES_PER.ordinal());
+            parameters.setProspectiveFrequencyType(_prospective_frequency_timesper.getSelectedIndex() + 2);
+            parameters.setProspectiveFrequency(Integer.parseInt(_freqXTimesPer.getText()));
+        }
+
         // Power Evaluations tab
         parameters.setPerformPowerEvaluation(Utils.selected(_performPowerEvalautions));
         parameters.setPowerEvaluationMethod(getPowerEvaluationMethodType().ordinal());
@@ -1363,21 +1345,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else if (_temporalGraphMostLikelyX.isSelected()) {
             parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.X_MCL_ONLY.ordinal());
         } else {
-            parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.MLC_ONLY.ordinal());            
+            parameters.setTemporalGraphReportType(Parameters.TemporalGraphReportType.MLC_ONLY.ordinal());
         }
         parameters.setTemporalGraphMostLikelyCount(Integer.parseInt(_numMostLikelyClustersGraph.getText()));
         if (parameters.GetIsProspectiveAnalysis())
             parameters.setTemporalGraphSignificantCutoff(Double.valueOf(_temporalGraphPvalueCutoff.getText()).intValue());
         else
             parameters.setTemporalGraphSignificantCutoff(Double.parseDouble(_temporalGraphPvalueCutoff.getText()));
-        
+
         // Cluster Restrictions tab
         parameters.setMinimumCasesHighRateClusters(Integer.parseInt(_minimum_number_cases_cluster.getText()));
         parameters.setRiskLimitHighClusters(_limit_high_clusters.isEnabled() && _limit_high_clusters.isSelected());
         parameters.setRiskThresholdHighClusters(Double.parseDouble(_limit_high_clusters_value.getText()));
         parameters.setRiskLimitLowClusters(_limit_low_clusters.isEnabled() && _limit_low_clusters.isSelected());
         parameters.setRiskThresholdLowClusters(Double.parseDouble(_limit_low_clusters_value.getText()));
-        
+
         // Drilldown tab
         parameters.setPerformStandardDrilldown(Utils.selected(_mainAnalysisDrilldown));
         parameters.setPerformBernoulliDrilldown(Utils.selected(_purelySpatialDrilldown));
@@ -1387,11 +1369,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.setDrilldownCutoff(Double.parseDouble(_drilldown_restriction_cutoff.getText()));
         parameters.setDrilldownMinimumLocationsCluster(Integer.parseInt(_drilldown_restriction_locations.getText()));
         parameters.setDrilldownMinimumCasesCluster(Integer.parseInt(_drilldown_restriction_cases.getText()));
-        
+
         // Network tab
         parameters.setUseLocationsNetworkFile(Utils.selected(_locations_network));
         parameters.setLocationsNetworkFilename(_network_filename.getText());
-        
+
         // Notifications tab
         parameters.setAlwaysEmailSummary(Utils.selected(_always_sendmail));
         parameters.setEmailAlwaysRecipients(_always_email_recipients.getText());
@@ -1425,7 +1407,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public boolean isNetworkFileSelected() {
         return _locations_network.isEnabled() && _locations_network.isSelected();
     }
-    
+
     public boolean isAdjustedRelativeRisksSelected() {
         return _adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected();
     }
@@ -1509,7 +1491,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (!FileAccess.isValidFilename(_caseFilenames.get(i)))
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _caseFilenames.get(i)), FocusedTabSet.INPUT, (Component) _caseFileTextField);
             String validationString = _settings_window.validateInputSourceDataFile(_caseFilenames.get(i), InputSourceSettings.InputFileType.Case.toString() + (i + 2), "case");
-            if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _caseFileTextField);            
+            if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _caseFileTextField);
             //validate the control file for this dataset - Bernoulli model only
             if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI) {
                 if (_controlFilenames.get(i).length() == 0)
@@ -1521,7 +1503,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 if (!FileAccess.isValidFilename(_controlFilenames.get(i)))
                     throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _controlFilenames.get(i)), FocusedTabSet.INPUT, (Component) _controlFileTextField);
                 validationString = _settings_window.validateInputSourceDataFile(_controlFilenames.get(i), InputSourceSettings.InputFileType.Control.toString() + (i + 2), "control");
-                if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _controlFileTextField);            
+                if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _controlFileTextField);
             }
             //validate the population file for this dataset-  Poisson model only
             if (_settings_window.getModelControlType() == Parameters.ProbabilityModelType.POISSON) {
@@ -1543,9 +1525,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             FocusedTabSet.INPUT, (Component) _populationFileTextField);
                 }
                 if (_populationFilenames.get(i).length() > 0) {
-                    if (!FileAccess.isValidFilename(_populationFilenames.get(i))) {                
+                    if (!FileAccess.isValidFilename(_populationFilenames.get(i))) {
                         throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _populationFilenames.get(i)), FocusedTabSet.INPUT, (Component) _populationFileTextField);
-                    }                                    
+                    }
                     validationString = _settings_window.validateInputSourceDataFile(_populationFilenames.get(i), InputSourceSettings.InputFileType.Population.toString() + (i + 2), "population");
                     if (validationString != null) throw new AdvFeaturesExpection(validationString, FocusedTabSet.INPUT, (Component) _populationFileTextField);
                 }
@@ -1574,9 +1556,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The neighbors file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
             }
-            if (!FileAccess.isValidFilename(_neighborsFileTextField.getText())) {                
+            if (!FileAccess.isValidFilename(_neighborsFileTextField.getText())) {
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _neighborsFileTextField.getText()), FocusedTabSet.INPUT, (Component) _neighborsFileTextField);
-            }                
+            }
         }
         if (_specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected() && _specifiyMetaLocationsFileCheckBox.isSelected()) {
             //validate the case file for this dataset
@@ -1587,9 +1569,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The meta locations file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
             }
-            if (!FileAccess.isValidFilename(_metaLocationsFileTextField.getText())) {                
+            if (!FileAccess.isValidFilename(_metaLocationsFileTextField.getText())) {
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _metaLocationsFileTextField.getText()), FocusedTabSet.INPUT, (Component) _metaLocationsFileTextField);
-            }                
+            }
         }
         if (getMultipleCoordinatesType() != Parameters.MultipleCoordinatesType.ONEPERLOCATION && _multiple_locations_file.isEnabled()) {
             if (_multiple_locations_file.getText().length() == 0) {
@@ -1598,7 +1580,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             if (!FileAccess.ValidateFileAccess(_multiple_locations_file.getText(), false, false)) {
                 throw new AdvFeaturesExpection("The multiple locations file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.INPUT, (Component) _multiple_locations_file);
-            }            
+            }
         }
     }
 
@@ -1611,9 +1593,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
-            if (!FileAccess.isValidFilename(_maxCirclePopulationFilenameTextField.getText())) {                
+            if (!FileAccess.isValidFilename(_maxCirclePopulationFilenameTextField.getText())) {
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _maxCirclePopulationFilenameTextField.getText()), FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
-            }                
+            }
         }
         if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
             if (_maxReportedSpatialClusterSizeTextField.isEnabled() && Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) < Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText())) {
@@ -1622,8 +1604,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
             if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false, false)) {
                 throw new AdvFeaturesExpection(
-                        "The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + 
-                        "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + 
+                        "The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" +
+                        "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" +
                         "reported spatial cluster size by a population defined through a\nmaximum circle file.",
                         FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
             }
@@ -1644,33 +1626,98 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void validateBorderAnalysisSettings() {
+    private void validateMiscellaneousAnalysisSettings() {
         Parameters.AnalysisType analysis = _settings_window.getAnalysisControlType();
         Parameters.ProbabilityModelType model = _settings_window.getModelControlType();
 
-        if (_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected()) {                    
+        if (_calculate_oliveiras_f.isEnabled() && _calculate_oliveiras_f.isSelected()) {
             // sanity check -- GUI should already be preventing other combinations
             if (!(analysis == Parameters.AnalysisType.PURELYSPATIAL && model == Parameters.ProbabilityModelType.POISSON))
                 throw new AdvFeaturesExpection("The option to calculate Oliveira's is only implemented with purely spatial poisson.", FocusedTabSet.ANALYSIS, (Component) _calculate_oliveiras_f);
-            
+
             int monte_carlos = Integer.parseInt(_montCarloReplicationsTextField.getText());
             int oliveira_sets = Integer.parseInt(_number_oliveira_data_sets.getText());
             if (monte_carlos < 99)
                 throw new AdvFeaturesExpection("The Oliveira's F calculation requires at least 999 Monte Carlo replications.", FocusedTabSet.ANALYSIS, (Component)_montCarloReplicationsTextField);
             if (oliveira_sets < 100 || oliveira_sets % 100 > 0) {
                 throw new AdvFeaturesExpection("The Oliveira's F calculation requires a minimum of 100 bootstrap replications. The number of bootstrap replications must be a multiple of 100.", FocusedTabSet.ANALYSIS, (Component)_calculate_oliveiras_f);
-            }           
+            }
             /* We're disabling the gini portion for the time being: https://www.squishlist.com/ims/satscan/66323/ */
             if (_giniOptimizedClusters.isEnabled() && _giniOptimizedClusters.isSelected()) {
                 throw new AdvFeaturesExpection("The Oliveira's F calculation cannot be performed in conjunction with the Gini optimized clusters collection.", FocusedTabSet.OUTPUT, (Component)_giniOptimizedClusters);
-            }            
+            }
             // only permit non-overlapping clusters when reporting hierarchical clusters with border analysis option
             if (_mostLikelyClustersHierarchically.isEnabled() && _mostLikelyClustersHierarchically.isSelected() && getCriteriaSecondaryClustersType() != Parameters.CriteriaSecondaryClustersType.NOGEOOVERLAP) {
                 throw new AdvFeaturesExpection("The Oliveira's F calculation can be performed in conjunction with hierarchical clusters only when secondary clusters are not overlapping.", FocusedTabSet.OUTPUT, (Component)_mostLikelyClustersHierarchically);
             }
         }
+
+        if ((analysis == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || analysis == Parameters.AnalysisType.PROSPECTIVESPACETIME) &&
+            (Utils.selected(_freqEvery) || (Utils.selected(_freqTimesPer)))) {
+            double frequency_length = 0.0;
+            double AVERAGE_DAYS_IN_MONTH = 30.42, AVERAGE_DAYS_IN_YEAR = 365.25;
+            if (Utils.selected(_freqEvery)) {
+                switch (_prospective_frequency_every.getSelectedIndex()) {
+                    case 0 -> frequency_length = Double.parseDouble(_freqEveryX.getText());
+                    case 1 -> frequency_length = Double.parseDouble(_freqEveryX.getText()) * 7.0;
+                    case 2 -> frequency_length = Double.parseDouble(_freqEveryX.getText()) * AVERAGE_DAYS_IN_MONTH;
+                    case 3 -> frequency_length = Double.parseDouble(_freqEveryX.getText()) * AVERAGE_DAYS_IN_YEAR / 4.0;
+                    case 4 -> frequency_length = Double.parseDouble(_freqEveryX.getText()) * AVERAGE_DAYS_IN_YEAR;
+                    default -> throw new RuntimeException("Unknown frequency type: " + _prospective_frequency_every.getSelectedIndex());
+                }
+            } else if (Utils.selected(_freqTimesPer)) {
+                switch (_prospective_frequency_timesper.getSelectedIndex()) {
+                    case 0 -> frequency_length = 7.0 / Double.parseDouble(_freqXTimesPer.getText());
+                    case 1 -> frequency_length = AVERAGE_DAYS_IN_MONTH / Double.parseDouble(_freqXTimesPer.getText());
+                    case 2 -> frequency_length = (AVERAGE_DAYS_IN_YEAR / 4.0)/Double.parseDouble(_freqXTimesPer.getText());
+                    case 3 -> frequency_length = AVERAGE_DAYS_IN_YEAR/Double.parseDouble(_freqXTimesPer.getText());
+                    default -> throw new RuntimeException("Unknown frequency type: " + _prospective_frequency_timesper.getSelectedIndex());
+                }
+            }
+            double time_agg_length = 0.0, agg_length = Double.parseDouble(_settings_window._timeAggregationLengthTextField.getText());
+            switch (_settings_window.getTimeAggregationControlType()) {
+                case Parameters.DatePrecisionType.DAY, Parameters.DatePrecisionType.GENERIC -> time_agg_length = agg_length;
+                case Parameters.DatePrecisionType.MONTH -> time_agg_length = agg_length * AVERAGE_DAYS_IN_MONTH;
+                case Parameters.DatePrecisionType.YEAR -> time_agg_length = agg_length * AVERAGE_DAYS_IN_YEAR;
+                default -> throw new UnknownEnumException(_settings_window.getTimeAggregationControlType());
+            }
+            if (frequency_length < time_agg_length) {
+               throw new AdvFeaturesExpection(
+                   "The prospective analysis frequency (" + ((int)frequency_length) + 
+                   " day" + ((int)frequency_length == 1 ? ")" : "s)") + " cannot be more frequent than the time aggregation length (" + 
+                   ((int)time_agg_length) + " day" + ((int)time_agg_length == 1 ? ")." : "s)."),
+                   FocusedTabSet.ANALYSIS, (Component)(Utils.selected(_freqEvery) ? _freqEveryX : _freqXTimesPer)
+               ); 
+            }
+        }
     }
-    
+
+    /* Corrects the prospective frequency controls to agree with each other. */
+    private void correctEveryXControls() {
+        if (_freqEveryX.getText().length() == 0) _freqEveryX.setText("1");
+        int times_per = Integer.parseInt(_freqEveryX.getText());
+        if (times_per < 1) _freqEveryX.setText("1");
+        switch (_prospective_frequency_every.getSelectedIndex()) {
+            case 0 -> { /*day*/ if (times_per > 364) _freqEveryX.setText("364"); }
+            case 1 -> { /*week*/ if (times_per > 51) _freqEveryX.setText("51"); }
+            case 2 -> { /*month*/ if (times_per > 11) _freqEveryX.setText("11"); }
+            case 3 -> { /*quarter*/ if (times_per > 3) _freqEveryX.setText("3"); }
+        }
+    }
+
+    /* Corrects the prospective frequency controls to agree with each other. */
+    private void correctXTimesPerControls() {
+        if (_freqXTimesPer.getText().length() == 0) _freqXTimesPer.setText("2");
+        int times_per = Integer.parseInt(_freqXTimesPer.getText());
+        if (times_per < 2) _freqXTimesPer.setText("2");
+        switch (_prospective_frequency_timesper.getSelectedIndex()) {
+            case 0 -> { /*week*/ if (times_per > 6) _freqXTimesPer.setText("6"); }
+            case 1 -> { /*month*/ if (times_per > 30) _freqXTimesPer.setText("30"); }
+            case 2 -> { /*quarter*/ if (times_per > 90) _freqXTimesPer.setText("90"); }
+            case 3 -> { /*year*/ if (times_per > 364) _freqXTimesPer.setText("364"); }
+        }
+    }
+
     private void validateAdjustmentSettings() {
         boolean bAnalysisIsPurelyTemporal = _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PURELYTEMPORAL ||
                                             _settings_window.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
@@ -1696,9 +1743,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The adjustments file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
             }
-            if (!FileAccess.isValidFilename(_adjustmentsByRelativeRisksFileTextField.getText())) {                
+            if (!FileAccess.isValidFilename(_adjustmentsByRelativeRisksFileTextField.getText())) {
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _adjustmentsByRelativeRisksFileTextField.getText()), FocusedTabSet.ANALYSIS, (Component) _adjustmentsByRelativeRisksFileTextField);
-            }                            
+            }
         }
 
         if (isAdjustingForDayOfWeek()) {
@@ -1707,7 +1754,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The adjustment for day of week cannot be performed on a period less than 14 days.", FocusedTabSet.ANALYSIS, (Component) _adjustDayOfWeek);
             }
         }
-        
+
         // For the nonparametric adjustment (time-stratified), the batched model allows the user to specify the adjustment
         // length in values that are multiple of the aggregation units (daily data, adjustment weekly).
         if (Utils.selected(_temporalTrendAdjNonparametric) && _settings_window.getModelControlType() == Parameters.ProbabilityModelType.BATCHED) {
@@ -1728,7 +1775,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     to be no greater than 50% of study period length (""" + (int)Math.floor(dStudyPeriodLengthInUnits * 0.5) + " maximum).",
                     FocusedTabSet.ANALYSIS, (Component)_nonparametric_length
                );
-        }        
+        }
     }
 
     /* Returns the absolute maximum temporal cluster size give the current analysis settings. */
@@ -1749,7 +1796,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Otherwise 90% is the default maximum.
         return 90.0;
     }
-    
+
     /* Validates the temporal cluster size controls with consideration to other user settings. */
     private void validateTemporalClusterSize() {
         if (!_maxTemporalOptionsGroup.isEnabled()) return;
@@ -1935,9 +1982,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("The alternative hypothesis file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                         FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
             }
-            if (!FileAccess.isValidFilename(_alternativeHypothesisFilename.getText())) {                
+            if (!FileAccess.isValidFilename(_alternativeHypothesisFilename.getText())) {
                 throw new AdvFeaturesExpection(String.format(AppConstants.FILENAME_ASCII_ERROR, _alternativeHypothesisFilename.getText()), FocusedTabSet.ANALYSIS, (Component) _alternativeHypothesisFilename);
-            }                                        
+            }
         }
     }
 
@@ -1965,12 +2012,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_iterative_scan_cutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for the iterative scan must\nbe greater than or equal to 1 for a prospective scan.", 
+                    "The recurrence interval cutoff for the iterative scan must\nbe greater than or equal to 1 for a prospective scan.",
                     FocusedTabSet.ANALYSIS, (Component) _iterative_scan_cutoff
                 );
             if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for the iterative scan must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    "The p-value cutoff for the iterative scan must\nbe between 0 and 1 (inclusive) for a retrospective scan.",
                     FocusedTabSet.ANALYSIS, (Component) _iterative_scan_cutoff
                 );
         }
@@ -1982,38 +2029,38 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_drilldown_restriction_cutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for a detected cluster on drilldown must\nbe greater than or equal to one for a prospective scan.", 
+                    "The recurrence interval cutoff for a detected cluster on drilldown must\nbe greater than or equal to one for a prospective scan.",
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
                 );
             if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for a detected cluster on drilldown must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    "The p-value cutoff for a detected cluster on drilldown must\nbe between 0 and 1 (inclusive) for a retrospective scan.",
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cutoff
                 );
             if (Integer.parseInt(_drilldown_restriction_locations.getText()) < 2)
                 throw new AdvFeaturesExpection(
-                    "The minimum number of locations in detected cluster for drilldown cannot be less than 2.", 
+                    "The minimum number of locations in detected cluster for drilldown cannot be less than 2.",
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_locations
-                );                
+                );
             if (Integer.parseInt(_drilldown_restriction_cases.getText()) < 10)
                 throw new AdvFeaturesExpection(
-                    "The minimum number of cases in detected cluster for drilldown cannot be less than 10.", 
+                    "The minimum number of cases in detected cluster for drilldown cannot be less than 10.",
                     FocusedTabSet.ANALYSIS, (Component) _drilldown_restriction_cases
-                );                
+                );
         }
-        if (Utils.selected(_purelySpatialDrilldown) && 
+        if (Utils.selected(_purelySpatialDrilldown) &&
             _settings_window.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
-            Utils.selected(_adjustDayOfWeek) && 
+            Utils.selected(_adjustDayOfWeek) &&
             _inputDataSetsList.getModel().getSize() > 1 &&
             Utils.selected(_multivariateAdjustmentsRadioButton)) {
                 throw new AdvFeaturesExpection(
                     """
                     The Bernoulli cluster drilldown is not implemented for the space-time permutation model,
-                    with the adjustment for day of week and multiple data sets when purpose is multivariate.""", 
+                    with the adjustment for day of week and multiple data sets when purpose is multivariate.""",
                     FocusedTabSet.ANALYSIS, (Component) _purelySpatialDrilldown
-                );                  
+                );
         }
-    }    
+    }
 
     /** Validates parameter settings for the Temporal Output tab */
     private void validateTemporalOutputSettings() {
@@ -2021,34 +2068,34 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_temporalGraphPvalueCutoff.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for including clusters in temporal graph must\nbe greater than or equal to one for a prospective scan.", 
+                    "The recurrence interval cutoff for including clusters in temporal graph must\nbe greater than or equal to one for a prospective scan.",
                     FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
                 );
             if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for including clusters in temporal graph must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    "The p-value cutoff for including clusters in temporal graph must\nbe between 0 and 1 (inclusive) for a retrospective scan.",
                     FocusedTabSet.OUTPUT, (Component) _temporalGraphPvalueCutoff
                 );
         }
-    }    
-    
+    }
+
     /** Validates parameter settings for the Other Output tab */
     private void validateOtherOutputSettings() {
         if (_cluster_lineline_value.isEnabled()) {
             double cutoff = Double.parseDouble(_cluster_lineline_value.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for including clusters in line list CSV must be greater than or equal to one for a prospective analysis.", 
+                    "The recurrence interval cutoff for including clusters in line list CSV must be greater than or equal to one for a prospective analysis.",
                     FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
                 );
             if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for including clusters in line list CSV must be between 0 and 1 (inclusive) for a retrospective analysis.", 
+                    "The p-value cutoff for including clusters in line list CSV must be between 0 and 1 (inclusive) for a retrospective analysis.",
                     FocusedTabSet.OUTPUT, (Component) _cluster_lineline_value
                 );
         }
-    }    
-    
+    }
+
     /** validates all the settings in this dialog */
     public void validateParameters() {
         validateInputFilesSettings();
@@ -2057,7 +2104,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         validateAdjustmentSettings();
         validateTemporalWindowSettings();
         validateInferenceSettings();
-        validateBorderAnalysisSettings();
+        validateMiscellaneousAnalysisSettings();
         validatePowerEvaluationsSettings();
         validateDrilldownSettings();
         validateTemporalOutputSettings();
@@ -2111,23 +2158,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             double cutoff = Double.parseDouble(_cutoff_value_email.getText());
             if (_settings_window.isProspectiveScan() && cutoff < 1.0)
                 throw new AdvFeaturesExpection(
-                    "The recurrence interval cutoff for emailing the cluster summary must\nbe greater than or equal to one for a prospective scan.", 
+                    "The recurrence interval cutoff for emailing the cluster summary must\nbe greater than or equal to one for a prospective scan.",
                     FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
                 );
             if (!_settings_window.isProspectiveScan() && (cutoff < 0.0 || cutoff > 1.0))
                 throw new AdvFeaturesExpection(
-                    "The p-value cutoff for emailing the cluster summary must\nbe between 0 and 1 (inclusive) for a retrospective scan.", 
+                    "The p-value cutoff for emailing the cluster summary must\nbe between 0 and 1 (inclusive) for a retrospective scan.",
                     FocusedTabSet.OUTPUT, (Component) _cutoff_value_email
                 );
-        }        
-    }    
-    
+        }
+    }
+
     /**
      * enables input tab case/control/pop files edit boxes
      */
     private void enableInputFileEdits() {
         boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 1;
-        
+
         _dataSetNameTextField.setEnabled(bEnable);
         _caseFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
         _controlFileTextField.setEnabled(bEnable && _inputDataSetsList.getSelectedIndex() > 0);
@@ -2208,7 +2255,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _specifiyMetaLocationsFileCheckBox.setSelected(false);
         _metaLocationsFileTextField.setText("");
         _multiple_locations_file.setText("");
-        
+
         // network file
         _locations_network.setSelected(false);
         _network_filename.setText("");
@@ -2287,7 +2334,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEstimationMonteCarlo.setSelected(true);
         _alternativeHypothesisFilename.setText("");
         _numberPowerReplications.setText("1000");
-        
+
         // Cluster Restrictions
         _minimum_number_cases_cluster.setText("2");
         _limit_high_clusters.setSelected(false);
@@ -2301,11 +2348,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_cutoff.setText("0.05");
         _drilldown_restriction_locations.setText("2");
         _drilldown_restriction_cases.setText("10");
-        
+
         // Miscellaneous
         _calculate_oliveiras_f.setSelected(false);
         _number_oliveira_data_sets.setText("1000");
-        _prospective_frequency.select(0);      
+        _freqSameTimeAgg.setSelected(true);
+        _freqEveryX.setText("1");
+        _prospective_frequency_every.select(0);
+        _freqXTimesPer.setText("2");
+        _prospective_frequency_timesper.select(0);
     }
 
     /**
@@ -2334,7 +2385,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _createCompressedKMZ.setSelected(false);
         _launch_map_viewer.setSelected(true);
         _calculate_oliveiras_f.setSelected(false);
-        _number_oliveira_data_sets.setText("1000");        
+        _number_oliveira_data_sets.setText("1000");
         _always_sendmail.setSelected(false);
         _cluster_lineline_value.setText("0.05");
         _always_sendmail.setSelected(false);
@@ -2457,7 +2508,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         return eReturn;
     }
-    
+
     /**
      * sets p-value reporting option type control index
      */
@@ -2603,7 +2654,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else {
             _temporalGraphSignificant.setText("All clusters, one graph for each, with p-value less than or equal:");
             if (val > 1) _temporalGraphPvalueCutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
-        }        
+        }
     }
 
     /**
@@ -2817,8 +2868,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Miscellaneous analysis tab
         _calculate_oliveiras_f.setSelected(parameters.getCalculateOliveirasF());
         _number_oliveira_data_sets.setText(Integer.toString(parameters.getNumRequestedOliveiraSets()));
-        _prospective_frequency.select(parameters.getProspectiveFrequencyType().ordinal());
-        
+        switch(parameters.getProspectiveFrequencySelection()) {
+            case Parameters.ProspectiveFrequencySelection.EVERY_X:
+                _freqEvery.setSelected(true);
+                _freqEveryX.setText(String.valueOf(parameters.getProspectiveFrequency()));
+                _prospective_frequency_every.select(parameters.getProspectiveFrequencyType().ordinal() - 1);
+                break;
+            case Parameters.ProspectiveFrequencySelection.X_TIMES_PER:
+                _freqTimesPer.setSelected(true);
+                _freqXTimesPer.setText(String.valueOf(parameters.getProspectiveFrequency()));
+                _prospective_frequency_timesper.select(parameters.getProspectiveFrequencyType().ordinal() - 2);
+                break;
+            case Parameters.ProspectiveFrequencySelection.SAMEAS_TIMEAGG:
+            default: _freqSameTimeAgg.setSelected(true);
+        }
+        correctEveryXControls();
+        correctXTimesPerControls();
+
         // Spatial Clusters tab
         _mostLikelyClustersHierarchically.setSelected(parameters.getReportHierarchicalClusters());
         _giniOptimizedClusters.setSelected(parameters.getReportGiniOptimizedClusters());
@@ -2882,37 +2948,37 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _numMostLikelyClustersGraph.setText(Integer.toString(parameters.getTemporalGraphMostLikelyCount()));
         _temporalGraphSignificant.setSelected(parameters.getTemporalGraphReportType() == Parameters.TemporalGraphReportType.SIGNIFICANT_ONLY);
         updateCriticalValuesTextCaptions();
-        
+
         // Cluster Restrictions tab
         _minimum_number_cases_cluster.setText(Integer.toString(parameters.getMinimumCasesHighRateClusters()));
         _limit_high_clusters.setSelected(parameters.getRiskLimitHighClusters());
         _limit_high_clusters_value.setText(Double.toString(parameters.getRiskThresholdHighClusters()));
         _limit_low_clusters.setSelected(parameters.getRiskLimitLowClusters());
         _limit_low_clusters_value.setText(Double.toString(parameters.getRiskThresholdLowClusters()));
-     
+
         // Drilldown tab
         _mainAnalysisDrilldown.setSelected(parameters.getPerformStandardDrilldown());
         _purelySpatialDrilldown.setSelected(parameters.getPerformBernoulliDrilldown());
         _drilldown_restriction_locations.setText(Integer.toString(parameters.getDrilldownMinimumLocationsCluster()));
         _drilldown_restriction_cases.setText(Integer.toString(parameters.getDrilldownMinimumCasesCluster()));
-        
+
         // Network tab
         _locations_network.setSelected(parameters.getUseLocationsNetworkFile());
         _network_filename.setText(parameters.getLocationsNetworkFilename());
-        
+
         // Notifications tab
         _always_sendmail.setSelected(parameters.getAlwaysEmailSummary());
         _always_email_recipients.setText(parameters.getEmailAlwaysRecipients());
         _cutoff_email.setSelected(parameters.getCutoffEmailSummary());
-        _cutoff_email_recipients.setText(parameters.getEmailCutoffRecipients());  
+        _cutoff_email_recipients.setText(parameters.getEmailCutoffRecipients());
         _attach_main_results_email.setSelected(parameters.getEmailAttachResults());
         _report_main_results_email.setSelected(parameters.getEmailIncludeResultsDirectory());
         _create_custom_email_message.setSelected(parameters.getEmailCustom());
         _custom_email_subject.setText(parameters.getEmailCustomSubject());
         _custom_email_message.setText(substituteNewlines(parameters.getEmailCustomMessageBody()));
-        
+
         // Other Output Tab
-        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());    
+        _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());
         _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
         _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
         _printTitle.setText(parameters.GetTitleName());
@@ -2939,8 +3005,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _cluster_lineline_value.setText(Double.toString(parameters.getCutoffLineListCSV()));
         }
         updateMultipleDataSetsInputs();
-    }    
-    
+    }
+
     /** Updates multiple data set inputs  */
     public void updateMultipleDataSetsInputs() {
         _dataSetNameTextField.setText(_datasetNames.get(_inputDataSetsList.getSelectedIndex()));
@@ -2949,7 +3015,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _controlFileTextField.setText(getFileTypeFullpath(InputSourceSettings.InputFileType.Control, _inputDataSetsList.getSelectedIndex()));
         _populationFileTextField.setText(getFileTypeFullpath(InputSourceSettings.InputFileType.Population, _inputDataSetsList.getSelectedIndex()));
     }
-    
+
     /**
      * Enabled the power evaluations group based upon current settings.
      */
@@ -2987,7 +3053,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         Parameters.AnalysisType eAnalysisType = _settings_window.getAnalysisControlType();
         Parameters.ProbabilityModelType eModelType = _settings_window.getModelControlType();
 
-        boolean bEnableGroup = !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || 
+        boolean bEnableGroup = !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL ||
                                  eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL ||
                                  eAnalysisType == Parameters.AnalysisType.SEASONALTEMPORAL);
         _clustersReportedGroup.setEnabled(bEnableGroup);
@@ -3008,9 +3074,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void enableDrilldownGroup() {
         Parameters.AnalysisType eAnalysisType = _settings_window.getAnalysisControlType();
         Parameters.ProbabilityModelType eModelType = _settings_window.getModelControlType();
-        
+
         boolean bEnableGroup = (
-            eAnalysisType == Parameters.AnalysisType.SPACETIME || 
+            eAnalysisType == Parameters.AnalysisType.SPACETIME ||
             eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
             eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL ||
             eAnalysisType == Parameters.AnalysisType.SPATIALVARTEMPTREND
@@ -3036,8 +3102,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _drilldown_restriction_locations_label.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_locations.setEnabled(bEnableGroup && drilldownSelected);
         _drilldown_restriction_cases_label.setEnabled(bEnableGroup && drilldownSelected);
-        _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);       
-        
+        _drilldown_restriction_cases.setEnabled(bEnableGroup && drilldownSelected);
+
         double val = Double.parseDouble(_drilldown_restriction_cutoff.getText());
         if (_settings_window.isProspectiveScan()) {
             if (val <= 1) _drilldown_restriction_cutoff.setText(AppConstants.DEFAULT_RECURRENCE_CUTOFF);
@@ -3045,9 +3111,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else {
             _drilldown_restriction_cutoff_label.setText("P-Value Less Than Or Equal:");
             if (val > 1) _drilldown_restriction_cutoff.setText(AppConstants.DEFAULT_PVALUE_CUTOFF);
-        }         
+        }
     }
-    
+
     /* Adds listeners to a JTextField intended for p-value/recurrence interval cutoff input. */
     private void initCutoffJTextField(javax.swing.JTextField cutoff_field, String default_ri, String default_pvalue) {
         UndoManager undome = new UndoManager();
@@ -3056,7 +3122,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 if (_settings_window.isProspectiveScan())
                     Utils.validatePostiveNumericKeyTyped(cutoff_field, e, 10);
-                else 
+                else
                     Utils.validatePostiveFloatKeyTyped(cutoff_field, e, 20);
             }
         });
@@ -3080,7 +3146,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             undome.addEdit(evt.getEdit());
         });
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -3103,6 +3169,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _powerEstimationButtonGroup = new javax.swing.ButtonGroup();
         _temporalGraphButtonGroup = new javax.swing.ButtonGroup();
         popupMenu1 = new java.awt.PopupMenu();
+        _frequencyButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _multipleDataSetsTab = new javax.swing.JPanel();
         _additionalDataSetsGroup = new javax.swing.JPanel();
@@ -3322,7 +3389,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _number_oliveira_data_sets = new javax.swing.JTextField();
         _prospective_frequency_group = new javax.swing.JPanel();
         _label_prospective_frequency = new javax.swing.JLabel();
-        _prospective_frequency = new java.awt.Choice();
+        _freqSameTimeAgg = new javax.swing.JRadioButton();
+        _freqEvery = new javax.swing.JRadioButton();
+        _freqEveryX = new javax.swing.JTextField();
+        _prospective_frequency_every = new java.awt.Choice();
+        _freqTimesPer = new javax.swing.JRadioButton();
+        _freqXTimesPer = new javax.swing.JTextField();
+        _freqXTimesPerLbl = new javax.swing.JLabel();
+        _prospective_frequency_timesper = new java.awt.Choice();
         _cluster_restrictions_tab = new javax.swing.JPanel();
         _limit_clusters_risk_group = new javax.swing.JPanel();
         _limit_low_clusters = new javax.swing.JCheckBox();
@@ -6447,7 +6521,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                             .addComponent(_number_oliveira_data_sets_label)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                             .addComponent(_number_oliveira_data_sets, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(0, 203, Short.MAX_VALUE)))
+                            .addGap(0, 207, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             _oliveiras_f_groupLayout.setVerticalGroup(
@@ -6463,20 +6537,98 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
             _prospective_frequency_group.setBorder(javax.swing.BorderFactory.createTitledBorder("Prospective Analyses"));
 
-            _label_prospective_frequency.setLabelFor(_prospective_frequency);
             _label_prospective_frequency.setText("How frequently are analyses performed?");
 
-            _prospective_frequency.addItemListener(new java.awt.event.ItemListener() {
-                public void itemStateChanged(java.awt.event.ItemEvent e) {
+            _frequencyButtonGroup.add(_freqSameTimeAgg);
+            _freqSameTimeAgg.setSelected(true);
+            _freqSameTimeAgg.setText("Same as Time Aggregation");
+
+            _frequencyButtonGroup.add(_freqEvery);
+            _freqEvery.setText("Every");
+
+            _freqEveryX.setText("1");
+            _freqEveryX.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    correctEveryXControls();
                     enableSetDefaultsButton();
                 }
             });
-            _prospective_frequency.add("Same as Time Aggregation");
-            _prospective_frequency.add("Daily");
-            _prospective_frequency.add("Weekly");
-            _prospective_frequency.add("Monthly");
-            _prospective_frequency.add("Quarterly");
-            _prospective_frequency.add("Yearly");
+            _freqEveryX.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_freqEveryX, e, 10);
+                }
+            });
+            _freqEveryX.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _freqEveryX.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _freqEveryXFocusGained(evt);
+                }
+            });
+
+            _prospective_frequency_every.add("Day(s)");
+            _prospective_frequency_every.add("Week(s)");
+            _prospective_frequency_every.add("Month(s)");
+            _prospective_frequency_every.add("Quarter(s)");
+            _prospective_frequency_every.add("Year(s)");
+            _prospective_frequency_every.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    correctEveryXControls();
+                    enableSetDefaultsButton();
+                }
+            });
+            _prospective_frequency_every.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _prospective_frequency_everyFocusGained(evt);
+                }
+            });
+
+            _frequencyButtonGroup.add(_freqTimesPer);
+
+            _freqXTimesPer.setText("2");
+            _freqXTimesPer.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusLost(java.awt.event.FocusEvent e) {
+                    correctXTimesPerControls();
+                    enableSetDefaultsButton();
+                }
+            });
+            _freqXTimesPer.addKeyListener(new java.awt.event.KeyAdapter() {
+                public void keyTyped(java.awt.event.KeyEvent e) {
+                    Utils.validatePostiveNumericKeyTyped(_freqXTimesPer, e, 10);
+                }
+            });
+            _freqXTimesPer.getDocument().addUndoableEditListener(new UndoableEditListener() {
+                public void undoableEditHappened(UndoableEditEvent evt) {
+                    undo.addEdit(evt.getEdit());
+                }
+            });
+            _freqXTimesPer.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _freqXTimesPerFocusGained(evt);
+                }
+            });
+
+            _freqXTimesPerLbl.setLabelFor(_prospective_frequency_timesper);
+            _freqXTimesPerLbl.setText("times per");
+
+            _prospective_frequency_timesper.addItemListener(new java.awt.event.ItemListener() {
+                public void itemStateChanged(java.awt.event.ItemEvent e) {
+                    correctXTimesPerControls();
+                    enableSetDefaultsButton();
+                }
+            });
+            _prospective_frequency_timesper.add("Week");
+            _prospective_frequency_timesper.add("Month");
+            _prospective_frequency_timesper.add("Quarter");
+            _prospective_frequency_timesper.add("Year");
+            _prospective_frequency_timesper.addFocusListener(new java.awt.event.FocusAdapter() {
+                public void focusGained(java.awt.event.FocusEvent evt) {
+                    _prospective_frequency_timesperFocusGained(evt);
+                }
+            });
 
             javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
             _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
@@ -6484,21 +6636,59 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(_freqSameTimeAgg, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                            .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 268, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                                    .addComponent(_freqEvery)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_freqEveryX, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_prospective_frequency_every, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                                    .addComponent(_freqTimesPer)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_freqXTimesPerLbl)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGap(0, 407, Short.MAX_VALUE)))
+                    .addContainerGap())
             );
             _prospective_frequency_groupLayout.setVerticalGroup(
                 _prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
-                    .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGap(0, 14, Short.MAX_VALUE))
+                    .addComponent(_label_prospective_frequency, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(_freqSameTimeAgg)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_freqEvery)
+                            .addComponent(_freqEveryX, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(_prospective_frequency_every, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_freqTimesPer)
+                            .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(_freqXTimesPerLbl)))
+                        .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
 
-            _prospective_frequency.getAccessibleContext().setAccessibleName("How frequently are analyses performed?");
+            _freqSameTimeAgg.getAccessibleContext().setAccessibleName("");
+            _freqSameTimeAgg.getAccessibleContext().setAccessibleDescription("select frequency as time aggregation");
+            _freqEvery.getAccessibleContext().setAccessibleDescription("select frequency as multiple");
+            _freqEveryX.getAccessibleContext().setAccessibleDescription("number of units in selected period");
+            _prospective_frequency_every.getAccessibleContext().setAccessibleDescription("time period frequency selection");
+            _freqTimesPer.getAccessibleContext().setAccessibleDescription("select frequency as divisor");
+            _freqXTimesPer.getAccessibleContext().setAccessibleDescription("number of times per period");
+            _prospective_frequency_timesper.getAccessibleContext().setAccessibleDescription("times per selected period");
 
             javax.swing.GroupLayout _miscellaneous_analysis_tabLayout = new javax.swing.GroupLayout(_miscellaneous_analysis_tab);
             _miscellaneous_analysis_tab.setLayout(_miscellaneous_analysis_tabLayout);
@@ -6518,7 +6708,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_oliveiras_f_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(_prospective_frequency_group, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(328, Short.MAX_VALUE))
+                    .addContainerGap(241, Short.MAX_VALUE))
             );
 
             jTabbedPane1.addTab("Miscellaneous", null, _miscellaneous_analysis_tab, "");
@@ -7103,6 +7293,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _temporalGraphMostLikelyX.setSelected(true);
     }//GEN-LAST:event__numMostLikelyClustersGraphLabelMouseClicked
 
+    private void _freqEveryXFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__freqEveryXFocusGained
+        _freqEvery.setSelected(true);
+    }//GEN-LAST:event__freqEveryXFocusGained
+
+    private void _prospective_frequency_everyFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__prospective_frequency_everyFocusGained
+        _freqEvery.setSelected(true);
+    }//GEN-LAST:event__prospective_frequency_everyFocusGained
+
+    private void _freqXTimesPerFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__freqXTimesPerFocusGained
+        _freqTimesPer.setSelected(true);
+    }//GEN-LAST:event__freqXTimesPerFocusGained
+
+    private void _prospective_frequency_timesperFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event__prospective_frequency_timesperFocusGained
+        _freqTimesPer.setSelected(true);
+    }//GEN-LAST:event__prospective_frequency_timesperFocusGained
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
     private javax.swing.JPanel _additionalDataSetsGroup;
@@ -7186,6 +7392,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _endWindowRangeLabel;
     private javax.swing.JPanel _flexibleTemporalWindowDefinitionGroup;
     private javax.swing.JPanel _flexible_window_cards;
+    private javax.swing.JRadioButton _freqEvery;
+    private javax.swing.JTextField _freqEveryX;
+    private javax.swing.JRadioButton _freqSameTimeAgg;
+    private javax.swing.JRadioButton _freqTimesPer;
+    private javax.swing.JTextField _freqXTimesPer;
+    private javax.swing.JLabel _freqXTimesPerLbl;
+    private javax.swing.ButtonGroup _frequencyButtonGroup;
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
     private javax.swing.JCheckBox _giniOptimizedClusters;
@@ -7301,8 +7514,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _powerEvaluationsGroup;
     private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JTextField _printTitle;
-    private java.awt.Choice _prospective_frequency;
+    private java.awt.Choice _prospective_frequency_every;
     private javax.swing.JPanel _prospective_frequency_group;
+    private java.awt.Choice _prospective_frequency_timesper;
     private javax.swing.JCheckBox _purelySpatialDrilldown;
     private javax.swing.JRadioButton _radioDefaultPValues;
     private javax.swing.JRadioButton _radioEarlyTerminationPValues;

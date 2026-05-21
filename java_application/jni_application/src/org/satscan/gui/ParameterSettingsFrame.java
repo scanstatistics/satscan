@@ -1475,6 +1475,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
         enableTimeAggregationGroup(eAnalysis != Parameters.AnalysisType.PURELYSPATIAL);
         enableDatesByTimePrecisionUnits();
+        getAdvancedParameterInternalFrame().enableMiscellaneousAnalysisGroup(
+           getModelControlType() == Parameters.ProbabilityModelType.POISSON, 
+           getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL || getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME,
+           getPrecisionOfTimesControlType()
+        );
     }
 
     public final Parameters getParameterSettings() {

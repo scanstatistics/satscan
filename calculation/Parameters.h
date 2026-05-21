@@ -281,6 +281,7 @@ class CParameters {
     std::string                         _locations_network_filename;
     bool                                _use_locations_network_file;
 
+    ProspectiveFrequencySelection       _prospective_frequency_selection;
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
 
@@ -372,6 +373,8 @@ class CParameters {
     void                                setCreateEmailSummaryFile(bool b) { _create_email_summary_file = b; }
     double                              getEmailSummaryValue() const { return _email_summary_cutoff; }
     void                                setEmailSummaryValue(double d) { _email_summary_cutoff = d; }
+    ProspectiveFrequencySelection       getProspectiveFrequencySelection() const { return _prospective_frequency_selection; }
+    void                                setProspectiveFrequencySelection(ProspectiveFrequencySelection e);
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }

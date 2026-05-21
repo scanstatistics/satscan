@@ -86,7 +86,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection, bool excludeFileVal
         bValid &= ValidateIterativeScanParameters(PrintDirection);
         bValid &= ValidateInferenceParameters(PrintDirection);
         bValid &= ValidateDrilldownParameters(PrintDirection, isDrilldown);
-        bValid &= ValidateBorderAnalysisParameters(PrintDirection);
+        bValid &= ValidateMiscellaneousAnalysisParameters(PrintDirection);
         bValid &= ValidateEllipseParameters(PrintDirection);
         bValid &= ValidateSimulationDataParameters(PrintDirection);
         bValid &= ValidateRandomizationSeed(PrintDirection);
@@ -128,7 +128,7 @@ bool ParametersValidate::ValidateOtherOutputOptionParameters(BasePrint & PrintDi
     return true;
 }
 
-bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirection) const {
+bool ParametersValidate::ValidateMiscellaneousAnalysisParameters(BasePrint& printDirection) const {
     bool bValid=true;
 
     if (gParameters.getCalculateOliveirasF()) {
@@ -168,6 +168,149 @@ bool ParametersValidate::ValidateBorderAnalysisParameters(BasePrint& printDirect
             bValid = false;
             printDirection.Printf("%s:\nOliveira's F can be performed in conjunction with hierarchical clusters only when secondary clusters are not overlapping.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
         }
+    }
+    if (gParameters.GetIsProspectiveAnalysis()) {
+        bool validFrequencySettings = true;
+		double frequency_length = 0.0;
+        switch (gParameters.getProspectiveFrequencySelection()) {
+        case SAMEAS_TIMEAGG: break;
+        case EVERY_X:
+            if (gParameters.getProspectiveFrequency() < 1) {
+                validFrequencySettings = false;
+                printDirection.Printf(
+                    "%s:\nThe prospective frequency value must be at least 1 when the selection is set to 'Every X'.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            switch (gParameters.getProspectiveFrequencyType()) {
+            case DAILY:
+                if (gParameters.getProspectiveFrequency() > 364) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value in days has a maximum value of every 364 days when the selection is set to 'Every X'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = static_cast<double>(gParameters.getProspectiveFrequency());
+                break;
+            case WEEKLY:
+                if (gParameters.getProspectiveFrequency() > 51) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value in weeks has a maximum value of every 51 weeks when the selection is set to 'Every X'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = static_cast<double>(gParameters.getProspectiveFrequency()) * 7.0;
+                break;
+            case MONTHLY:
+                if (gParameters.getProspectiveFrequency() > 11) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value in months has a maximum value of every 11 months when the selection is set to 'Every X'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = static_cast<double>(gParameters.getProspectiveFrequency()) * AVERAGE_DAYS_IN_MONTH;
+                break;
+            case QUARTERLY:
+                if (gParameters.getProspectiveFrequency() > 3) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value in quarters has a maximum value of every 3 quarters when the selection is set to 'Every X'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = static_cast<double>(gParameters.getProspectiveFrequency()) * AVERAGE_DAYS_IN_YEAR/4.0;
+                break;
+            case YEARLY: frequency_length = static_cast<double>(gParameters.getProspectiveFrequency()) * AVERAGE_DAYS_IN_YEAR; break;
+            default:
+                validFrequencySettings = false;
+                printDirection.Printf(
+                    "%s:\nInvalid prospective frequency type of '%d' for 'Every X' selection.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getProspectiveFrequencyType()
+                );
+                
+            } break;
+        case X_TIMES_PER:
+            if (gParameters.getProspectiveFrequency() < 2) {
+                validFrequencySettings = false;
+                printDirection.Printf(
+                    "%s:\nThe prospective frequency value must be at least 2 when the selection is set to 'X times per'.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                );
+            }
+            switch (gParameters.getProspectiveFrequencyType()) {
+            case WEEKLY:
+                if (gParameters.getProspectiveFrequency() > 6) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value for weeks has a maximum value of 6 times per weeks when the selection is set to 'X times per'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = 7.0 / static_cast<double>(gParameters.getProspectiveFrequency());
+                break;
+            case MONTHLY:
+                if (gParameters.getProspectiveFrequency() > 30) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value for months has a maximum value of 30 times per weeks when the selection is set to 'X times per'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = AVERAGE_DAYS_IN_MONTH / static_cast<double>(gParameters.getProspectiveFrequency());
+                break;
+            case QUARTERLY:
+                if (gParameters.getProspectiveFrequency() > 90) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value for quarters has a maximum value of 90 times per quarter when the selection is set to 'X times per'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = (AVERAGE_DAYS_IN_YEAR / 4.0) / static_cast<double>(gParameters.getProspectiveFrequency());
+                break;
+            case YEARLY:
+                if (gParameters.getProspectiveFrequency() > 364) {
+                    validFrequencySettings = false;
+                    printDirection.Printf(
+                        "%s:\nThe prospective frequency value for years has a maximum value of 364 times per year when the selection is set to 'X times per'.\n",
+                        BasePrint::P_PARAMERROR, MSG_INVALID_PARAM
+                    );
+                }
+				frequency_length = AVERAGE_DAYS_IN_YEAR / static_cast<double>(gParameters.getProspectiveFrequency());
+                break;
+            default:
+                validFrequencySettings = false;
+                printDirection.Printf(
+                    "%s:\nInvalid prospective frequency type of '%d' for 'X times per' selection.\n",
+                    BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, gParameters.getProspectiveFrequencyType()
+                );
+                break;
+            }
+        }
+        if (validFrequencySettings && gParameters.getProspectiveFrequencySelection() != SAMEAS_TIMEAGG) {
+            double time_agg_length = 0.0;
+            switch (gParameters.GetTimeAggregationUnitsType()) {
+            case MONTH: time_agg_length = AVERAGE_DAYS_IN_MONTH * gParameters.GetTimeAggregationLength(); break;
+            case YEAR: time_agg_length = AVERAGE_DAYS_IN_YEAR * gParameters.GetTimeAggregationLength(); break;
+            case GENERIC:
+            case DAY: 
+            default: time_agg_length = gParameters.GetTimeAggregationLength(); break;
+            }
+            if (gParameters.getProspectiveFrequencySelection() != SAMEAS_TIMEAGG && 
+                static_cast<unsigned int>(frequency_length) < static_cast<unsigned int>(time_agg_length)) {
+                validFrequencySettings = false;
+                printDirection.Printf(
+                    "%s:\nThe prospective analysis frequency (%u day%s) cannot be more frequent than the time aggregation length (%u day%s).\n",
+					BasePrint::P_PARAMERROR, MSG_INVALID_PARAM, 
+					static_cast<unsigned int>(frequency_length), static_cast<unsigned int>(frequency_length) == 1 ? "" : "s",
+					static_cast<unsigned int>(time_agg_length), static_cast<unsigned int>(time_agg_length) == 1 ? "" : "s"
+                );
+			}
+        }
+        bValid &= validFrequencySettings;
     }
     return bValid;
 }

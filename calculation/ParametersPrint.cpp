@@ -637,30 +637,51 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getMiscellaneousAnalysisPa
         if (_parameters.getCalculateOliveirasF())
             settings.push_back(std::make_pair("Number of bootstrap replications", printString(buffer, "%u", _parameters.getNumRequestedOliveiraSets())));
     }
-    if (_parameters.GetIsProspectiveAnalysis() && _parameters.GetTimeAggregationUnitsType() != GENERIC) {
-        switch (_parameters.getProspectiveFrequencyType()) {
-        case SAME_TIMEAGGREGATION: buffer = "Same As Time Aggregation"; break;
-        case DAILY:
-            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Daily (every %u days)", _parameters.getProspectiveFrequency());
-            else buffer = "Daily";
-            break;
-        case WEEKLY:
-            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Weekly (every %u weeks)", _parameters.getProspectiveFrequency());
-            else buffer = "Weekly";
-            break;
-        case MONTHLY:
-            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Monthly (every %u months)", _parameters.getProspectiveFrequency());
-            else buffer = "Monthly";
-            break;
-        case QUARTERLY:
-            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Quarterly (every %u quarters)", _parameters.getProspectiveFrequency());
-            else buffer = "Quarterly";
-            break;
-        case YEARLY:
-            if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Yearly (every %u years)", _parameters.getProspectiveFrequency());
-            else buffer = "Yearly";
-            break;
-        default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
+    if (_parameters.GetIsProspectiveAnalysis()) {
+        switch (_parameters.getProspectiveFrequencySelection()) {
+            case SAMEAS_TIMEAGG: buffer = "Same as time aggregation"; break;
+            case EVERY_X:
+                if (_parameters.GetTimeAggregationUnitsType() == GENERIC) {
+                    printString(buffer, "Every %u time units", _parameters.getProspectiveFrequency());
+                } else {
+                    switch (_parameters.getProspectiveFrequencyType()) {
+                    case DAILY:
+                        if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Every %u days", _parameters.getProspectiveFrequency());
+                        else buffer = "Every day";
+                        break;
+                    case WEEKLY:
+                        if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Every %u weeks", _parameters.getProspectiveFrequency());
+                        else buffer = "Every week";
+                        break;
+                    case MONTHLY:
+                        if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Every %u months", _parameters.getProspectiveFrequency());
+                        else buffer = "Every month";
+                        break;
+                    case QUARTERLY:
+                        if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Every %u quarters", _parameters.getProspectiveFrequency());
+                        else buffer = "Every quarter";
+                        break;
+                    case YEARLY:
+                        if (_parameters.getProspectiveFrequency() > 1) printString(buffer, "Every %u years", _parameters.getProspectiveFrequency());
+                        else buffer = "Every year";
+                        break;
+                    default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
+                    }
+                } break;
+            case X_TIMES_PER: {
+                switch (_parameters.getProspectiveFrequencyType()) {
+                    case WEEKLY:
+                        printString(buffer, "%u times per week", _parameters.getProspectiveFrequency()); break;
+                    case MONTHLY:
+                        printString(buffer, "%u times per month", _parameters.getProspectiveFrequency()); break;
+                    case QUARTERLY:
+                        printString(buffer, "%u times per quarter", _parameters.getProspectiveFrequency()); break;
+                    case YEARLY:
+                        printString(buffer, "%u times per year", _parameters.getProspectiveFrequency()); break;
+                    default: throw prg_error("Unknown prospective frequency type '%d'.\n", "PrintMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencyType());
+                } break;
+            }
+            default: throw prg_error("Unknown prospective frequency selection '%d'.\n", "PrintMiscellaneousAnalysisParameters()", _parameters.getProspectiveFrequencySelection());
         }
         settings.push_back(std::make_pair("Prospective Analysis Frequency", buffer));
     }

@@ -76,6 +76,14 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
                     gParameters.setCutoffLineListCSV(gParameters._cluster_sig_p_val_);
             }
         }
+        // In issue https://squishlist.com/ims-ext/satscan/66671/, we refactored the prospective frequency parameters.
+        if (gParameters.GetCreationVersion().iMajor < 10 || 
+             (gParameters.GetCreationVersion().iMajor == 10 && gParameters.GetCreationVersion().iMinor < 4)
+            ) {
+            gParameters.setProspectiveFrequencySelection(
+				gParameters.getProspectiveFrequencyType() == SAME_TIMEAGGREGATION ? SAMEAS_TIMEAGG : EVERY_X
+            );
+        }
     } catch (prg_exception& x) {
         x.addTrace("Read(const char* sFilename)","IniParameterFileAccess");
         throw;
@@ -450,6 +458,7 @@ void IniParameterFileAccess::WriteMiscellaneousAnalysisSettings(IniFile& WriteFi
         WriteIniParameter(WriteFile, CALCULATE_OLIVEIRA, GetParameterString(CALCULATE_OLIVEIRA, s).c_str(), GetParameterComment(CALCULATE_OLIVEIRA));
         WriteIniParameter(WriteFile, NUM_OLIVEIRA_SETS, GetParameterString(NUM_OLIVEIRA_SETS, s).c_str(), GetParameterComment(NUM_OLIVEIRA_SETS));
         WriteIniParameter(WriteFile, OLIVEIRA_CUTOFF, GetParameterString(OLIVEIRA_CUTOFF, s).c_str(), GetParameterComment(OLIVEIRA_CUTOFF));
+        WriteIniParameter(WriteFile, PROSPECTIVE_FREQ_SELECTION, GetParameterString(PROSPECTIVE_FREQ_SELECTION, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ_SELECTION));
         WriteIniParameter(WriteFile, PROSPECTIVE_FREQ_TYPE, GetParameterString(PROSPECTIVE_FREQ_TYPE, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ_TYPE));
         WriteIniParameter(WriteFile, PROSPECTIVE_FREQ, GetParameterString(PROSPECTIVE_FREQ, s).c_str(), GetParameterComment(PROSPECTIVE_FREQ));
     } catch (prg_exception& x) {
