@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "SaTScan"
-#define MyAppVersion "10.3"
+#define MyAppVersion "10.4 Beta 1"
 #define MyAppPublisher "Information Management Services, Inc."
 #define MyAppURL "https://www.satscan.org/"
 #define MyAppExeName "SaTScan.exe"
@@ -10,7 +10,9 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}
+#AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}  -- THIS IS THE RELEASE AppId.
+; Beta 10.4 installer -- B104 in GUID
+AppId={{AD0046EA-B104-4AD7-B623-ADC246EA46EA}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}

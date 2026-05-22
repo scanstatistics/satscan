@@ -7,14 +7,14 @@ else
   read -p "Apple developer password (SaTScan Mac App Specific): " PASSWORD
 fi
 
-APPVERSION="10.3"
+APPVERSION="10.4"
 SRCDIR="/Users/satscsvc/prj/satscan.development/satscan"
 INSTALLER_DIR="/prj/satscan/installers/v.${APPVERSION}.x"
 SIGN_KEY="Developer ID Application: Information Management Services, Inc. (VF82MCMA83)"
 TEAM_ID="VF82MCMA83"
 BUNDLEDIR="/Users/satscsvc/prj/satscan.development/jpackaged"
 BINARIES="/Users/satscsvc/prj/satscan.development/binaries/mac"
-JAVAJDK="/Users/satscsvc/prj/java/jdk-25.0.2+10_aarch64/Contents/Home"
+JAVAJDK="/Users/satscsvc/prj/java/jdk-25.0.3+9_aarch64/Contents/Home"
 ENTITLEMENTS="${SRCDIR}/installers/macosentitlements.plist"
 XCRUN="/usr/bin/xcrun"
 NOTARYTOOL="notarytool"

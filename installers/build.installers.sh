@@ -1,8 +1,8 @@
 #!/bin/bash
 
 ############ Script Defines #######################################################################
-version="10.3"
-versionf="10_3"
+version="10.4"
+versionf="10_4"
 build="/prj/satscan/build.area"
 installer_version="/prj/satscan/installers/v.${version}.x"
 binaries="/prj/satscan/build.area/binaries/linux"

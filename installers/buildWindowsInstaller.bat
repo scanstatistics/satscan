@@ -24,7 +24,7 @@ set satscanguiexe=%fileshare%\satscan\build.area\satscan\java_application\jni_ap
 
 set satscaninstaller=%fileshare%\satscan\installers\v.%satscanversion%.x\install-%satscanversionf%_windows.exe
 
-set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-25.0.2+10_windows_x64
+set javajdkx64=%fileshare%\satscan\installers\install.applications\java\jdk-25.0.3+9_windows_x64
 set runtimeoutputx64=%fileshare%\satscan\build.area\satscan\installers\java\jre_x64
 
 set innosetup="C:\Program Files (x86)\Inno Setup 6\iscc.exe"

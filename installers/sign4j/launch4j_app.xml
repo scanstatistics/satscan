@@ -21,12 +21,12 @@
     <opt>--enable-native-access=ALL-UNNAMED</opt>
   </jre>
   <versionInfo>
-    <fileVersion>10.3.0.0</fileVersion>
-    <txtFileVersion>Version 10.3.0</txtFileVersion>
+    <fileVersion>10.4.0.0</fileVersion>
+    <txtFileVersion>Version 10.4 Beta 1</txtFileVersion>
     <fileDescription>SaTScan - Software for the Spatial, Temporal and Space-Time Scan Statistic</fileDescription>
     <copyright>Copyright</copyright>
-    <productVersion>10.3.0.0</productVersion>
-    <txtProductVersion>Version 10.3.0</txtProductVersion>
+    <productVersion>10.4.0.0</productVersion>
+    <txtProductVersion>Version 10.4 Beta 1</txtProductVersion>
     <productName>SaTScan</productName>
     <companyName>SaTscan.org</companyName>
     <internalName>SaTScan</internalName>
