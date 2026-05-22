@@ -70,3 +70,4 @@ test/Release
 /java_application/jni_application/nbproject/private/
 
 *.dylib
+/test/test-sets/poisson-adj/*.txt

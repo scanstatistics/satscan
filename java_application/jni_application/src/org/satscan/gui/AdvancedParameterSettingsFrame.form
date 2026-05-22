@@ -64,6 +64,8 @@
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=" "/>
       </AuxValues>
     </Menu>
+    <Component class="javax.swing.ButtonGroup" name="_frequencyButtonGroup">
+    </Component>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="1"/>
@@ -2086,7 +2088,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_temporalTrendAdjGroup" min="-2" max="-2" attributes="0"/>
+                      <Component id="_temporalTrendAdjGroup" min="-2" pref="170" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_adjustDayOfWeek" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -2134,8 +2136,13 @@
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_logLinearLabel" alignment="0" max="32767" attributes="0"/>
                                               <Component id="_nonparametric_label" max="32767" attributes="0"/>
+                                              <Group type="102" attributes="0">
+                                                  <Component id="_logLinearLabel" min="-2" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="_log_linear_prec_type" min="-2" pref="92" max="-2" attributes="0"/>
+                                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                              </Group>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -2161,10 +2168,13 @@
                               <Component id="_nonparametric_label" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_logLinearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_logLinearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="_temporalTrendAdjLogLinear" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_logLinearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_logLinearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_log_linear_prec_type" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_temporalTrendAdjLogLinearCalc" min="-2" max="-2" attributes="0"/>
@@ -2218,7 +2228,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinear">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear trend with" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Log linear trend of" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2259,12 +2269,12 @@
                     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="log linear trend adjustment percentage"/>
                   </AccessibilityProperties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_logLinearTextField, e, 5);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_logLinearTextField, e, 10);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_logLinearLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="%  per year" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="%  per" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjQuadCalc">
@@ -2298,6 +2308,11 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="adjustment length (in time aggregation units)"/>
                   </Properties>
+                </Component>
+                <Component class="java.awt.Choice" name="_log_linear_prec_type">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_log_linear_prec_type.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_log_linear_prec_type.add(&quot;Year&quot;);&#xd;&#xa;_log_linear_prec_type.add(&quot;Month&quot;);&#xd;&#xa;_log_linear_prec_type.add(&quot;Day&quot;);&#xd;&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>
@@ -4113,7 +4128,7 @@
                       <Component id="_oliveiras_f_group" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospective_frequency_group" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="328" max="32767" attributes="0"/>
+                      <EmptySpace pref="241" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -4144,7 +4159,7 @@
                                   <Component id="_number_oliveira_data_sets_label" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Component id="_number_oliveira_data_sets" min="-2" pref="80" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="203" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="207" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4206,21 +4221,61 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_label_prospective_frequency" min="-2" pref="268" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_freqSameTimeAgg" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_label_prospective_frequency" alignment="0" min="-2" pref="268" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_freqEvery" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_freqEveryX" min="-2" pref="61" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_prospective_frequency_every" min="-2" pref="104" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_freqXTimesPer" min="-2" pref="61" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_freqXTimesPerLbl" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Component id="_prospective_frequency_timesper" min="-2" pref="104" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="0" pref="407" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_prospective_frequency" min="-2" pref="190" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_prospective_frequency" max="32767" attributes="0"/>
-                              <Component id="_label_prospective_frequency" max="32767" attributes="0"/>
+                          <Component id="_label_prospective_frequency" min="-2" pref="20" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_freqSameTimeAgg" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="_freqEvery" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_freqEveryX" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_prospective_frequency_every" max="32767" attributes="0"/>
                           </Group>
-                          <EmptySpace min="0" pref="14" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_freqXTimesPer" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_freqXTimesPerLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Component id="_prospective_frequency_timesper" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -4228,18 +4283,99 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_label_prospective_frequency">
                   <Properties>
-                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                      <ComponentRef name="_prospective_frequency"/>
-                    </Property>
                     <Property name="text" type="java.lang.String" value="How frequently are analyses performed?"/>
                   </Properties>
                 </Component>
-                <Component class="java.awt.Choice" name="_prospective_frequency">
+                <Component class="javax.swing.JRadioButton" name="_freqSameTimeAgg">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_frequencyButtonGroup"/>
+                    </Property>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Same as Time Aggregation"/>
+                  </Properties>
                   <AccessibilityProperties>
-                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="How frequently are analyses performed?"/>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value=""/>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="select frequency as time aggregation"/>
                   </AccessibilityProperties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_freqEvery">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_frequencyButtonGroup"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="Every"/>
+                  </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="select frequency as multiple"/>
+                  </AccessibilityProperties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_freqEveryX">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1"/>
+                  </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="number of units in selected period"/>
+                  </AccessibilityProperties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_freqEveryXFocusGained"/>
+                  </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency.add(&quot;Same as Time Aggregation&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Daily&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Weekly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Monthly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Quarterly&quot;);&#xd;&#xa;_prospective_frequency.add(&quot;Yearly&quot;);&#xd;&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_freqEveryX.addFocusListener(new java.awt.event.FocusAdapter() {&#xd;&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xd;&#xa;        correctEveryXControls();&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_freqEveryX.addKeyListener(new java.awt.event.KeyAdapter() {&#xd;&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xd;&#xa;        Utils.validatePostiveNumericKeyTyped(_freqEveryX, e, 10);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_freqEveryX.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xd;&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xd;&#xa;        undo.addEdit(evt.getEdit());&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="java.awt.Choice" name="_prospective_frequency_every">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="time period frequency selection"/>
+                  </AccessibilityProperties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_prospective_frequency_everyFocusGained"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency_every.add(&quot;Day(s)&quot;);&#xd;&#xa;_prospective_frequency_every.add(&quot;Week(s)&quot;);&#xd;&#xa;_prospective_frequency_every.add(&quot;Month(s)&quot;);&#xd;&#xa;_prospective_frequency_every.add(&quot;Quarter(s)&quot;);&#xd;&#xa;_prospective_frequency_every.add(&quot;Year(s)&quot;);&#xd;&#xa;_prospective_frequency_every.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      correctEveryXControls();&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_freqTimesPer">
+                  <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_frequencyButtonGroup"/>
+                    </Property>
+                  </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="select frequency as divisor"/>
+                  </AccessibilityProperties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_freqXTimesPer">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="2"/>
+                  </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="number of times per period"/>
+                  </AccessibilityProperties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_freqXTimesPerFocusGained"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_freqXTimesPer.addFocusListener(new java.awt.event.FocusAdapter() {&#xd;&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xd;&#xa;        correctXTimesPerControls();&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_freqXTimesPer.addKeyListener(new java.awt.event.KeyAdapter() {&#xd;&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xd;&#xa;        Utils.validatePostiveNumericKeyTyped(_freqXTimesPer, e, 10);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_freqXTimesPer.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xd;&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xd;&#xa;        undo.addEdit(evt.getEdit());&#xd;&#xa;    }&#xd;&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_freqXTimesPerLbl">
+                  <Properties>
+                    <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+                      <ComponentRef name="_prospective_frequency_timesper"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value="times per"/>
+                  </Properties>
+                </Component>
+                <Component class="java.awt.Choice" name="_prospective_frequency_timesper">
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="times per selected period"/>
+                  </AccessibilityProperties>
+                  <Events>
+                    <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_prospective_frequency_timesperFocusGained"/>
+                  </Events>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency_timesper.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;       correctXTimesPerControls();&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Week&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Month&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Quarter&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Year&quot;);&#xd;&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

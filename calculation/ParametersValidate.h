@@ -15,7 +15,6 @@ class ParametersValidate {
 
     bool                checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection, bool writeCheck=false) const;
 
-    bool                ValidateBorderAnalysisParameters(BasePrint & printdirection) const;
     bool                ValidateClosedLoopAnalysisParameters(BasePrint & printdirection) const;
     bool                ValidateSpatialOutputParameters(BasePrint & PrintDirection) const;
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
@@ -30,6 +29,7 @@ class ParametersValidate {
     bool                ValidateInputSource(const CParameters::InputSource * source, const std::string& filename, const std::string& verbosename, BasePrint& PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateLinelistParameters(BasePrint& PrintDirection) const;
+    bool                ValidateMiscellaneousAnalysisParameters(BasePrint& printdirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateLocationNetworkParameters(BasePrint & PrintDirection) const;
     bool                ValidateOtherOutputOptionParameters(BasePrint & PrintDirection, bool isDrilldown) const;

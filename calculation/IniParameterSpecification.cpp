@@ -214,8 +214,10 @@ void IniParameterSpecification::setup(CParameters::CreationVersion version) {
         Build_10_1_x_ParameterList();
     else if (version.iMajor == 10 && version.iMinor == 2)
         Build_10_2_x_ParameterList();
-    else
+    else if (version.iMajor == 10 && version.iMinor == 3)
         Build_10_3_x_ParameterList();
+    else
+        Build_10_4_x_ParameterList();
 }
 
 /** Version 3.0.5 and prior parameter section/keys. */
@@ -761,6 +763,18 @@ void IniParameterSpecification::Build_10_3_x_ParameterList() {
     _parameter_info[TIMETRENDLENGTH] = ParamInfo(TIMETRENDLENGTH, "TimeStratifiedAdjLength", 3, _space_time_adjustments_section);
 
     assert(_parameter_info.size() == 180);
+}
+
+/** Version 10.4.x */
+void IniParameterSpecification::Build_10_4_x_ParameterList() {
+    Build_10_3_x_ParameterList();
+
+    _parameter_info[TIMETRENDPERC_TYPE] = ParamInfo(TIMETRENDPERC_TYPE, "LogLinearPercentageType", 4, _space_time_adjustments_section);
+    _parameter_info[PROSPECTIVE_FREQ_SELECTION] = ParamInfo(PROSPECTIVE_FREQ_SELECTION, "ProspectiveFrequencySelection", 4, _miscellaneous_analysis_section);
+    _parameter_info[PROSPECTIVE_FREQ_TYPE] = ParamInfo(PROSPECTIVE_FREQ_TYPE, "ProspectiveFrequencyType", 5, _miscellaneous_analysis_section);
+    _parameter_info[PROSPECTIVE_FREQ] = ParamInfo(PROSPECTIVE_FREQ, "ProspectiveFrequency", 6, _miscellaneous_analysis_section);
+
+    assert(_parameter_info.size() == 182);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

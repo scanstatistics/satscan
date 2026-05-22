@@ -410,8 +410,7 @@ void TemporalChartGenerator::add(
                     expectedClusterSeries.reset(new ChartSeries("cluster_exp", 4, "line", "Expected in cluster area", "394521", "triangle", 0, ""));
                 }
                 // Poisson, Exponential, Space Time Permutation and batch models also graph observed / expected
-                if (params.GetProbabilityModelType() == POISSON || params.GetProbabilityModelType() == EXPONENTIAL ||
-                    params.GetProbabilityModelType() == SPACETIMEPERMUTATION || params.GetProbabilityModelType() == BATCHED) {
+                if (isEnumOneOf(params.GetProbabilityModelType(), POISSON, EXPONENTIAL, SPACETIMEPERMUTATION/*,BATCHED*/)) {
                     // graphing observed / expected, with y-axis along right side
                     templateReplace(chart_js, "--additional-yaxis--", ", { title: { enabled: true, text: 'Observed / expected', style: { fontWeight: 'normal' } }, min: 0, opposite: true, showEmpty: false }");
 					if (is_pt)

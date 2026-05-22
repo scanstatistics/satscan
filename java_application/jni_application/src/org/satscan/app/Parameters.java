@@ -53,7 +53,8 @@ public class Parameters implements Cloneable {
     /** geographical coordinates data checking type  */
     public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
     public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY, GENERIC };
-    public enum ProspectiveFrequency          { SAME_TIMEAGGREGATION, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY};
+    public enum ProspectiveFrequencySelection { SAMEAS_TIMEAGG, EVERY_X, X_TIMES_PER };
+    public enum ProspectiveFrequency          { SAME_TIMEAGGREGATION, DAILY, WEEKLY, MONTHLY, QUARTERLY, YEARLY };
     public class CreationVersion {
       public int giMajor;
       public int giMinor;
@@ -134,6 +135,7 @@ public class Parameters implements Cloneable {
     private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
     private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.TEMPORAL_NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
     private int                             _nonparametric_adjustment_size=1;
+    private DatePrecisionType               _log_linear_time_trend_adj_units=DatePrecisionType.YEAR;
     /* Input precision variables */
     private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
     private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
@@ -245,7 +247,9 @@ public class Parameters implements Cloneable {
     
     private String                          _locations_network_filename="";
     private boolean                         _use_locations_network_file=false;
-    private ProspectiveFrequency            _prospective_frequency=ProspectiveFrequency.SAME_TIMEAGGREGATION;
+    private ProspectiveFrequencySelection   _prospective_frequency_selection=ProspectiveFrequencySelection.SAMEAS_TIMEAGG;
+    private ProspectiveFrequency            _prospective_frequency_type=ProspectiveFrequency.DAILY;
+    private int                             _prospective_frequency=1;
     
     private boolean                         _always_email_summary=false;
     private boolean                         _cutoff_email_summary=false;
@@ -332,6 +336,7 @@ public class Parameters implements Cloneable {
         if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
         if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
         if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
+        if (_log_linear_time_trend_adj_units != rhs._log_linear_time_trend_adj_units) return false;
         if (_nonparametric_adjustment_size         != rhs._nonparametric_adjustment_size) return false;
         if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
         if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
@@ -449,6 +454,8 @@ public class Parameters implements Cloneable {
         if (_drilldown_pvalue_cutoff != rhs._drilldown_pvalue_cutoff) return false;
         if (_use_locations_network_file != rhs._use_locations_network_file) return false;
         if (!_locations_network_filename.equals(rhs._locations_network_filename)) return false;
+        if (_prospective_frequency_selection != rhs._prospective_frequency_selection) return false;
+        if (_prospective_frequency_type != rhs._prospective_frequency_type) return false;
         if (_prospective_frequency != rhs._prospective_frequency) return false;
         if (_always_email_summary != rhs._always_email_summary) return false;
         if (_cutoff_email_summary != rhs._cutoff_email_summary) return false;
@@ -498,11 +505,24 @@ public class Parameters implements Cloneable {
     public String getMultipleLocationsFile() { return _multiple_locations_file; }
     public void setMultipleLocationsFile(final String s) { _multiple_locations_file = s; }
     
-    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency; }
+    public DatePrecisionType getLogLinearTimeTrendAdjUnits() { return _log_linear_time_trend_adj_units; }
+    public void setLogLinearTimeTrendAdjUnits(int iOrdinal) {
+        try { _log_linear_time_trend_adj_units = DatePrecisionType.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values()); }
+    }
+    public ProspectiveFrequencySelection getProspectiveFrequencySelection() { return _prospective_frequency_selection; }
+    public void setProspectiveFrequencySelection(int iOrdinal) {
+        try { _prospective_frequency_selection = ProspectiveFrequencySelection.values()[iOrdinal];
+        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, ProspectiveFrequencySelection.values()); }
+    }
+    public ProspectiveFrequency getProspectiveFrequencyType() { return _prospective_frequency_type; }
     public void setProspectiveFrequencyType(int iOrdinal) {
-        try { _prospective_frequency = ProspectiveFrequency.values()[iOrdinal];
+        try { _prospective_frequency_type = ProspectiveFrequency.values()[iOrdinal];
         } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, ProspectiveFrequency.values()); }
     }
+    public int getProspectiveFrequency() { return _prospective_frequency; }
+    public void setProspectiveFrequency(int i) { _prospective_frequency = i; }
+
     public boolean getUseLocationsNetworkFile() { return _use_locations_network_file; }
     public void setUseLocationsNetworkFile(boolean b) { _use_locations_network_file = b; }
     public String getLocationsNetworkFilename() { return _locations_network_filename; }

@@ -66,15 +66,15 @@ BOOST_AUTO_TEST_CASE(test_retrospective_spacetime_run) {
                 buffer = get_data_at(*(headers.begin() + 13)); // expected
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
                 BOOST_REQUIRE_CLOSE(test_val, 2.56, 0.001);
-                buffer = get_data_at(*(headers.begin() + 14)); // ode
+                buffer = get_data_at(*(headers.begin() + 14)); // probability positive inside
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 2.34, 0.001);
-                buffer = get_data_at(*(headers.begin() + 15)); // probability positive inside
+                BOOST_REQUIRE_CLOSE(test_val, 100, 0.001);
+                buffer = get_data_at(*(headers.begin() + 15)); // probability positive outside
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 1, 0.001);
-                buffer = get_data_at(*(headers.begin() + 16)); // probability positive outside
+                BOOST_REQUIRE_CLOSE(test_val, 0.94, 0.00000001);
+				buffer = get_data_at(*(headers.begin() + 16)); // relative risk
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 0.0094070467, 0.00000001);
+                BOOST_REQUIRE_CLOSE(test_val, 106.30, 0.001);
                 break;
             case 2:
                 BOOST_CHECK(get_data_at(*(headers.begin() + 1)) == "Ananda"); // central location
@@ -85,15 +85,15 @@ BOOST_AUTO_TEST_CASE(test_retrospective_spacetime_run) {
                 buffer = get_data_at(*(headers.begin() + 13)); // expected
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
                 BOOST_REQUIRE_CLOSE(test_val, 1, 0.001);
-                buffer = get_data_at(*(headers.begin() + 14)); // ode
+                buffer = get_data_at(*(headers.begin() + 14)); // probability positive inside
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 2, 0.001);
-                buffer = get_data_at(*(headers.begin() + 15)); // probability positive inside
+                BOOST_REQUIRE_CLOSE(test_val, 100, 0.001);
+                buffer = get_data_at(*(headers.begin() + 15)); // probability positive outside
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 1, 0.001);
-                buffer = get_data_at(*(headers.begin() + 16)); // probability positive outside
+                BOOST_REQUIRE_CLOSE(test_val, 1.67, 0.001);
+                buffer = get_data_at(*(headers.begin() + 16)); // relative risk
                 BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-                BOOST_REQUIRE_CLOSE(test_val, 0.016665509, 0.00000001);
+                BOOST_REQUIRE_CLOSE(test_val, 60, 0.001);
                 break;
         };
         getCSVRow(stream, data);
@@ -131,15 +131,15 @@ BOOST_AUTO_TEST_CASE(test_prospective_spacetime_run) {
         buffer = get_data_at(*(headers.begin() + 14)); // expected
         BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
         BOOST_REQUIRE_CLOSE(test_val, 0.93, 0.001);
-        buffer = get_data_at(*(headers.begin() + 15)); // ode
+        buffer = get_data_at(*(headers.begin() + 15)); // probability positive inside
         BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-        BOOST_REQUIRE_CLOSE(test_val, 2.16, 0.001);
-        buffer = get_data_at(*(headers.begin() + 16)); // probability positive inside
+        BOOST_REQUIRE_CLOSE(test_val, 100, 0.001);
+        buffer = get_data_at(*(headers.begin() + 16)); // probability positive outside
         BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-        BOOST_REQUIRE_CLOSE(test_val, 1, 0.001);
-        buffer = get_data_at(*(headers.begin() + 17)); // probability positive outside
+        BOOST_REQUIRE_CLOSE(test_val, 1.66, 0.001);
+		buffer = get_data_at(*(headers.begin() + 17)); // relative risk
         BOOST_CHECK(string_to_type<double>(buffer.c_str(), test_val));
-        BOOST_REQUIRE_CLOSE(test_val, 0.016580638, 0.00000001);
+        BOOST_REQUIRE_CLOSE(test_val, 60.31, 0.001);
         getCSVRow(stream, data);
     }
     stream.close();

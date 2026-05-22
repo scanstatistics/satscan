@@ -1301,5 +1301,8 @@
     <ClCompile Include="..\calculation\Output\AnalysisResultsWriter.cpp">
       <Filter>Source Files\source\calculation\Output</Filter>
     </ClCompile>
+    <ClCompile Include="integrationtest_squish66596.cpp">
+      <Filter>Source Files\integration_tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

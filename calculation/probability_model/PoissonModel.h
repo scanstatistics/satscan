@@ -11,7 +11,7 @@
 #include "SVTTCluster.h"
 
 class CPoissonModel : public CModel {
-  private:
+  protected:
     static const double         gTimeTrendConvergence; /* time trend convergence variable */
     const CParameters         & gParameters;
     CSaTScanData              & gDataHub; 
@@ -21,12 +21,12 @@ class CPoissonModel : public CModel {
     void                        AdjustForSpatialNonParameteric(RealDataSet& DataSet);
     void                        AdjustForTemporalNonParameteric(RealDataSet& DataSet);
     void                        AdjustForTrend(RealDataSet& DataSet, double beta, double beta2);
-    void                        AdjustMeasure(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
 
   public:
     CPoissonModel(CSaTScanData& DataHub);
     virtual ~CPoissonModel();
 
+    void                        AdjustMeasure(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
     std::shared_ptr<TwoDimMeasureArray_t> calculateMeasure(RealDataSet& Set, PopulationData * pAltPopulationData=0);
     virtual void                CalculateMeasure(RealDataSet& Set, const CSaTScanData& DataHub);
     virtual double              GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const;

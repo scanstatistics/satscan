@@ -159,8 +159,9 @@ enum ParameterType
     USE_NETWORK_FILE,               /* whether to use locations network file */
     NETWORK_FILE,                   /* locations network filename */
     NETWORK_PURPOSE,                /* no longer used */
+    PROSPECTIVE_FREQ_SELECTION,     /* frequency of prospective analysis selection */
     PROSPECTIVE_FREQ_TYPE,          /* frequency of prospective analysis type */
-    PROSPECTIVE_FREQ,               /* frequency of prospective analysis type */
+    PROSPECTIVE_FREQ,               /* frequency of prospective analysis */
     LINELIST_CASEFILE,              /* no longer used */
     LL_HEADER_CASEFILE,             /* no longer used */
     KML_EVENT_GROUP,                /* no longer used */
@@ -185,11 +186,18 @@ enum ParameterType
     EMAIL_SUBJECT_NO_SIGNIFICANT,   /* no longer used */
     EMAIL_BODY_NO_SIGNIFICANT,      /* no longer used */
     MULTIPLE_LOCATIONS_FILE,        /* file which defines the locations of each group */
-    TIMETRENDLENGTH                 /* nonparametric time trend adjustment length (integer) */
+    TIMETRENDLENGTH,                /* nonparametric time trend adjustment length (integer) */
+    TIMETRENDPERC_TYPE              /* time trend adjustment percentage type (enumeration) */	
+};
+/** frequency of prospective analyses */
+enum ProspectiveFrequencySelection {
+    SAMEAS_TIMEAGG = 0,
+    EVERY_X,
+    X_TIMES_PER
 };
 /** frequency of prospective analyses */
 enum ProspectiveFrequency {
-    SAME_TIMEAGGREGATION=0,
+    SAME_TIMEAGGREGATION=0, /* not used with 10.4 and after */
     DAILY,
     WEEKLY,
     MONTHLY,

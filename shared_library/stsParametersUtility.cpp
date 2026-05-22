@@ -800,8 +800,18 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getLocationsNetworkFilename().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setLogLinearTimeTrendAdjUnits", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getLogLinearTimeTrendAdjUnits());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setProspectiveFrequencySelection", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getProspectiveFrequencySelection());
+  jni_error::_detectError(Env);
   mid = _getMethodId_Checked(Env, clazz, "setProspectiveFrequencyType", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getProspectiveFrequencyType());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getProspectiveFrequency", "()I");
+  Parameters.setProspectiveFrequency(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setLinelistIndividualsCacheFileName", "(Ljava/lang/String;)V");
@@ -1595,7 +1605,15 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setLocationsNetworkFilename(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
+  Parameters.setLogLinearTimeTrendAdjUnits((DatePrecisionType)getEnumTypeOrdinalIndex(Env, jParameters, "getLogLinearTimeTrendAdjUnits", "Lorg/satscan/app/Parameters$DatePrecisionType;"));
+  jni_error::_detectError(Env);
+
+  Parameters.setProspectiveFrequencySelection((ProspectiveFrequencySelection)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencySelection", "Lorg/satscan/app/Parameters$ProspectiveFrequencySelection;"));
+  jni_error::_detectError(Env);
   Parameters.setProspectiveFrequencyType((ProspectiveFrequency)getEnumTypeOrdinalIndex(Env, jParameters, "getProspectiveFrequencyType", "Lorg/satscan/app/Parameters$ProspectiveFrequency;"));
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "getProspectiveFrequency", "()I");
+  Parameters.setProspectiveFrequency(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "getLinelistIndividualsCacheFileName", "()Ljava/lang/String;");

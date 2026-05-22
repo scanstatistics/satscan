@@ -138,6 +138,7 @@ class CParameters {
     DatePrecisionType                   geTimeAggregationUnitsType;             /** time aggregation units type */
     /* Temporal trend adjusment variables */
     double                              gdTimeTrendAdjustPercentage;            /** percentage for log linear adjustment */
+	DatePrecisionType                   _log_linear_time_trend_adj_units;       /** units for log linear time trend adjustment */
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
     unsigned int                        _nonparametric_adjustment_size;         /** number of units in non-parametric, units are that of time aggregation */
     bool                                _adjustWeeklyTrends;                    /** Adjust for weekly trends. */
@@ -280,6 +281,7 @@ class CParameters {
     std::string                         _locations_network_filename;
     bool                                _use_locations_network_file;
 
+    ProspectiveFrequencySelection       _prospective_frequency_selection;
     ProspectiveFrequency                _prospective_frequency_type;
     unsigned int                        _prospective_frequency;
 
@@ -371,6 +373,8 @@ class CParameters {
     void                                setCreateEmailSummaryFile(bool b) { _create_email_summary_file = b; }
     double                              getEmailSummaryValue() const { return _email_summary_cutoff; }
     void                                setEmailSummaryValue(double d) { _email_summary_cutoff = d; }
+    ProspectiveFrequencySelection       getProspectiveFrequencySelection() const { return _prospective_frequency_selection; }
+    void                                setProspectiveFrequencySelection(ProspectiveFrequencySelection e);
     ProspectiveFrequency                getProspectiveFrequencyType() const { return _prospective_frequency_type; }
     void                                setProspectiveFrequencyType(ProspectiveFrequency e);
     unsigned int                        getProspectiveFrequency() const { return _prospective_frequency; }
@@ -581,6 +585,7 @@ class CParameters {
     long                                GetTimeAggregationLength() const {return glTimeAggregationLength;}
     DatePrecisionType                   GetTimeAggregationUnitsType() const {return geTimeAggregationUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
+    DatePrecisionType                   getLogLinearTimeTrendAdjUnits() const { return _log_linear_time_trend_adj_units; }
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     unsigned int                        GetNonparametricAdjustmentSize() const { return _nonparametric_adjustment_size; }
     bool                                isTimeStratifiedWithLargerAdjustmentLength() const;
@@ -703,6 +708,7 @@ class CParameters {
     void                                SetTimeAggregationLength(long lTimeAggregationLength);
     void                                SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits);
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
+    void                                setLogLinearTimeTrendAdjUnits(DatePrecisionType e);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetNonparametricAdjustmentSize(unsigned int i) { _nonparametric_adjustment_size = i; }

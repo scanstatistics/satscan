@@ -114,6 +114,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWER_01                     : return "power evaluation critical value .001 (> 0)";
       case TIMETREND                    : return "time trend adjustment type (0=None, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadratic)";
       case TIMETRENDPERC                : return "time trend adjustment percentage (>-100)";
+	  case TIMETRENDPERC_TYPE           : return "time trend adjustment percentage type (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)";
       case TIMETRENDLENGTH              : return "time stratified adjustment length (Positive Integer)";
       case PURETEMPORAL                 : return "include purely temporal clusters? (y/n)";
       case CONTROLFILE                  : return "control data filename";
@@ -241,7 +242,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case USE_NETWORK_FILE             : return "use locations network file";
       case NETWORK_FILE                 : return "locations network filename";
       case NETWORK_PURPOSE              : return "n/a";
-      case PROSPECTIVE_FREQ_TYPE        : return "frequency of prospective analyses type (0=Same Time Aggregation, 1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)";
+      case PROSPECTIVE_FREQ_SELECTION   : return "frequency of prospective analyses selection (0=Same Time Aggregation, 1=Every X type, 2=X times per type)";
+      case PROSPECTIVE_FREQ_TYPE        : return "frequency of prospective analyses type (1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)";
       case PROSPECTIVE_FREQ             : return "frequency of prospective analyses  (positive integer)";
       case LINELIST_CASEFILE            : return "n/a";
       case LL_HEADER_CASEFILE           : return "n/a";
@@ -308,6 +310,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case POWER_01                     : return AsString(s, gParameters.getPowerEvaluationCriticalValue01());
       case TIMETREND                    : return AsString(s, gParameters.GetTimeTrendAdjustmentType());
       case TIMETRENDLENGTH              : return AsString(s, gParameters.GetNonparametricAdjustmentSize());
+	  case TIMETRENDPERC_TYPE           : return AsString(s, gParameters.getLogLinearTimeTrendAdjUnits());
       case TIMETRENDPERC                : return AsString(s, gParameters.GetTimeTrendAdjustmentPercentage());
       case PURETEMPORAL                 : return AsString(s, gParameters.GetIncludePurelyTemporalClusters());
       case CONTROLFILE                  : s = gParameters.GetControlFileName().c_str(); return s;
@@ -450,6 +453,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case USE_NETWORK_FILE             : return AsString(s, gParameters.getUseLocationsNetworkFile());
       case NETWORK_FILE                 : s = gParameters.getLocationsNetworkFilename().c_str(); return s;
       case NETWORK_PURPOSE              : s = "0"; return s;
+      case PROSPECTIVE_FREQ_SELECTION   : return AsString(s, gParameters.getProspectiveFrequencySelection());
       case PROSPECTIVE_FREQ_TYPE        : return AsString(s, gParameters.getProspectiveFrequencyType());
       case PROSPECTIVE_FREQ             : return AsString(s, gParameters.getProspectiveFrequency());
       case LINELIST_CASEFILE            : s = ""; return s;
@@ -714,6 +718,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POWER_01                     : gParameters.SetPowerEvaluationCriticalValue01(ReadDouble(sParameter, eParameterType)); break;
       case TIMETREND                    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, TEMPORAL_NOTADJUSTED, CALCULATED_QUADRATIC);
                                           gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
+      case TIMETRENDPERC_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
+                                          gParameters.setLogLinearTimeTrendAdjUnits((DatePrecisionType)iValue); break;
       case TIMETRENDPERC                : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
       case TIMETRENDLENGTH              : gParameters.SetNonparametricAdjustmentSize(ReadUnsignedInt(sParameter, eParameterType)); break;
       case PURETEMPORAL                 : gParameters.SetIncludePurelyTemporalClusters(ReadBoolean(sParameter, eParameterType)); break;
@@ -903,8 +909,11 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case USE_NETWORK_FILE             : gParameters.setUseLocationsNetworkFile(ReadBoolean(sParameter, eParameterType)); break;
       case NETWORK_FILE                 : gParameters.setLocationsNetworkFilename(sParameter.c_str(), true); break;
       case NETWORK_PURPOSE              : /* no longer used */ break;
+      case PROSPECTIVE_FREQ_SELECTION   : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, SAMEAS_TIMEAGG, X_TIMES_PER);
+                                          gParameters.setProspectiveFrequencySelection((ProspectiveFrequencySelection)iValue); break;
       case PROSPECTIVE_FREQ_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, SAME_TIMEAGGREGATION, YEARLY);
-                                          gParameters.setProspectiveFrequencyType((ProspectiveFrequency)iValue); break;
+                                          gParameters.setProspectiveFrequencyType((ProspectiveFrequency)iValue);
+                                          break;
       case PROSPECTIVE_FREQ             : gParameters.setProspectiveFrequency(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LINELIST_CASEFILE            : /* no longer used */ break;
       case LL_HEADER_CASEFILE           : /* no longer used */ break;
