@@ -15,8 +15,8 @@ if %argCount% NEQ 5 (
 REM script definitions
 set fileshare=\\omni\btp
 
-set satscanversion=10.3
-set satscanversionf=10_3
+set satscanversion=10.4
+set satscanversionf=10_4
 
 set satscan64exe=%fileshare%\satscan\build.area\satscan\batch_application\x64\Release\SaTScanBatch64.exe
 set satscan64dll=%fileshare%\satscan\build.area\satscan\shared_library\x64\Release\satscan64.dll
