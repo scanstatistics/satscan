@@ -29,8 +29,6 @@ cp -rf $srcdir/installers/sample_data $bundleinputdir
 cp -f $srcdir/installers/documents/SaTScan_Users_Guide.pdf $bundleinputdir
 cp -f $srcdir/installers/documents/eula.html $bundleinputdir
 cp -f $srcdir/installers/documents/eula/License.txt $bundleinputdir
-cp -f $binaries/satscan32 $bundleinputdir
-cp -f $binaries/libsatscan32.so $bundleinputdir
 cp -f $binaries/satscan64 $bundleinputdir
 cp -f $binaries/libsatscan64.so $bundleinputdir
 
