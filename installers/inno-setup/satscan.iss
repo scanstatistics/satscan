@@ -10,7 +10,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-#AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}  -- THIS IS THE RELEASE AppId.
+; AppId={{AD0046EA-ADC2-4AD7-B623-ADC246EA46EA}  -- THIS IS THE RELEASE AppId.
 ; Beta 10.4 installer -- B104 in GUID
 AppId={{AD0046EA-B104-4AD7-B623-ADC246EA46EA}
 AppName={#MyAppName}
