@@ -26,8 +26,8 @@ LicenseFile=P:\satscan\licence\SaTScanLicenseAgreement.rtf
 InfoBeforeFile=P:\satscan\build.area\satscan\installers\inno-setup\before-install.rtf
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
-OutputDir=P:\satscan\installers\v.10.3.x
-OutputBaseFilename=install-10_3_windows
+OutputDir=P:\satscan\installers\v.10.4.x
+OutputBaseFilename=install-10_4_windows
 ;SetupIconFile=P:\satscan\build.area\satscan\installers\resources\SaTScan.ico
 Compression=lzma
 SolidCompression=yes
