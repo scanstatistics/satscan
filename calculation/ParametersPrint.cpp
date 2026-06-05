@@ -1574,7 +1574,7 @@ void ParametersPrint::writeSettingPairsHTML(const SettingContainer_t& settings, 
         out << "<table><tbody>" << std::endl;
         // print settings
         for (auto& setting : settings) {
-            if (setting.first == "Temporal Graph File")
+            if (ends_with(setting.second, ".html"))
                 out << "<tr><th>" << setting.first << " :</th><td><a target=\"_blank\" href=\"file:///" << setting.second << "\">" << setting.second << "</a></td></tr>" << std::endl;
             else
                 out << "<tr><th>" << setting.first << " :</th><td>" << setting.second << "</td></tr>" << std::endl;

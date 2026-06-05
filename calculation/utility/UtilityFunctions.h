@@ -127,5 +127,6 @@ template<typename EnumType, typename... Args>
 inline bool isEnumOneOf(EnumType value, Args... args) {
     return ((value == args) || ...);
 }
+bool ends_with(std::string_view str, std::string_view suffix);
 //******************************************************************************
 #endif

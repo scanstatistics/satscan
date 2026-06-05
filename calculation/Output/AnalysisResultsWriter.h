@@ -21,6 +21,13 @@ class AnalysisResultsWriter {
             HtmlColumn(const std::string& hdr, bool cl): _header(hdr), _cluster_level(cl), _sortable(true){}
             HtmlColumn(const std::string& hdr, bool cl, bool sortable) : _header(hdr), _cluster_level(cl), _sortable(sortable) {}
         };
+        struct ReportedCluster {
+            boost::dynamic_bitset<> _locations;
+            int _start_interval;
+            int _end_interval;
+
+            ReportedCluster(int start, int end): _start_interval(start), _end_interval(end) {}
+        };
 
     private:
         const CSaTScanData& _dataHub;
@@ -32,7 +39,7 @@ class AnalysisResultsWriter {
         std::vector<HtmlColumn> _html_columns;
         std::stringstream _html_sub_rows;
         std::stringstream _html_messages;
-        std::vector<boost::dynamic_bitset<>> _cluster_locations;
+        std::vector<ReportedCluster> _cluster_locations;
 
         std::string& getTotalRunningTime(time_t start, time_t end, std::string& buffer) const;
 
