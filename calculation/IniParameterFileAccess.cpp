@@ -77,9 +77,10 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
             }
         }
         // In issue https://squishlist.com/ims-ext/satscan/66671/, we refactored the prospective frequency parameters.
-        if (gParameters.GetCreationVersion().iMajor < 10 || 
-             (gParameters.GetCreationVersion().iMajor == 10 && gParameters.GetCreationVersion().iMinor < 4)
-            ) {
+        if (gParameters.GetCreationVersion().iMajor < 10) {
+            gParameters.setProspectiveFrequencySelection(SAMEAS_TIMEAGG);
+            //gParameters.setProspectiveFrequencyType(SAME_TIMEAGGREGATION);
+       } else if (gParameters.GetCreationVersion().iMajor == 10 && gParameters.GetCreationVersion().iMinor < 4) {
             gParameters.setProspectiveFrequencySelection(
 				gParameters.getProspectiveFrequencyType() == SAME_TIMEAGGREGATION ? SAMEAS_TIMEAGG : EVERY_X
             );
