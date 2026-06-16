@@ -86,36 +86,50 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
             }
         }
     }
-    printString(columnValues[valueIdx].first, "%u", supplementInfo.getClusterReportIndex(cluster));
     if (_parameters.getNumFileSets() > 1)
-        printString(columnValues[++valueIdx].first, "<a href='#' class='cut-node-w-children'>%s</a>", cluster.GetClusterLocation(buffer, _dataHub).c_str());
-    else 
+        printString(columnValues[valueIdx].first, "<a href='#' class='cut-node-w-children'>%u</a>", supplementInfo.getClusterReportIndex(cluster));
+    else
+        printString(columnValues[valueIdx].first, "%u", supplementInfo.getClusterReportIndex(cluster));
+    if (!_parameters.GetIsPurelyTemporalAnalysis())
         cluster.GetClusterLocation(columnValues[++valueIdx].first, _dataHub);
-    // Set columnn which reports the number of locations in the cluster - potentially with popover information detailing locations and overlap.
-    _cluster_locations.emplace_back(boost::dynamic_bitset<>());
-    if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+    if (_parameters.GetIsPurelyTemporalAnalysis()) {
         printString(columnValues[++valueIdx].first, "%u", _dataHub.getLocationsManager().locations().size());
-    else {
+    } else {
+        // Set columnn which reports the number of locations in the cluster, with popover information detailing locations and overlap.
+        _cluster_locations.emplace_back(cluster.m_nFirstInterval, cluster.m_nLastInterval);
         std::vector<tract_t> clusterLocations;
-        CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &_cluster_locations.back(), &clusterLocations);
+        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER) { // specialized for purely temporal clusters - includes locations
+            _cluster_locations.back()._locations.resize(_dataHub.getLocationsManager().locations().size(), true);
+            for (size_t i=0; i < _cluster_locations.back()._locations.size(); ++i)
+                clusterLocations.push_back(i);
+        } else
+           CentroidNeighborCalculator::getLocationsAboutCluster(_dataHub, cluster, &_cluster_locations.back()._locations, &clusterLocations);
         std::stringstream printStringBuffer, popoverText;
         const auto& locationData = _dataHub.getLocationsManager().locations();
+        unsigned int numOverlaps = 0;
         for (auto index : clusterLocations) {
             if (popoverText.rdbuf()->in_avail()) popoverText << ", ";
             popoverText << locationData[index].get()->name();
             // check for overlap with previous cluster locations and if so, add to buffer for display in popover
             std::stringstream overlaps;
-            for (size_t t=0; t < _cluster_locations.size() - 1; ++t) {
-                if (_cluster_locations[t].test(index))
-                    overlaps << (overlaps.rdbuf()->in_avail() ? "," : "(") << "#" << (t + 1);
+            for (size_t t = 0; t < _cluster_locations.size() - 1; ++t) {
+                if (_cluster_locations[t]._start_interval > cluster.m_nLastInterval || _cluster_locations[t]._end_interval < cluster.m_nFirstInterval)
+                    continue; // skip to next reported cluster
+                if (_cluster_locations[t]._locations.test(index))
+                    overlaps << (overlaps.rdbuf()->in_avail() ? "," : "<span>(") << "#" << (t + 1);
             }
-            if (overlaps.rdbuf()->in_avail()) overlaps << ")";
+            if (overlaps.rdbuf()->in_avail()) {
+                ++numOverlaps;
+                overlaps << ")</span>";
+            }
             popoverText << overlaps.str();
         }
-        printStringBuffer << "<a class='location-popover' href='#' cluster-id='" << supplementInfo.getClusterReportIndex(cluster)
-			<< "' cluster-locations='" << htmlencode(popoverText.str(), buffer) << "'>" << _cluster_locations.back().count() << "</a>";
-		columnValues[++valueIdx].first = printStringBuffer.str();
-        columnValues[valueIdx].second = std::to_string(_cluster_locations.back().count());
+        printStringBuffer << "<a class='location-popover' href='#' cluster-id='" << supplementInfo.getClusterReportIndex(cluster) << "' overlaps=" << numOverlaps
+            << " cluster-locations='" << htmlencode(popoverText.str(), buffer) << "'>" << _cluster_locations.back()._locations.count() << "</a>";
+        columnValues[++valueIdx].first = printStringBuffer.str();
+        columnValues[valueIdx].second = std::to_string(_cluster_locations.back()._locations.count());
+        if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER && _parameters.GetIsSpaceTimeAnalysis())
+            valueIdx += 3; // skip location coordinate columns for purely temporal clusters in a space-time analysis
     }
     if (_parameters.getClusterMonikerPrefix().size())
         printString(
@@ -129,6 +143,7 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
         std::vector<double> vCoordinates;
         _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
         if (_parameters.GetCoordinatesType() == CARTESIAN) {
+            buffer = "";
             for (size_t i = 0; i < vCoordinates.size() - 1; ++i)
                 buffer += printString(work, "%g,", vCoordinates[i]);
             buffer += printString(work, "%g", vCoordinates.back());
@@ -172,10 +187,13 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
     if (_parameters.getReportGiniOptimizedClusters())
         columnValues[++valueIdx].first = clusterAttributes["Gini Cluster"]._formatted_value;
     if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON && !_parameters.GetIsPurelySpatialAnalysis() && _parameters.GetAnalysisType() != SPATIALVARTEMPTREND) {
-        columnValues[++valueIdx].first = clusterAttributes["Time frame"]._formatted_value;;
+        columnValues[++valueIdx].first = clusterAttributes["Time frame"]._formatted_value;
         printString(columnValues[valueIdx].second, "[%u,%u]", 
             _dataHub.GetTimeIntervalStartTimes()[cluster.m_nFirstInterval], _dataHub.GetTimeIntervalStartTimes()[cluster.m_nLastInterval] - 1
         );
+		if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER && _parameters.GetIsSpaceTimeAnalysis() &&
+            (_parameters.GetProbabilityModelType() == POISSON || _parameters.GetProbabilityModelType() == BERNOULLI))
+			++valueIdx; // skip population column for purely temporal clusters with Poisson or Bernoulli models and space-time analysis since population is not relevant in this context
     }
     // This lambda is used to write the cluster level column data in the appropriate order depending on number of data sets.
     auto writeClusterLevelColumnData = [&](const CCluster& cluster) {
@@ -384,7 +402,10 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
     auto addColumns = [&](const std::vector<HtmlColumn>& columns) { // lamdba to add columns
         for (const auto& column : columns) _html_columns.emplace_back(column);
     };
-    addColumns({ {"No.", true},{"Centroid", true},{"Locations", true} });
+    addColumns({ {"No.", true} });
+    if (!_parameters.GetIsPurelyTemporalAnalysis())
+        addColumns({ {"Centroid", true} });
+    addColumns({ {"Locations", true} });
     if (_parameters.getClusterMonikerPrefix().size())
         addColumns({ {"Moniker", true} });
     if (_parameters.getReportGiniOptimizedClusters())

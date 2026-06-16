@@ -655,9 +655,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case SPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
+                    bPoisson || bBernoulli || bBatched, 
+                    (bPoisson && !Utils.selected(_spatialAdjustmentsNonparametric)) || bBernoulli || bBatched,
+                    bBatched, bPoisson, bPoisson
                 );
-                enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(true, bPoisson && !Utils.selected(_temporalTrendAdjNonparametric));
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), true);
@@ -677,9 +679,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case PROSPECTIVESPACETIME:
                 enableAdjustmentForTimeTrendOptionsGroup(
-                    bPoisson || bBernoulli || bBatched, bPoisson || bBernoulli || bBatched, bBatched, bPoisson, bPoisson
+                    bPoisson || bBernoulli || bBatched, 
+                    (bPoisson && !Utils.selected(_spatialAdjustmentsNonparametric)) || bBernoulli || bBatched,
+                    bBatched, bPoisson, bPoisson
                 );
-                enableAdjustmentForSpatialOptionsGroup(true, bPoisson);
+                enableAdjustmentForSpatialOptionsGroup(true, bPoisson && !Utils.selected(_temporalTrendAdjNonparametric));
                 enableSpatialOptionsGroup(true, !bSpaceTimePermutation, !(bSpaceTimePermutation || Utils.selected(_temporalTrendAdjNonparametric)));
                 enableWindowShapeGroup(true);
                 enableTemporalOptionsGroup(true, !(bSpaceTimePermutation || bUniformTime), false);

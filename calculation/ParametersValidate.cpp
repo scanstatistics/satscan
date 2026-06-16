@@ -2010,10 +2010,9 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
       }
     }
-    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC && 
-        !(gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_NOTADJUSTED || gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION)) {
+    if (gParameters.GetSpatialAdjustmentType() == SPATIAL_NONPARAMETRIC && gParameters.GetTimeTrendAdjustmentType() == TEMPORAL_STRATIFIED_RANDOMIZATION) {
         bValid = false;
-        PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment can only be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
+        PrintDirection.Printf("%s:\nThe nonparametric spatial adjustment cannot be performed with non-parametric temporal time stratified adjustment.\n", BasePrint::P_PARAMERROR, MSG_INVALID_PARAM);
     }
   } catch (prg_exception& x) {
     x.addTrace("ValidateSpatialParameters()","ParametersValidate");

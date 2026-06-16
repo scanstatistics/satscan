@@ -978,3 +978,8 @@ std::string& humanize(double n, std::string& humanized, int decimals) {
     // don't print unit for exp<3
     return printString(humanized, fmt[exp < 3].c_str(), decimals, m, units[exp / 3].c_str());
 }
+
+bool ends_with(std::string_view str, std::string_view suffix) {
+    if (str.size() < suffix.size()) return false;
+    return str.substr(str.size() - suffix.size()) == suffix;
+}

@@ -92,7 +92,7 @@ measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, 
 
 /** returns end date of defined cluster as formated string */
 std::string& CPurelyTemporalCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
-    DatePrecisionType eDatePrint = DataHub.GetParameters().GetPrecisionOfTimesType();
+    DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
     if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
         const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
         if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");
@@ -105,7 +105,7 @@ std::string& CPurelyTemporalCluster::GetEndDate(std::string& sDateString, const 
 
 /** returns start date of defined cluster as formated string */
 std::string& CPurelyTemporalCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub, const char * sep) const {
-    DatePrecisionType eDatePrint = DataHub.GetParameters().GetPrecisionOfTimesType();
+    DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);
     if (DataHub.GetParameters().GetAnalysisType() == SEASONALTEMPORAL) {
         const ClosedLoopData* closedloop = dynamic_cast<const ClosedLoopData*>(&DataHub);
         if (!closedloop) throw prg_error("Unable to cast to ClosedLoopData object.","GetEndDate()");

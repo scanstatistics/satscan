@@ -95,7 +95,7 @@ const char * ClusterMap::TEMPLATE = " \
         <link rel=\"stylesheet\" href=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.css\"> \n \
         <script src=\"--resource-path--javascript/bootstrap/bootstrap-multiselect/bootstrap-multiselect.js\"></script> \n \
         <script src=\"--resource-path--javascript/clustercharts/nouislider.js\"></script> \n \
-        <script src=\"--resource-path--javascript/clustercharts/oms-ame.1.0.3.1.min.js\"></script> \n \
+        <script src=\"--resource-path--javascript/clustercharts/ofs-1.0.js\"></script> \n \
     </head> \n \
     <body> \n \
     <div id='load_error'></div> \n \

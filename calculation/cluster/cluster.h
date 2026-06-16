@@ -65,7 +65,7 @@ class CCluster {
     std::string getIdentifyingKey() const {
         // Returns a key that identifies this cluster in terms of ellipse offset, centroid, and window definition.
         std::stringstream key;
-        key << m_iEllipseOffset << "-" << m_Center << "-" << m_nFirstInterval << "-" << m_nLastInterval;
+        key << m_iEllipseOffset << "-" << m_Center << "-" << m_nFirstInterval << "-" << m_nLastInterval << "-" << _central_identifier << "-" << _num_identifiers;
         return key.str();
     }
 
