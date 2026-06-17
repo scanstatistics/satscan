@@ -328,13 +328,16 @@ void MostLikelyClustersContainer::getClusterIdentifiersSet(const CSaTScanData& D
 bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) const {
     tract_t tTwoNumTracts = ClusterTwo.getNumIdentifiers(), tOneNumTracts = ClusterOne.getNumIdentifiers();
     int iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
+    const auto& params = DataHub.GetParameters();
 
-    if (ClusterOne.GetRadiusDefined() && ClusterTwo.GetRadiusDefined() && DataHub.GetParameters().GetMultipleCoordinatesType() != ATLEASTONELOCATION) {
+    if (ClusterOne.GetRadiusDefined() && ClusterTwo.GetRadiusDefined() &&
+        params.GetMultipleCoordinatesType() != ATLEASTONELOCATION && !params.getUseLocationsNetworkFile()) {
         /* If certain relationships exist between clusters, then we don't need to actually compare each identifier within them. 
            These two 'shortcuts' are meant to allow possible determination of overlap knowing only centroids and previously calculated radii (centric analyses). 
            When the analysis uses multiple coordinates, this shortcut is not allowed when the setting is to include in the cluster if at least
            one location is within the cluster -- in certain situations, overlap can occur where one cluster contains one coordinate while the other
-           cluster contains a different coordinate of the same identifier. ** Networks don't define cluster radius. */
+           cluster contains a different coordinate of the same identifier.
+           Also not usable with networks, even though we now define cluster radius as a rough metric with network clusters. */
         std::vector<double> vClusterOneCoords, vClusterTwoCoords;
         DataHub.GetGInfo()->retrieveCoordinates(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
         double ClusterOneRadius = ClusterOne.GetCartesianRadius();
@@ -353,7 +356,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
 
         //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
         //or vice versa, centroid of first cluster is within radius of second cluster
-        if (DataHub.GetParameters().UseSpecialGrid()) {
+        if (params.UseSpecialGrid()) {
             if ((std::fabs(ClusterOneRadius - (dDistanceBetween + ClusterTwoRadius)) > dNumericalDeviation && ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius) ||
                 (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
                 return true;
@@ -398,7 +401,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
     }
     // When multiple coordinates type is not one per identifier, then utilize CentroidNeighborCalculator method to obtain
     // each clusters locations then check for overlap. ** This new method might be better than the brute force in following code.
-    if (DataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+    if (params.GetMultipleCoordinatesType() != ONEPERLOCATION) {
         boost::dynamic_bitset<> cluster1locations, cluster2locations;
         CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, ClusterOne, &cluster1locations);
         CentroidNeighborCalculator::getLocationsAboutCluster(DataHub, ClusterTwo, &cluster2locations);
