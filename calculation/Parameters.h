@@ -243,6 +243,7 @@ class CParameters {
     bool                                _reportGiniIndexCoefficients;           /* report gini index coefficents to results file */
     mutable std::vector<double>         _executeSpatialWindowStops;
     mutable std::string                 _cluster_moniker_prefix;                // prefix for cluster moniker
+    mutable std::string                 _cluster_moniker_postfix;               // postfix for cluster moniker
 
     /* Power Calcution variables */
     double                              _critical_value_05;                     /* user specified critical value at .05 */
@@ -389,7 +390,8 @@ class CParameters {
     void                                setLocationsNetworkFilename(const char * filename, bool bCorrectForRelativePath = false);
 
     const std::string                 & getClusterMonikerPrefix() const { return _cluster_moniker_prefix; }
-    void                                setClusterMonikerPrefix(const std::string& s) { _cluster_moniker_prefix = s; }
+    const std::string                 & getClusterMonikerPostfix() const { return _cluster_moniker_postfix; }
+    void                                setClusterMonikerPrePost(const std::string& pre, const std::string& post) { _cluster_moniker_prefix = pre; _cluster_moniker_postfix = post; }
     bool                                getPerformStandardDrilldown() const { return _perform_standard_drilldown; }
     void                                setPerformStandardDrilldown(bool b) { _perform_standard_drilldown =b; }
     bool                                getPerformBernoulliDrilldown() const { return _perform_bernoulli_drilldown; }

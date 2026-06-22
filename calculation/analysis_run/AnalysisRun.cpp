@@ -1677,14 +1677,14 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
 void AbstractAnalysisDrilldown::setOutputFilename(const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, unsigned int& drilldowns) {
     std::string buffer;
     _cluster_path = printString(
-        buffer, "%sC%u", _cluster_path.c_str(), supplementInfo.getClusterReportIndex(detectedCluster)
+        buffer, "%sC%u%s", _cluster_path.c_str(), supplementInfo.getClusterReportIndex(detectedCluster), getTypeIdentifier().c_str()
     );
     FileName resultsFile(_base_output.c_str());
-    resultsFile.setFileName(printString(buffer, "%s-drilldown-%s-%s(run%u)", 
-        resultsFile.getFileName().c_str(), _cluster_path.c_str(), getTypeIdentifier().c_str(), drilldowns).c_str()
+    resultsFile.setFileName(printString(buffer, "%s-drilldown-%s", 
+        resultsFile.getFileName().c_str(), _cluster_path.c_str()).c_str()
     );
     _parameters.SetOutputFileNameSetting(resultsFile.getFullPath(buffer).c_str());
-    _parameters.setClusterMonikerPrefix(_cluster_path);
+    _parameters.setClusterMonikerPrePost(_cluster_path, getTypeIdentifier());
 }
 
 AbstractAnalysisDrilldown::AbstractAnalysisDrilldown(
@@ -2015,7 +2015,7 @@ void AbstractAnalysisDrilldown::execute(const std::string& parentOutputFilename)
 
 /////////////////////////// AnalysisDrilldown ////////////////////////////////////
 
-std::string AnalysisDrilldown::TYPE_IDENTIFIER = "std";
+std::string AnalysisDrilldown::TYPE_IDENTIFIER = "s"; // standard drilldown, same as main analysis
 
 AnalysisDrilldown::AnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub, const std::string& base_output,
@@ -2052,7 +2052,7 @@ AnalysisDrilldown::AnalysisDrilldown(
 
 /////////////////////////// BernoulliAnalysisDrilldown ////////////////////////////////////
 
-std::string BernoulliAnalysisDrilldown::TYPE_IDENTIFIER = "bin";
+std::string BernoulliAnalysisDrilldown::TYPE_IDENTIFIER = "b"; // Bernoulli drilldown
 
 BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
     const CCluster& detectedCluster, const ClusterSupplementInfo& supplementInfo, const CSaTScanData& source_data_hub,

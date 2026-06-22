@@ -65,12 +65,13 @@ void BaseClusterKML::writeCluster(
     std::pair<double, double>                  prLatitudeLongitude;
 	Identifier::CombinedIdentifierNames_t  vTractIdentifiers;
     bool isHighRate = cluster.getAreaRateForCluster(_dataHub) == HIGH;
+    const auto& params = _dataHub.GetParameters();
 
     try {
         outKML << getClusterStyleTags(cluster, iCluster, buffer, isHighRate).c_str() << std::endl;
         outKML << "\t<Placemark>" << std::endl;
-        if (_dataHub.GetParameters().getClusterMonikerPrefix().size()) {
-            printString(buffer2, " (%sC%u)", _dataHub.GetParameters().getClusterMonikerPrefix().c_str(), (iCluster + 1));
+        if (params.getClusterMonikerPrefix().size()) {
+            printString(buffer2, " (%sC%u%s)", params.getClusterMonikerPrefix().c_str(), (iCluster + 1), params.getClusterMonikerPostfix().c_str());
         }
         outKML << "\t\t<name>#" << (iCluster + 1) << buffer2.c_str() << (iteration > 1 ? " (iterative)" : "") << "</name>" << std::endl;
         outKML << "\t\t<snippet>Cluster #" << (iCluster + 1) << buffer2.c_str() << (iteration > 1 ? " (iterative)" : "") << "</snippet>" << std::endl;
@@ -96,7 +97,7 @@ void BaseClusterKML::writeCluster(
 
         // When using a network file, we only draw a small circle around central location then drawn connections/edges between locations in cluster.
         NetworkLocationContainer_t networkLocations;
-        if (_dataHub.GetParameters().getUseLocationsNetworkFile()) {
+        if (params.getUseLocationsNetworkFile()) {
             _dataHub.getClusterNetworkLocations(cluster, networkLocations);
             Network::Connection_Details_t connections = GisUtils::getClusterConnections(networkLocations);
             outKML << "\t\t<Folder><name>Cluster " << (iCluster + 1) << " Edges</name>";
@@ -113,7 +114,7 @@ void BaseClusterKML::writeCluster(
         }
 
         // add cluster locations if requested
-        if (_dataHub.GetParameters().getIncludeLocationsKML()) {
+        if (params.getIncludeLocationsKML()) {
             std::stringstream  clusterPlacemarks;
             // create locations folder and locations within cluster placemarks
             const auto& locations = _dataHub.getLocationsManager().locations();
@@ -134,7 +135,6 @@ void BaseClusterKML::writeCluster(
                     << "</coordinates></Point></Placemark>" << std::endl;
                 index = clusterLocations.find_next(index);
             }
-
             if (clusterPlacemarks.str().size()) {
                 if (_separateLocationsKML) {
                     // Create separate kml for this clusters locations, then reference in primary cluster.
@@ -162,7 +162,6 @@ void BaseClusterKML::writeCluster(
         } else {
             outKML << std::endl;
         }
-
     } catch (prg_exception& x) {
         x.addTrace("writeCluster()", "BaseClusterKML");
         throw;

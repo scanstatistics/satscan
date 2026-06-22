@@ -227,7 +227,7 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
         fprintf(fp, "%u.", iReportedCluster);
         DisplayCensusTracts(fp, DataHub, PrintFormat);
         if (parameters.getClusterMonikerPrefix().size()) {
-            printString(buffer, "%sC%u", parameters.getClusterMonikerPrefix().c_str(), iReportedCluster);
+            printString(buffer, "%sC%u%s", parameters.getClusterMonikerPrefix().c_str(), iReportedCluster, parameters.getClusterMonikerPostfix().c_str());
             PrintFormat.PrintSectionLabel(fp, "Moniker", false, true);
             PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
         }

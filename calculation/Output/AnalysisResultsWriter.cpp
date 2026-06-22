@@ -133,7 +133,8 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
     }
     if (_parameters.getClusterMonikerPrefix().size())
         printString(
-            columnValues[++valueIdx].first, "%sC%u", _parameters.getClusterMonikerPrefix().c_str(), supplementInfo.getClusterReportIndex(cluster)
+            columnValues[++valueIdx].first, "%sC%u%s", 
+            _parameters.getClusterMonikerPrefix().c_str(), supplementInfo.getClusterReportIndex(cluster), _parameters.getClusterMonikerPostfix().c_str()
         );
     if (_parameters.getReportGiniOptimizedClusters())
         columnValues[++valueIdx].first = (supplementInfo.getOverlappingClusters(cluster, buffer).size() == 0 ? "No Overlap": buffer);

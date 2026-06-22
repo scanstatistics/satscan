@@ -1046,8 +1046,8 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getDrilldownParameters(Set
                 settings.push_back(std::make_pair("Purely Spatial Bernoulli", (_parameters.getPerformBernoulliDrilldown() ? "Yes" : "No")));
             if (_parameters.getPerformStandardDrilldown() || _parameters.getPerformBernoulliDrilldown()) {
                 settings.push_back(std::make_pair("Cutoff of Detected Cluster", printString(buffer, "%g", _parameters.getDrilldownCutoff())));
-                settings.push_back(std::make_pair("Minimum Locations in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumLocationsCluster())));
-                settings.push_back(std::make_pair("Minimum Cases in Deteted Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumCasesCluster())));
+                settings.push_back(std::make_pair("Minimum Locations in Detected Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumLocationsCluster())));
+                settings.push_back(std::make_pair("Minimum Cases in Detected Cluster", printString(buffer, "%u", _parameters.getDrilldownMinimumCasesCluster())));
             }
         }
     } catch (prg_exception& x) {

@@ -443,6 +443,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _locations_network_filename = rhs._locations_network_filename;
   _use_locations_network_file = rhs._use_locations_network_file;
   _cluster_moniker_prefix = rhs._cluster_moniker_prefix;
+  _cluster_moniker_postfix = rhs._cluster_moniker_postfix;
   _local_timestamp = rhs._local_timestamp;
   _prospective_frequency_selection = rhs._prospective_frequency_selection;
   _prospective_frequency_type = rhs._prospective_frequency_type;
@@ -1096,6 +1097,7 @@ void CParameters::SetAsDefaulted() {
   _locations_network_filename = "";
   _use_locations_network_file = false;
   _cluster_moniker_prefix = "";
+  _cluster_moniker_postfix = "";
   _local_timestamp = boost::posix_time::second_clock::local_time();
   _prospective_frequency_selection = SAMEAS_TIMEAGG;
   _prospective_frequency_type = DAILY;
