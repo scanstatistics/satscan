@@ -23,7 +23,8 @@ AnalysisResultsWriter::AnalysisResultsWriter(const CSaTScanData& dataHub) : _dat
     _html_out << "<head>" << std::endl;
     _html_out << "<link rel='stylesheet' href='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/bootstrap.4.1.1.css'>" << std::endl;
     _html_out << "<link rel='stylesheet' href='" << AppToolkit::getToolkit().GetWebSite() << "javascript/datatables.1.10.16/css/jquery.dataTables.min.css'>" << std::endl;
-    _html_out << "<link rel='stylesheet' href='" << AppToolkit::getToolkit().GetWebSite() << "html-results/satscan-results.1.0.css'>" << std::endl;
+    _html_out << "<link rel='stylesheet' href='" << AppToolkit::getToolkit().GetWebSite() << "html-results/satscan-results.1.1.css'>" << std::endl;
+    _html_out << "<link rel='stylesheet' href='" << AppToolkit::getToolkit().GetWebSite() << "html-results/parameterstreeview-3.css'>" << std::endl;
     _html_out << "<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css'>" << std::endl;
     _html_out << "</head>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/jquery/jquery-3.7.0.min.js' type='text/javascript'></script>" << std::endl;
@@ -31,6 +32,7 @@ AnalysisResultsWriter::AnalysisResultsWriter(const CSaTScanData& dataHub) : _dat
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/popper.4.1.1.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "javascript/bootstrap/4.1.1/bootstrap.4.1.1.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "html-results/satscan-results.1.0.js' type='text/javascript'></script>" << std::endl;
+    _html_out << "<script src='" << AppToolkit::getToolkit().GetWebSite() << "html-results/parameterstreeview-3.js' type='text/javascript'></script>" << std::endl;
     _html_out << "<body>" << std::endl;
 }
 
@@ -51,6 +53,10 @@ std::string& AnalysisResultsWriter::getTotalRunningTime(time_t start, time_t end
 AnalysisResultsWriter::~AnalysisResultsWriter() {
     if (_text_out) fclose(_text_out);
     if (_html_out.is_open()) _html_out.close();
+}
+
+BasePrint& AnalysisResultsWriter::getPrintDirection() const { 
+    return _dataHub.GetPrintDirection();
 }
 
 /** Writes the cluster information to an HTML table row. 
@@ -311,16 +317,15 @@ void AnalysisResultsWriter::writeClusterToHtmlTable(const CCluster& cluster, con
     if (_parameters.getNumFileSets() == 1)
         writeClusterLevelColumnData(cluster);
     // Finally, write the HTML table row.
-    _html_out << "<tr id='" << rowId << "'>";
+    _html_cluster_table << "<tr id='" << rowId << "'>";
     for (const auto& colValue : columnValues) {
         if (colValue.second.size())
-            _html_out << "<td data-order=" << colValue.second << ">" << colValue.first << "</td>";
+            _html_cluster_table << "<td data-order=" << colValue.second << ">" << colValue.first << "</td>";
         else
-            _html_out << "<td>" << colValue.first << "</td>";
+            _html_cluster_table << "<td>" << colValue.first << "</td>";
     }
-    _html_out << "</tr>" << std::endl;
+    _html_cluster_table << "</tr>" << std::endl;
 }
-
 
 /** Writes run information to results files. */
 void AnalysisResultsWriter::writeComputationCompletion(time_t startTime, time_t completedTime) {
@@ -341,19 +346,19 @@ void AnalysisResultsWriter::writeComputationCompletion(time_t startTime, time_t 
         );
     size_t tMaxLabel = 0; //first calculate maximum label length
     for (const auto& s : pairs) tMaxLabel = std::max(tMaxLabel, s.first.size());
-
     AsciiPrintFormat::PrintSectionSeparatorString(_text_out, 0, 1);
-    fprintf(_text_out, "\nRUN INFORMATION\n\n");
-    _html_out << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div>" << std::endl;
-    _html_out << "<div class='program-info run-info'><h4>RUN INFORMATION</h4><table style='text-align: left;'><tbody>" << std::endl;
+    std::stringstream markup;
+    markup << "<table class='data-summary'><tbody>" << std::endl;
     for (const auto& p : pairs) { //print settings
         fprintf(_text_out, "%s", p.first.c_str());
         for (size_t t = p.first.size(); t < tMaxLabel; ++t)
             fprintf(_text_out, " ");
         fprintf(_text_out, " : %s\n", p.second.c_str());
-        _html_out << "<tr><th>" << p.first << ":</th><td>" << p.second << "</td></tr>" << std::endl;
+        markup << "<tr><th>" << p.first << ":</th><td>" << p.second << "</td></tr>" << std::endl;
     }
-    _html_out << "</table></div>" << std::endl;
+    markup << "</table>" << std::endl;
+    AnalysisResultsWriter::writeCardContainer(_html_out, markup, "run-summary", "fa-info-circle", "Run Information");
+    _html_out << "</div></div></div></body></html>" << std::endl;
 }
 
 void AnalysisResultsWriter::writeHeaderAndSummary(time_t startTime) {
@@ -379,22 +384,23 @@ void AnalysisResultsWriter::writeHeaderAndSummary(time_t startTime) {
     PrintFormat.PrintSectionSeparatorString(_text_out, 0, 1);
 
     // Print to same stuff to HTML output
+	std::stringstream markup;
     if (_parameters.GetTitleName() != "") {
-        _html_out << "<div class='hr' style='margin-top: 5px;'></div><div class='information'>" << _parameters.GetTitleName() << "</div>" << std::endl;
+        markup << std::endl << "<div class='alert alert-info border-0 mb-2' style='background-color:#f0f7f9;color:#2c525d;border-left:4px solid #5c160b !important;'>" << std::endl;
+        markup << "<p class='mb-0 font-weight-bold' style='font-size:14px; line-height: 1.5;'>" << std::endl;
+        markup << _parameters.GetTitleName() << std::endl;
+        markup << "</p></div>" << std::endl;
     }
-    _html_out << "<div class='hr' style='margin-top: 5px;'></div><div class='program-info'>" << std::endl;
-    _html_out << "<p style='font-size:15px;font-weight:bold;'>";
+    markup << "<div class='alert alert-info border-0 mb-2 overview-statement'>" << std::endl;
+    markup << "<p class='mb-0 font-weight-bold' style='font-size:14px; line-height: 1.5;'>" << std::endl;
     for (auto& line : statements)
-        _html_out << line << "<br/>";
-    _html_out << "</p>";
-    _html_out << "<h2 style='font-size:14px;margin:8px 0 5px 0;font-weight:bold;'>Summary Statistics</h2>" << std::endl;
-
-    _html_out << "<table class='analysis-summary'><tbody>" << std::endl;
+        markup << line << " ";
+    markup << "</p></div>" << std::endl;
+    markup << "<table class='analysis-summary'><tbody>" << std::endl;
     for (auto& entry: summaryEntries)
-        _html_out << "<tr><th>" << entry.first << ":</th><td>" << entry.second << "</td></tr>" << std::endl;
-    _html_out << "</tbody></table></div>" << std::endl;
-    _html_out << "<div class='hr'></div>" << std::endl;
-
+        markup << "<tr><th>" << entry.first << ":</th><td>" << entry.second << "</td></tr>" << std::endl;
+    markup << "</tbody></table>" << std::endl;
+    AnalysisResultsWriter::writeCardContainer(_html_out, markup, "overview-summary", "fa-pie-chart", "SaTScan Analysis Overview and Summary Statistics", false);
     writeHtmlTableStart();
 }
 
@@ -503,34 +509,49 @@ void AnalysisResultsWriter::writeHtmlTableStart() {
             addColumns({ { "Percent cases in area", false} });
     }
     if (_parameters.getNumFileSets() == 1) defineClusterLevelColumns();
-    _html_out << "<div id='cuts'><h3>CLUSTERS DETECTED</h3><div>" << std::endl << "<table id='id_cuts' class='display' style='width:100%'>" << std::endl << "<thead><tr>";
+    _html_cluster_table << "<div id='cuts'><div>" << std::endl << "<table id='id_cuts' class='display' style='width:100%'>" << std::endl << "<thead><tr>";
     for (const auto& column: _html_columns)
-        _html_out << "<th" << (_parameters.getNumFileSets() > 1 && !column._cluster_level || !column._sortable ? " class='no-sort'" : "") << ">" << column._header << "</th>";
-    _html_out << "</tr></thead>" << std::endl << "<tbody>" << std::endl;
+        _html_cluster_table << "<th" << (_parameters.getNumFileSets() > 1 && !column._cluster_level || !column._sortable ? " class='no-sort'" : "") << ">" << column._header << "</th>";
+    _html_cluster_table << "</tr></thead>" << std::endl << "<tbody>" << std::endl;
 }
 
+/** Write the ending markup for the cluster results table. */
 void AnalysisResultsWriter::writeHtmlTableEnd() {
-    _html_out << "</tbody>" << std::endl << "</table>" << std::endl << "</div></div>";
+    _html_cluster_table << "</tbody>" << std::endl << "</table>" << std::endl << "</div></div>";
     // Write any sub rows data
     if (_html_sub_rows.rdbuf()->in_avail()) {
-        _html_out << std::endl << "<script type='text/javascript'>" << std::endl
+        _html_cluster_table << std::endl << "<script type='text/javascript'>" << std::endl
             << "var sub_rows = {" << std::endl<< _html_sub_rows.str() << std::endl << "};" << std::endl 
             << "</script>" << std::endl;
     }
+    AnalysisResultsWriter::writeCardContainer(_html_out, _html_cluster_table, "", "fa-table", "Clusters Detected");
 }
 
-void AnalysisResultsWriter::writeMessage(
-    const std::string& message, const std::string& divClass
-) {
-    AsciiPrintFormat PrintFormat;
-    PrintFormat.SetMarginsAsOverviewSection();
-    PrintFormat.PrintSectionSeparatorString(_text_out, 0, 2, '_');
-    PrintFormat.PrintAlignedMarginsDataString(_text_out, message);
-    _html_messages << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div>" << std::endl;
-    _html_messages << "<div class='" << divClass << "'>" << message << "</div>" << std::endl;
+/** Writes message to text and html output files. */
+void AnalysisResultsWriter::writeMessage(const std::string& message, const std::string& divClass) {
+    writeMessageTextFile({ message }, "");
+    writeMessageHtmlFile({ message }, "", divClass);
 }
 
+/** Writes message lines to text and html output files. */
 void AnalysisResultsWriter::writeMessage(const std::vector<std::string>& message, const std::string& header, const std::string& divClass) {
+    writeMessageTextFile(message, toTitleCase(header));
+    writeMessageHtmlFile(message, toTitleCase(header), divClass);
+}
+
+/** Writes message lines to html output file. */
+void AnalysisResultsWriter::writeMessageHtmlFile(const std::vector<std::string>& message, const std::string& header, const std::string& divClass) {
+    _html_messages << std::endl;
+    _html_messages << "<div class='alert alert-info border-0 mb-2 " << divClass << "'>" << std::endl;
+	_html_messages << "<p class='mb-0' style='font-size:14px; line-height: 1.5;'>" << std::endl;
+    if (header.size()) _html_messages << "<div class='header'>" << header << "</div>" << std::endl;
+    for (size_t t=0; t < message.size(); ++t)
+        _html_messages << message[t] << (t + 1 < message.size() ? "<br/>" : "") << std::endl;
+    _html_messages << "</p></div>" << std::endl;
+}
+
+/** Writes message lines to text output file. */
+void AnalysisResultsWriter::writeMessageTextFile(const std::vector<std::string>& message, const std::string& header) {
     AsciiPrintFormat PrintFormat;
     PrintFormat.SetMarginsAsOverviewSection();
     if (header.size()) {
@@ -540,48 +561,33 @@ void AnalysisResultsWriter::writeMessage(const std::vector<std::string>& message
     fprintf(_text_out, "\n");
     for (const auto& line : message)
         PrintFormat.PrintAlignedMarginsDataString(_text_out, line);
-
-    writeMessageHtml(message, header, divClass);
 }
 
-void AnalysisResultsWriter::writeMessageHtml(const std::vector<std::string>& message, const std::string& header, const std::string& divClass) {
-    _html_messages << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div>" << std::endl;
-    _html_messages << "<div class='" << divClass << "'>" << std::endl;
-    if (header.size()) _html_messages << header << "<br/>" << std::endl;
-    for (const auto& line : message)
-        _html_messages << line << "<br/>" << std::endl;
-    _html_messages << "</div>" << std::endl;
+/** Writes message to html output file contained in a toggleable div. */
+void AnalysisResultsWriter::writeMessageHtmlToggle(std::stringstream& message, const std::string& header, const std::string& divClass) {
+    _html_messages << std::endl;
+    _html_messages << "<div class='alert alert-info border-0 mb-2 " << divClass << "'>" << std::endl;
+    _html_messages << "<p class='mb-0' style='font-size:14px;line-height:1.5;'>" << std::endl;
+    _html_messages << "<div class='toggle-message show-chart-options header'><a href='#'>" << header << "</a></div>" << std::endl;
+    _html_messages << "<div class='chart-options' style='display:none'>" << std::endl;
+	_html_messages << message.str() << std::endl << "</div>" << std::endl;
+    _html_messages << "</p></div>" << std::endl;
 }
 
-void AnalysisResultsWriter::writeMessageListStart(const std::string& message, const std::string& divClass, unsigned int iPreNewlines) {
-    AsciiPrintFormat PrintFormat;
-    PrintFormat.SetMarginsAsOverviewSection();
-    //while (iPreNewlines--) fprintf(_text_out, "\n");
-    PrintFormat.PrintSectionSeparatorString(_text_out, iPreNewlines, 2, '_');
-    PrintFormat.PrintAlignedMarginsDataString(_text_out, message);
-
-    _html_messages << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div>" << std::endl;
-    _html_messages << "<div class='toggle-message show-chart-options " << divClass << "'><a href='#'>" << message << "</a></div>" << std::endl;
-    _html_messages << "<div class='chart-options program-info' style='display:none'>" << std::endl;
-}
-
-void AnalysisResultsWriter::writeMessageListLine(const std::string& message) {
-    AsciiPrintFormat PrintFormat;
-    PrintFormat.SetMarginsAsOverviewSection();
-    PrintFormat.PrintAlignedMarginsDataString(_text_out, message);
-
-    _html_messages << "<div>" << message << "</div>" << std::endl;
-}
-
-void AnalysisResultsWriter::writeMessageListEnd(unsigned int iPostNewlines) {
-    while (iPostNewlines--) fprintf(_text_out, "\n");
-    _html_messages << "</div>" << std::endl;
-}
-
-
+/** Writes parameter settings report to text and html output files. */
 void AnalysisResultsWriter::writeParameters(bool isDrilldown) {
-    // First write any messages
-    if (_html_messages.rdbuf()->in_avail())
+    if (_html_messages.rdbuf()->in_avail()) // First write any messages
         _html_out << std::endl << _html_messages.str() << std::endl;
-    ParametersPrint(_parameters).Print(*this, false);
+    ParametersPrint(_parameters).Print(*this, isDrilldown);
+}
+
+/** Writes markup to html output file, contained in 'card' div. */
+void AnalysisResultsWriter::writeCardContainer(
+    std::ofstream& writef, const std::stringstream& markup,
+    const std::string& divclass, const std::string& faclass, const std::string& header, bool closed
+) {
+    writef << "<div class='mt-1 " << divclass << "'><div class='card'>" << std::endl;
+    writef << "<div class='card-header bg-light'><h4 class='mb-0'><i class='fa " << faclass << " mr-2' aria-hidden='true'></i>" << header << "</h4></div>";
+	writef << "<div class='card-body'>" << markup.str() << std::endl;
+    if (closed) writef << "</div></div></div>" << std::endl << std::endl;
 }

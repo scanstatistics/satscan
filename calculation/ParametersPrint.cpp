@@ -136,34 +136,64 @@ const char * ParametersPrint::getPowerEvaluationMethodAsString() const {
 }
 
 void ParametersPrint::Print(AnalysisResultsWriter& resultsWriter, bool isDrilldown) const {
-    Print(resultsWriter.getTextFile(), &resultsWriter.getHtmlFile(), isDrilldown);
+    Print(resultsWriter.getPrintDirection(), resultsWriter.getTextFile(), &resultsWriter.getHtmlFile(), isDrilldown);
 }
 
 /** Prints parameters, in a particular format, to passed ascii file. */
-void ParametersPrint::Print(FILE* fp, std::ofstream* fstream, bool isDrilldown) const {
+void ParametersPrint::Print(BasePrint& printDirection, FILE* fp, std::ofstream* fstream, bool isDrilldown) const {
     AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2, '_');
-    if (fstream) *fstream << "<div class='hr' style='margin-top: 5px;'></div>" << std::endl;
 
     SettingContainer_t settingPairs;
+    std::stringstream markup;
     if (getAdditionalOutputFiles(settingPairs).size()) {
-        //AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
         fprintf(fp, "ADDITIONAL RESULTS FILES\n\n");
         writeSettingPairsTextFile(settingPairs, "", fp, 0);
         AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
         if (fstream) {
-            //AsciiPrintFormat::PrintSectionSeparatorString(*fstream, 0, 2); // TODO: Check this?
-            *fstream << "<div id=\"parameter-settings\"><h4>Additional Results Files</h4>" << std::endl;
-            writeSettingPairsHTML(settingPairs, "", "additional-results-section", *fstream);
-            //AsciiPrintFormat::PrintSectionSeparatorString(*fstream, 0, 2); // TODO: Check this?
-            *fstream << std::endl << "</div>" << std::endl;
-            *fstream << "<div class='hr' style='margin-top: 5px;'></div>" << std::endl;
+            writeSettingPairsHTML(settingPairs, "", "additional-results-section", markup, isDrilldown);
+            AnalysisResultsWriter::writeCardContainer(*fstream, markup, "", "fa-files-o", "Additional Results Files");
+            if (!isDrilldown && printDirection.getResultsNodes().size()) { // only print tree if not drilldown
+                // We're now able to write the drilldown tree json.
+				markup.str(""); // clear the stringstream
+                boost::regex pattern("^.+[\\/\\\\](.+\\-drilldown\\-((?:C\\d+(?:s|b))+).*$)");
+                auto appendJSON = [&markup, &pattern](const std::shared_ptr<ResultsNode>& node, auto& appendJSONRef) -> void {
+                    if (!node->getParent()) {
+                        FileName fn(node->getFilename().c_str());
+                        markup << "{id: `" << fn.getFileName() << "`, name: `" << fn.getFileName() << "`, parent: null, results: null }," << std::endl;;
+                    } else {
+                        FileName parent(node->getParent()->getFilename().c_str());
+                        FileName nodeFile(node->getFilename().c_str());
+                        std::string buffer;
+                        std::filesystem::path htmlPath(nodeFile.setExtension(".html").getFullPath(buffer));
+                        boost::smatch nmatch, pmatch;
+                        if (boost::regex_search(node->getFilename(), nmatch, pattern)) {
+                            markup << "{id: `" << nodeFile.getFileName() << "`, name: `" << nmatch[2].str()
+                                << "`, parent: `" << parent.getFileName() << "`, results: `" << htmlPath.generic_string() << "`}," << std::endl;
+                        } else
+                            throw prg_error("Unexpected results node filename format: '%s'", "AnalysisResultsWriter", node->getFilename().c_str());
+                    }
+                    for (const auto& child : node->getChildren())
+                        appendJSONRef(child, appendJSONRef);
+                };
+
+                auto it = printDirection.getResultsNodes().find(this->_parameters.GetOutputFileName());
+                if (it != printDirection.getResultsNodes().end()) {
+                    appendJSON(it->second, appendJSON);
+                }
+                *fstream << std::endl << "<script>const treedata = [" << markup.str() << "];"
+                    << std::endl << "const ptv = new ParametersTreeView('root', treedata);" << std::endl << "</script>" << std::endl << std::endl;
+				markup.str(""); // clear the stringstream
+                markup << "<p class='medium mb-3'>Click on any node below to view sub-cluster analysis or navigate the execution history.</p>" << std::endl;
+                markup << "<div id='root'></div>";
+                AnalysisResultsWriter::writeCardContainer(*fstream, markup, "drilldown-tree", "fa-sitemap", "Analysis Drilldown Tree");
+            }
         }   
     }
+    markup.str(""); // clear the stringstream
     fprintf(fp, "PARAMETER SETTINGS\n");
-    if (fstream) *fstream << "<div id=\"parameter-settings\"><h4>Parameter Settings</h4>" << std::endl;
     auto writeSettings = [&](const std::string& section, const SettingContainer_t& settings) {
         writeSettingPairsTextFile(settings, section, fp);
-        if (fstream) writeSettingPairsHTML(settings, section, "parameter-section", *fstream);
+        if (fstream) writeSettingPairsHTML(settings, section, "parameter-section", markup, isDrilldown);
     };
     writeSettings("Input", getInputParameters(settingPairs));
     writeSettings("Analysis", getAnalysisParameters(settingPairs));
@@ -189,6 +219,7 @@ void ParametersPrint::Print(FILE* fp, std::ofstream* fstream, bool isDrilldown) 
     writeSettings("Power Simulations", getPowerSimulationsParameters(settingPairs));
     writeSettings("Run Options", getRunOptionsParameters(settingPairs));
     writeSettings("System", getSystemParameters(settingPairs));
+    if (fstream) AnalysisResultsWriter::writeCardContainer(*fstream, markup, "", "fa-cogs", "Parameter Settings");
 }
 
 ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(SettingContainer_t& settings) const {
@@ -1564,24 +1595,24 @@ void ParametersPrint::writeSettingPairsTextFile(const SettingContainer_t& settin
     }
 }
 
-void ParametersPrint::writeSettingPairsHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::ostream& out) const {
+void ParametersPrint::writeSettingPairsHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::stringstream& out, bool isDrilldown) const {
     try {
         if (!settings.size()) return;
         out << "<div class='" << sectionClass << "'>" << std::endl;
         if (section.size()) {// print section label
             out << "<h4>" << section << "</h4>" << std::endl;
         }
-        out << "<table><tbody>" << std::endl;
+        out << "<table class='data-summary'><tbody>" << std::endl;
         // print settings
         for (auto& setting : settings) {
+			if (!isDrilldown && setting.first == "Drilldown Results") continue; // skip printing drilldown results here, since they are printed in a separate section
             if (ends_with(setting.second, ".html"))
                 out << "<tr><th>" << setting.first << " :</th><td><a target=\"_blank\" href=\"file:///" << setting.second << "\">" << setting.second << "</a></td></tr>" << std::endl;
             else
                 out << "<tr><th>" << setting.first << " :</th><td>" << setting.second << "</td></tr>" << std::endl;
         }
-        out << std::endl << "</tbody></table></div>";
-    }
-    catch (prg_exception& x) {
+        out << "</tbody></table></div>";
+    } catch (prg_exception& x) {
         x.addTrace("WriteSettingsContainerHTML()", "ParametersPrint");
         throw;
     }

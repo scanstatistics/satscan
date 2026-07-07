@@ -4,6 +4,31 @@
 //******************************************************************************
 #include "BasePrint.h"
 #include "SSException.h"
+#include <algorithm>
+#include <boost/regex.hpp>
+#include <iostream>
+
+void ResultsNode::addChild(std::shared_ptr<ResultsNode> child) {
+    boost::regex pattern("^.+\\-drilldown\\-((?:C(\\d+)(s|b))+).*$");
+    auto it = std::lower_bound(_children.begin(), _children.end(), child, [&](const std::shared_ptr<ResultsNode>& r1, const std::shared_ptr<ResultsNode>& r2) {
+        // Extract numeric parts using boost regex for natural sorting
+        boost::smatch match_r1, match_r2;
+        if (boost::regex_search(r1->_filename, match_r1, pattern) && boost::regex_search(r2->_filename, match_r2, pattern)) {
+            //for (size_t t = 0; t < match_a.size(); ++t)
+		    //    std::cout << "match_a[" << t << "]: " << match_a[t] << std::endl;
+            int num_r1 = std::stoi(match_r1[2].str()), num_r2 = std::stoi(match_r2[2].str());
+            if (num_r1 != num_r2) {
+                return num_r1 < num_r2;
+            } else {
+                // If the numbers are equal, compare the suffixes (s or b)
+                std::string suffix_r1 = match_r1[3].str(), suffix_r2 = match_r2[3].str();
+                return suffix_r1 < suffix_r2; // 'b' comes before 's'
+            }
+        }
+        return r1->_filename < r2->_filename; // fallback to lexicographic comparison
+    });
+    _children.insert(it, child);
+}
 
 /** constructor */
 BasePrint::BasePrint(bool bSuppressWarnings) : giMaximumReadErrors(75), gbSuppressWarnings(bSuppressWarnings){
@@ -74,6 +99,17 @@ void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
   Print(&gsMessage[0], ePrintType);
 }
 
+void BasePrint::ReportDrilldownResults(const char* drilldown_resultfile, const char* parent_resultfile, unsigned int significantClusters) {
+    auto itp = _result_nodes.find(parent_resultfile); // find or create parent
+    if (itp == _result_nodes.end())
+        itp = _result_nodes.emplace(parent_resultfile, std::make_shared<ResultsNode>(parent_resultfile)).first;
+    auto itc = _result_nodes.find(drilldown_resultfile); // find or create drilldown
+    if (itc == _result_nodes.end())
+        itc = _result_nodes.emplace(drilldown_resultfile, std::make_shared<ResultsNode>(drilldown_resultfile)).first;
+    itp->second->addChild(itc->second); // add drilldown as child of parent
+    itc->second->setParent(itp->second);
+}
+
 // function for printing out input file warning messages, this function will print out MAX_READ_ERRORS
 // number of input file messages from each input file type, then will print a warning telling the user to check the
 // input file format
@@ -103,6 +139,28 @@ void BasePrint::PrintReadError(const char * sMessage) {
 
    if (bPrintAsNormal)
      PrintError(sMessage);
+}
+
+void BasePrint::printResultsNodes() const {
+    if (_result_nodes.empty()) {
+        return;
+	}
+	// Print the results nodes in a hierarchical manner - first find the root node (that without parent).
+    std::shared_ptr<ResultsNode> parent;
+    for (const auto& pair : _result_nodes) {
+        if (!pair.second->getParent()) {
+            parent = pair.second;
+            break;
+        }
+	}
+    auto printNode = [&](const std::shared_ptr<ResultsNode>& node, int level, auto& printNodeRef) -> void {
+        for (int i = 0; i < level; ++i) std::cout << "  "; // Indentation
+        std::cout << node->getFilename() << std::endl;
+        for (const auto& child : node->getChildren()) {
+            printNodeRef(child, level + 1, printNodeRef);
+        }
+    };
+	printNode(parent, 0, printNode);
 }
 
 /* Returns the file name of the input source type used when reporting messages to user. */

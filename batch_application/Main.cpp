@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
       throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
                              "Please review above message(s) and modify parameter settings accordingly.");
     /* additional program options processing */
-    if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
+    if (printParameters) {ParametersPrint(Parameters).Print(Console, stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
     Parameters.setSTPAlgorithmType((SpaceTimePermutationAlgorithmType)stpAlgorithm);
 

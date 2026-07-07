@@ -102,6 +102,7 @@ bool                            validEmailAdrress(const std::string& emailaddres
 std::shared_ptr<bloom_filter> getNewBloomFilter(size_t element_count = 5000);
 std::stringstream             & templateReplace(std::stringstream& templateText, const std::string& replaceStub, const std::string& replaceWith);
 std::string                   & htmlencode(const std::string& text, std::string& encoded, bool includeWS=true);
+std::string                     toTitleCase(const std::string& text);
 std::string                   & getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped);
 /* A utility class with assists with generating HTML and plain text for emails. */
 class EmailText {

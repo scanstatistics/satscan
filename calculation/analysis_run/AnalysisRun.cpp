@@ -1107,7 +1107,7 @@ void AnalysisExecution::printCriticalValuesStatus() {
                 message.emplace_back(printString(buffer, "... 0.00001: %f", alpha00001.second));
             }
         }
-        _results_writer.writeMessage(message, "CRITICAL VALUES", "information");
+        _results_writer.writeMessage(message, "CRITICAL VALUES", "message-statement");
     }
 }
 
@@ -1122,7 +1122,7 @@ void AnalysisExecution::printEarlyTerminationStatus() {
             printString(buffer, 
                 "Note: The sequential Monte Carlo procedure was used to terminate the calculations after %u replications.",
                 _sim_vars.get_sim_count()
-            ), "warning"
+            ), "message-statement"
         );
 
     }
@@ -1628,13 +1628,14 @@ void AnalysisExecution::printTopIterativeScanCluster(const MostLikelyClustersCon
                 fprintf(_results_writer.getTextFile(), "%s\n\n", buffer.c_str());
                 PrintFormat.PrintSummaryEntries(_results_writer.getTextFile(), summaryEntries);
                 PrintFormat.PrintSectionSeparatorString(_results_writer.getTextFile(), 0, 1);
-
-                _results_writer.getHtmlMessages() << "<div class='hr' style='margin-top:5px;margin-bottom:5px;'></div><div class='information'>" << std::endl;
-                _results_writer.getHtmlMessages() << "<div>" << buffer << "</div>" << std::endl;
-                _results_writer.getHtmlMessages() << "<table class='analysis-summary'><tbody>" << std::endl;
+                std::vector<std::string> message;
+                std::stringstream markup;
+                markup << "<table class='message-statement'><tbody>" << std::endl;
                 for (auto& entry : summaryEntries)
-                    _results_writer.getHtmlMessages() << "<tr><th>" << entry.first << ":</th><td>" << entry.second << "</td></tr>" << std::endl;
-                _results_writer.getHtmlMessages() << "</tbody></table></div>" << std::endl;
+                    markup << "<tr><th>" << entry.first << ":</th><td>" << entry.second << "</td></tr>" << std::endl;
+                markup << "</tbody></table>";
+				message.push_back(markup.str());
+                _results_writer.writeMessageHtmlFile(message, toTitleCase(buffer), "message-statement");
             }
 
             //get most likely cluster
@@ -2041,6 +2042,9 @@ AnalysisDrilldown::AnalysisDrilldown(
 
     // Assign output file for this drilldown analysis.
     setOutputFilename(detectedCluster, supplementInfo, drilldowns);
+    // Append to  user title, identifying this as a drilldown analysis.
+    std::string buffer;
+    _parameters.SetTitleName(printString(buffer, "Cluster %s, %u%s Level Drilldown Analysis, Same Design as Main Analysis", _cluster_path.c_str(), _downlevel, ordinal_suffix(_downlevel)).c_str());
     // Create new grid and coordinates file from locations defined in detected cluster.
     createReducedGridFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
     createReducedCoodinatesFile(detectedCluster, supplementInfo, source_data_hub, downlevel);
@@ -2263,6 +2267,8 @@ BernoulliAnalysisDrilldown::BernoulliAnalysisDrilldown(
         _data_hub->PostDataRead();
     } else
         throw prg_error("BernoulliAnalysisDrilldown is not implemented for Analysis Type '%d'.", "BernoulliAnalysisDrilldown()", source_parameters.GetAnalysisType());
+    // Append to  user title, identifying this as a drilldown analysis.
+    _parameters.SetTitleName(printString(buffer, "Cluster %s, %u%s Level Drilldown Analysis, Purely Spatial Bernoulli", _cluster_path.c_str(), _downlevel, ordinal_suffix(_downlevel)).c_str());
 }
 
 //////////////////////////// AnalysisRunner //////////////////////////////////////

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -23,6 +24,8 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -84,7 +87,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private Map<String, FilterTreeNode> _output_tree_map = new HashMap<>();
     private Map<FilterTreeNode, Integer> _tree_output_significances = new HashMap<>();
     private boolean _has_insignificant_analyses = false;
-    private boolean _viewing_only_significant = true;
     private boolean _first_display_occurred = false;
     private JPopupMenu _launch_output = null;
     private boolean _disable_auto_launch = false;
@@ -331,9 +333,18 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
     /** Loads the analysis results and drilldown tree, if there is one. */
     synchronized public void loadAnalysisResults(boolean sortTreeNodes) {
-        btnToggleDrilldown.setEnabled(_has_insignificant_analyses);
         OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
-        if (_tree_output_map.size() > 0) {
+        Consumer<JMenuItem> correctJMenuItem = mu -> { 
+            // Remove the reserved space for icons
+            mu.setIcon(null);
+            mu.setIconTextGap(0);
+            // Remove padding inside the component
+            mu.setMargin(new Insets(0, 0, 0, 0));
+            // Force left alignment
+            mu.setHorizontalAlignment(JMenuItem.LEFT);
+            mu.setHorizontalTextPosition(JMenuItem.LEFT);
+        };
+        if (!_tree_output_map.isEmpty()) {
             /* Drilldown analyses exist, add the drilldown result tab.*/
             _bottom_tabbed_pane.add("Drilldown", _drilldown_results_tab);
             /* Find the node that is the primary analysis and set as root. */
@@ -345,7 +356,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                         sortTree(node);
                     }
                     // Reset the TreeModel for JTree and select root node.
-                    _results_tree.setModel(new FilterTreeModel(node, false, _viewing_only_significant));
+                    _results_tree.setModel(new FilterTreeModel(node, false, false));
                     _results_tree.setSelectionPath(new TreePath(node.getPath()));
                     break;
                 }
@@ -362,31 +373,28 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 });            
                 if (_parameters.getOutputKMLFile()) {
                     JMenuItem menuItem = new JMenuItem("View Google Earth");
-                    menuItem.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
-                            launchKMLViewer(_tree_output_map.get(selectedNode), false);
-                        }
+                    correctJMenuItem.accept(menuItem);
+                    menuItem.addActionListener((java.awt.event.ActionEvent evt) -> {
+                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();
+                        launchKMLViewer(_tree_output_map.get(selectedNode), false);
                     });            
                     _launch_output.add(menuItem);
                 }
                 if (_parameters.getOutputGoogleMapsFile()) {
                     JMenuItem menuItem = new JMenuItem("View Google Map");
-                    menuItem.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
-                            launchGoogleMapsViewer(_tree_output_map.get(selectedNode));
-                        }
+                    correctJMenuItem.accept(menuItem);
+                    menuItem.addActionListener((java.awt.event.ActionEvent evt) -> {
+                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();
+                        launchGoogleMapsViewer(_tree_output_map.get(selectedNode));
                     });            
                     _launch_output.add(menuItem);
                 }
                 if (_parameters.getOutputCartesianGraph()) {
                     JMenuItem menuItem = new JMenuItem("View Cartesian Graph");
-                    menuItem.addActionListener(new java.awt.event.ActionListener() {
-                        public void actionPerformed(java.awt.event.ActionEvent evt) {
-                            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent(); 
-                            launchCartesianGraphViewer(_tree_output_map.get(selectedNode));
-                        }
+                    correctJMenuItem.accept(menuItem);
+                    menuItem.addActionListener((java.awt.event.ActionEvent evt) -> {
+                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode)_results_tree.getLastSelectedPathComponent();
+                        launchCartesianGraphViewer(_tree_output_map.get(selectedNode));
                     });            
                     _launch_output.add(menuItem);
                 }
@@ -610,10 +618,10 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         if (node.getParent() == null) {
             response = Pair.of(f.getName(), false);
         } else {
-            Pattern r = Pattern.compile("^.+\\-drilldown\\-(((C\\d+)+)\\-(std|bin)){1}.*$");
+            Pattern r = Pattern.compile("^.+\\-drilldown\\-((?:C\\d+(s|b))+).*$");
             Matcher m = r.matcher(f.getName());
-            if (m.find() && m.groupCount() == 4) {
-                response = Pair.of(m.group(1), m.group(4).equals("bin"));
+            if (m.find() && m.groupCount() == 2) {
+                response = Pair.of(m.group(1), m.group(2).equals("b"));
             } else {
                 response = Pair.of(f.getName(), false);
             }
@@ -633,16 +641,16 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 children.add((FilterTreeNode)e_nodes.nextElement());
             } 
             // Sorts tree such that Bernoulli nodes come first in respective tree level.
-            Collections.sort(children, new Comparator< DefaultMutableTreeNode>() {
+            Collections.sort(children, new Comparator<DefaultMutableTreeNode>() {
                 @Override public int compare(DefaultMutableTreeNode a, DefaultMutableTreeNode b) {
                     Pair <String, Boolean> sa = getNodeLabel(a), sb = getNodeLabel(b);
                     // If both are Bernoulli or standard, just compare cluster number.
-                    Pattern r = Pattern.compile("^((C(\\d+))+)\\-(std|bin)$");
+                    Pattern r = Pattern.compile("^((?:C(\\d+)(?:s|b))+)$");
                     Matcher m1 = r.matcher(sa.getKey()), m2 = r.matcher(sb.getKey());
                     if (m1.find() && m2.find()) {
-                        Integer sai = Integer.parseInt(m1.group(3));
-                        Integer sbi = Integer.parseInt(m2.group(3));
-                        if (sai == sbi)
+                        Integer sai = Integer.valueOf(m1.group(2));
+                        Integer sbi = Integer.valueOf(m2.group(2));
+                        if (Objects.equals(sai, sbi))
                             return sa.getValue() ? -1 : 1; // sort Bernoulli over standard.
                         return sai - sbi;
                     }
@@ -676,7 +684,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         _results_tree = new javax.swing.JTree();
         jPanel1 = new javax.swing.JPanel();
         btnSwitchOrientation = new javax.swing.JButton();
-        btnToggleDrilldown = new javax.swing.JButton();
         btnLaunchActions = new javax.swing.JButton();
         _user_cancel_button = new javax.swing.JButton();
         _emailButton = new javax.swing.JButton();
@@ -704,7 +711,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             _warnings_errors_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_warnings_errors_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
                 .addContainerGap())
         );
         _warnings_errors_tabLayout.setVerticalGroup(
@@ -755,26 +762,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             }
         });
 
-        btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/significant.png"))); // NOI18N
-        btnToggleDrilldown.setToolTipText("Viewing Only Significant");
-        btnToggleDrilldown.setOpaque(false);
-        //btnToggleDrilldown.setContentAreaFilled(false);
-        //btnToggleDrilldown.setBorderPainted(false);
-        btnToggleDrilldown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                _viewing_only_significant = !_viewing_only_significant;
-                if (_viewing_only_significant) {
-                    btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/significant.png")));
-                    btnToggleDrilldown.setToolTipText("Viewing Only Significant");
-                } else {
-                    btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource("/all-results.png")));
-                    btnToggleDrilldown.setToolTipText("Viewing All Analyses");
-                }
-                loadAnalysisResults(false);
-                _bottom_tabbed_pane.setSelectedIndex(1);
-            }
-        });
-
         btnLaunchActions.setIcon(new javax.swing.ImageIcon(getClass().getResource("/view.png"))); // NOI18N
         btnLaunchActions.setToolTipText("View Other Output");
 
@@ -786,7 +773,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnSwitchOrientation, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnToggleDrilldown, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnLaunchActions, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
         jPanel1Layout.setVerticalGroup(
@@ -794,10 +780,8 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(btnSwitchOrientation, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnToggleDrilldown, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnLaunchActions, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 69, Short.MAX_VALUE))
         );
 
         btnSwitchOrientation.getAccessibleContext().setAccessibleName("Switch Tabs Orientation");
@@ -809,7 +793,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             _drilldown_results_tabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_drilldown_results_tabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -964,10 +948,11 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
             Integer num_significant = _tree_output_significances.get(node);
-            if (num_significant == null || num_significant > 0)
-                label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-blue-icon.png")));
-            else
-                label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-orange-icon.png")));
+            label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-black-icon.png")));
+            //if (num_significant == null || num_significant > 0)
+            //    label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-blue-icon.png")));
+            //else
+            //    label.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bullet-orange-icon.png")));
             label.setText(getNodeLabel(node).getKey());
             label.setToolTipText(node.getUserObject().toString());
             if (selected) {
@@ -1081,7 +1066,6 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private javax.swing.JPanel _warnings_errors_tab;
     private javax.swing.JButton btnLaunchActions;
     private javax.swing.JButton btnSwitchOrientation;
-    private javax.swing.JButton btnToggleDrilldown;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;

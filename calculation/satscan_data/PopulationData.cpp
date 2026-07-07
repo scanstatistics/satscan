@@ -917,8 +917,11 @@ void PopulationData::RemoveCategoryTypeCases(size_t iCategoryIndex, count_t tCou
 void PopulationData::ReportZeroPops(const CSaTScanData& Data, AnalysisResultsWriter& resultsWriter, BasePrint& PrintDirection) const {
     int nPStartIndex = _introduced_start_as_pop ? 1 : 0, nPEndIndex = GetNumPopulationDates() - (_introduced_end_as_pop ? 2 : 1);
     bool bZeroFound = false;
-    std::string buffer, work;
+    std::string buffer, work, header;
     std::vector<std::string> locationDates;
+    std::stringstream markup;
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsOverviewSection();
 
     try {
         std::vector<float> PopTotalsArray(gvPopulationDates.size());
@@ -937,8 +940,10 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, AnalysisResultsWri
                 if (PopTotalsArray[j]==0) {
                     if (!bZeroFound) {
                         bZeroFound = true;
-                        resultsWriter.writeMessageListStart("Warning: The following locations have a population totaling zero for the specified date(s):", "warning", 0);
-                        PrintDirection.Printf("Warning: The following locations have a population totaling zero for the specified date(s):\n", BasePrint::P_WARNING);
+                        header = "Warning: The following locations have a population totaling zero for the specified date(s):";
+                        PrintFormat.PrintSectionSeparatorString(resultsWriter.getTextFile(), 0, 2, '_');
+                        PrintFormat.PrintAlignedMarginsDataString(resultsWriter.getTextFile(), header.c_str());
+                        PrintDirection.Printf("%s\n", BasePrint::P_WARNING, header.c_str());
                     }
                     /* Suppress printing the same population date for a location; this can happen when original population date from input file was precise to the day.
                         https://www.squishlist.com/ims/satscan/66489/
@@ -959,15 +964,16 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, AnalysisResultsWri
                 }
             }
             if (locationDates.size()) {
-                resultsWriter.writeMessageListLine(
-                    printString(buffer, "%s: %s", 
-                        Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), typelist_to_csv_string<std::string>(locationDates, work).c_str()
-                    )
+                printString(buffer, "%s: %s",
+                    Data.getIdentifierInfo().getIdentifiers().at(i)->name().c_str(), typelist_to_csv_string<std::string>(locationDates, work).c_str()
                 );
+				markup << "<div>" << buffer << "</div>";
+                PrintFormat.PrintAlignedMarginsDataString(resultsWriter.getTextFile(), buffer.c_str());
                 PrintDirection.Printf("%s\n", BasePrint::P_WARNING, buffer.c_str());
             }
         }
-        if (bZeroFound) resultsWriter.writeMessageListEnd(0);
+        if (bZeroFound)
+            resultsWriter.writeMessageHtmlToggle(markup, header, "message-statement");
     } catch (prg_exception& x) {
         x.addTrace("ReportZeroPops()","PopulationData");
         throw;

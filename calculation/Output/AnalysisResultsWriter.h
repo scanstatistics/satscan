@@ -36,6 +36,7 @@ class AnalysisResultsWriter {
         FILE * _text_out;
         std::string _htmlOutputName;
         std::ofstream _html_out;
+        std::stringstream _html_cluster_table;
         std::vector<HtmlColumn> _html_columns;
         std::stringstream _html_sub_rows;
         std::stringstream _html_messages;
@@ -48,6 +49,7 @@ class AnalysisResultsWriter {
         ~AnalysisResultsWriter();
 
         FILE * getTextFile() { return _text_out; }
+        BasePrint& getPrintDirection() const;
         std::ofstream& getHtmlFile() { return _html_out; }
         std::stringstream& getHtmlMessages() { return _html_messages; }
 
@@ -58,12 +60,14 @@ class AnalysisResultsWriter {
         void writeHtmlTableEnd();
         void writeMessage(const std::string& message, const std::string& divClass);
         void writeMessage(const std::vector<std::string>& message, const std::string& header, const std::string& divClass);
-        void writeMessageHtml(const std::vector<std::string>& message, const std::string& header, const std::string& divClass);
+        void writeMessageHtmlFile(const std::vector<std::string>& message, const std::string& header, const std::string& divClass);
+        void writeMessageTextFile(const std::vector<std::string>& message, const std::string& header);
+        void writeMessageHtmlToggle(std::stringstream& message, const std::string& header, const std::string& divClass);
         void writeParameters(bool isDrilldown);
-
-        void writeMessageListStart(const std::string& message, const std::string& divClass, unsigned int iPreNewlines);
-        void writeMessageListLine(const std::string& message);
-        void writeMessageListEnd(unsigned int iPostNewlines);
+        static void writeCardContainer(
+            std::ofstream& writef, const std::stringstream& markup,
+			const std::string& clazz, const std::string& faclass, const std::string& header, bool closed = true
+        );
 };
 //******************************************************************************
 #endif

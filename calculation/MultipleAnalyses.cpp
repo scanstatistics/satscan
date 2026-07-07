@@ -304,6 +304,7 @@ int MultipleAnalyses::execute(BasePrint& print, bool includeUnSelected) {
    so we need to scan tree to find existing parent tree with 'parent_resultfile' then create child tree under that node.
 */
 void PrintProxy::ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters) {
+    BasePrint::ReportDrilldownResults(drilldown_resultfile, parent_resultfile, significantClusters);
     /* Check for empty property tree and add parent as needed. */
     if (_analysisDef._drilldown_tree.empty()) {
         pt::ptree rtree;

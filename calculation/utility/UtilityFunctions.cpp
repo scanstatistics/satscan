@@ -839,6 +839,29 @@ std::string& htmlencode(const std::string& text, std::string& encoded, bool incl
     return encoded;
 }
 
+std::string toTitleCase(const std::string& text) {
+    std::string result = "";
+    bool newWord = true; // Tracks if the current character is the start of a word
+
+    for (char ch : text) {
+        if (std::isspace(ch) || ch == '_' || ch == '-') {
+            result += ch;    // Preserve the whitespace or separator
+            newWord = true;  // The next alphanumeric character will be the start of a new word
+        } else if (std::isalnum(ch)) {
+            if (newWord) {
+                result += std::toupper(ch); // Capitalize the first letter
+                newWord = false;
+            }
+            else {
+                result += std::tolower(ch); // Lowercase the rest of the word
+            }
+        } else {
+            result += ch;    // Pass through punctuation/other symbols
+        }
+    }
+    return result;
+}
+
 /** Returns text that is margin aligned and wraps text at those margins. */
 std::string& getWrappedText(const std::string& text, unsigned int marginLeft, unsigned int marginRight, const std::string& newline, std::string& wrapped) {
     std::stringstream wrappedText;

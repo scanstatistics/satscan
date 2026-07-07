@@ -345,24 +345,32 @@ Identifier::CombinedIdentifierNames_t & IdentifiersManager::retrieveAll(size_t t
     type is one per observation, the identifiers and locations will be the same set. */
 void IdentifiersManager::reportCombinedIdentifiers(AnalysisResultsWriter& resultsWriter) const {
     bool bPrinted = false;
-    std::string buffer;
+    std::string buffer, header;
+    std::stringstream markup;
+    AsciiPrintFormat PrintFormat;
+    PrintFormat.SetMarginsAsOverviewSection();
+
     for (auto itr=getIdentifiers().begin(); itr != getIdentifiers().end(); ++itr) {
         if (itr->get()->getCombinedWith().size()) {
             if (!bPrinted) {
+                bPrinted = true;
                 buffer = "Note: The coordinates file contains location IDs with identical coordinates that were combined into one location. In the "
                     "optional output files, combined locations are represented by a single location ID as follows:";
-                bPrinted = true;
-                resultsWriter.writeMessageListStart(buffer, "warning", 0);
+                PrintFormat.PrintSectionSeparatorString(resultsWriter.getTextFile(), 0, 2, '_');
+                PrintFormat.PrintAlignedMarginsDataString(resultsWriter.getTextFile(), buffer.c_str());
+                header = buffer;
             }
             //First retrieved location ID is the location that represents all others.
             printString(buffer, "%s : %s", itr->get()->name().c_str(), itr->get()->getCombinedWith()[0].c_str());
             for (unsigned int i = 1; i < itr->get()->getCombinedWith().size(); ++i) {
                 buffer += ", "; buffer += itr->get()->getCombinedWith()[i].c_str();
             }
-            resultsWriter.writeMessageListLine(buffer);
+            PrintFormat.PrintAlignedMarginsDataString(resultsWriter.getTextFile(), buffer.c_str());
+			markup << "<div>" << buffer << "</div>";
         }
     }
-    if (bPrinted) resultsWriter.writeMessageListEnd(0);
+    if (bPrinted)
+        resultsWriter.writeMessageHtmlToggle(markup, header, "message-statement");
 }
 
 /** Returns identifier associated with location at 'tIndex'. If 'tIndex' is greater than

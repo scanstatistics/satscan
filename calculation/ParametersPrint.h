@@ -40,7 +40,7 @@ class ParametersPrint {
     SettingContainer_t& getRunOptionsParameters(SettingContainer_t& settings) const;
     SettingContainer_t& getSpatialWindowParameters(SettingContainer_t& settings) const;
     SettingContainer_t& getSystemParameters(SettingContainer_t& settings) const;
-    void                writeSettingPairsHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::ostream& out) const;
+    void                writeSettingPairsHTML(const SettingContainer_t& settings, const std::string& section, const std::string& sectionClass, std::stringstream& out, bool isDrilldown) const;
     void                writeSettingPairsTextFile(const SettingContainer_t& settings, const std::string& section, FILE* fp, unsigned int margin=2) const;
 
   public:
@@ -52,7 +52,7 @@ class ParametersPrint {
     const char        * GetAreaScanRateTypeAsString() const;
     const char        * GetProbabilityModelTypeAsString() const;
     const char        * getPowerEvaluationMethodAsString() const;
-    void                Print(FILE* fp, std::ofstream * fstream=0, bool isDrilldown=false) const;
+    void                Print(BasePrint& printDirection, FILE* fp, std::ofstream * fstream=0, bool isDrilldown=false) const;
     void                Print(AnalysisResultsWriter& resultsWriter, bool isDrilldown = false) const;
     void                PrintAnalysisSummary(FILE* fp, const DataSetHandler& SetHandler) const;
     std::vector<std::string>& getAnalysisSummaryStatements(std::vector<std::string>& statements, const DataSetHandler& SetHandler) const;

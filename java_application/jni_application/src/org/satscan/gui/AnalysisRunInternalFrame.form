@@ -111,7 +111,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" pref="666" max="32767" attributes="0"/>
+                              <Component id="jScrollPane2" pref="679" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -162,7 +162,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane1" pref="629" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" pref="642" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -208,7 +208,6 @@
                                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="btnSwitchOrientation" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
-                                      <Component id="btnToggleDrilldown" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
                                       <Component id="btnLaunchActions" alignment="1" min="-2" pref="31" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -219,10 +218,8 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="btnSwitchOrientation" min="-2" pref="23" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnToggleDrilldown" min="-2" pref="23" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnLaunchActions" min="-2" pref="23" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="69" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -241,17 +238,6 @@
                           </AccessibilityProperties>
                           <AuxValues>
                             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnSwitchOrientation.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        jSplitPane1.setOrientation(jSplitPane1.getOrientation() == JSplitPane.VERTICAL_SPLIT ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT);&#xa;        System.out.print(&quot; width = &quot; + AnalysisRunInternalFrame.this.getWidth());&#xa;        jSplitPane1.setDividerLocation(0.67);&#xa;        _bottom_tabbed_pane.setSelectedIndex(1);&#xa;    }&#xa;});"/>
-                          </AuxValues>
-                        </Component>
-                        <Component class="javax.swing.JButton" name="btnToggleDrilldown">
-                          <Properties>
-                            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                              <Image iconType="3" name="/significant.png"/>
-                            </Property>
-                            <Property name="toolTipText" type="java.lang.String" value="Viewing Only Significant"/>
-                          </Properties>
-                          <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="btnToggleDrilldown.setOpaque(false);&#xa;//btnToggleDrilldown.setContentAreaFilled(false);&#xa;//btnToggleDrilldown.setBorderPainted(false);&#xa;btnToggleDrilldown.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _viewing_only_significant = !_viewing_only_significant;&#xa;        if (_viewing_only_significant) {&#xa;            btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/significant.png&quot;)));&#xa;            btnToggleDrilldown.setToolTipText(&quot;Viewing Only Significant&quot;);&#xa;        } else {&#xa;            btnToggleDrilldown.setIcon(new javax.swing.ImageIcon(getClass().getResource(&quot;/all-results.png&quot;)));&#xa;            btnToggleDrilldown.setToolTipText(&quot;Viewing All Analyses&quot;);&#xa;        }&#xa;        loadAnalysisResults(false);&#xa;        _bottom_tabbed_pane.setSelectedIndex(1);&#xa;    }&#xa;});"/>
                           </AuxValues>
                         </Component>
                         <Component class="javax.swing.JButton" name="btnLaunchActions">

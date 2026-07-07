@@ -92,6 +92,7 @@ void JNIPrintWindow::PrintWarning(const char * sMessage) {
 }
 
 void JNIPrintWindow::ReportDrilldownResults(const char * drilldown_resultfile, const char * parent_resultfile, unsigned int significantClusters) {
+    BasePrint::ReportDrilldownResults(drilldown_resultfile, parent_resultfile, significantClusters);
     JNIEnv *env;
     if (pJVM->AttachCurrentThread((void**)&env, NULL) < 0)
         jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
