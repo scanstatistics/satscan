@@ -14,7 +14,7 @@ version=$1
 srcdir="/prj/satscan/build.area/satscan"
 bundleinputdir="/prj/satscan/build.area/jpackage/satscanbundlesrc"
 bundledir="/prj/satscan/build.area/jpackage"
-binaries="/prj/satscan/build.area/binaries/linux"
+binaries=$srcdir/build/binaries/linux"
 
 rm -rf $bundleinputdir
 rm -rf $bundledir/SaTScan

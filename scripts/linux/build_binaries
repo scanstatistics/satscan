@@ -5,7 +5,7 @@
 ### if [ $# -lt "$REQUIRED_ARGS" ]
 ### then
 ###   echo "Usage: `basename $0` <satscan_src directory> <boost directory> <binaries ouitput directory>])"
-###   echo "   example: `basename $0` /prj/satscan/build.area/satscan /prj/satscan/build.area/boost/boost_1_90_0 /prj/satscan/build.area/binaries/linux"
+###   echo "   example: `basename $0` /prj/satscan/build.area/satscan /prj/satscan/build.area/boost/boost_1_90_0 /prj/satscan/build.area/satscan/build/binaries/linu"
 ###   exit 1
 ### fi
 
@@ -13,13 +13,14 @@
 
 cpp_compiler="/usr/bin/g++"
 c_compiler="/usr/bin/gcc"
-binaries="${3:-/prj/satscan/build.area/binaries/linux}"
+binaries="${3:-/prj/satscan/build.area/satscan/build/binaries/linux}"
 satscan_src="${1:-/prj/satscan/build.area/satscan}"
 boost_src="${2:-/prj/satscan/build.area/boost/boost_1_90_0}"
 processors="-j8"
 pthread="-pthread"
 lib_target="libsatscan.linux.so"
 
+mkdir -p $binaries
 rm -f $binaries/*
 
 echo building SaTScan for 64-bit system using gcc

@@ -28,6 +28,8 @@ shared_library/libsatscan.vcxproj.user
 
 .vs/
 
+build
+
 test/Win32/
 
 batch_application/Win32/
