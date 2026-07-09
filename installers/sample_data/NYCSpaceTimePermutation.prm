@@ -153,6 +153,8 @@ MinimumCasesInHighRateClusters=2
 TimeTrendAdjustmentType=0
 ;time trend adjustment percentage (>-100)
 TimeTrendPercentage=0
+;time trend adjustment percentage type (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)
+LogLinearPercentageType=1
 ;time stratified adjustment length (Positive Integer)
 TimeStratifiedAdjLength=1
 ;time trend type - SVTT only (Linear=0, Quadratic=1)
@@ -170,7 +172,7 @@ AdjustmentsByKnownRelativeRisksFilename=
 ;p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) 
 PValueReportType=0
 ;early termination threshold
-EarlyTerminationThreshold=50
+EarlyTerminationThreshold=5
 ;report Gumbel p-values (y/n)
 ReportGumbel=n
 ;Monte Carlo replications (0, 9, 999, n999)
@@ -184,7 +186,7 @@ IterativeScan=n
 ;maximum iterations for iterative scan (0-32000)
 IterativeScanMaxIterations=10
 ;max p-value for iterative scan before cutoff (0.0 to 1)
-IterativeScanMaxPValue=0.05
+IterativeScanMaxPValue=365
 
 [Cluster Drilldown]
 ;perform detected cluster standard drilldown (y/n)
@@ -205,7 +207,9 @@ CalculateOliveira=n
 NumBootstrapReplications=1000
 ;p-value cutoff for cluster's in Oliveira calculation (0.0 to 1)
 OliveiraPvalueCutoff=0.05
-;frequency of prospective analyses type (0=Same Time Aggregation, 1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)
+;frequency of prospective analyses selection (0=Same Time Aggregation, 1=Every X type, 2=X times per type)
+ProspectiveFrequencySelection=0
+;frequency of prospective analyses type (1=Daily, 2=Weekly, 3=Monthy, 4=Quarterly, 5=Yearly)
 ProspectiveFrequencyType=0
 ;frequency of prospective analyses  (positive integer)
 ProspectiveFrequency=1
@@ -352,5 +356,5 @@ ExecutionType=0
 
 [System]
 ;system setting - do not modify
-Version=10.3.1
+Version=10.4.0
 
