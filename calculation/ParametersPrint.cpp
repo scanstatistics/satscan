@@ -292,13 +292,17 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getAdditionalOutputFiles(S
 /** Prints 'Input' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t& ParametersPrint::getInputParameters(SettingContainer_t& settings) const {
     std::string buffer;
+    // Bernoulli iterative drilldown as DOW is a special case of multiple data sets, so we don't want to print the individual data set parameters in that case.
+    bool isBernoulliIterativeDrilldownAsDOW = _parameters.getIsBernoulliIterativeDrilldownAsDOW();
     try {
         settings.clear();
         if (_parameters.getNumFileSets() > 1)
             settings.push_back(std::make_pair("Data Set 1", _parameters.getDataSourceNames().front()));
-        if (_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
-            (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES)) {
-            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(1), _parameters.getTimestamp())));
+        if (!isBernoulliIterativeDrilldownAsDOW) {
+            if ((_parameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON ||
+                (_parameters.getPerformPowerEvaluation() && _parameters.getPowerEvaluationMethod() == PE_ONLY_SPECIFIED_CASES))) {
+                settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(1), _parameters.getTimestamp())));
+            }
         }
         switch (_parameters.GetProbabilityModelType()) {
         case POISSON:
@@ -306,7 +310,8 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getInputParameters(Setting
             settings.push_back(std::make_pair("Population File", getFilenameFormatTime(_parameters.GetPopulationFileName(1), _parameters.getTimestamp())));
             break;
         case BERNOULLI:
-            settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(1), _parameters.getTimestamp())));
+            if (!isBernoulliIterativeDrilldownAsDOW)
+                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(1), _parameters.getTimestamp())));
             break;
         case SPACETIMEPERMUTATION:
         case CATEGORICAL:
@@ -458,18 +463,23 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getPolygonParameters(Setti
 /** Prints 'Multiple Data Set' tab parameters to file stream. */
 ParametersPrint::SettingContainer_t& ParametersPrint::getMultipleDataSetParameters(SettingContainer_t& settings) const {
     std::string buffer;
+	// Bernoulli iterative drilldown as DOW is a special case of multiple data sets, so we don't want to print the individual data set parameters in that case.
+	bool isBernoulliIterativeDrilldownAsDOW = _parameters.getIsBernoulliIterativeDrilldownAsDOW();
     try {
         settings.clear();
         if (_parameters.getNumFileSets() == 1) return settings;
         for (unsigned int t = 1; t < _parameters.getNumFileSets(); ++t) {
             settings.push_back(std::make_pair(printString(buffer, "Data Set %i", t + 1), _parameters.getDataSourceNames()[t]));
-            settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(t + 1), _parameters.getTimestamp())));
+            if (!isBernoulliIterativeDrilldownAsDOW)
+                settings.push_back(std::make_pair("Case File", getFilenameFormatTime(_parameters.GetCaseFileName(t + 1), _parameters.getTimestamp())));
             switch (_parameters.GetProbabilityModelType()) {
             case POISSON:
                 if (!_parameters.UsePopulationFile()) break;
                 settings.push_back(std::make_pair("Population File", getFilenameFormatTime(_parameters.GetPopulationFileName(t + 1), _parameters.getTimestamp()))); break;
             case BERNOULLI:
-                settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(t + 1), _parameters.getTimestamp()))); break;
+                if (!isBernoulliIterativeDrilldownAsDOW)
+                    settings.push_back(std::make_pair("Control File", getFilenameFormatTime(_parameters.GetControlFileName(t + 1), _parameters.getTimestamp())));
+                break;
             case SPACETIMEPERMUTATION:
             case CATEGORICAL:
             case ORDINAL:
