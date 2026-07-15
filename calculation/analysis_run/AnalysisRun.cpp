@@ -1156,7 +1156,7 @@ void AnalysisExecution::printIgnoredDataSets() {
             for (int i = noControls.size() - 1; i >= 0; --i)
                 message.emplace_back(_parameters.getDataSourceNames()[noControls[i]]);
         }
-        _results_writer.writeMessage(message, "", "warning");
+        _results_writer.writeMessage(message, "", "message-statement");
     }
 }
 
@@ -1182,7 +1182,7 @@ void AnalysisExecution::printGiniCoefficients() {
         message.emplace_back(printString(buffer, "Optimal Gini coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize()));
     if (_parameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE)
         message.emplace_back(printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(_parameters.getGiniIndexPValueCutoff(), buffer).c_str()));
-    _results_writer.writeMessage(message, "GINI COEFFICIENTS", "information");
+    _results_writer.writeMessage(message, "GINI COEFFICIENTS", "message-statement");
 
     // create gini html chart file
     GiniChartGenerator(_top_clusters_containers, _data_hub, _sim_vars).generateChart();
@@ -1267,7 +1267,7 @@ void AnalysisExecution::printRetainedClustersStatus(bool bClusterReported) {
         //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
     if (messages.size())
-        _results_writer.writeMessage(messages, "", "information");
+        _results_writer.writeMessage(messages, "", "message-statement");
 }
 
 /** Displays most likely clusters loglikelihood ratio(test statistic) to print
