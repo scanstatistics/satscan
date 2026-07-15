@@ -524,7 +524,7 @@ void AnalysisResultsWriter::writeHtmlTableEnd() {
             << "var sub_rows = {" << std::endl<< _html_sub_rows.str() << std::endl << "};" << std::endl 
             << "</script>" << std::endl;
     }
-    AnalysisResultsWriter::writeCardContainer(_html_out, _html_cluster_table, "", "fa-table", "Clusters Detected");
+    AnalysisResultsWriter::writeCardContainer(_html_out, _html_cluster_table, "clusters-detected", "fa-table", "Clusters Detected");
 }
 
 /** Writes message to text and html output files. */
