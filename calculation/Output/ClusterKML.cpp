@@ -415,6 +415,9 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics) {
 void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::string& group_by) {
     const CParameters& parameters = _dataHub.GetParameters();
     std::string buffer, buffer2;
+	// If this is a prospective analysis, and the line list individuals file is specified, and this is not a drilldown, 
+    // then we will report whether individual is new entry or not new entry.
+    bool rpt_firsttimers = parameters.GetIsProspectiveAnalysis() && !parameters.getLinelistIndividualsCacheFileName().empty() && !_dataHub.isDrilldown();
     // Create separate kml for events, then reference in primary cluster. (This data can technically be used independent of the cluster KML file.)
     _kml_files.resize(_kml_files.size() + 1);
     _kml_files.back().setFullPath(parameters.GetOutputFileName().c_str());
@@ -507,12 +510,16 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
             placemark << "<Point><coordinates>" << longitude << " , " << latitude << ", 500</coordinates></Point>" << std::endl;
             placemark << "<ExtendedData>" << extended.str() << "</ExtendedData>" << std::endl;
             placemark << "<styleUrl>#events-" << toHex(category) << idx; // define the style for this category and current set index
-            if (demographics.isNewIndividual(individual)) // individual status is also part of the style
-                placemark << "-new";
-            else if (applicable_clusters.any()/*demographics.inCluster(tid, case_date)*/ && demographics.isExistingIndividual(individual))
-                placemark << "-ongoing";
-            else
-                placemark << "-outside";
+            if (rpt_firsttimers) {
+                if (demographics.isNewIndividual(individual)) // individual status is also part of the style
+                    placemark << "-new";
+                else if (applicable_clusters.any()/*demographics.inCluster(tid, case_date)*/ && demographics.isExistingIndividual(individual))
+                    placemark << "-ongoing";
+                else
+                    placemark << "-outside";
+            } else {
+                placemark << (applicable_clusters.any() ? "-new" : "-outside");
+            }
             placemark << "-stylemap</styleUrl>" << std::endl << "</Placemark>" << std::endl;
             auto pgroup = category_placemarks.find(category); // add placemark to correct placemark collection and update frequency
             if (pgroup == category_placemarks.end()) {
@@ -531,8 +538,12 @@ void ClusterKML::add(const DataDemographicsProcessor& demographics, const std::s
     kml_out << "<ScreenOverlay><visibility>1</visibility><name><div style='text-decoration:underline;min-width:250px;'>Legend: " << encode(group_by, buffer);
     kml_out << "</div></name><Snippet></Snippet><description><div style='border: 1px solid black;background-color:#E5E4E2;padding-top:3px;padding-bottom:3px;'><div>" << std::endl;
     kml_out << "<ul style='padding-left:3px;margin-left:5px;margin-top:5px;padding-right: 5px;margin-bottom: 3px;'>" << std::endl;
-    kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
-    kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#971D03;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, not new entry</span></li>" << std::endl;
+    if (rpt_firsttimers) {
+        kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, new entry</span></li>" << std::endl;
+        kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#971D03;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster, not new entry</span></li>" << std::endl;
+	} else {
+        kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FF0000;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Inside Cluster</span></li>" << std::endl;
+    }
     kml_out << "<li style='list-style-type:none;white-space:nowrap;'><div style='width:30px;height:10px;border:1px solid black; margin:0;padding:0;background-color:#FFFFFF;display:inline-block;'></div><span style='font-weight:bold;margin-left:5px;'>Outside Clusters</span></li>" << std::endl;
     kml_out << "</ul></div><hr style='border-top: 1px solid black;margin-top:10px;margin-bottom:5px;margin-left:10px;margin-right:10px;'/>" << std::endl;
     kml_out << "<ul style='padding-left:0'>" << std::endl;

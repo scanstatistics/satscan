@@ -623,7 +623,7 @@ void ClusterMap::finalize() {
             params.GetAreaScanRateType(),
             params.getReportGiniOptimizedClusters() ? "true" : "false", 
             params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown() ? "true" : "false",
-            params.GetIsProspectiveAnalysis() && params.getLinelistIndividualsCacheFileName().size() && !_dataHub.isDrilldown() ? "true" : "false"
+            params.GetIsProspectiveAnalysis() && !params.getLinelistIndividualsCacheFileName().empty() && !_dataHub.isDrilldown() ? "true" : "false"
         ));
         templateReplace(html, "--slider-range--", VisualizationUtils::getSliderRange(_dataHub));
         if (params.GetIsProspectiveAnalysis() && !_dataHub.isDrilldown()) {

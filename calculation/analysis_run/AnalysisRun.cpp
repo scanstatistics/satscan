@@ -193,16 +193,18 @@ void AnalysisEmailHelper::finalize(std::shared_ptr<DataDemographicsProcessor> da
     // If the user specified line-list data in the case file, we might also have individuals to help distinguish if a
     // cluster should be reviewed -- otherwise repeated noise (i.e. same cluster was reported yesterday).
     if (params.getEmailCustom() && params.getReadingLineDataFromCasefile() && data_demographic_processor.get() && data_demographic_processor->hasIndividualAttribute()) {
-        bool usingCache = !params.getLinelistIndividualsCacheFileName().empty();
+        bool rpt_firsttimers = params.GetIsProspectiveAnalysis() && !params.getLinelistIndividualsCacheFileName().empty();
         for (auto& cluster : data_demographic_processor->getReportedClusters()) {
             if (cluster._reportedInCsv) {
                 unsigned int newcases = cluster._event_totals.first;
                 _signaltext << (_signaltext.str().size() ? "" : "All clusters in the line list file:") << EmailText::LINEBREAK << "Cluster #" << (cluster._index + 1);
                 count_t totalcases = cluster._event_totals.second;
-                if (newcases == totalcases)
-                    _signaltext << " is a " << (usingCache ? "new " : "") << "signal, with " << newcases << " case" << (newcases == 1 ? "" : "s");
+                if (!rpt_firsttimers)
+                    _signaltext << " is a signal with " << totalcases << " case" << (totalcases == 1 ? "" : "s");
+                else if (newcases == totalcases)
+                    _signaltext << " is a new signal with " << newcases << " case" << (newcases == 1 ? "" : "s");
                 else
-                    _signaltext << " is an ongoing signal, with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s");
+                    _signaltext << " is an ongoing signal with " << (totalcases - newcases) << " old and " << newcases << " new case" << (newcases == 1 ? "" : "s");
                 // Report RI or p-value of cluster.
                 std::stringstream clustersigtext;
                 for (const auto& entry : cluster._cluster->getReportLinesCache()) {

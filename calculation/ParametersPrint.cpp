@@ -405,10 +405,14 @@ ParametersPrint::SettingContainer_t& ParametersPrint::getOutputParameters(Settin
     try {
         settings.clear();
         settings.push_back(std::make_pair("Main Results File", _parameters.GetOutputFileName()));
-        settings.push_back(std::make_pair("HTML file for Google Map", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputKMLFile() ? "Yes" : "No"));
-        settings.push_back(std::make_pair("KML file for Google Earth", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputGoogleMapsFile() ? "Yes" : "No"));
-        settings.push_back(std::make_pair("Shapefile for GIS software", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles() ? "Yes" : "No"));
-        settings.push_back(std::make_pair("HTML file for Cartesian map", _parameters.getOutputCartesianGraph() ? "Yes" : "No"));
+        if (!_parameters.GetIsPurelyTemporalAnalysis()) {
+            if (_parameters.GetCoordinatesType() == LATLON) {
+                settings.push_back(std::make_pair("HTML file for Google Map", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputGoogleMapsFile() ? "Yes" : "No"));
+                settings.push_back(std::make_pair("KML file for Google Earth", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputKMLFile() ? "Yes" : "No"));
+                settings.push_back(std::make_pair("Shapefile for GIS software", _parameters.GetCoordinatesType() == LATLON && _parameters.getOutputShapeFiles() ? "Yes" : "No"));
+            }
+            settings.push_back(std::make_pair("HTML file for Cartesian map", _parameters.getOutputCartesianGraph() ? "Yes" : "No"));
+        }
         settings.push_back(std::make_pair("Cluster Information", printString(buffer, "%s (ASCII), %s (dBase)",
             canReportClusterFiles && _parameters.GetOutputClusterLevelAscii() ? "Yes" : "No",
             canReportClusterFiles && _parameters.GetOutputClusterLevelDBase() ? "Yes" : "No"
