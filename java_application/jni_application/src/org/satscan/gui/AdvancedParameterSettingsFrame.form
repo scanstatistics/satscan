@@ -4233,17 +4233,19 @@
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_prospective_frequency_every" min="-2" pref="104" max="-2" attributes="0"/>
                                       </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_freqXTimesPer" min="-2" pref="61" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_freqXTimesPerLbl" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_prospective_frequency_timesper" min="-2" pref="104" max="-2" attributes="0"/>
-                                      </Group>
                                   </Group>
-                                  <EmptySpace min="0" pref="407" max="32767" attributes="0"/>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_freqXTimesPer" min="-2" pref="61" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_freqXTimesPerLbl" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_prospective_frequency_timesper" min="-2" pref="104" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_timer_per_range" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -4266,16 +4268,20 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="_freqXTimesPer" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_freqXTimesPerLbl" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                              <Component id="_timer_per_range" max="32767" attributes="0"/>
                               <Component id="_prospective_frequency_timesper" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="_freqTimesPer" min="-2" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="3" attributes="0">
+                                          <Component id="_freqXTimesPer" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          <Component id="_freqXTimesPerLbl" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -4375,8 +4381,13 @@
                     <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="_prospective_frequency_timesperFocusGained"/>
                   </Events>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency_timesper.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;       correctXTimesPerControls();&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Week&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Month&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Quarter&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Year&quot;);&#xd;&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospective_frequency_timesper.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;       correctXTimesPerControls();&#xd;&#xa;       enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Week&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Month&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Quarter&quot;);&#xd;&#xa;_prospective_frequency_timesper.add(&quot;Year&quot;);&#xd;&#xa;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_timer_per_range">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="(min. 2, max. 6)"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>

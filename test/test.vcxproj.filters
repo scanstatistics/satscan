@@ -1184,10 +1184,28 @@
     <ClCompile Include="test_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="unittest_ClusterRecurrenceInterval.cpp">
+      <Filter>Source Files\unit_tests</Filter>
+    </ClCompile>
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp">
       <Filter>Source Files\unit_tests\loglikelihood</Filter>
     </ClCompile>
     <ClCompile Include="unittest_JulianDates.cpp">
+      <Filter>Source Files\unit_tests\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_DateStringParser.cpp">
+      <Filter>Source Files\unit_tests\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_FileName.cpp">
+      <Filter>Source Files\unit_tests\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_Ini.cpp">
+      <Filter>Source Files\unit_tests\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_MultipleDimensionArrayHandler.cpp">
+      <Filter>Source Files\unit_tests\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="unittest_UtilityFunctions.cpp">
       <Filter>Source Files\unit_tests\utility</Filter>
     </ClCompile>
     <ClCompile Include="unittest_ParametersValidate.cpp">

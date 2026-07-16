@@ -1715,10 +1715,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         int times_per = Integer.parseInt(_freqXTimesPer.getText());
         if (times_per < 2) _freqXTimesPer.setText("2");
         switch (_prospective_frequency_timesper.getSelectedIndex()) {
-            case 0 -> { /*week*/ if (times_per > 6) _freqXTimesPer.setText("6"); }
-            case 1 -> { /*month*/ if (times_per > 30) _freqXTimesPer.setText("30"); }
-            case 2 -> { /*quarter*/ if (times_per > 90) _freqXTimesPer.setText("90"); }
-            case 3 -> { /*year*/ if (times_per > 364) _freqXTimesPer.setText("364"); }
+            case 0 -> { /*week*/
+                if (times_per > 6) _freqXTimesPer.setText("6");
+                _timer_per_range.setText("(min. 2, max. 6)");
+            }
+            case 1 -> { /*month*/
+                if (times_per > 30) _freqXTimesPer.setText("30");
+                _timer_per_range.setText("(min. 2, max. 30)");
+            }
+            case 2 -> { /*quarter*/
+                if (times_per > 90) _freqXTimesPer.setText("90");
+                _timer_per_range.setText("(min. 2, max. 90)");
+            }
+            case 3 -> { /*year*/
+                if (times_per > 364) _freqXTimesPer.setText("364"); 
+                _timer_per_range.setText("(min. 2, max. 364)");
+            }
         }
     }
 
@@ -3401,6 +3413,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _freqXTimesPer = new javax.swing.JTextField();
         _freqXTimesPerLbl = new javax.swing.JLabel();
         _prospective_frequency_timesper = new java.awt.Choice();
+        _timer_per_range = new javax.swing.JLabel();
         _cluster_restrictions_tab = new javax.swing.JPanel();
         _limit_clusters_risk_group = new javax.swing.JPanel();
         _limit_low_clusters = new javax.swing.JCheckBox();
@@ -6634,6 +6647,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             });
 
+            _timer_per_range.setText("(min. 2, max. 6)");
+
             javax.swing.GroupLayout _prospective_frequency_groupLayout = new javax.swing.GroupLayout(_prospective_frequency_group);
             _prospective_frequency_group.setLayout(_prospective_frequency_groupLayout);
             _prospective_frequency_groupLayout.setHorizontalGroup(
@@ -6650,16 +6665,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                     .addComponent(_freqEveryX, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_prospective_frequency_every, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
-                                    .addComponent(_freqTimesPer)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_freqXTimesPerLbl)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGap(0, 407, Short.MAX_VALUE)))
+                                    .addComponent(_prospective_frequency_every, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGap(0, 0, Short.MAX_VALUE))
+                        .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                            .addComponent(_freqTimesPer)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_freqXTimesPerLbl)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(_timer_per_range, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addContainerGap())
             );
             _prospective_frequency_groupLayout.setVerticalGroup(
@@ -6676,13 +6693,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addComponent(_prospective_frequency_every, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(_freqTimesPer)
-                            .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(_freqXTimesPerLbl)))
-                        .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_timer_per_range, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_prospective_frequency_timesper, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(_prospective_frequency_groupLayout.createSequentialGroup()
+                            .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(_freqTimesPer)
+                                .addGroup(_prospective_frequency_groupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(_freqXTimesPer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(_freqXTimesPerLbl)))
+                            .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap())
             );
 
             _freqSameTimeAgg.getAccessibleContext().setAccessibleName("");
@@ -7593,6 +7613,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _temporalTrendAdjQuadCalc;
     private javax.swing.JPanel _temporalWindowTab;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
+    private javax.swing.JLabel _timer_per_range;
     private javax.swing.JTextField _totalPowerCases;
     private javax.swing.JPanel _userDefinedRunTitle;
     private javax.swing.JPanel _windowCompletePanel;

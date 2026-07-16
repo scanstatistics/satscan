@@ -483,11 +483,17 @@
     <ClCompile Include="squish66455.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="test_helper.cpp" />
+    <ClCompile Include="unittest_ClusterRecurrenceInterval.cpp" />
     <ClCompile Include="unittest_DataSource.cpp" />
+    <ClCompile Include="unittest_DateStringParser.cpp" />
+    <ClCompile Include="unittest_FileName.cpp" />
+    <ClCompile Include="unittest_Ini.cpp" />
     <ClCompile Include="unittest_JulianDates.cpp" />
+    <ClCompile Include="unittest_MultipleDimensionArrayHandler.cpp" />
     <ClCompile Include="unittest_ParametersValidate.cpp" />
     <ClCompile Include="unittest_PoissonLikelihoodCalculation.cpp" />
     <ClCompile Include="unittest_BatchedLikelihoodCalculation.cpp" />
+    <ClCompile Include="unittest_UtilityFunctions.cpp" />
     <ClCompile Include="..\calculation\Output\ClusterMap.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
