@@ -204,7 +204,7 @@ const char * ClusterMap::TEMPLATE = " \
                         <label for='slider_speed'>Run Delay: <span id='id_timeline_rate'>50</span> milliseconds</label> \n \
                         <div class='slider-styled slider-round-small' id='slider_speed'></div> \n \
                         <label for='id_exclude_event_type' style='margin-top: 5px;'>Exclude Individuals:</label> \n \
-                        <select name='exclude_event_type' id='id_exclude_event_type' multiple='multiple' class='events-select' disabled='disabled'> \n \
+                        <select name='exclude_event_type' id='id_exclude_event_type' multiple='multiple' class='events-select'> \n \
                             <option value='outside_cluster' class='outside_cluster' >Outside Cluster</option> \n \
                             --exclude-event-groups--\n \
                         </select> \n \
