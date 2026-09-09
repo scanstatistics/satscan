@@ -36,6 +36,21 @@ CSaTScanData::~CSaTScanData() {
   catch (...){}  
 }
 
+SizeConditionalCalibration& CSaTScanData::refSizeCalibration() { 
+    if (!_sizeCalibration) {
+        _sizeCalibration.reset(new SizeConditionalCalibration(
+            gParameters._spatial_bins, gParameters._temporal_bins, gParameters._min_cell_size
+        ));
+    }
+    return *_sizeCalibration;
+}
+
+const SizeConditionalCalibration& CSaTScanData::getSizeCalibration() const {
+    if (!_sizeCalibration)
+        throw prg_error("size calibration not allocated", __func__);
+    return *_sizeCalibration; 
+}
+
 /** Iterative analyses will call this function to clear neighbor information and re-calculate neighbors. */
 void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
   try {

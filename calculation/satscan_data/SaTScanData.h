@@ -19,6 +19,7 @@
 #include "ClusterLocationsWriter.h"
 #include "LocationRelevance.h"
 #include "LocationNetwork.h"
+#include "SizeConditionalCalibration.h"
 
 class LocationsReportHelper;
 
@@ -55,7 +56,7 @@ class CSaTScanData {
     std::unique_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     std::unique_ptr<GInfo>                        gCentroidsHandler;
-	std::shared_ptr<IdentifiersManager>       _identifiers_manager;	
+	std::shared_ptr<IdentifiersManager>         _identifiers_manager;	
 	Network                                     _locations_network;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
@@ -96,6 +97,7 @@ class CSaTScanData {
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
     mutable std::shared_ptr<LocationsReportHelper> _report_helper;
+    std::shared_ptr<SizeConditionalCalibration> _sizeCalibration;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -116,6 +118,8 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
+    SizeConditionalCalibration& refSizeCalibration();
+    const SizeConditionalCalibration& getSizeCalibration() const;
     std::string                               & getDatasetLabel(size_t set_number, std::string& label, bool prefixed=true) const;
     std::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }

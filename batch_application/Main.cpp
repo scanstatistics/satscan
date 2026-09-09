@@ -68,6 +68,10 @@ int main(int argc, char *argv[]) {
   bool verifyParameters = false, printParameters = false, forceCentric = false, allOut = false,
       standardPvalue = false, execMultipleAnalyses = false, execAllMultipleAnalyses = false, testSendMail = false;
   unsigned int stpAlgorithm = 2; // default to Poisson Approximation (see #25173)
+  unsigned int spatialbins = 20;
+  unsigned int temporalbins = 20;
+  unsigned int mincellsize = 100;
+  unsigned int calibration = 999;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -96,6 +100,10 @@ int main(int argc, char *argv[]) {
         ("mail-from,h", po::value<std::string>(), "'from' address (ex. someone@mycompany.com)")
         ("mail-reply,i", po::value<std::string>(), "'reply' address (ex. nobody@mycompany.com)")
         ("stp-algorithm,w", po::value<unsigned int>(&stpAlgorithm)->default_value(STP_POISSON), "space-time permutation algorithm (0=derived, 1=hypergeometric, 2=Poisson Approximation)")
+        ("spatial-bins,b", po::value<unsigned int>(&spatialbins)->default_value(20), "number of spatial bins for penalty")
+        ("temporal-bins,n", po::value<unsigned int>(&temporalbins)->default_value(20), "number of temporal bins for penalty")
+        ("min-cell-size,n", po::value<unsigned int>(&mincellsize)->default_value(100), "minimum cells in score set for penalty")
+        ("calibration-replica,n", po::value<unsigned int>(&calibration)->default_value(999), "number of replica calibration with penalty")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -225,6 +233,11 @@ int main(int argc, char *argv[]) {
     if (printParameters) {ParametersPrint(Parameters).Print(Console, stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
     Parameters.setSTPAlgorithmType((SpaceTimePermutationAlgorithmType)stpAlgorithm);
+
+    Parameters._spatial_bins = spatialbins;
+    Parameters._temporal_bins = temporalbins;
+    Parameters._min_cell_size = mincellsize;
+    Parameters._calibration_replica = calibration;
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis

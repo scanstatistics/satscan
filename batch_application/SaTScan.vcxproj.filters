@@ -1211,6 +1211,9 @@
     <ClInclude Include="..\calculation\satscan_data\ClosedLoopData.h">
       <Filter>Header Files\calculation\satscan_data</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\satscan_data\SizeConditionalCalibration.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>    
     <ClInclude Include="..\calculation\Output\ClusterMap.h">
       <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>

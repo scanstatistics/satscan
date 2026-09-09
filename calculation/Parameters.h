@@ -324,6 +324,11 @@ class CParameters {
     bool                                _cluster_sig_by_p_;
     double                              _cluster_sig_p_val_;
 
+    size_t _spatial_bins = 20;
+    size_t _temporal_bins = 20;
+    size_t _min_cell_size = 100;
+    size_t _calibration_replica = 999;
+
 
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;

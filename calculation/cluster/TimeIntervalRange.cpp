@@ -141,15 +141,19 @@ HypergeometricTemporalDataEvaluator::HypergeometricTemporalDataEvaluator(
     of clusters that have rates of which we are interested in and updates clusterset accordingly. */
 void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, CClusterSet& clusterSet) {
     TemporalData& Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
-    count_t* pCases = Data.gpCases, S;
+    count_t* pCases = Data.gpCases, S, T;
     measure_t* pMeasure = Data.gpMeasure;
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+
+    auto& calibration = gDataHub.getSizeCalibration();
+    double C = static_cast<double>(gDataHub.GetTotalCases());
 
     S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
     // Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return;
 
+    const double qS = static_cast<double>(S) / C;
     const auto& spatialcases = _look_up->getSpatialCases(S);
     int iWindowStart, iMinWindowStart;
     gpMaxWindowLengthIndicator->reset();
@@ -161,11 +165,22 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
+                T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd];
                 Running.m_nRatio = _look_up->getProbabilityFor(
-                    _pt_counts[iWindowStart] - _pt_counts[iWindowEnd], spatialcases, Data.gtCases
+                    T, spatialcases, Data.gtCases
                 );
+
+                // Set Running.m_nRatio to the penalized full test statistic.
+                Running.m_nRatio = calibration.score(qS, 
+                    static_cast<double>(T)/C, 
+                    -std::log(-Running.m_nRatio)
+                );
+
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
+
+                // We'll need to revise specialized logic in the foloowing call for hypergeometric.
+                // It might be that we no longer have specialized logic for hypergeometric.
                 clusterSet.update(Running);
             }
         }
@@ -182,16 +197,20 @@ void HypergeometricTemporalDataEvaluator::CompareMeasures(AbstractTemporalCluste
     which we are interested in. Returns greatest loglikelihood ratio. */
 double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
     TemporalData& Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
-    count_t* pCases = Data.gpCases, S;
+    count_t* pCases = Data.gpCases, S, T;
     measure_t* pMeasure = Data.gpMeasure;
-    double maxValue(_default_maximizing_value);
+    double maxValue(_default_maximizing_value), rawScore;
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+
+    auto& calibration = const_cast<CSaTScanData&>(gDataHub).refSizeCalibration();
+    double C = static_cast<double>(gDataHub.GetTotalCases());
 
     S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
 	// Nothing to evaluate if fewer than 2 cases in the cluster or if S is greater than total cases - 2.
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return maxValue;
 
+    const double qS = static_cast<double>(S) / C;
     const auto& spatialcases = _look_up->getSpatialCases(S);
     int iWindowStart, iMaxStartWindow;
     gpMaxWindowLengthIndicator->reset();
@@ -202,10 +221,22 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
         for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure))
-                maxValue = std::max(maxValue,
-                    _look_up->getProbabilityFor(_pt_counts[iWindowStart] - _pt_counts[iWindowEnd], spatialcases, Data.gtCases)
-                );
+            if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
+                T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd];
+                //maxValue = std::max(maxValue,
+                //    _look_up->getProbabilityFor(T, spatialcases, Data.gtCases)
+                //);
+
+                // rawScore is full test statistic
+                rawScore = -std::log(-_look_up->getProbabilityFor(T, spatialcases, Data.gtCases));
+                if (calibration.mode() == SizeConditionalCalibration::BUILD) {
+                    calibration.observe(qS, static_cast<double>(T)/C, rawScore);
+                    continue;
+                }
+                //assert(calibration.mode() == SizeConditionalCalibration::APPLY);
+                // obtain the penalized full test statistic
+                maxValue = std::max(maxValue, calibration.score(qS, static_cast<double>(T)/C, rawScore));
+            }
         }
     }
     return maxValue;

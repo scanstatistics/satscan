@@ -98,7 +98,7 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
         }
     }
     //if maximizing value is not a ratio/test statistic, convert them now
-    if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1)
+    if (_data_hub.GetDataSetHandler().GetNumDataSets() == 1 && !_parameters.getSTPasHypergeometric())
         for (auto& maxVal: vMaximizingValues)
             maxVal = _likelihood_calculator->CalculateFullStatistic(maxVal);
 

@@ -90,6 +90,7 @@ int CClusterSetCollections::getClusterSetCollectionIndex(int shapeOffset) {
 SharedClusterVector_t& CClusterSetCollections::getTopClusters(SharedClusterVector_t& clusterCollection) {
     clusterCollection.clear(); // clear collection of any existing objects.
 
+    /*
     if (_isSpecializedHypergeometric) {
         // If performing the space-time permutation as hypergeometric, we need to convert cluster minizing value to LLR.
         // This isn't applicable with multiple sets since we needed to calculate full statistic in that situation.
@@ -100,6 +101,7 @@ SharedClusterVector_t& CClusterSetCollections::getTopClusters(SharedClusterVecto
             }
         }
     }
+    */
 
     // Special behavior for retrospective space-time analyses
     // We're retaining the best clusters about current centroid which do not overlap temporally.
