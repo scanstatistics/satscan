@@ -272,6 +272,21 @@ void AnalysisExecution::calculateMostLikelyClusters() {
         pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
         //calculate most likely clusters
         _data_hub.SetActiveNeighborReferenceType(CSaTScanData::REPORTED);
+
+        // If this is a hypergeometric analysis, first we need to run calibrations first.
+        if (_parameters.getSTPasHypergeometric()) {
+            auto& calibration = _data_hub.refSizeConditionalCalibration();
+            calibration.reset();
+            calibration.setMode(AnalyticSizeConditionalCalibration::BUILD);
+            //recompute neighbors if settings indicate that smaller clusters are reported
+            _data_hub.SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
+            _print_direction.Printf("Doing hypergeometric calibration\n", BasePrint::P_STDOUT);
+            pAnalysis->FindTopClusters(*pDataSetGateway, _top_clusters_containers);
+            calibration.finalize();
+            calibration.setMode(AnalyticSizeConditionalCalibration::APPLY);
+            calibration.print(stdout);
+        }
+
         pAnalysis->FindTopClusters(*pDataSetGateway, _top_clusters_containers);
         //display the loglikelihood of most likely cluster
         if (!_print_direction.GetIsCanceled() && _top_clusters_containers.size() > 0) {
@@ -504,7 +519,7 @@ void AnalysisExecution::finalize() {
                 );
         }
 
-        _data_hub.getSizeCalibration().print(_results_writer.getTextFile());
+        _data_hub.getSizeConditionalCalibration().print(_results_writer.getTextFile());
     } catch (prg_exception& x) {
         x.addTrace("finalize()", "AnalysisExecution");
         throw;
@@ -817,21 +832,6 @@ void AnalysisExecution::executePowerEvaluations() {
 void AnalysisExecution::executeSuccessively() {
     try {
         do { // start analyzing data
-
-            // If this is a hypergeometric analysis, first we need to run calibrations.
-            if (_parameters.getSTPasHypergeometric() && _parameters.GetNumReplicationsRequested() > 0) {
-                auto& calibration = _data_hub.refSizeCalibration();
-                calibration.reset();
-                calibration.setMode(SizeConditionalCalibration::BUILD);
-                //recompute neighbors if settings indicate that smaller clusters are reported
-                _data_hub.SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-                _print_direction.Printf("Doing the Monte Carlo replications for hypergeometric calibration\n", BasePrint::P_STDOUT);
-                std::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
-                runSuccessiveSimulations(randomizers, _parameters._calibration_replica, "", false, _analysis_count);
-                calibration.finalize();
-                calibration.setMode(SizeConditionalCalibration::APPLY);
-            }
-
             ++_analysis_count;
             _significant_at005 = 0;
             // calculate most likely clusters
@@ -1356,7 +1356,6 @@ void AnalysisExecution::runSuccessiveSimulations(std::shared_ptr<RandomizerConta
                 throw prg_error("At least %d jobs remain uncompleted.", "AnalysisExecution", jobSource.GetUnregisteredJobCount());
         }
     } catch (prg_exception& x) {
-        getDataHub().getSizeCalibration().print(0);
         x.addTrace("runSuccessiveSimulations()", "AnalysisExecution");
         throw;
     }

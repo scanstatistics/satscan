@@ -97,7 +97,8 @@ class CSaTScanData {
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
     mutable std::shared_ptr<LocationsReportHelper> _report_helper;
-    std::shared_ptr<SizeConditionalCalibration> _sizeCalibration;
+    //std::shared_ptr<SizeConditionalCalibration> _sizeCalibration;
+    std::shared_ptr<AnalyticSizeConditionalCalibration> _size_conditional_calibration;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -118,8 +119,12 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
-    SizeConditionalCalibration& refSizeCalibration();
-    const SizeConditionalCalibration& getSizeCalibration() const;
+    //SizeConditionalCalibration& refSizeCalibration();
+    //const SizeConditionalCalibration& getSizeCalibration() const;
+    AnalyticSizeConditionalCalibration& refSizeConditionalCalibration();
+    const AnalyticSizeConditionalCalibration& getSizeConditionalCalibration() const;
+
+
     std::string                               & getDatasetLabel(size_t set_number, std::string& label, bool prefixed=true) const;
     std::shared_ptr<LocationsReportHelper>    getLocationReportHelper() const;
     const std::vector<WindowRange_t>          & getTimeStratifiedTemporalAdjustmentWindows() const { return _adjustment_window_ranges; }

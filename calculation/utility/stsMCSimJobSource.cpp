@@ -285,8 +285,9 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
         }
 
         //update ratios, significance, etc.
-        if (grExecution._parameters.getSTPasHypergeometric() && grExecution.getDataHub().getSizeCalibration().mode() != SizeConditionalCalibration::BUILD)
-            WriteResultToStructures(rResult.dSuccessfulResult);
+        //if (grExecution._parameters.getSTPasHypergeometric() && grExecution.getDataHub().getSizeCalibration().mode() != SizeConditionalCalibration::BUILD)
+        
+        WriteResultToStructures(rResult.dSuccessfulResult);
 
         ++guiJobsReported;
 

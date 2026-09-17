@@ -145,7 +145,7 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
     measure_t* pMeasure = Data.gpMeasure;
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
 
-    auto& calibration = gDataHub.getSizeCalibration();
+    auto& calibration = const_cast<CSaTScanData&>(gDataHub).refSizeConditionalCalibration();
     double C = static_cast<double>(gDataHub.GetTotalCases());
 
     S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
@@ -153,8 +153,6 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return;
 
-    const double qS = static_cast<double>(S) / C;
-    const auto& spatialcases = _look_up->getSpatialCases(S);
     int iWindowStart, iMinWindowStart;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
@@ -164,18 +162,16 @@ void HypergeometricTemporalDataEvaluator::CompareClusterSet(CCluster& Running, C
         for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
             Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
             Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+
             if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure)) {
                 T = _pt_counts[iWindowStart] - _pt_counts[iWindowEnd];
-                Running.m_nRatio = _look_up->getProbabilityFor(
-                    T, spatialcases, Data.gtCases
-                );
 
-                // Set Running.m_nRatio to the penalized full test statistic.
-                Running.m_nRatio = calibration.score(qS, 
-                    static_cast<double>(T)/C, 
-                    -std::log(-Running.m_nRatio)
-                );
-
+                if (calibration.mode() == AnalyticSizeConditionalCalibration::BUILD) {
+                    calibration.observeCandidate(S, T);
+                    continue;
+                }
+                double rawScore = -std::log(-_look_up->getProbabilityFor_Checked(T, S, Data.gtCases));
+                Running.m_nRatio = calibration.calibrate(S, T, rawScore, *_look_up);
                 Running.m_nFirstInterval = iWindowStart;
                 Running.m_nLastInterval = iWindowEnd;
 
@@ -202,7 +198,7 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
     double maxValue(_default_maximizing_value), rawScore;
     AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
 
-    auto& calibration = const_cast<CSaTScanData&>(gDataHub).refSizeCalibration();
+    auto& calibration = gDataHub.getSizeConditionalCalibration();
     double C = static_cast<double>(gDataHub.GetTotalCases());
 
     S = pCases[0]; // number of cases in spatial area of cylinder, over the whole study time period
@@ -210,8 +206,6 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
     if (S < 2 || S > gDataHub.GetDataSetHandler().GetDataSet().getTotalCases() - 2)
         return maxValue;
 
-    const double qS = static_cast<double>(S) / C;
-    const auto& spatialcases = _look_up->getSpatialCases(S);
     int iWindowStart, iMaxStartWindow;
     gpMaxWindowLengthIndicator->reset();
     int iMaxEndWindow = std::min(ENDRANGE_ENDDATE, STARTRANGE_ENDDATE + giMaxWindowLength);
@@ -228,14 +222,10 @@ double HypergeometricTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
                 //);
 
                 // rawScore is full test statistic
-                rawScore = -std::log(-_look_up->getProbabilityFor(T, spatialcases, Data.gtCases));
-                if (calibration.mode() == SizeConditionalCalibration::BUILD) {
-                    calibration.observe(qS, static_cast<double>(T)/C, rawScore);
-                    continue;
-                }
+                rawScore = -std::log(-_look_up->getProbabilityFor_Checked(T, S, Data.gtCases));
                 //assert(calibration.mode() == SizeConditionalCalibration::APPLY);
                 // obtain the penalized full test statistic
-                maxValue = std::max(maxValue, calibration.score(qS, static_cast<double>(T)/C, rawScore));
+                maxValue = std::max(maxValue, calibration.calibrate(S, T, rawScore, *_look_up));
             }
         }
     }

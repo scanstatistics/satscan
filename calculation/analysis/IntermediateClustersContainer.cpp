@@ -183,7 +183,7 @@ void CClusterSetCollections::setClusterCollections(const CCluster& cluster, size
         if (!_parameters.GetIsIterativeScanning() && _parameters.GetAnalysisType() == SPACETIME && _cluster_type == SPACETIMECLUSTER)
             cluster_set.reset(new CClusterSetTemporalOverlap(cluster, _data_hub.GetNumTimeIntervals(), _isSpecializedHypergeometric));
         else
-            cluster_set.reset(new CClusterSet(_isSpecializedHypergeometric));
+            cluster_set.reset(new CClusterSet(false/*_isSpecializedHypergeometric*/));
         // When analysis uses gini, there will be more than one spatial window stop (for the different max. spatial sizes of gini).
         for (size_t t = 0; t < _parameters.getExecuteSpatialWindowStops().size(); ++t) {
             CClusterObject addMe(cluster);
