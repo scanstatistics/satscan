@@ -122,7 +122,7 @@ const char * TemporalChartGenerator::BASE_TEMPLATE = " \
                 $.each($('.options-row input.series-toggle[type=\"checkbox\"]'), function(index, checkbox) { seriesToggle(checkbox); }); \n \
                 $('.options-row input.series-toggle[type=\"checkbox\"]').click(function(event) { seriesToggle($(this)); }); \n \
                 $('.options-row input.show-cluster-band[type=\"checkbox\"]').trigger('click'); \n \
-                $('#graph-checkbox-list').multiselect({ numberDisplayed: 1, enableFiltering : true, includeSelectAllOption : true, maxHeight : 300, buttonWidth : '100%', dropRight : true }); \n \
+                $('#graph-checkbox-list').multiselect({ numberDisplayed: 1, enableFiltering : true, includeSelectAllOption : true, maxHeight : 300, buttonWidth : '100%', dropRight : true, enableCaseInsensitiveFiltering: true }); \n \
                     if (Object.keys(charts).length) setTimeout(() => charts[Object.keys(charts)[0]].reflow(), 1000); \n \
                      var renderCharts = []; \n \
                      var reflowCharts = []; \n \
