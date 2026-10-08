@@ -36,35 +36,65 @@ CSaTScanData::~CSaTScanData() {
   catch (...){}  
 }
 
-/*SizeConditionalCalibration& CSaTScanData::refSizeCalibration() {
-    if (!_sizeCalibration) {
-        _sizeCalibration.reset(new SizeConditionalCalibration(
+SizeConditionalCalibration_1& CSaTScanData::refSizeCalibration_1() {
+    if (!_sizeCalibration_1) {
+        _sizeCalibration_1.reset(new SizeConditionalCalibration_1(
             gParameters._spatial_bins, gParameters._temporal_bins, gParameters._min_cell_size
         ));
     }
-    return *_sizeCalibration;
-}*/
+    return *_sizeCalibration_1;
+}
 
-/*const SizeConditionalCalibration& CSaTScanData::getSizeCalibration() const {
-    if (!_sizeCalibration)
+const SizeConditionalCalibration_1& CSaTScanData::getSizeCalibration_1() const {
+    if (!_sizeCalibration_1)
         throw prg_error("size calibration not allocated", __func__);
-    return *_sizeCalibration; 
-}*/
+    return *_sizeCalibration_1;
+}
 
-AnalyticSizeConditionalCalibration& CSaTScanData::refSizeConditionalCalibration() {
-    if (!_size_conditional_calibration) {
-        _size_conditional_calibration.reset(new AnalyticSizeConditionalCalibration(
+SizeConditionalCalibration_2& CSaTScanData::refSizeCalibration_2() {
+    if (!_sizeCalibration_2) {
+        _sizeCalibration_2.reset(new SizeConditionalCalibration_2(
+            gParameters._spatial_bins, gParameters._temporal_bins, gParameters._min_cell_size
+        ));
+    }
+    return *_sizeCalibration_2;
+}
+
+const SizeConditionalCalibration_2& CSaTScanData::getSizeCalibration_2() const {
+    if (!_sizeCalibration_2)
+        throw prg_error("size calibration not allocated", __func__);
+    return *_sizeCalibration_2;
+}
+
+SizeConditionalCalibration_3& CSaTScanData::refSizeCalibration_3() {
+    if (!_sizeCalibration_3) {
+        _sizeCalibration_3.reset(new SizeConditionalCalibration_3(
+            gParameters._spatial_bins, gParameters._temporal_bins, gParameters._min_cell_size
+        ));
+    }
+    return *_sizeCalibration_3;
+}
+
+const SizeConditionalCalibration_3& CSaTScanData::getSizeCalibration_3() const {
+    if (!_sizeCalibration_3)
+        throw prg_error("size calibration not allocated", __func__);
+    return *_sizeCalibration_3;
+}
+
+AnalyticSizeConditionalCalibration& CSaTScanData::refSizeCalibrationAnalytic() {
+    if (!_sizeCalibrationAnalytic) {
+        _sizeCalibrationAnalytic.reset(new AnalyticSizeConditionalCalibration(
             GetTotalCases()/* TOOO: only correct if one data set */,
             gParameters._spatial_bins, gParameters._temporal_bins
         ));
     }
-    return *_size_conditional_calibration;
+    return *_sizeCalibrationAnalytic;
 }
 
-const AnalyticSizeConditionalCalibration& CSaTScanData::getSizeConditionalCalibration() const {
-    if (!_size_conditional_calibration)
+const AnalyticSizeConditionalCalibration& CSaTScanData::getSizeCalibrationAnalytic() const {
+    if (!_sizeCalibrationAnalytic)
         throw prg_error("size conditional calibration not allocated", __func__);
-    return *_size_conditional_calibration;
+    return *_sizeCalibrationAnalytic;
 }
 
 /** Iterative analyses will call this function to clear neighbor information and re-calculate neighbors. */

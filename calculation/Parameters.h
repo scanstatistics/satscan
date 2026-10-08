@@ -328,7 +328,7 @@ class CParameters {
     size_t _temporal_bins = 20;
     size_t _min_cell_size = 100;
     size_t _calibration_replica = 999;
-
+    bool _apply_penalty = true;
 
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;

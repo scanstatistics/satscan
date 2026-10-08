@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
   unsigned int temporalbins = 20;
   unsigned int mincellsize = 100;
   unsigned int calibration = 999;
+  unsigned int apply_penalty = 1;
   time_t RunTime;
   CParameters Parameters;
   std::string sMessage, buffer;
@@ -104,6 +105,7 @@ int main(int argc, char *argv[]) {
         ("temporal-bins,n", po::value<unsigned int>(&temporalbins)->default_value(20), "number of temporal bins for penalty")
         ("min-cell-size,n", po::value<unsigned int>(&mincellsize)->default_value(100), "minimum cells in score set for penalty")
         ("calibration-replica,n", po::value<unsigned int>(&calibration)->default_value(999), "number of replica calibration with penalty")
+        ("apply-penalty,y", po::value<unsigned int>(&apply_penalty)->default_value(1), "apply hypergeometric penalty")
         ("version,v", "program version")
         ("help,h", "Help");
 
@@ -238,6 +240,7 @@ int main(int argc, char *argv[]) {
     Parameters._temporal_bins = temporalbins;
     Parameters._min_cell_size = mincellsize;
     Parameters._calibration_replica = calibration;
+    Parameters._apply_penalty = (bool)apply_penalty;
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis

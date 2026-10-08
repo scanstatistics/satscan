@@ -97,8 +97,10 @@ class CSaTScanData {
     mutable ClusterNetworkLocationCache_t       _cluster_network_locations_cache;
     std::vector<WindowRange_t>                  _adjustment_window_ranges; /** Window ranges for the temporal nonparametric adjustment */
     mutable std::shared_ptr<LocationsReportHelper> _report_helper;
-    //std::shared_ptr<SizeConditionalCalibration> _sizeCalibration;
-    std::shared_ptr<AnalyticSizeConditionalCalibration> _size_conditional_calibration;
+    std::shared_ptr<SizeConditionalCalibration_1> _sizeCalibration_1;
+    std::shared_ptr<SizeConditionalCalibration_2> _sizeCalibration_2;
+    std::shared_ptr<SizeConditionalCalibration_3> _sizeCalibration_3;
+    std::shared_ptr<AnalyticSizeConditionalCalibration> _sizeCalibrationAnalytic;
 
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
@@ -119,10 +121,14 @@ class CSaTScanData {
 
     tract_t                                     m_nGridTracts;
 
-    //SizeConditionalCalibration& refSizeCalibration();
-    //const SizeConditionalCalibration& getSizeCalibration() const;
-    AnalyticSizeConditionalCalibration& refSizeConditionalCalibration();
-    const AnalyticSizeConditionalCalibration& getSizeConditionalCalibration() const;
+    SizeConditionalCalibration_1              & refSizeCalibration_1();
+    const SizeConditionalCalibration_1        & getSizeCalibration_1() const;
+    SizeConditionalCalibration_2              & refSizeCalibration_2();
+    const SizeConditionalCalibration_2        & getSizeCalibration_2() const;
+    SizeConditionalCalibration_3              & refSizeCalibration_3();
+    const SizeConditionalCalibration_3        & getSizeCalibration_3() const;
+    AnalyticSizeConditionalCalibration        & refSizeCalibrationAnalytic();
+    const AnalyticSizeConditionalCalibration  & getSizeCalibrationAnalytic() const;
 
 
     std::string                               & getDatasetLabel(size_t set_number, std::string& label, bool prefixed=true) const;
