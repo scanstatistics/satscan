@@ -678,7 +678,14 @@ public:
     void finalize() {
         for (auto& cell : _cells) {
             cell.rawScoresSorted.assign(cell.rawScores.begin(), cell.rawScores.end());
+            // sort by test statistic
             std::sort(cell.rawScoresSorted.begin(), cell.rawScoresSorted.end(), [](auto& a, auto& b) { return a.first < b.first; });
+            // set counts to cumulative, so so don't need to perform summation repeatedly
+            if (cell.rawScoresSorted.size() > 1) {
+                for (auto it = cell.rawScoresSorted.rbegin() + 1; it != cell.rawScoresSorted.rend(); ++it) {
+                    it->second += (it - 1)->second;
+                }
+            }
             cell.rawScores.clear(); // No longer needed
         }
         _finalized = true;
@@ -703,13 +710,9 @@ public:
         if (it != cell.rawScoresSorted.end() && it->first < rawScore)
             ++it;
         // Record the number of scores that were equal or greater to rawScore.
-        std::size_t nGE = 0;
-        while (it != cell.rawScoresSorted.end()) {
-            nGE += it->second;
-            ++it;
-        }
+        
+        std::size_t nGE = it == cell.rawScoresSorted.end() ? 0 : it->second;
         const std::size_t N = cell.totalScores;
-
         return static_cast<double>(1 + nGE) / static_cast<double>(N + 1);
     }
 
@@ -717,6 +720,9 @@ public:
         if (_mode == OFF) return rawScore;
 
         double p = localPValue(qS, qT, rawScore);
+
+        //std::cout << rawScore << "," << qS << "," << qT << "," << (p == 1 ? 0.0 : -std::log(p)) << std::endl;
+
         return p == 1 ? 0.0 : -std::log(p);
     }
 
@@ -731,7 +737,7 @@ public:
             auto& cell = _cells[t];
             if (cell.rawScoresSorted.empty()) ++nonzero;
             memoryCost += cell.rawScoresSorted.capacity() * sizeof(std::pair<double, unsigned int>);
-            if (cell.rawScores.empty()) continue;
+            if (cell.rawScoresSorted.empty()) continue;
             out << "cell[" << t << "], size=" << cell.rawScoresSorted.size() <<
                 ", lowest=" << cell.rawScoresSorted.front().first << ", highest=" << cell.rawScoresSorted.back().first << std::endl;
             out << "proportions(qS,qT) size: " << cell.proportions.size() << std::endl;
