@@ -474,8 +474,11 @@ void AnalysisExecution::finalize() {
                 messageBody.str("");
                 messageBody << customMessageBody;
             } else { // Otherwise create the standard email.
-                messageSubjectLine << _parameters.GetTitleName(); // Create the email subject line from either title parameter or default string.
-                messageSubjectLine << "SaTScan Results" << " - " << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
+                messageSubjectLine << "SaTScan Results - ";
+                if (_parameters.GetTitleName().size())
+                    messageSubjectLine << _parameters.GetTitleName();
+                else 
+                    messageSubjectLine << FileName(_parameters.GetOutputFileName().c_str()).getFileName();
                 messageBody << _email_helper.getSummaryParagraph().rdbuf();
                 // Add output summaries, if user requested it.
                 if (_parameters.getEmailIncludeResultsDirectory()) messageBody << EmailText::LINEBREAK << EmailText::LINEBREAK << EmailText::LOCATION_PAR;
