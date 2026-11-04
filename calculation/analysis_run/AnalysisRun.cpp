@@ -836,7 +836,9 @@ void AnalysisExecution::executeSuccessively() {
         do { // start analyzing data
 
             //auto& calibration = _data_hub.refSizeCalibration_1();
+            //calibration.setMode(SizeConditionalCalibration_1::OFF);
             //auto& calibration = _data_hub.refSizeCalibration_2();
+            //calibration.setMode(SizeConditionalCalibration_2::OFF);
             auto& calibration = _data_hub.refSizeCalibration_3();
             calibration.setMode(SizeConditionalCalibration_3::OFF);
             if (_parameters.getSTPasHypergeometric() && _parameters.GetNumReplicationsRequested() > 0 && _parameters._apply_penalty) {
@@ -856,6 +858,8 @@ void AnalysisExecution::executeSuccessively() {
                 calibration.setMode(SizeConditionalCalibration_3::APPLY);
                 //calibration.print(stdout);
             } else {
+                //calibration.setMode(SizeConditionalCalibration_1::OFF);
+                //calibration.setMode(SizeConditionalCalibration_2::OFF);
                 calibration.setMode(SizeConditionalCalibration_3::OFF);
             }
 

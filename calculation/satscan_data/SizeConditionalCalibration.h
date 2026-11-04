@@ -656,8 +656,11 @@ public:
     bool finalized() const { return _finalized; }
 
     void reset() {
-        for (auto& cell : _cells)
+        for (auto& cell : _cells) {
             cell.rawScores.clear();
+            cell.rawScoresSorted.clear();
+            cell.totalScores = 0;
+        }
         _finalized = false;
         _mode = OFF;
     }
@@ -667,11 +670,18 @@ public:
         if (_mode != BUILD) return;
         if (!std::isfinite(rawScore)) return;
 
+        // TODO: 
+        // If this penalty feature pans out, and we stick with simulations based 'training',
+        // then this mutex becomes a bottleneck when there are many threads. We then need to
+        // consider finding a way do this operation without a mutex, then have a follow-up
+        // step to combine results into one collection.
         boost::mutex::scoped_lock lock(_mutex);
+
         auto& cell = _cells[index(qS, qT)];
         ++cell.rawScores[rawScore];
         ++cell.totalScores;
-        cell.proportions.insert(std::make_pair(qS, qT));
+
+        //cell.proportions.insert(std::make_pair(qS, qT));
     }
 
     // Called once after all Bcal simulations are complete.
@@ -695,34 +705,24 @@ public:
     // p_loc = (1 + #{null rawScore >= observed rawScore}) / (N + 1)
     double localPValue(double qS, double qT, double rawScore) const {
         if (!_finalized) throw std::runtime_error("Size calibration has not been finalized.");
-
         const Cell& cell = _cells[index(qS, qT)];
-
-        // Prototype behaviour. Production code should replace this with
-        // adaptive neighbouring-bin expansion or smoothing.
+        // Prototype behaviour. Production code should replace this with adaptive neighbouring-bin expansion or smoothing.
         if (cell.totalScores < _minimumCellSize)
             return 1.0;
-
+        // find position in sorted raw scores
         auto it = std::lower_bound(cell.rawScoresSorted.begin(), cell.rawScoresSorted.end(),
             rawScore, [](const auto& elem, const double& k) { return elem.first < k; }
         );
         // Advance iterator to next element if score is less than rawScore.
-        if (it != cell.rawScoresSorted.end() && it->first < rawScore)
-            ++it;
-        // Record the number of scores that were equal or greater to rawScore.
-        
-        std::size_t nGE = it == cell.rawScoresSorted.end() ? 0 : it->second;
-        const std::size_t N = cell.totalScores;
-        return static_cast<double>(1 + nGE) / static_cast<double>(N + 1);
+        if (it != cell.rawScoresSorted.end() && it->first < rawScore) ++it;
+        // Record the number of scores that were equal or greater to rawScore.        
+        return static_cast<double>(1 + (it == cell.rawScoresSorted.end() ? 0 : it->second)) / static_cast<double>(cell.totalScores + 1);
     }
 
     double score(double qS, double qT, double rawScore) const {
         if (_mode == OFF) return rawScore;
-
-        double p = localPValue(qS, qT, rawScore);
-
+        const double p = localPValue(qS, qT, rawScore);
         //std::cout << rawScore << "," << qS << "," << qT << "," << (p == 1 ? 0.0 : -std::log(p)) << std::endl;
-
         return p == 1 ? 0.0 : -std::log(p);
     }
 
